@@ -1,0 +1,33 @@
+export type UserProfile = {
+  name: string;
+  taxResidence: string;
+  operations: string[];
+  structures: string[];
+  monthlyVolume: string;
+  languages: string[];
+  interests: string[];
+  history: string[];
+};
+
+const PROFILE_KEY = "signux_profile";
+
+export function getProfile(): UserProfile | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem(PROFILE_KEY);
+  return stored ? JSON.parse(stored) : null;
+}
+
+export function updateProfile(updates: Partial<UserProfile>) {
+  const current = getProfile() || { name: "", taxResidence: "", operations: [], structures: [], monthlyVolume: "", languages: [], interests: [], history: [] };
+  const updated = { ...current, ...updates };
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(updated));
+  return updated;
+}
+
+export function addToHistory(entry: string) {
+  const profile = getProfile();
+  if (profile) {
+    profile.history = [...(profile.history || []).slice(-20), entry];
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  }
+}

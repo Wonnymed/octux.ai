@@ -95,7 +95,7 @@ const ORCHESTRATOR = `You route user questions to the right agent. Available: of
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, agent } = await req.json();
+    const { messages, agent, profile, rates } = await req.json();
     let systemPrompt = AGENTS[agent];
 
     if (!agent || agent === "auto") {
@@ -112,10 +112,20 @@ export async function POST(req: NextRequest) {
 
     if (!systemPrompt) systemPrompt = AGENTS.offshore;
 
+    let contextPrefix = "";
+    if (profile) {
+      contextPrefix = `\n\nUSER PROFILE (use this context to personalize responses):\n- Name: ${profile.name}\n- Tax residence: ${profile.taxResidence}\n- Operations: ${profile.operations?.join(", ")}\n- Existing structures: ${profile.structures?.join(", ") || "None"}\n- Monthly volume: ${profile.monthlyVolume || "Not specified"}\n- Languages: ${profile.languages?.join(", ") || "Not specified"}\n\nUse this context to give specific, personalized recommendations instead of generic advice.\n`;
+    }
+    if (rates) {
+      contextPrefix += `\nCURRENT EXCHANGE RATES (use these for calculations):\n- 1 USD = ${rates.USDBRL} BRL\n- 1 USD = ${rates.USDHKD} HKD\n- 1 USD = ${rates.USDCNY} CNY\n- 1 USD = ${rates.USDEUR} EUR\n- 1 USD = ${rates.USDKRW} KRW\nUpdated: ${rates.updated}\n`;
+    }
+
+    const fullSystemPrompt = systemPrompt + contextPrefix;
+
     const response = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 4096,
-      system: systemPrompt,
+      system: fullSystemPrompt,
       messages: messages.map((m: any) => ({ role: m.role, content: m.content })),
     });
 

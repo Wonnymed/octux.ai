@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import { getProfile, updateProfile, type UserProfile } from "./lib/profile";
 
 const GOLD = "#C9A84C";
 const SERIF = "'Cormorant Garamond', serif";
@@ -25,14 +26,29 @@ const SUGGESTIONS = [
 
 type Message = { role: "user" | "assistant"; content: string };
 
+const OPERATIONS = ["Import/Export", "Offshore/Holdings", "Crypto", "Servi\u00e7os digitais", "E-commerce", "Investimentos", "Outro"];
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [agent, setAgent] = useState("auto");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  const [onboardName, setOnboardName] = useState("");
+  const [onboardCountry, setOnboardCountry] = useState("");
+  const [onboardOps, setOnboardOps] = useState<string[]>([]);
+  const [rates, setRates] = useState<any>(null);
+  const [profileName, setProfileName] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const profile = getProfile();
+    setOnboarded(!!profile);
+    if (profile) setProfileName(profile.name);
+    fetch("/api/rates").then(r => r.json()).then(setRates).catch(() => {});
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -51,7 +67,7 @@ export default function Home() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages, agent }),
+        body: JSON.stringify({ messages: newMessages, agent, profile: getProfile(), rates }),
       });
       const data = await res.json();
       setMessages([...newMessages, { role: "assistant", content: data.response || data.error || "Erro ao processar." }]);
@@ -134,14 +150,117 @@ export default function Home() {
             <span style={{ fontSize: 16 }}>{activeAgent.icon}</span>
             <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>{activeAgent.label}</span>
           </div>
-          <span style={{ fontSize: 9, padding: "3px 10px", borderRadius: 12, background: "rgba(201,168,76,0.08)", color: GOLD, letterSpacing: "0.08em", textTransform: "uppercase" }}>Beta</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            {rates && (
+              <div className="rates-ticker" style={{ display: "flex", gap: 12, fontSize: 10, color: "rgba(255,255,255,0.2)" }}>
+                <span>USD/BRL {rates.USDBRL?.toFixed(2)}</span>
+                <span>USD/CNY {rates.USDCNY?.toFixed(2)}</span>
+                <span>USD/HKD {rates.USDHKD?.toFixed(2)}</span>
+              </div>
+            )}
+            {messages.length > 0 && (
+              <button
+                onClick={() => {
+                  const text = messages.map(m => (m.role === "user" ? "Voc\u00ea: " : "Signux: ") + m.content).join("\n\n---\n\n");
+                  const blob = new Blob([text], { type: "text/plain" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "signux-conversa.txt";
+                  a.click();
+                }}
+                style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "rgba(255,255,255,0.2)", padding: 4, transition: "color 0.2s" }}
+                onMouseEnter={e => (e.currentTarget.style.color = GOLD)}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.2)")}
+                title="Salvar conversa"
+              >
+                ↓
+              </button>
+            )}
+            <span style={{ fontSize: 9, padding: "3px 10px", borderRadius: 12, background: "rgba(201,168,76,0.08)", color: GOLD, letterSpacing: "0.08em", textTransform: "uppercase" }}>Beta</span>
+          </div>
         </header>
 
         {/* Messages */}
         <div style={{ flex: 1, overflowY: "auto", padding: 24, display: "flex", flexDirection: "column" }} className="messages-area">
-          {messages.length === 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, textAlign: "center", maxWidth: 600, margin: "0 auto", width: "100%" }}>
+          {onboarded === null ? null : messages.length === 0 && !onboarded ? (
+            /* Onboarding */
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, textAlign: "center", maxWidth: 480, margin: "0 auto", width: "100%" }}>
               <div className="welcome-title" style={{ fontSize: 56, fontFamily: SERIF, fontWeight: 300, color: "white", marginBottom: 4 }}>Signux</div>
+              <div style={{ fontSize: 15, color: "rgba(255,255,255,0.2)", marginBottom: 40 }}>Antes de come&ccedil;ar, preciso de contexto.</div>
+              <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 16, textAlign: "left" }}>
+                <div>
+                  <label style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6, display: "block" }}>Seu nome</label>
+                  <input
+                    value={onboardName}
+                    onChange={e => setOnboardName(e.target.value)}
+                    placeholder="Como quer ser chamado"
+                    style={{ width: "100%", padding: "12px 14px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", color: "white", fontSize: 14, outline: "none", fontFamily: "'DM Sans', sans-serif" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6, display: "block" }}>Pa&iacute;s de resid&ecirc;ncia fiscal</label>
+                  <input
+                    value={onboardCountry}
+                    onChange={e => setOnboardCountry(e.target.value)}
+                    placeholder="Ex: Brasil, Portugal, EUA"
+                    style={{ width: "100%", padding: "12px 14px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", color: "white", fontSize: 14, outline: "none", fontFamily: "'DM Sans', sans-serif" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8, display: "block" }}>O que voc&ecirc; opera?</label>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {OPERATIONS.map(op => (
+                      <button
+                        key={op}
+                        onClick={() => setOnboardOps(prev => prev.includes(op) ? prev.filter(o => o !== op) : [...prev, op])}
+                        style={{
+                          padding: "8px 14px",
+                          borderRadius: 20,
+                          fontSize: 12,
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          fontFamily: "'DM Sans', sans-serif",
+                          background: onboardOps.includes(op) ? "rgba(201,168,76,0.12)" : "rgba(255,255,255,0.03)",
+                          border: onboardOps.includes(op) ? `1px solid ${GOLD}` : "1px solid rgba(255,255,255,0.06)",
+                          color: onboardOps.includes(op) ? GOLD : "rgba(255,255,255,0.4)",
+                        }}
+                      >
+                        {op}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (!onboardName.trim()) return;
+                    updateProfile({ name: onboardName.trim(), taxResidence: onboardCountry.trim(), operations: onboardOps });
+                    setProfileName(onboardName.trim());
+                    setOnboarded(true);
+                  }}
+                  disabled={!onboardName.trim()}
+                  style={{
+                    marginTop: 8,
+                    padding: "14px 24px",
+                    borderRadius: 10,
+                    background: onboardName.trim() ? GOLD : "rgba(201,168,76,0.2)",
+                    border: "none",
+                    color: "#0A0A0A",
+                    fontSize: 14,
+                    fontWeight: 500,
+                    cursor: onboardName.trim() ? "pointer" : "not-allowed",
+                    fontFamily: "'DM Sans', sans-serif",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  Come&ccedil;ar
+                </button>
+              </div>
+            </div>
+          ) : messages.length === 0 ? (
+            /* Welcome screen */
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, textAlign: "center", maxWidth: 600, margin: "0 auto", width: "100%" }}>
+              <div className="welcome-title" style={{ fontSize: 56, fontFamily: SERIF, fontWeight: 300, color: "white", marginBottom: 4 }}>{profileName ? `Ol\u00e1, ${profileName}` : "Signux"}</div>
               <div style={{ fontSize: 15, color: "rgba(255,255,255,0.2)", marginBottom: 48 }}>All signal. Zero noise.</div>
               <div className="suggestions-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, width: "100%" }}>
                 {SUGGESTIONS.map(s => (
@@ -289,6 +408,7 @@ export default function Home() {
           .input-area { padding: 12px 16px !important; }
           .suggestions-grid { grid-template-columns: 1fr !important; }
           .welcome-title { font-size: 40px !important; }
+          .rates-ticker { display: none !important; }
         }
       `}</style>
 
