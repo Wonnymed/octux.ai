@@ -94,6 +94,9 @@ export default function Home() {
   const [simLiveAgents, setSimLiveAgents] = useState<{ emoji: string; name: string; done: boolean }[]>([]);
   const [resultTab, setResultTab] = useState<"report" | "simulation" | "graph">("report");
   const [tokenCount, setTokenCount] = useState(0);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<Record<number, string>>({});
+  const [hoveredMsg, setHoveredMsg] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -701,6 +704,8 @@ export default function Home() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 800, margin: "0 auto", width: "100%" }}>
                   {messages.map((m, i) => (
                     <div key={i}
+                      onMouseEnter={() => m.role === "assistant" && setHoveredMsg(i)}
+                      onMouseLeave={() => setHoveredMsg(null)}
                       style={{
                         alignSelf: m.role === "user" ? "flex-end" : "flex-start",
                         maxWidth: m.role === "user" ? "70%" : "80%",
@@ -718,6 +723,29 @@ export default function Home() {
                           <ReactMarkdown components={MD_COMPONENTS}>{m.content}</ReactMarkdown>
                           {loading && i === messages.length - 1 && (
                             <span style={{ display: "inline-block", width: 2, height: 16, background: GOLD, marginLeft: 2, animation: "blink 1s infinite", verticalAlign: "text-bottom" }} />
+                          )}
+                          {!(loading && i === messages.length - 1) && m.content && (
+                            <div style={{ display: "flex", gap: 8, marginTop: 12, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.03)", opacity: hoveredMsg === i || feedback[i] ? 1 : 0, transition: "opacity 0.2s" }}>
+                              <button onClick={() => { navigator.clipboard.writeText(m.content); setCopiedIndex(i); setTimeout(() => setCopiedIndex(null), 2000); }}
+                                style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: 6, display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: copiedIndex === i ? GOLD : "rgba(255,255,255,0.2)", transition: "all 0.2s" }} title="Copiar">
+                                <span>{copiedIndex === i ? "✓" : "📋"}</span>
+                                <span>{copiedIndex === i ? "Copiado" : "Copiar"}</span>
+                              </button>
+                              {i === messages.length - 1 && (
+                                <button onClick={() => { const lastUserMsg = messages.filter(msg => msg.role === "user").pop(); if (lastUserMsg) { setMessages(messages.slice(0, -1)); setTimeout(() => setInput(lastUserMsg.content), 100); } }}
+                                  style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: 6, display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "rgba(255,255,255,0.2)", transition: "all 0.2s" }} title="Tentar novamente">
+                                  <span>🔄</span><span>Retry</span>
+                                </button>
+                              )}
+                              <button onClick={() => setFeedback(prev => ({ ...prev, [i]: prev[i] === "positive" ? "" : "positive" }))}
+                                style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: 6, fontSize: 11, color: feedback[i] === "positive" ? GOLD : "rgba(255,255,255,0.2)", transition: "all 0.2s" }} title="Bom">
+                                <span>👍</span>
+                              </button>
+                              <button onClick={() => setFeedback(prev => ({ ...prev, [i]: prev[i] === "negative" ? "" : "negative" }))}
+                                style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: 6, fontSize: 11, color: feedback[i] === "negative" ? "#EF4444" : "rgba(255,255,255,0.2)", transition: "all 0.2s" }} title="Ruim">
+                                <span>👎</span>
+                              </button>
+                            </div>
                           )}
                         </>
                       )}
