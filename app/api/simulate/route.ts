@@ -3,99 +3,214 @@ import { NextRequest, NextResponse } from "next/server";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SIMULATION_AGENTS: Record<string, string> = {
-  chinese_supplier: `You are a Chinese factory owner/supplier in Guangzhou. You speak from the perspective of a real Chinese manufacturer. You negotiate firmly but fairly. You try to maximize your margin while keeping the client. You know MOQ, production capacity, payment terms. You respond in a mix of business English with Chinese business culture (guanxi, face, patience). You sometimes push back, sometimes offer alternatives. Be realistic — not every deal is good for you.`,
+// STAGE 1: GRAPH BUILD — Extract entities from scenario
+async function buildGraph(scenario: string) {
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 1500,
+    system: `You are a business scenario analyst. Extract ALL entities and relationships from the scenario. Return ONLY valid JSON:
+{
+  "entities": [
+    { "name": "string", "type": "product|company|country|market|person|regulation|currency", "details": "string" }
+  ],
+  "relationships": [
+    { "from": "string", "to": "string", "type": "trades_with|imports_from|regulated_by|competes_with|ships_to|pays_tax_to", "details": "string" }
+  ],
+  "key_variables": ["string"],
+  "critical_questions": ["string"]
+}`,
+    messages: [{ role: "user", content: scenario }],
+  });
+  const text = (response.content[0] as any).text || "{}";
+  try { return JSON.parse(text.replace(/```json|```/g, "").trim()); }
+  catch { return { entities: [], relationships: [], key_variables: [], critical_questions: [] }; }
+}
 
-  customs_agent: `You are a customs/import specialist. You know HS codes, tariff rates, import regulations for Brazil, US, EU, and other markets. You calculate real duty rates, flag potential issues (anti-dumping, certifications needed, restricted items). You warn about common mistakes importers make. Be specific with numbers.`,
+// STAGE 2: ENV SETUP — Generate agent personas based on graph
+async function setupAgents(graph: any, scenario: string) {
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 2000,
+    system: `You are a simulation architect. Based on the entity graph, generate 4-6 specialized business agent personas for this simulation. Each agent represents a real player in the business scenario.
 
-  freight_forwarder: `You are an international freight forwarder. You know current shipping rates (sea, air, express), transit times, routes, incoterms. You calculate total logistics cost including all hidden fees (THC, customs clearance, inland transport, insurance, demurrage). You recommend the best option based on volume, weight, urgency and budget.`,
+Return ONLY valid JSON:
+{
+  "agents": [
+    {
+      "id": "string (snake_case)",
+      "name": "string (human name)",
+      "role": "string (e.g. 'Chinese Factory Owner in Guangzhou')",
+      "emoji": "string (1 emoji)",
+      "personality": "string (2-3 sentences: negotiation style, risk tolerance, priorities)",
+      "knowledge": "string (what this agent knows: pricing, regulations, routes, market data)",
+      "objectives": "string (what this agent wants from the deal)",
+      "bias": "string (natural bias: e.g. 'tends to overstate quality', 'conservative on timelines')"
+    }
+  ],
+  "simulation_parameters": {
+    "rounds": 3,
+    "scenario_type": "import|offshore|investment|market_entry|deal",
+    "time_horizon": "string (e.g. '45 days', '6 months')",
+    "key_metrics": ["total_cost", "timeline", "risk_level", "roi_estimate"]
+  }
+}
 
-  market_analyst: `You are a market analyst. You analyze competitive landscape, pricing, demand, and market viability for products in target markets. You use realistic data and estimates. You identify whether a product will sell, at what price point, and what the competition looks like. Be brutally honest — if the market is saturated, say so.`,
+Create agents that would NATURALLY be involved in this scenario. Be creative and realistic. Give them human names and real personalities. Not all agents should agree — some should push back, challenge assumptions, or present alternative views.`,
+    messages: [{ role: "user", content: `SCENARIO: ${scenario}\n\nENTITY GRAPH:\n${JSON.stringify(graph)}` }],
+  });
+  const text = (response.content[0] as any).text || "{}";
+  try { return JSON.parse(text.replace(/```json|```/g, "").trim()); }
+  catch { return { agents: [], simulation_parameters: { rounds: 3, scenario_type: "deal", time_horizon: "30 days", key_metrics: [] } }; }
+}
 
-  risk_assessor: `You are a risk analyst specializing in international trade. You identify everything that can go wrong: supplier fraud, quality issues, shipping delays, currency fluctuation, regulatory changes, political risk. You assign probability (low/medium/high) to each risk and suggest mitigation. You don't sugarcoat.`,
+// STAGE 3: SIMULATE — Run multi-round agent interactions
+async function runSimulation(agents: any[], scenario: string, graph: any, params: any, userContext: any) {
+  const allMessages: any[] = [];
 
-  tax_advisor: `You are an international tax specialist. You understand tax implications across jurisdictions — CFC rules, transfer pricing, withholding taxes, VAT/GST, customs duties. You calculate the effective tax burden of different structures and flag compliance requirements. Always note you're providing educational analysis, not legal advice.`,
-};
+  for (let round = 1; round <= Math.min(params.rounds || 3, 4); round++) {
+    for (const agent of agents) {
+      const previousDiscussion = allMessages
+        .map(m => `[${m.agentName} (${m.role}) — Round ${m.round}]: ${m.content}`)
+        .join("\n\n");
 
-type SimMessage = { agent: string; content: string; round: number };
+      const response = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: `You are ${agent.name}, ${agent.role}.
 
+PERSONALITY: ${agent.personality}
+KNOWLEDGE: ${agent.knowledge}
+OBJECTIVES: ${agent.objectives}
+BIAS: ${agent.bias}
+
+You are in round ${round} of ${params.rounds} of a business simulation.
+
+RULES:
+- Stay in character at ALL times. You ARE this person.
+- Reference specific numbers, prices, timelines, regulations when possible.
+- React to what other agents said — agree, disagree, challenge, build upon.
+- In round 1: Give your initial analysis and position.
+- In round 2+: Respond to others, refine your position, negotiate, challenge assumptions.
+- Be specific. Real numbers. Real timelines. Real risks.
+- If you disagree with another agent, say so directly and explain why.
+- Speak in the user's language (Portuguese if scenario is in Portuguese).`,
+        messages: [{
+          role: "user",
+          content: `SCENARIO: ${scenario}\n\nENTITY GRAPH: ${JSON.stringify(graph)}\n\nUSER CONTEXT: ${JSON.stringify(userContext || {})}\n\nPREVIOUS DISCUSSION:\n${previousDiscussion || "This is the opening round. Present your initial analysis."}\n\nYour analysis for round ${round}:`
+        }],
+      });
+
+      const content = (response.content[0] as any).text || "";
+      allMessages.push({
+        agentId: agent.id,
+        agentName: agent.name,
+        role: agent.role,
+        emoji: agent.emoji,
+        content,
+        round,
+      });
+    }
+  }
+  return allMessages;
+}
+
+// STAGE 4: REPORT — Generate comprehensive analysis
+async function generateReport(scenario: string, graph: any, agents: any[], simulation: any[], params: any) {
+  const simText = simulation.map(m =>
+    `[${m.emoji} ${m.agentName} (${m.role}) — Round ${m.round}]:\n${m.content}`
+  ).join("\n\n---\n\n");
+
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 4096,
+    system: `You are Signux ReportAgent. Generate a comprehensive simulation report.
+
+RULES:
+- Be specific with ALL numbers — never say "varies" without giving a range
+- Use the ENTITY GRAPH for accurate relationships
+- Reference what specific agents said to support conclusions
+- Calculate all costs in USD AND BRL (use approximate rate 1 USD = 5.5 BRL)
+- The report must be actionable — reader should know exactly what to do next
+- Respond in the user's language`,
+    messages: [{
+      role: "user",
+      content: `SCENARIO: ${scenario}
+
+ENTITY GRAPH:
+${JSON.stringify(graph)}
+
+AGENTS IN SIMULATION:
+${agents.map((a: any) => `${a.emoji} ${a.name} — ${a.role}`).join("\n")}
+
+FULL SIMULATION (${simulation.length} interactions across ${params.rounds} rounds):
+${simText}
+
+Generate the report with EXACTLY these sections:
+
+## EXECUTIVE SUMMARY
+3-4 lines. What was simulated, key finding, recommendation.
+
+## COST BREAKDOWN
+Table format with ALL costs itemized. Include: product, freight, insurance, customs duty, VAT/taxes, clearance fees, inland transport, agent fees, bank fees, contingency. Show total in USD and BRL.
+
+## TIMELINE
+Week by week or phase by phase. From day 1 to completion. Include milestones and dependencies.
+
+## RISK MAP
+Each risk with:
+- Description
+- Probability: Low / Medium / High
+- Impact: Low / Medium / High
+- Mitigation strategy
+
+## THREE SCENARIOS
+### Optimistic
+Numbers, timeline, profit margin
+
+### Realistic
+Numbers, timeline, profit margin
+
+### Pessimistic
+Numbers, timeline, what goes wrong
+
+## KEY INSIGHTS FROM SIMULATION
+What the agents revealed that wasn't obvious. Disagreements. Unexpected risks. Hidden opportunities.
+
+## FINAL VERDICT
+### GO or NO-GO
+Clear recommendation with 3 reasons why.
+If GO: exact next steps (numbered, actionable)
+If NO-GO: what would need to change for it to become viable`
+    }],
+  });
+
+  return (response.content[0] as any).text || "";
+}
+
+// MAIN ENDPOINT
 export async function POST(req: NextRequest) {
   try {
     const { scenario, context } = await req.json();
 
-    // Step 1: Analyze scenario and determine which agents are needed
-    const planResponse = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 500,
-      system: `You are a simulation planner. Given a business scenario, determine which agents should participate in the simulation. Available agents: chinese_supplier, customs_agent, freight_forwarder, market_analyst, risk_assessor, tax_advisor. Respond in JSON format: { "agents": ["agent1", "agent2"], "rounds": 3, "summary": "brief description of what will be simulated" }`,
-      messages: [{ role: "user", content: scenario }],
-    });
-
-    const planText = (planResponse.content[0] as any).text || "";
-    let plan;
-    try {
-      plan = JSON.parse(planText.replace(/```json|```/g, "").trim());
-    } catch {
-      plan = { agents: ["market_analyst", "risk_assessor"], rounds: 2, summary: "General analysis" };
-    }
-
-    // Step 2: Run simulation rounds
-    const simMessages: SimMessage[] = [];
-    let conversationContext = `SCENARIO: ${scenario}\n\nUSER CONTEXT: ${JSON.stringify(context || {})}\n\n`;
-
-    for (let round = 1; round <= Math.min(plan.rounds || 3, 4); round++) {
-      for (const agentId of plan.agents) {
-        const agentPrompt = SIMULATION_AGENTS[agentId];
-        if (!agentPrompt) continue;
-
-        const previousDiscussion = simMessages.map(m => `[${m.agent} - Round ${m.round}]: ${m.content}`).join("\n\n");
-
-        const response = await client.messages.create({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 800,
-          system: agentPrompt + `\n\nYou are in round ${round} of a simulation. Consider what other agents have said and build on it. Be specific with numbers, timelines, and recommendations. Respond in the user's language (Portuguese if scenario is in Portuguese).`,
-          messages: [{
-            role: "user",
-            content: `${conversationContext}\n\nPREVIOUS DISCUSSION:\n${previousDiscussion || "This is the first round."}\n\nProvide your analysis for round ${round}. Be specific, use real numbers and timelines.`,
-          }],
-        });
-
-        const content = (response.content[0] as any).text || "";
-        simMessages.push({ agent: agentId, content, round });
-      }
-    }
-
-    // Step 3: Generate final synthesis
-    const synthesisPrompt = `You are Signux AI synthesizer. Based on the multi-agent simulation below, create a comprehensive final report.
-
-SCENARIO: ${scenario}
-
-SIMULATION RESULTS:
-${simMessages.map(m => `[${m.agent} - Round ${m.round}]:\n${m.content}`).join("\n\n---\n\n")}
-
-Create a report with these sections:
-1. EXECUTIVE SUMMARY (3-4 lines)
-2. TOTAL COST BREAKDOWN (table format if applicable)
-3. TIMELINE (day by day or week by week)
-4. RISK MAP (each risk with probability: low/medium/high and mitigation)
-5. THREE SCENARIOS: Optimistic / Realistic / Pessimistic (with numbers)
-6. FINAL RECOMMENDATION: GO or NO-GO with clear justification
-
-Be specific. Use numbers. No fluff. Respond in the user's language.`;
-
-    const synthesis = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4096,
-      system: synthesisPrompt,
-      messages: [{ role: "user", content: "Generate the final simulation report." }],
-    });
-
-    const report = (synthesis.content[0] as any).text || "";
+    const graph = await buildGraph(scenario);
+    const { agents, simulation_parameters } = await setupAgents(graph, scenario);
+    const simulation = await runSimulation(agents, scenario, graph, simulation_parameters, context);
+    const report = await generateReport(scenario, graph, agents, simulation, simulation_parameters);
 
     return NextResponse.json({
-      plan,
-      simulation: simMessages,
+      stages: {
+        graph,
+        agents,
+        simulation_parameters,
+      },
+      simulation,
       report,
+      metadata: {
+        total_interactions: simulation.length,
+        rounds: simulation_parameters.rounds,
+        agents_count: agents.length,
+        timestamp: new Date().toISOString(),
+      }
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
