@@ -99,7 +99,7 @@ export default function Home() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  }, [messages]);
 
   const send = async (text?: string) => {
     const msg = text || input.trim();
@@ -110,6 +110,9 @@ export default function Home() {
     setInput("");
     setLoading(true);
 
+    const assistantMsg: Message = { role: "assistant", content: "" };
+    setMessages([...newMessages, assistantMsg]);
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -117,44 +120,47 @@ export default function Home() {
         body: JSON.stringify({ messages: newMessages, agent, profile: getProfile(), rates }),
       });
 
-      if (!res.body) throw new Error("No stream");
-
-      const reader = res.body.getReader();
+      const reader = res.body?.getReader();
       const decoder = new TextDecoder();
-      let assistantContent = "";
-      let buffer = "";
+      let fullText = "";
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const data = JSON.parse(line.slice(6));
-            if (data.type === "text") {
-              assistantContent += data.text;
-              setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
-            } else if (data.type === "done") {
-              setTokenCount(prev => prev + (data.tokens || 0));
-            } else if (data.type === "error") {
-              if (!assistantContent) {
-                assistantContent = data.error || "Erro ao processar.";
-                setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
+          const chunk = decoder.decode(value);
+          const lines = chunk.split("\n").filter(l => l.trim());
+
+          for (const line of lines) {
+            try {
+              const parsed = JSON.parse(line);
+              if (parsed.text) {
+                fullText += parsed.text;
+                setMessages(prev => {
+                  const updated = [...prev];
+                  updated[updated.length - 1] = { role: "assistant", content: fullText };
+                  return updated;
+                });
               }
-            }
-          } catch {}
+              if (parsed.error) {
+                fullText = "Erro: " + parsed.error;
+                setMessages(prev => {
+                  const updated = [...prev];
+                  updated[updated.length - 1] = { role: "assistant", content: fullText };
+                  return updated;
+                });
+              }
+            } catch {}
+          }
         }
       }
-
-      if (!assistantContent) {
-        setMessages([...newMessages, { role: "assistant", content: "Erro ao processar." }]);
-      }
     } catch {
-      setMessages([...newMessages, { role: "assistant", content: "Erro de conexão. Tente novamente." }]);
+      setMessages(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { role: "assistant", content: "Erro de conexão. Tente novamente." };
+        return updated;
+      });
     }
     setLoading(false);
     inputRef.current?.focus();
@@ -678,7 +684,14 @@ export default function Home() {
                         ...(m.role === "user" ? { whiteSpace: "pre-wrap" as const } : {}),
                         wordBreak: "break-word", fontFamily: SANS,
                       }}>
-                      {m.role === "user" ? m.content : <ReactMarkdown components={MD_COMPONENTS}>{m.content}</ReactMarkdown>}
+                      {m.role === "user" ? m.content : (
+                        <>
+                          <ReactMarkdown components={MD_COMPONENTS}>{m.content}</ReactMarkdown>
+                          {loading && i === messages.length - 1 && (
+                            <span style={{ display: "inline-block", width: 2, height: 16, background: GOLD, marginLeft: 2, animation: "blink 1s infinite", verticalAlign: "text-bottom" }} />
+                          )}
+                        </>
+                      )}
                     </div>
                   ))}
                   {loading && (

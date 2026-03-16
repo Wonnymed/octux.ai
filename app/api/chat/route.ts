@@ -122,28 +122,29 @@ export async function POST(req: NextRequest) {
 
     const fullSystemPrompt = systemPrompt + contextPrefix;
 
-    const stream = client.messages.stream({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4096,
-      system: fullSystemPrompt,
-      messages: messages.map((m: any) => ({ role: m.role, content: m.content })),
-    });
-
-    const encoder = new TextEncoder();
-
     const readable = new ReadableStream({
       async start(controller) {
         try {
-          stream.on("text", (text) => {
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "text", text })}\n\n`));
+          const encoder = new TextEncoder();
+          const response = await client.messages.stream({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 4096,
+            system: fullSystemPrompt,
+            messages: messages.map((m: any) => ({ role: m.role, content: m.content })),
           });
 
-          const finalMessage = await stream.finalMessage();
-          const usage = finalMessage.usage;
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done", tokens: (usage?.input_tokens || 0) + (usage?.output_tokens || 0) })}\n\n`));
+          for await (const event of response) {
+            if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+              const chunk = JSON.stringify({ text: event.delta.text }) + "\n";
+              controller.enqueue(encoder.encode(chunk));
+            }
+          }
+
+          controller.enqueue(encoder.encode(JSON.stringify({ done: true }) + "\n"));
           controller.close();
-        } catch (err: any) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: err.message })}\n\n`));
+        } catch (error: any) {
+          const errChunk = JSON.stringify({ error: error.message }) + "\n";
+          controller.enqueue(new TextEncoder().encode(errChunk));
           controller.close();
         }
       },
@@ -151,9 +152,8 @@ export async function POST(req: NextRequest) {
 
     return new Response(readable, {
       headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
+        "Content-Type": "text/plain; charset=utf-8",
+        "Transfer-Encoding": "chunked",
       },
     });
   } catch (error: any) {
