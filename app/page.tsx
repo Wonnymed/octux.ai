@@ -62,9 +62,16 @@ const MD_COMPONENTS = {
   ul: ({ children }: any) => <ul style={{ paddingLeft: 20, marginBottom: 10 }}>{children}</ul>,
   ol: ({ children }: any) => <ol style={{ paddingLeft: 20, marginBottom: 10 }}>{children}</ol>,
   li: ({ children }: any) => <li style={{ marginBottom: 6, lineHeight: 1.7 }}>{children}</li>,
-  strong: ({ children }: any) => <strong style={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>{children}</strong>,
-  code: ({ children }: any) => <code style={{ background: "rgba(201,168,76,0.08)", padding: "2px 6px", borderRadius: 4, fontSize: 13, fontFamily: "'JetBrains Mono', monospace", color: GOLD }}>{children}</code>,
+  strong: ({ children }: any) => <strong style={{ color: "rgba(255,255,255,0.95)", fontWeight: 500 }}>{children}</strong>,
+  code: ({ children, className }: any) => {
+    const isBlock = className?.includes("language-");
+    if (isBlock) return <pre style={{ background: "rgba(201,168,76,0.06)", padding: 16, borderRadius: 8, overflow: "auto", marginBottom: 12 }}><code style={{ fontSize: 13, fontFamily: "'JetBrains Mono', monospace", color: GOLD }}>{children}</code></pre>;
+    return <code style={{ background: "rgba(201,168,76,0.08)", padding: "2px 6px", borderRadius: 4, fontSize: 13, fontFamily: "'JetBrains Mono', monospace", color: GOLD }}>{children}</code>;
+  },
   blockquote: ({ children }: any) => <blockquote style={{ borderLeft: `2px solid rgba(201,168,76,0.3)`, paddingLeft: 16, margin: "12px 0", color: "rgba(255,255,255,0.5)" }}>{children}</blockquote>,
+  table: ({ children }: any) => <div style={{ overflowX: "auto", marginBottom: 12 }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>{children}</table></div>,
+  th: ({ children }: any) => <th style={{ textAlign: "left" as const, padding: "8px 12px", borderBottom: "1px solid rgba(201,168,76,0.2)", color: GOLD, fontWeight: 500, fontSize: 12 }}>{children}</th>,
+  td: ({ children }: any) => <td style={{ padding: "8px 12px", borderBottom: "1px solid rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.7)" }}>{children}</td>,
 };
 
 export default function Home() {
@@ -123,28 +130,50 @@ export default function Home() {
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
       let fullText = "";
+      let buffer = "";
 
       if (reader) {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value);
-          const lines = chunk.split("\n").filter(l => l.trim());
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
 
           for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
             try {
-              const parsed = JSON.parse(line);
-              if (parsed.text) {
-                fullText += parsed.text;
+              const data = JSON.parse(line.slice(6));
+
+              if (data.type === "text") {
+                fullText += data.text;
                 setMessages(prev => {
                   const updated = [...prev];
                   updated[updated.length - 1] = { role: "assistant", content: fullText };
                   return updated;
                 });
-              }
-              if (parsed.error) {
-                fullText = "Erro: " + parsed.error;
+              } else if (data.type === "tool") {
+                fullText += `\n\n---\n**🔧 ${data.name.replace(/_/g, " ")}**\n`;
+                if (data.result?.breakdown) {
+                  fullText += "\n| Item | Valor |\n|---|---|\n";
+                  Object.entries(data.result.breakdown).forEach(([k, v]) => {
+                    fullText += `| ${k.replace(/_/g, " ")} | ${v} |\n`;
+                  });
+                } else if (data.result && !data.result.error) {
+                  Object.entries(data.result).forEach(([k, v]) => {
+                    if (k !== "note") fullText += `- **${k.replace(/_/g, " ")}**: ${v}\n`;
+                  });
+                  if (data.result.note) fullText += `\n> ${data.result.note}\n`;
+                }
+                fullText += "\n---\n\n";
+                setMessages(prev => {
+                  const updated = [...prev];
+                  updated[updated.length - 1] = { role: "assistant", content: fullText };
+                  return updated;
+                });
+              } else if (data.type === "error") {
+                fullText += `\n\nErro: ${data.message}`;
                 setMessages(prev => {
                   const updated = [...prev];
                   updated[updated.length - 1] = { role: "assistant", content: fullText };
