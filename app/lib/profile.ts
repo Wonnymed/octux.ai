@@ -1,6 +1,8 @@
 export type UserProfile = {
   name: string;
+  email: string;
   taxResidence: string;
+  language: string;
   operations: string[];
   structures: string[];
   monthlyVolume: string;
@@ -18,7 +20,7 @@ export function getProfile(): UserProfile | null {
 }
 
 export function updateProfile(updates: Partial<UserProfile>) {
-  const current = getProfile() || { name: "", taxResidence: "", operations: [], structures: [], monthlyVolume: "", languages: [], interests: [], history: [] };
+  const current = getProfile() || { name: "", email: "", taxResidence: "", language: "en", operations: [], structures: [], monthlyVolume: "", languages: [], interests: [], history: [] };
   const updated = { ...current, ...updates };
   localStorage.setItem(PROFILE_KEY, JSON.stringify(updated));
   return updated;
