@@ -342,8 +342,39 @@ export default function Home() {
     e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
   };
 
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [hasSentFirst, setHasSentFirst] = useState(false);
+  const messagesAreaRef = useRef<HTMLDivElement>(null);
+
   const activeAgent = AGENTS.find(a => a.id === agent) || AGENTS[0];
   const canSubmitOnboard = onboardName.trim() && onboardCountry.trim();
+
+  const getGreeting = () => {
+    const h = new Date().getHours();
+    if (h < 6) return "Boa madrugada";
+    if (h < 12) return "Bom dia";
+    if (h < 18) return "Boa tarde";
+    return "Boa noite";
+  };
+
+  const getTimestamp = () => {
+    const now = new Date();
+    return `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+  };
+
+  const userInitials = profileName ? profileName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "OP";
+
+  // Scroll-to-bottom visibility
+  useEffect(() => {
+    const area = messagesAreaRef.current;
+    if (!area) return;
+    const onScroll = () => {
+      const distFromBottom = area.scrollHeight - area.scrollTop - area.clientHeight;
+      setShowScrollBtn(distFromBottom > 200);
+    };
+    area.addEventListener("scroll", onScroll);
+    return () => area.removeEventListener("scroll", onScroll);
+  }, [messages.length]);
 
   /* ══════════════════════════════════════════════════════ */
   /* ONBOARDING FULLSCREEN                                  */
@@ -653,17 +684,24 @@ export default function Home() {
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       {sidebarOpen && (
-        <div onClick={() => setSidebarOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 40 }} />
+        <div onClick={() => setSidebarOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", zIndex: 40, animation: "fadeIn 0.2s ease" }} />
       )}
 
-      {/* Sidebar */}
-      <aside className={`sidebar${sidebarOpen ? " open" : ""}`} style={{ width: 260, background: "#0A0A0A", borderRight: "1px solid rgba(255,255,255,0.06)", padding: 20, flexShrink: 0, display: "flex", flexDirection: "column", zIndex: 50 }}>
-        <div style={{ fontSize: 20, letterSpacing: "0.25em", color: GOLD, fontFamily: SERIF, fontWeight: 300 }}>SIGNUX</div>
-        <div style={{ fontSize: 9, letterSpacing: "0.12em", color: "rgba(255,255,255,0.2)", textTransform: "uppercase", marginTop: 4, marginBottom: 32 }}>Operational Intelligence</div>
-        <div style={{ height: 1, background: "rgba(255,255,255,0.04)", marginBottom: 24 }} />
+      {/* ═══ SIDEBAR ═══ */}
+      <aside className={`sidebar${sidebarOpen ? " open" : ""}`} style={{ width: 270, background: "#080808", borderRight: "1px solid rgba(255,255,255,0.05)", padding: "20px 16px", flexShrink: 0, display: "flex", flexDirection: "column", zIndex: 50 }}>
+        {/* Logo */}
+        <div style={{ padding: "0 4px", marginBottom: 28 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+            <div style={{ width: 24, height: 24, borderRadius: 6, background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 11, color: GOLD, fontFamily: SERIF, fontWeight: 500 }}>S</span>
+            </div>
+            <span style={{ fontSize: 17, letterSpacing: "0.2em", color: GOLD, fontFamily: SERIF, fontWeight: 300 }}>SIGNUX</span>
+          </div>
+          <div style={{ fontSize: 9, letterSpacing: "0.1em", color: "rgba(255,255,255,0.12)", textTransform: "uppercase", marginLeft: 34 }}>Operational Intelligence</div>
+        </div>
 
         {/* Mode toggle */}
-        <div style={{ display: "flex", marginBottom: 24, borderRadius: 8, overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ display: "flex", marginBottom: 20, borderRadius: 8, overflow: "hidden", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
           <button onClick={() => setMode("chat")}
             style={{ flex: 1, padding: "10px 0", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", background: mode === "chat" ? "rgba(201,168,76,0.06)" : "transparent", color: mode === "chat" ? GOLD : "rgba(255,255,255,0.2)", border: "none", cursor: "pointer", fontFamily: SANS, transition: "all 0.2s" }}>
             Chat
@@ -674,25 +712,25 @@ export default function Home() {
           </button>
         </div>
 
+        <div style={{ height: 1, background: "rgba(255,255,255,0.04)", marginBottom: 16 }} />
+
         {mode === "chat" && (
           <>
-            <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", textTransform: "uppercase", marginBottom: 16 }}>Agents</div>
-            <div style={{ flex: 1 }}>
-              {AGENTS.map((a, idx) => (
-                <div key={a.id}>
-                  <div onClick={() => { setAgent(a.id); setSidebarOpen(false); }}
-                    style={{ padding: "10px 12px", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 12, transition: "all 0.2s",
-                      background: agent === a.id ? "rgba(201,168,76,0.04)" : "transparent",
-                      border: agent === a.id ? "1px solid rgba(201,168,76,0.08)" : "1px solid transparent" }}
-                    onMouseEnter={e => { if (agent !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
-                    onMouseLeave={e => { if (agent !== a.id) e.currentTarget.style.background = "transparent"; }}>
-                    <span style={{ fontSize: 18 }}>{a.icon}</span>
-                    <div>
-                      <div style={{ fontSize: 13, color: "white" }}>{a.label}</div>
-                      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>{a.desc}</div>
-                    </div>
+            <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.12)", textTransform: "uppercase", marginBottom: 12, padding: "0 4px" }}>Agents</div>
+            <div style={{ flex: 1, overflowY: "auto" }}>
+              {AGENTS.map(a => (
+                <div key={a.id} onClick={() => { setAgent(a.id); setSidebarOpen(false); }}
+                  style={{ padding: "10px 12px", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 12, transition: "all 0.2s", marginBottom: 2, position: "relative",
+                    background: agent === a.id ? "rgba(201,168,76,0.04)" : "transparent",
+                    borderLeft: agent === a.id ? `2px solid ${GOLD}` : "2px solid transparent",
+                  }}
+                  onMouseEnter={e => { if (agent !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
+                  onMouseLeave={e => { if (agent !== a.id) e.currentTarget.style.background = "transparent"; }}>
+                  <span style={{ fontSize: 18, width: 28, textAlign: "center" }}>{a.icon}</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: agent === a.id ? "white" : "rgba(255,255,255,0.7)", fontWeight: agent === a.id ? 500 : 400 }}>{a.label}</div>
+                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.desc}</div>
                   </div>
-                  {idx < AGENTS.length - 1 && <div style={{ height: 1, background: "rgba(255,255,255,0.03)", margin: "2px 12px" }} />}
                 </div>
               ))}
             </div>
@@ -701,153 +739,228 @@ export default function Home() {
 
         {mode === "simulate" && (
           <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", textTransform: "uppercase", marginBottom: 16 }}>Pipeline</div>
+            <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.12)", textTransform: "uppercase", marginBottom: 12, padding: "0 4px" }}>Pipeline</div>
             {SIM_STAGES.map((s, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0" }}>
-                <span style={{ fontSize: 14 }}>{s.icon}</span>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px" }}>
+                <span style={{ fontSize: 14, width: 28, textAlign: "center" }}>{s.icon}</span>
                 <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{s.label}</span>
               </div>
             ))}
           </div>
         )}
 
-        <button
-          onClick={() => { if (mode === "chat") { setMessages([]); } else { setSimResult(null); setSimScenario(""); setSimulating(false); } setSidebarOpen(false); }}
-          style={{ fontSize: 11, color: "rgba(255,255,255,0.15)", cursor: "pointer", padding: "8px 0", background: "none", border: "none", textAlign: "left", fontFamily: SANS, marginTop: "auto", transition: "color 0.2s" }}
-          onMouseEnter={e => (e.currentTarget.style.color = "rgba(201,168,76,0.5)")}
-          onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.15)")}>
-          {mode === "chat" ? "Nova conversa" : "Nova simulação"}
-        </button>
+        {/* Bottom section */}
+        <div style={{ marginTop: "auto", borderTop: "1px solid rgba(255,255,255,0.04)", paddingTop: 12 }}>
+          <button
+            onClick={() => { if (mode === "chat") { setMessages([]); setHasSentFirst(false); } else { setSimResult(null); setSimScenario(""); setSimulating(false); } setSidebarOpen(false); addToast(mode === "chat" ? "Nova conversa" : "Nova simulação", "info"); }}
+            style={{ width: "100%", fontSize: 11, color: "rgba(255,255,255,0.2)", cursor: "pointer", padding: "8px 12px", background: "none", border: "1px solid rgba(255,255,255,0.04)", borderRadius: 8, textAlign: "left", fontFamily: SANS, transition: "all 0.2s", marginBottom: 12 }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(201,168,76,0.1)"; e.currentTarget.style.color = "rgba(255,255,255,0.4)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "rgba(255,255,255,0.2)"; }}>
+            + {mode === "chat" ? "Nova conversa" : "Nova simulação"}
+          </button>
+          {/* User profile */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 4px" }}>
+            <div style={{ width: 28, height: 28, borderRadius: "50%", border: `1px solid rgba(201,168,76,0.2)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: GOLD, fontWeight: 500, flexShrink: 0 }}>{userInitials}</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profileName || "Operador"}</div>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.15)" }}>v0.1 Beta</div>
+            </div>
+          </div>
+        </div>
       </aside>
 
-      {/* Main */}
+      {/* ═══ MAIN ═══ */}
       <main style={{ flex: 1, display: "flex", flexDirection: "column", background: "#0A0A0A", minWidth: 0 }}>
         {/* Header */}
-        <header style={{ padding: "14px 24px", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <header style={{ padding: "12px 24px", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button onClick={() => setSidebarOpen(true)} className="mobile-menu-btn" style={{ display: "none", background: "none", border: "none", color: "white", fontSize: 18, cursor: "pointer", padding: 4 }}>☰</button>
-            {mode === "chat" ? (
+            {/* Breadcrumb */}
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.15)" }}>SIGNUX</span>
+            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.1)" }}>›</span>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>{mode === "chat" ? "Chat" : "Simulate"}</span>
+            {mode === "chat" && (
               <>
-                <span style={{ fontSize: 16 }}>{activeAgent.icon}</span>
-                <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>{activeAgent.label}</span>
+                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.1)" }}>›</span>
+                <span style={{ fontSize: 14, marginRight: 2 }}>{activeAgent.icon}</span>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>{activeAgent.label}</span>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", marginLeft: 4, animation: "goldPulse 3s ease-in-out infinite" }} />
               </>
-            ) : (
+            )}
+            {mode === "simulate" && (
               <>
-                <span style={{ fontSize: 16 }}>◉</span>
-                <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>Simulation Engine</span>
+                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.1)" }}>›</span>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Engine</span>
               </>
             )}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {tokenCount > 0 && <div className="rates-ticker" style={{ fontSize: 9, color: "rgba(255,255,255,0.1)" }}>{tokenCount.toLocaleString()} tokens</div>}
-            {rates && <div className="rates-ticker" style={{ fontSize: 9, color: "rgba(255,255,255,0.12)" }}>USD/BRL {rates.USDBRL?.toFixed(2)} · USD/CNY {rates.USDCNY?.toFixed(2)} · USD/HKD {rates.USDHKD?.toFixed(2)}</div>}
+            {rates && <div className="rates-ticker" style={{ fontSize: 9, color: "rgba(255,255,255,0.12)", padding: "3px 8px", borderRadius: 6, background: "rgba(255,255,255,0.02)" }}>USD/BRL {rates.USDBRL?.toFixed(2)} · USD/CNY {rates.USDCNY?.toFixed(2)}</div>}
             {mode === "chat" && messages.length > 0 && (
-              <button onClick={() => { const text = messages.map(m => (m.role === "user" ? "Você: " : "Signux: ") + m.content).join("\n\n---\n\n"); const blob = new Blob([text], { type: "text/plain" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "signux-conversa.txt"; a.click(); }}
+              <button onClick={() => { const text = messages.map(m => (m.role === "user" ? "Você: " : "Signux: ") + m.content).join("\n\n---\n\n"); const blob = new Blob([text], { type: "text/plain" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "signux-conversa.txt"; a.click(); addToast("Conversa exportada", "success"); }}
                 style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "rgba(255,255,255,0.15)", padding: 4, transition: "color 0.2s" }}
-                onMouseEnter={e => (e.currentTarget.style.color = GOLD)} onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.15)")} title="Salvar conversa">↓</button>
+                onMouseEnter={e => (e.currentTarget.style.color = GOLD)} onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.15)")} title="Exportar conversa">↓</button>
             )}
             <button onClick={() => setShowShortcuts(true)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6, padding: "2px 6px", cursor: "pointer", fontSize: 11, color: "rgba(255,255,255,0.15)", fontFamily: "'JetBrains Mono', monospace", transition: "all 0.2s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(201,168,76,0.15)"; e.currentTarget.style.color = GOLD; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "rgba(255,255,255,0.15)"; }}
               title="Atalhos de teclado">?</button>
-            <span style={{ fontSize: 9, padding: "3px 10px", borderRadius: 12, background: "rgba(201,168,76,0.08)", color: GOLD, letterSpacing: "0.08em", textTransform: "uppercase" }}>Beta</span>
           </div>
         </header>
 
         {/* Content */}
         {mode === "simulate" ? renderSimulation() : (
           <>
-            <div style={{ flex: 1, overflowY: "auto", padding: 24, display: "flex", flexDirection: "column" }} className="messages-area">
+            <div ref={messagesAreaRef} style={{ flex: 1, overflowY: "auto", padding: 24, display: "flex", flexDirection: "column", position: "relative" }} className="messages-area">
               {messages.length === 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, textAlign: "center", maxWidth: 600, margin: "0 auto", width: "100%" }}>
-                  <div className="welcome-title" style={{ fontSize: 28, fontFamily: SERIF, fontWeight: 300, color: "white", marginBottom: 4, animation: "fadeInUp 0.5s ease-out" }}>Olá, {profileName || "Operador"}.</div>
-                  <div style={{ fontSize: 14, color: "rgba(255,255,255,0.2)", marginBottom: 48, animation: "fadeInUp 0.6s ease-out" }}>O que quer resolver hoje?</div>
-                  <div className="suggestions-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%" }}>
+                /* ═══ WELCOME STATE ═══ */
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, textAlign: "center", maxWidth: 640, margin: "0 auto", width: "100%" }}>
+                  <div className="welcome-title" style={{ fontSize: 32, fontFamily: SERIF, fontWeight: 300, color: "white", marginBottom: 6, animation: "fadeInUp 0.5s ease-out" }}>
+                    {getGreeting()}, {profileName || "Operador"}.
+                  </div>
+                  <div style={{ fontSize: 14, color: "rgba(255,255,255,0.2)", marginBottom: 20, animation: "fadeInUp 0.6s ease-out" }}>
+                    Seus agentes estão prontos.
+                  </div>
+                  {/* Agent icons */}
+                  <div style={{ display: "flex", gap: 6, marginBottom: 40, animation: "fadeInUp 0.7s ease-out" }}>
+                    {AGENTS.filter(a => a.id !== "auto").map(a => (
+                      <div key={a.id} onClick={() => setAgent(a.id)}
+                        style={{ width: 36, height: 36, borderRadius: 10, background: agent === a.id ? "rgba(201,168,76,0.08)" : "rgba(255,255,255,0.03)", border: agent === a.id ? "1px solid rgba(201,168,76,0.15)" : "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, cursor: "pointer", transition: "all 0.2s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(201,168,76,0.15)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = agent === a.id ? "rgba(201,168,76,0.15)" : "rgba(255,255,255,0.05)"; e.currentTarget.style.transform = "translateY(0)"; }}
+                        title={a.label}>
+                        {a.icon}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Quick Actions */}
+                  <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.1)", textTransform: "uppercase", marginBottom: 12, animation: "fadeInUp 0.8s ease-out" }}>Quick Actions</div>
+                  <div className="suggestions-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", animation: "fadeInUp 0.9s ease-out" }}>
                     {SUGGESTIONS.map(s => (
-                      <div key={s} onClick={() => send(s)}
-                        style={{ padding: "16px 20px", borderRadius: 10, background: "transparent", border: "1px solid rgba(255,255,255,0.04)", fontSize: 13, color: "rgba(255,255,255,0.3)", cursor: "pointer", transition: "all 0.2s", textAlign: "left", lineHeight: 1.5 }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(201,168,76,0.1)"; e.currentTarget.style.color = "rgba(255,255,255,0.5)"; e.currentTarget.style.background = "rgba(201,168,76,0.02)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "rgba(255,255,255,0.3)"; e.currentTarget.style.background = "transparent"; }}>
+                      <div key={s} onClick={() => { send(s); setHasSentFirst(true); }}
+                        className="card-hover"
+                        style={{ padding: "16px 20px", borderRadius: 10, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", fontSize: 13, color: "rgba(255,255,255,0.35)", cursor: "pointer", textAlign: "left", lineHeight: 1.5 }}>
                         {s}
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 800, margin: "0 auto", width: "100%" }}>
+                /* ═══ MESSAGES ═══ */
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: 800, margin: "0 auto", width: "100%" }}>
                   {messages.map((m, i) => (
                     <div key={i}
-                      onMouseEnter={() => m.role === "assistant" && setHoveredMsg(i)}
+                      onMouseEnter={() => setHoveredMsg(i)}
                       onMouseLeave={() => setHoveredMsg(null)}
-                      style={{
-                        animation: "fadeInUp 0.3s ease-out",
-                        alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                        maxWidth: m.role === "user" ? "70%" : "80%",
-                        padding: m.role === "user" ? "14px 20px" : "20px 24px",
-                        borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                        background: m.role === "user" ? "rgba(201,168,76,0.06)" : "rgba(255,255,255,0.02)",
-                        border: m.role === "user" ? "1px solid rgba(201,168,76,0.08)" : "1px solid rgba(255,255,255,0.04)",
-                        fontSize: 14, lineHeight: m.role === "user" ? 1.7 : 1.8,
-                        color: m.role === "user" ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.75)",
-                        ...(m.role === "user" ? { whiteSpace: "pre-wrap" as const } : {}),
-                        wordBreak: "break-word", fontFamily: SANS,
-                      }}>
-                      {m.role === "user" ? m.content : (
-                        <>
-                          <ReactMarkdown components={MD_COMPONENTS}>{m.content}</ReactMarkdown>
-                          {loading && i === messages.length - 1 && (
-                            <span style={{ display: "inline-block", width: 2, height: 16, background: GOLD, marginLeft: 2, animation: "blink 1s infinite", verticalAlign: "text-bottom" }} />
-                          )}
-                          {!(loading && i === messages.length - 1) && m.content && (
-                            <div style={{ display: "flex", gap: 8, marginTop: 12, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.03)", opacity: hoveredMsg === i || feedback[i] ? 1 : 0, transition: "opacity 0.2s" }}>
-                              <button onClick={() => { navigator.clipboard.writeText(m.content); setCopiedIndex(i); addToast("Copiado!", "success"); setTimeout(() => setCopiedIndex(null), 2000); }}
-                                style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: 6, display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: copiedIndex === i ? GOLD : "rgba(255,255,255,0.2)", transition: "all 0.2s" }} title="Copiar">
-                                <span>{copiedIndex === i ? "✓" : "📋"}</span>
-                                <span>{copiedIndex === i ? "Copiado" : "Copiar"}</span>
-                              </button>
-                              {i === messages.length - 1 && (
-                                <button onClick={() => { const lastUserMsg = messages.filter(msg => msg.role === "user").pop(); if (lastUserMsg) { setMessages(messages.slice(0, -1)); setTimeout(() => setInput(lastUserMsg.content), 100); } }}
-                                  style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: 6, display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "rgba(255,255,255,0.2)", transition: "all 0.2s" }} title="Tentar novamente">
-                                  <span>🔄</span><span>Retry</span>
-                                </button>
+                      style={{ display: "flex", gap: 10, animation: "fadeInUp 0.3s ease-out", alignSelf: m.role === "user" ? "flex-end" : "flex-start", maxWidth: m.role === "user" ? "75%" : "85%", flexDirection: m.role === "user" ? "row-reverse" : "row", alignItems: "flex-start" }}>
+                      {/* Avatar */}
+                      <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 4,
+                        ...(m.role === "user"
+                          ? { border: "1px solid rgba(201,168,76,0.2)", fontSize: 10, color: GOLD, fontWeight: 500 }
+                          : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 14 }) }}>
+                        {m.role === "user" ? userInitials : activeAgent.icon}
+                      </div>
+                      {/* Bubble */}
+                      <div style={{ position: "relative", flex: 1 }}>
+                        <div style={{
+                          padding: m.role === "user" ? "12px 18px" : "16px 20px",
+                          borderRadius: m.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                          background: m.role === "user" ? "rgba(201,168,76,0.06)" : "rgba(255,255,255,0.02)",
+                          border: m.role === "user" ? "1px solid rgba(201,168,76,0.08)" : "1px solid rgba(255,255,255,0.04)",
+                          fontSize: 14, lineHeight: 1.8, fontFamily: SANS, wordBreak: "break-word" as const,
+                          color: m.role === "user" ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.75)",
+                          ...(m.role === "user" ? { whiteSpace: "pre-wrap" as const } : {}),
+                        }}>
+                          {m.role === "user" ? m.content : (
+                            <>
+                              <ReactMarkdown components={MD_COMPONENTS}>{m.content}</ReactMarkdown>
+                              {loading && i === messages.length - 1 && (
+                                <span style={{ display: "inline-block", width: 2, height: 16, background: GOLD, marginLeft: 2, animation: "blink 1s infinite", verticalAlign: "text-bottom" }} />
                               )}
-                              <button onClick={() => setFeedback(prev => ({ ...prev, [i]: prev[i] === "positive" ? "" : "positive" }))}
-                                style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: 6, fontSize: 11, color: feedback[i] === "positive" ? GOLD : "rgba(255,255,255,0.2)", transition: "all 0.2s" }} title="Bom">
-                                <span>👍</span>
-                              </button>
-                              <button onClick={() => setFeedback(prev => ({ ...prev, [i]: prev[i] === "negative" ? "" : "negative" }))}
-                                style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: 6, fontSize: 11, color: feedback[i] === "negative" ? "#EF4444" : "rgba(255,255,255,0.2)", transition: "all 0.2s" }} title="Ruim">
-                                <span>👎</span>
-                              </button>
-                            </div>
+                            </>
                           )}
-                        </>
-                      )}
+                        </div>
+                        {/* Timestamp on hover */}
+                        <div style={{ position: "absolute", bottom: -16, [m.role === "user" ? "right" : "left"]: 4, fontSize: 9, color: "rgba(255,255,255,0.12)", opacity: hoveredMsg === i ? 1 : 0, transition: "opacity 0.2s" }}>
+                          {getTimestamp()}
+                        </div>
+                        {/* Action bar for assistant */}
+                        {m.role === "assistant" && !(loading && i === messages.length - 1) && m.content && (
+                          <div style={{ display: "flex", gap: 4, marginTop: 6, opacity: hoveredMsg === i || feedback[i] ? 1 : 0, transition: "opacity 0.2s" }}>
+                            <button onClick={() => { navigator.clipboard.writeText(m.content); setCopiedIndex(i); addToast("Copiado!", "success"); setTimeout(() => setCopiedIndex(null), 2000); }}
+                              style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 6px", borderRadius: 4, display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: copiedIndex === i ? GOLD : "rgba(255,255,255,0.2)", transition: "all 0.2s" }}>
+                              {copiedIndex === i ? "✓ Copiado" : "📋 Copiar"}
+                            </button>
+                            {i === messages.length - 1 && (
+                              <button onClick={() => { const lastUserMsg = messages.filter(msg => msg.role === "user").pop(); if (lastUserMsg) { setMessages(messages.slice(0, -1)); setTimeout(() => setInput(lastUserMsg.content), 100); } }}
+                                style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 6px", borderRadius: 4, display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: "rgba(255,255,255,0.2)", transition: "all 0.2s" }}>
+                                🔄 Retry
+                              </button>
+                            )}
+                            <button onClick={() => setFeedback(prev => ({ ...prev, [i]: prev[i] === "positive" ? "" : "positive" }))}
+                              style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 6px", borderRadius: 4, fontSize: 10, color: feedback[i] === "positive" ? GOLD : "rgba(255,255,255,0.2)", transition: "all 0.2s" }}>👍</button>
+                            <button onClick={() => setFeedback(prev => ({ ...prev, [i]: prev[i] === "negative" ? "" : "negative" }))}
+                              style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 6px", borderRadius: 4, fontSize: 10, color: feedback[i] === "negative" ? "#EF4444" : "rgba(255,255,255,0.2)", transition: "all 0.2s" }}>👎</button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
-                  {loading && (
-                    <div style={{ alignSelf: "flex-start", padding: "20px 24px", borderRadius: "18px 18px 18px 4px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
-                      <div style={{ display: "flex", gap: 5 }}>
-                        {[0, 1, 2].map(i => (
-                          <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(201,168,76,0.4)", animation: `dotPulse 1.4s ease-in-out ${i * 0.2}s infinite` }} />
-                        ))}
+                  {/* Loading indicator */}
+                  {loading && messages[messages.length - 1]?.content === "" && (
+                    <div style={{ display: "flex", gap: 10, alignItems: "flex-start", animation: "fadeInUp 0.3s ease-out" }}>
+                      <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, animation: "goldPulse 2s ease-in-out infinite", marginTop: 4 }}>
+                        {activeAgent.icon}
+                      </div>
+                      <div style={{ padding: "12px 18px", borderRadius: "16px 16px 16px 4px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ display: "flex", gap: 4 }}>
+                          {[0, 1, 2].map(j => (
+                            <div key={j} style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(201,168,76,0.4)", animation: `dotPulse 1.4s ease-in-out ${j * 0.2}s infinite` }} />
+                          ))}
+                        </div>
+                        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>Analyzing...</span>
                       </div>
                     </div>
                   )}
                   <div ref={bottomRef} />
                 </div>
               )}
+              {/* Scroll to bottom */}
+              {showScrollBtn && messages.length > 0 && (
+                <button onClick={() => bottomRef.current?.scrollIntoView({ behavior: "smooth" })}
+                  style={{ position: "sticky", bottom: 16, alignSelf: "center", padding: "6px 14px", borderRadius: 20, background: "rgba(10,10,10,0.9)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)", fontSize: 11, cursor: "pointer", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", transition: "all 0.2s", animation: "fadeIn 0.2s ease", zIndex: 5 }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(201,168,76,0.15)"; e.currentTarget.style.color = GOLD; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "rgba(255,255,255,0.4)"; }}>
+                  ↓ Scroll to bottom
+                </button>
+              )}
             </div>
-            <div style={{ padding: "16px 24px", borderTop: "1px solid rgba(255,255,255,0.04)", flexShrink: 0 }} className="input-area">
-              <div style={{ display: "flex", gap: 10, alignItems: "flex-end", maxWidth: 800, margin: "0 auto", width: "100%" }}>
-                <textarea ref={inputRef} value={input} onChange={handleTextareaInput} onKeyDown={handleKey} placeholder="Pergunte qualquer coisa..." rows={1}
-                  style={{ flex: 1, resize: "none", padding: "14px 16px", borderRadius: 14, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", color: "white", fontSize: 14, outline: "none", fontFamily: SANS, transition: "border-color 0.2s" }}
-                  onFocus={e => (e.currentTarget.style.borderColor = "rgba(201,168,76,0.15)")} onBlur={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)")} />
-                <button onClick={() => send()} disabled={!input.trim() || loading} className="send-btn"
-                  style={{ width: 44, height: 44, borderRadius: 12, background: GOLD, border: "none", cursor: input.trim() && !loading ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", opacity: input.trim() && !loading ? 1 : 0.3, transition: "opacity 0.2s, transform 0.15s", flexShrink: 0 }}>
-                  <span style={{ fontSize: 20, color: "#0A0A0A", fontWeight: "bold", lineHeight: 1 }}>↑</span>
+            {/* ═══ INPUT AREA ═══ */}
+            <div style={{ padding: "12px 24px 16px", borderTop: "1px solid rgba(255,255,255,0.04)", flexShrink: 0 }} className="input-area">
+              <div style={{ display: "flex", gap: 8, alignItems: "flex-end", maxWidth: 800, margin: "0 auto", width: "100%" }}>
+                {/* Agent icon */}
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0, marginBottom: 2 }}>{activeAgent.icon}</div>
+                <div style={{ flex: 1, position: "relative" }}>
+                  <textarea ref={inputRef} value={input} onChange={handleTextareaInput} onKeyDown={e => { handleKey(e); if (e.key === "Enter" && !e.shiftKey) setHasSentFirst(true); }} placeholder="Pergunte qualquer coisa..." rows={1}
+                    style={{ width: "100%", resize: "none", padding: "12px 16px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", color: "white", fontSize: 14, outline: "none", fontFamily: SANS, transition: "border-color 0.2s" }}
+                    onFocus={e => (e.currentTarget.style.borderColor = "rgba(201,168,76,0.15)")} onBlur={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)")} />
+                  {/* Char count */}
+                  {input.length > 100 && (
+                    <span style={{ position: "absolute", right: 12, bottom: 8, fontSize: 9, color: input.length > 3000 ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.1)" }}>{input.length}</span>
+                  )}
+                </div>
+                <button onClick={() => { send(); setHasSentFirst(true); }} disabled={!input.trim() || loading} className="send-btn"
+                  style={{ width: 36, height: 36, borderRadius: 10, background: input.trim() && !loading ? GOLD : "rgba(255,255,255,0.04)", border: "none", cursor: input.trim() && !loading ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s", flexShrink: 0, marginBottom: 2 }}>
+                  <span style={{ fontSize: 16, color: input.trim() && !loading ? "#0A0A0A" : "rgba(255,255,255,0.15)", fontWeight: "bold", lineHeight: 1 }}>↑</span>
                 </button>
               </div>
+              {/* Keyboard hint */}
+              {!hasSentFirst && (
+                <div style={{ textAlign: "center", marginTop: 8, fontSize: 10, color: "rgba(255,255,255,0.08)", animation: "fadeIn 0.5s ease" }}>
+                  Enter to send · Shift+Enter for new line
+                </div>
+              )}
             </div>
           </>
         )}
@@ -862,9 +975,7 @@ export default function Home() {
           0%, 100% { opacity: 0.4; }
           50% { opacity: 1; }
         }
-        .sim-pulse-icon {
-          animation: simPulse 3s ease-in-out infinite;
-        }
+        .sim-pulse-icon { animation: simPulse 3s ease-in-out infinite; }
         @keyframes simPulse {
           0%, 100% { opacity: 0.3; }
           50% { opacity: 1; }
@@ -873,6 +984,7 @@ export default function Home() {
         .sim-textarea:focus { border-color: rgba(201,168,76,0.15) !important; }
         .sim-example-card:hover { border-color: rgba(201,168,76,0.08) !important; color: rgba(255,255,255,0.5) !important; }
         .send-btn:hover:not(:disabled) { transform: scale(1.05); }
+        .card-hover:hover { border-color: rgba(201,168,76,0.1) !important; color: rgba(255,255,255,0.5) !important; background: rgba(201,168,76,0.02) !important; transform: translateY(-1px); }
         @media (max-width: 768px) {
           .sidebar {
             position: fixed !important;
@@ -885,9 +997,9 @@ export default function Home() {
           .sidebar.open { transform: translateX(0) !important; }
           .mobile-menu-btn { display: block !important; }
           .messages-area { padding: 16px !important; }
-          .input-area { padding: 12px 16px !important; }
+          .input-area { padding: 10px 16px 14px !important; }
           .suggestions-grid { grid-template-columns: 1fr !important; }
-          .welcome-title { font-size: 24px !important; }
+          .welcome-title { font-size: 26px !important; }
           .rates-ticker { display: none !important; }
           .sim-input-container { padding: 0 !important; }
           .sim-result-outer { padding: 20px !important; }
@@ -902,7 +1014,7 @@ export default function Home() {
       {/* Keyboard shortcuts modal */}
       {showShortcuts && (
         <>
-          <div onClick={() => setShowShortcuts(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, animation: "fadeIn 0.2s ease" }} />
+          <div onClick={() => setShowShortcuts(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", zIndex: 100, animation: "fadeIn 0.2s ease" }} />
           <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 101, width: 360, padding: 28, borderRadius: 16, background: "#111", border: "1px solid rgba(255,255,255,0.08)", animation: "scaleIn 0.2s ease-out" }}>
             <div style={{ fontSize: 15, fontFamily: SERIF, color: GOLD, marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span>Atalhos de teclado</span>
