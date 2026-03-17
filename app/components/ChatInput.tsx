@@ -1,7 +1,7 @@
 "use client";
-import { useRef, useEffect, useState } from "react";
-import { ArrowUp, Paperclip, Search, X, FileText, FileCode } from "lucide-react";
-import { t } from "../lib/i18n";
+import { useRef, useEffect, useState, useCallback } from "react";
+import { ArrowUp, Paperclip, Search, X, FileText, FileCode, Mic, MicOff } from "lucide-react";
+import { t, getLanguage } from "../lib/i18n";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FILES = 10;
@@ -22,6 +22,38 @@ const CODE_EXTENSIONS = [
   ".java", ".go", ".rs", ".rb", ".php", ".swift", ".kt", ".sql",
   ".sh", ".bash", ".xml", ".yaml", ".yml",
 ];
+
+const LANG_TO_BCP47: Record<string, string> = {
+  "en": "en-US",
+  "pt-BR": "pt-BR",
+  "es": "es-ES",
+  "fr": "fr-FR",
+  "de": "de-DE",
+  "it": "it-IT",
+  "nl": "nl-NL",
+  "ru": "ru-RU",
+  "zh-Hans": "zh-CN",
+  "zh-Hant": "zh-TW",
+  "ja": "ja-JP",
+  "ko": "ko-KR",
+  "ar": "ar-SA",
+  "hi": "hi-IN",
+  "tr": "tr-TR",
+  "pl": "pl-PL",
+  "sv": "sv-SE",
+  "da": "da-DK",
+  "no": "nb-NO",
+  "fi": "fi-FI",
+  "cs": "cs-CZ",
+  "ro": "ro-RO",
+  "hu": "hu-HU",
+  "uk": "uk-UA",
+  "el": "el-GR",
+  "id": "id-ID",
+  "vi": "vi-VN",
+  "th": "th-TH",
+  "he": "he-IL",
+};
 
 export type FileAttachment = {
   file: File;
@@ -44,6 +76,11 @@ function isSupportedFile(file: File): boolean {
   if (IMAGE_TYPES.includes(file.type)) return true;
   if (file.type === PDF_TYPE) return true;
   return TEXT_EXTENSIONS.some(ext => file.name.toLowerCase().endsWith(ext));
+}
+
+function isSpeechSupported(): boolean {
+  return typeof window !== "undefined" &&
+    ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
 }
 
 type ChatInputProps = {
@@ -70,6 +107,11 @@ export default function ChatInput({
   const [dragging, setDragging] = useState(false);
   const dragCounter = useRef(0);
 
+  /* Voice state */
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const finalTranscriptRef = useRef("");
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -79,6 +121,15 @@ export default function ChatInput({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  /* Cleanup recognition on unmount */
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
+      }
+    };
   }, []);
 
   const handleKey = (e: React.KeyboardEvent) => {
@@ -94,6 +145,7 @@ export default function ChatInput({
     e.target.style.height = Math.min(e.target.scrollHeight, 160) + "px";
   };
 
+  /* ═══ File Processing ═══ */
   const processFiles = async (files: File[]) => {
     const newAttachments: FileAttachment[] = [];
     for (const file of files) {
@@ -136,7 +188,7 @@ export default function ChatInput({
     onAttachmentsChange(attachments.filter(a => a.id !== id));
   };
 
-  /* Drag & Drop */
+  /* ═══ Drag & Drop ═══ */
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -171,7 +223,7 @@ export default function ChatInput({
     }
   };
 
-  /* Paste */
+  /* ═══ Paste ═══ */
   const handlePaste = async (e: React.ClipboardEvent) => {
     const items = Array.from(e.clipboardData.items);
     const imageItems = items.filter(item => item.type.startsWith("image/"));
@@ -186,7 +238,84 @@ export default function ChatInput({
     }
   };
 
+  /* ═══ Voice Input ═══ */
+  const startListening = useCallback(() => {
+    if (!isSpeechSupported()) {
+      onToast?.(t("voice.not_supported"), "error");
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+
+    const bcp47 = LANG_TO_BCP47[getLanguage()] || "en-US";
+    recognition.lang = bcp47;
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.maxAlternatives = 1;
+
+    // Store the text that was in the input before we started
+    const baseText = value;
+    finalTranscriptRef.current = "";
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event: any) => {
+      let interim = "";
+      let final = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          final += transcript;
+        } else {
+          interim += transcript;
+        }
+      }
+
+      if (final) {
+        finalTranscriptRef.current += final;
+      }
+
+      const separator = baseText && (finalTranscriptRef.current || interim) ? " " : "";
+      const combined = baseText + separator + finalTranscriptRef.current + interim;
+      onChange(combined);
+    };
+
+    recognition.onerror = (event: any) => {
+      if (event.error === "not-allowed") {
+        onToast?.(t("voice.denied"), "error");
+      }
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  }, [value, onChange, onToast]);
+
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch {}
+    }
+    setIsListening(false);
+  }, []);
+
+  const toggleVoice = useCallback(() => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  }, [isListening, startListening, stopListening]);
+
   const canSend = (value.trim() || attachments.length > 0) && !loading;
+  const speechSupported = typeof window !== "undefined" && isSpeechSupported();
 
   return (
     <div
@@ -214,13 +343,21 @@ export default function ChatInput({
       {/* Pill container */}
       <div
         style={{
-          border: "1px solid var(--border-primary)",
+          border: isListening ? "1px solid var(--error)" : "1px solid var(--border-primary)",
           borderRadius: attachments.length > 0 ? "var(--radius-lg)" : "var(--radius-pill)",
           background: "var(--bg-input)",
           overflow: "hidden",
           transition: "border-color 0.15s, border-radius 0.15s",
         }}
       >
+        {/* Listening indicator bar */}
+        {isListening && (
+          <div style={{
+            height: 2, background: "var(--error)",
+            animation: "pulse 1.5s ease-in-out infinite",
+          }} />
+        )}
+
         {/* Attachment previews */}
         {attachments.length > 0 && (
           <div style={{
@@ -328,6 +465,22 @@ export default function ChatInput({
                 <Search size={16} />
               </button>
             )}
+            {/* Mic button */}
+            <button
+              onClick={toggleVoice}
+              style={{
+                background: "none", border: "none",
+                cursor: speechSupported ? "pointer" : "default",
+                padding: 6, borderRadius: "50%", display: "flex",
+                color: isListening ? "var(--error)" : "var(--text-tertiary)",
+                opacity: speechSupported ? 1 : 0.3,
+                transition: "color 0.15s",
+                animation: isListening ? "voicePulse 1.5s ease-in-out infinite" : "none",
+              }}
+              aria-label={t("voice.tooltip")}
+            >
+              {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+            </button>
           </div>
 
           {/* Textarea */}
@@ -337,7 +490,7 @@ export default function ChatInput({
             onChange={handleInput}
             onKeyDown={handleKey}
             onPaste={handlePaste}
-            placeholder={placeholder || t("chat.placeholder")}
+            placeholder={isListening ? t("voice.listening") : (placeholder || t("chat.placeholder"))}
             rows={1}
             style={{
               flex: 1,

@@ -204,6 +204,12 @@ const en: Record<string, string> = {
   "file.drop_here": "Drop files here",
   "file.uploading": "Uploading...",
 
+  // VOICE INPUT
+  "voice.not_supported": "Voice input is not supported in this browser. Try Chrome or Edge.",
+  "voice.denied": "Microphone access denied. Allow it in browser settings.",
+  "voice.listening": "Listening...",
+  "voice.tooltip": "Voice input",
+
   "intel.focus.geopolitics": "Geopolitics",
   "intel.focus.regulations": "Regulations",
   "intel.focus.markets": "Markets",
