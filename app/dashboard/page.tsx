@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { getProfile, updateProfile } from "../lib/profile";
 import {
@@ -82,7 +83,6 @@ const DEFAULT_ENTITY_COLOR = { bg: "var(--bg-secondary)", color: "var(--text-sec
 
 type Message = { role: "user" | "assistant"; content: string };
 
-const OPERATIONS = ["Import/Export", "Offshore/Holdings", "Crypto", "Digital Services", "E-commerce", "Investments", "Other"];
 
 const MD_COMPONENTS = {
   h1: ({ children }: any) => <h1 style={{ fontSize: 20, fontWeight: 600, fontFamily: "var(--font-sans)", marginBottom: 12, marginTop: 16, color: "var(--text-primary)" }}>{children}</h1>,
@@ -115,15 +115,13 @@ function StageIcon({ index, size = 20 }: { index: number; size?: number }) {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [agent, setAgent] = useState("auto");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [onboarded, setOnboarded] = useState<boolean | null>(null);
-  const [onboardName, setOnboardName] = useState("");
-  const [onboardCountry, setOnboardCountry] = useState("");
-  const [onboardOps, setOnboardOps] = useState<string[]>([]);
+  const [ready, setReady] = useState(false);
   const [rates, setRates] = useState<any>(null);
   const [profileName, setProfileName] = useState("");
   const [mode, setMode] = useState<"chat" | "simulate">("chat");
@@ -169,10 +167,23 @@ export default function Home() {
 
   useEffect(() => {
     const profile = getProfile();
-    setOnboarded(!!profile);
-    if (profile) setProfileName(profile.name);
+    if (!profile || !profile.name || !profile.email) {
+      router.replace("/");
+      return;
+    }
+    setProfileName(profile.name);
+    setReady(true);
     fetch("/api/rates").then(r => r.json()).then(setRates).catch(() => {});
-  }, []);
+    // Pick up welcome toast from onboarding
+    const toastData = sessionStorage.getItem("signux_welcome_toast");
+    if (toastData) {
+      sessionStorage.removeItem("signux_welcome_toast");
+      try {
+        const { message, type } = JSON.parse(toastData);
+        setTimeout(() => addToast(message, type), 300);
+      } catch {}
+    }
+  }, [router, addToast]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
@@ -301,7 +312,6 @@ export default function Home() {
   const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => { setInput(e.target.value); e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; };
 
   const activeAgent = AGENTS.find(a => a.id === agent) || AGENTS[0];
-  const canSubmitOnboard = onboardName.trim() && onboardCountry.trim();
   const userInitials = profileName ? profileName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "OP";
 
   useEffect(() => {
@@ -312,53 +322,7 @@ export default function Home() {
     return () => area.removeEventListener("scroll", onScroll);
   }, [messages.length]);
 
-  /* ══════════════════════════════════════════════════════ */
-  /* ONBOARDING                                             */
-  /* ══════════════════════════════════════════════════════ */
-  if (onboarded === false) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--bg-primary)" }}>
-        <div style={{ maxWidth: 440, width: "100%", padding: "48px 40px" }}>
-          <div style={{ fontSize: 18, letterSpacing: "0.2em", color: "var(--accent)", fontFamily: "var(--font-serif)", textAlign: "center", marginBottom: 4, fontWeight: 500 }}>SIGNUX</div>
-          <div style={{ fontSize: 13, color: "var(--text-tertiary)", textAlign: "center", marginBottom: 48 }}>Operational Intelligence</div>
-          <div style={{ width: 40, height: 1, background: "var(--border)", margin: "0 auto 48px" }} />
-          <div style={{ fontSize: 15, color: "var(--text-secondary)", textAlign: "center", marginBottom: 40 }}>Before we start, I need some context.</div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ marginBottom: 32 }}>
-              <label style={{ fontSize: 11, letterSpacing: "0.05em", color: "var(--text-tertiary)", textTransform: "uppercase", marginBottom: 8, display: "block" }}>Your name</label>
-              <input value={onboardName} onChange={e => setOnboardName(e.target.value)} placeholder="What should we call you?"
-                style={{ width: "100%", padding: "14px 0", background: "transparent", border: "none", borderBottom: "1px solid var(--border)", color: "var(--text-primary)", fontSize: 15, fontFamily: "var(--font-sans)", outline: "none" }} />
-            </div>
-            <div style={{ marginBottom: 32 }}>
-              <label style={{ fontSize: 11, letterSpacing: "0.05em", color: "var(--text-tertiary)", textTransform: "uppercase", marginBottom: 8, display: "block" }}>Country of tax residence</label>
-              <input value={onboardCountry} onChange={e => setOnboardCountry(e.target.value)} placeholder="e.g. Brazil, USA, Portugal"
-                style={{ width: "100%", padding: "14px 0", background: "transparent", border: "none", borderBottom: "1px solid var(--border)", color: "var(--text-primary)", fontSize: 15, fontFamily: "var(--font-sans)", outline: "none" }} />
-            </div>
-            <div style={{ marginBottom: 40 }}>
-              <label style={{ fontSize: 11, letterSpacing: "0.05em", color: "var(--text-tertiary)", textTransform: "uppercase", marginBottom: 8, display: "block" }}>What do you operate?</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {OPERATIONS.map(op => (
-                  <button key={op} onClick={() => setOnboardOps(prev => prev.includes(op) ? prev.filter(o => o !== op) : [...prev, op])}
-                    style={{ padding: "8px 18px", borderRadius: 20, fontSize: 12, cursor: "pointer", transition: "all 0.2s", fontFamily: "var(--font-sans)",
-                      background: onboardOps.includes(op) ? "var(--accent-light)" : "transparent",
-                      border: onboardOps.includes(op) ? "1px solid var(--accent)" : "1px solid var(--border)",
-                      color: onboardOps.includes(op) ? "var(--accent)" : "var(--text-secondary)" }}>
-                    {op}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <button onClick={() => { if (!canSubmitOnboard) return; updateProfile({ name: onboardName.trim(), taxResidence: onboardCountry.trim(), operations: onboardOps }); setProfileName(onboardName.trim()); setOnboarded(true); }}
-              disabled={!canSubmitOnboard}
-              style={{ width: "100%", padding: 16, borderRadius: 8, background: "var(--accent)", color: "#FFFFFF", fontSize: 14, fontWeight: 600, fontFamily: "var(--font-sans)", border: "none", cursor: canSubmitOnboard ? "pointer" : "not-allowed", opacity: canSubmitOnboard ? 1 : 0.4, transition: "opacity 0.2s" }}>
-              Get Started
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  if (onboarded === null) return null;
+  if (!ready) return null;
 
   /* ══════════════════════════════════════════════════════ */
   /* SIMULATION RENDERER                                    */
