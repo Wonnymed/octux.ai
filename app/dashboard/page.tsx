@@ -52,9 +52,9 @@ const SUGGESTIONS = [
 ];
 
 const SIM_EXAMPLES = [
-  { emoji: "🇨🇳", text: "Importar 3.000 smartwatches de Guangzhou para o Brasil via FOB" },
-  { emoji: "🏛️", text: "Abrir holding em Hong Kong morando no Brasil, volume de $20K/mês" },
-  { emoji: "☕", text: "Exportar café especial brasileiro para distribuidores na China" },
+  { emoji: "🇨🇳", title: "Import de Smartwatches", desc: "Importar 3.000 smartwatches de Guangzhou para o Brasil via FOB", time: "~2 min" },
+  { emoji: "🏛️", title: "Holding em Hong Kong", desc: "Abrir holding em Hong Kong morando no Brasil, volume de $20K/mês", time: "~3 min" },
+  { emoji: "☕", title: "Export de Café Especial", desc: "Exportar café especial brasileiro para distribuidores na China", time: "~2 min" },
 ];
 
 const SIM_STAGES = [
@@ -119,6 +119,14 @@ export default function Home() {
   const [simStage, setSimStage] = useState(0);
   const [simLiveAgents, setSimLiveAgents] = useState<{ emoji: string; name: string; done: boolean }[]>([]);
   const [resultTab, setResultTab] = useState<"report" | "simulation" | "graph">("report");
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [simRounds, setSimRounds] = useState(3);
+  const [simFocusAreas, setSimFocusAreas] = useState<string[]>(["Cost", "Risk"]);
+  const [simStarting, setSimStarting] = useState(false);
+  const [simStartTime, setSimStartTime] = useState<number | null>(null);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [agentFilter, setAgentFilter] = useState<string | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const [tokenCount, setTokenCount] = useState(0);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<Record<number, string>>({});
@@ -269,11 +277,18 @@ export default function Home() {
 
   const simulate = async () => {
     if (!simScenario.trim()) return;
+    setSimStarting(true);
+    await new Promise(r => setTimeout(r, 600));
+    setSimStarting(false);
     setSimulating(true);
     setSimResult(null);
     setSimLiveAgents([]);
     setSimStage(0);
     setResultTab("report");
+    setSimStartTime(Date.now());
+    setCollapsedSections({});
+    setAgentFilter(null);
+    setExportOpen(false);
 
     try {
       const res = await fetch("/api/simulate", {
@@ -434,81 +449,212 @@ export default function Home() {
   /* SIMULATION RENDERER                                    */
   /* ══════════════════════════════════════════════════════ */
   const renderSimulation = () => {
-    /* ── INPUT ── */
+    const FOCUS_OPTIONS = ["Cost", "Risk", "Timeline", "Legal", "Market"];
+    const progressPct = Math.min(((simStage + 1) / 5) * 100, 100);
+    const ringRadius = 70;
+    const ringCircumference = 2 * Math.PI * ringRadius;
+    const ringOffset = ringCircumference - (progressPct / 100) * ringCircumference;
+
+    /* ── INPUT — Mission Briefing ── */
     if (!simResult && !simulating) {
       return (
-        <div style={{ flex: 1, overflowY: "auto", padding: 24, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <div className="sim-input-container" style={{ maxWidth: 640, width: "100%", textAlign: "center" }}>
-            <div className="sim-pulse-icon" style={{ fontSize: 48, color: GOLD, marginBottom: 24 }}>◉</div>
-            <div style={{ fontSize: 36, fontFamily: SERIF, fontWeight: 300, color: "white", marginBottom: 4 }}>Simulation Engine</div>
-            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.25)", lineHeight: 1.7, marginBottom: 48 }}>
-              Descreva um cenário de negócio. Signux cria agentes especializados,<br />simula a operação e entrega um relatório completo.
+        <div style={{ flex: 1, overflowY: "auto", padding: 24, display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div className="sim-input-container" style={{ maxWidth: 680, width: "100%", paddingTop: 48 }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+              <span className="sim-pulse-icon" style={{ fontSize: 14, color: GOLD }}>◉</span>
+              <span style={{ fontSize: 11, letterSpacing: "0.25em", color: GOLD, fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase" }}>Simulation Engine</span>
             </div>
-            <textarea
-              value={simScenario} onChange={e => setSimScenario(e.target.value)}
-              placeholder="Ex: Quero importar 5.000 fones bluetooth de Shenzhen para São Paulo. Budget de $15.000. Nunca importei antes."
-              className="sim-textarea"
-              style={{ width: "100%", minHeight: 140, padding: 24, borderRadius: 16, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", color: "white", fontSize: 15, lineHeight: 1.7, fontFamily: SANS, resize: "vertical", outline: "none" }}
-            />
-            <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", marginTop: 32, marginBottom: 16, textTransform: "uppercase" }}>Cenários exemplo</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ fontSize: 36, fontFamily: SERIF, fontWeight: 300, color: "white", marginBottom: 8, lineHeight: 1.2 }}>Mission Briefing</div>
+            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.3)", lineHeight: 1.7, marginBottom: 40 }}>
+              Brief your scenario. Our agents will simulate it.
+            </div>
+
+            {/* Terminal textarea */}
+            <div style={{ position: "relative", marginBottom: 32 }}>
+              <div style={{ position: "absolute", top: 14, left: 18, fontSize: 10, color: "rgba(201,168,76,0.3)", fontFamily: "'JetBrains Mono', monospace", pointerEvents: "none", letterSpacing: "0.05em" }}>SCENARIO://</div>
+              <textarea
+                value={simScenario} onChange={e => setSimScenario(e.target.value)}
+                placeholder="Descreva seu cenário de negócio em detalhes..."
+                className="sim-textarea"
+                style={{ width: "100%", minHeight: 160, padding: "38px 20px 20px", borderRadius: 12, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(201,168,76,0.1)", color: "rgba(255,255,255,0.9)", fontSize: 14, lineHeight: 1.8, fontFamily: "'JetBrains Mono', monospace", resize: "vertical", outline: "none", transition: "border-color 0.2s" }}
+              />
+              {simScenario.length > 0 && (
+                <div style={{ position: "absolute", bottom: 12, right: 14, fontSize: 10, color: "rgba(255,255,255,0.12)", fontFamily: "'JetBrains Mono', monospace" }}>{simScenario.length} chars</div>
+              )}
+            </div>
+
+            {/* Example cards */}
+            <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", marginBottom: 14, textTransform: "uppercase" }}>Cenários exemplo</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 32 }}>
               {SIM_EXAMPLES.map(ex => (
-                <div key={ex.text} onClick={() => setSimScenario(ex.text)}
+                <div key={ex.desc} onClick={() => setSimScenario(ex.desc)}
                   className="sim-example-card"
-                  style={{ padding: "14px 20px", borderRadius: 10, background: "transparent", border: "1px solid rgba(255,255,255,0.04)", fontSize: 13, color: "rgba(255,255,255,0.3)", cursor: "pointer", transition: "all 0.2s", textAlign: "left", width: "100%" }}>
-                  {ex.emoji} {ex.text}
+                  style={{ padding: "16px 20px", borderRadius: 12, background: "rgba(255,255,255,0.015)", border: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", transition: "all 0.25s", display: "flex", alignItems: "center", gap: 16 }}>
+                  <span style={{ fontSize: 28, flexShrink: 0 }}>{ex.emoji}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.7)", marginBottom: 2 }}>{ex.title}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", lineHeight: 1.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ex.desc}</div>
+                  </div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.15)", fontFamily: "'JetBrains Mono', monospace", flexShrink: 0 }}>{ex.time}</div>
                 </div>
               ))}
             </div>
-            <button onClick={simulate} disabled={!simScenario.trim()}
-              style={{ width: "100%", padding: 18, borderRadius: 12, background: "linear-gradient(135deg, #C9A84C, #A0832A)", color: "#0A0A0A", fontSize: 13, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", border: "none", cursor: simScenario.trim() ? "pointer" : "not-allowed", marginTop: 32, opacity: simScenario.trim() ? 1 : 0.3, transition: "opacity 0.2s", fontFamily: SERIF }}>
-              Iniciar Simulação
+
+            {/* Advanced Options */}
+            <div style={{ marginBottom: 32, borderRadius: 12, border: "1px solid rgba(255,255,255,0.04)", overflow: "hidden" }}>
+              <button onClick={() => setAdvancedOpen(!advancedOpen)}
+                style={{ width: "100%", padding: "14px 20px", background: "rgba(255,255,255,0.015)", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "background 0.2s" }}>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", letterSpacing: "0.05em" }}>Advanced Options</span>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", transition: "transform 0.2s", transform: advancedOpen ? "rotate(180deg)" : "rotate(0)" }}>▾</span>
+              </button>
+              {advancedOpen && (
+                <div style={{ padding: "16px 20px 20px", borderTop: "1px solid rgba(255,255,255,0.04)", animation: "fadeIn 0.2s ease" }}>
+                  {/* Rounds slider */}
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>Number of rounds</span>
+                      <span style={{ fontSize: 12, color: GOLD, fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}>{simRounds}</span>
+                    </div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {[2, 3, 4, 5].map(n => (
+                        <button key={n} onClick={() => setSimRounds(n)}
+                          style={{ flex: 1, padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer", transition: "all 0.2s", fontFamily: "'JetBrains Mono', monospace",
+                            background: simRounds === n ? "rgba(201,168,76,0.1)" : "rgba(255,255,255,0.02)",
+                            border: simRounds === n ? "1px solid rgba(201,168,76,0.2)" : "1px solid rgba(255,255,255,0.05)",
+                            color: simRounds === n ? GOLD : "rgba(255,255,255,0.25)" }}>
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Focus areas */}
+                  <div>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", display: "block", marginBottom: 10 }}>Focus areas</span>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {FOCUS_OPTIONS.map(f => (
+                        <button key={f} onClick={() => setSimFocusAreas(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])}
+                          style={{ padding: "6px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", transition: "all 0.2s",
+                            background: simFocusAreas.includes(f) ? "rgba(201,168,76,0.08)" : "transparent",
+                            border: simFocusAreas.includes(f) ? "1px solid rgba(201,168,76,0.15)" : "1px solid rgba(255,255,255,0.06)",
+                            color: simFocusAreas.includes(f) ? GOLD : "rgba(255,255,255,0.25)" }}>
+                          {simFocusAreas.includes(f) ? "✓ " : ""}{f}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Start button */}
+            <button onClick={simulate} disabled={!simScenario.trim() || simStarting}
+              className="sim-start-btn"
+              style={{ width: "100%", padding: 18, borderRadius: 12, background: "linear-gradient(135deg, #C9A84C, #A0832A)", color: "#0A0A0A", fontSize: 13, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", border: "none", cursor: simScenario.trim() && !simStarting ? "pointer" : "not-allowed", opacity: simScenario.trim() ? 1 : 0.3, transition: "all 0.25s", fontFamily: SERIF, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+              {simStarting && <span className="sim-btn-spinner" style={{ width: 16, height: 16, border: "2px solid rgba(10,10,10,0.2)", borderTopColor: "#0A0A0A", borderRadius: "50%", display: "inline-block" }} />}
+              {simStarting ? "Iniciando..." : "Iniciar Simulação"}
             </button>
           </div>
         </div>
       );
     }
 
-    /* ── SIMULATING ── */
+    /* ── SIMULATING — Progress Ring + Timeline + Agent Cards ── */
     if (simulating) {
+      const elapsed = simStartTime ? Math.floor((Date.now() - simStartTime) / 1000) : 0;
+      const estimatedTotal = 120;
+      const remaining = Math.max(0, estimatedTotal - elapsed);
+
       return (
-        <div style={{ flex: 1, overflowY: "auto", padding: 24, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ maxWidth: 500, width: "100%", textAlign: "center" }}>
-            <div style={{ fontSize: 24, fontFamily: SERIF, color: "white", marginBottom: 8 }}>Simulação em andamento</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.25)", marginBottom: 48 }}>Múltiplos agentes analisando seu cenário...</div>
-            {/* Pipeline stages */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 0, textAlign: "left" }}>
-              {SIM_STAGES.map((stage, idx) => {
-                const isDone = idx < simStage;
-                const isCurrent = idx === simStage;
-                return (
-                  <div key={idx} style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 0" }}>
-                    <span style={{ fontSize: 18, width: 28, textAlign: "center", ...(isDone ? { color: GOLD } : isCurrent ? { animation: "iconPulse 1.5s ease-in-out infinite" } : { opacity: 0.2 }) }}>
-                      {isDone ? "✓" : stage.icon}
-                    </span>
-                    <span style={{ fontSize: 14, fontFamily: SANS, ...(isDone ? { color: "rgba(255,255,255,0.5)" } : isCurrent ? { color: "white", fontWeight: 500 } : { color: "rgba(255,255,255,0.15)" }) }}>
-                      {stage.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-            {/* Live agent updates */}
-            {simLiveAgents.length > 0 && (
-              <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 6, textAlign: "left" }}>
-                <div style={{ fontSize: 9, letterSpacing: "0.12em", color: "rgba(255,255,255,0.15)", textTransform: "uppercase", marginBottom: 4 }}>Agentes</div>
-                {simLiveAgents.map((a, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 8, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
-                    <span style={{ fontSize: 14, ...(a.done ? {} : { animation: "iconPulse 1.5s ease-in-out infinite" }) }}>{a.emoji}</span>
-                    <span style={{ fontSize: 12, color: a.done ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.7)", flex: 1 }}>{a.name}</span>
-                    <span style={{ fontSize: 10, color: a.done ? GOLD : "rgba(255,255,255,0.15)" }}>{a.done ? "✓" : "..."}</span>
-                  </div>
-                ))}
+        <div style={{ flex: 1, overflowY: "auto", padding: 24 }}>
+          <div className="sim-progress-container" style={{ maxWidth: 700, margin: "0 auto", width: "100%" }}>
+            {/* Top: Progress Ring */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 40, paddingTop: 24 }}>
+              <div style={{ position: "relative", width: 180, height: 180, marginBottom: 20 }}>
+                <svg width="180" height="180" viewBox="0 0 180 180" style={{ transform: "rotate(-90deg)" }}>
+                  <defs>
+                    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#C9A84C" />
+                      <stop offset="100%" stopColor="#E0C068" />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="90" cy="90" r={ringRadius} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="6" />
+                  <circle cx="90" cy="90" r={ringRadius} fill="none" stroke="url(#ringGrad)" strokeWidth="6" strokeLinecap="round"
+                    strokeDasharray={ringCircumference} strokeDashoffset={ringOffset}
+                    style={{ transition: "stroke-dashoffset 0.8s ease" }} />
+                </svg>
+                {/* Center content */}
+                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: 32 }}>{SIM_STAGES[simStage]?.icon || "⏳"}</span>
+                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "'JetBrains Mono', monospace", marginTop: 4 }}>Stage {simStage + 1}/5</span>
+                </div>
               </div>
-            )}
-            {/* Progress bar */}
-            <div style={{ width: "100%", height: 2, background: "rgba(255,255,255,0.04)", borderRadius: 1, marginTop: 24 }}>
-              <div style={{ height: "100%", background: "linear-gradient(90deg, #C9A84C, #A0832A)", borderRadius: 1, transition: "width 0.5s ease", width: `${(simStage / 4) * 100}%` }} />
+              <div style={{ fontSize: 16, fontFamily: SERIF, color: "white", marginBottom: 4, textAlign: "center" }}>{SIM_STAGES[simStage]?.label || "Processando..."}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", fontFamily: "'JetBrains Mono', monospace" }}>
+                ~{remaining > 60 ? `${Math.ceil(remaining / 60)} min` : `${remaining}s`} remaining
+              </div>
+            </div>
+
+            {/* Timeline + Agent Cards side by side on desktop */}
+            <div className="sim-progress-layout" style={{ display: "grid", gridTemplateColumns: simLiveAgents.length > 0 ? "200px 1fr" : "1fr", gap: 24, alignItems: "start" }}>
+              {/* Vertical Timeline */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                {SIM_STAGES.map((stage, idx) => {
+                  const isDone = idx < simStage;
+                  const isCurrent = idx === simStage;
+                  return (
+                    <div key={idx} style={{ display: "flex", gap: 12, position: "relative" }}>
+                      {/* Line + Node */}
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 20 }}>
+                        <div style={{ width: 12, height: 12, borderRadius: "50%", flexShrink: 0, transition: "all 0.3s", display: "flex", alignItems: "center", justifyContent: "center",
+                          background: isDone ? GOLD : isCurrent ? "rgba(201,168,76,0.2)" : "rgba(255,255,255,0.04)",
+                          border: isCurrent ? `2px solid ${GOLD}` : isDone ? "none" : "1px solid rgba(255,255,255,0.08)",
+                          ...(isCurrent ? { animation: "goldPulse 2s ease-in-out infinite" } : {}) }}>
+                          {isDone && <span style={{ fontSize: 7, color: "#0A0A0A", fontWeight: "bold" }}>✓</span>}
+                        </div>
+                        {idx < SIM_STAGES.length - 1 && (
+                          <div style={{ width: 1, flex: 1, minHeight: 28, background: isDone ? "rgba(201,168,76,0.3)" : "rgba(255,255,255,0.05)", transition: "background 0.3s" }} />
+                        )}
+                      </div>
+                      {/* Label */}
+                      <div style={{ paddingBottom: 20, paddingTop: 0 }}>
+                        <div style={{ fontSize: 12, lineHeight: 1, transition: "color 0.3s",
+                          color: isDone ? "rgba(255,255,255,0.4)" : isCurrent ? "white" : "rgba(255,255,255,0.15)",
+                          fontWeight: isCurrent ? 500 : 400 }}>
+                          {stage.icon} {stage.label}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Agent Cards */}
+              {simLiveAgents.length > 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ fontSize: 9, letterSpacing: "0.12em", color: "rgba(255,255,255,0.15)", textTransform: "uppercase", marginBottom: 4 }}>Active Agents</div>
+                  {simLiveAgents.map((a, i) => (
+                    <div key={i} style={{ padding: "14px 18px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: a.done ? "1px solid rgba(201,168,76,0.1)" : "1px solid rgba(255,255,255,0.04)", transition: "all 0.3s", animation: "fadeInUp 0.3s ease-out" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <span style={{ fontSize: 22 }}>{a.emoji}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, color: "white", fontWeight: 500, marginBottom: 2 }}>{a.name}</div>
+                          <div style={{ fontSize: 11, color: a.done ? GOLD : "rgba(255,255,255,0.3)", display: "flex", alignItems: "center", gap: 6, transition: "color 0.3s" }}>
+                            {a.done ? (
+                              <span style={{ animation: "fadeIn 0.3s ease" }}>✓ Analysis complete</span>
+                            ) : (
+                              <>
+                                <span>Thinking</span>
+                                <span className="loading-dots"><span /><span /><span /></span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -519,9 +665,16 @@ export default function Home() {
     if (simResult?.error) {
       return (
         <div style={{ flex: 1, padding: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>{simResult.error}</div>
-            <button onClick={() => setSimResult(null)} style={{ padding: "10px 24px", borderRadius: 8, background: "rgba(201,168,76,0.1)", border: `1px solid ${GOLD}`, color: GOLD, fontSize: 13, cursor: "pointer", fontFamily: SANS }}>Tentar novamente</button>
+          <div style={{ textAlign: "center", animation: "fadeInUp 0.3s ease-out" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
+            <div style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}>{simResult.error}</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", marginBottom: 24 }}>A simulação encontrou um erro. Tente novamente.</div>
+            <button onClick={() => setSimResult(null)}
+              style={{ padding: "12px 28px", borderRadius: 10, background: "rgba(201,168,76,0.08)", border: `1px solid rgba(201,168,76,0.2)`, color: GOLD, fontSize: 13, cursor: "pointer", fontFamily: SANS, transition: "all 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(201,168,76,0.12)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(201,168,76,0.08)"; }}>
+              Tentar novamente
+            </button>
           </div>
         </div>
       );
@@ -535,112 +688,333 @@ export default function Home() {
       const simParams = stagesData.simulation_parameters || {};
       const graph = stagesData.graph || {};
       const simulation = simResult.simulation || [];
+      const duration = simStartTime ? Math.floor((Date.now() - simStartTime) / 1000) : 0;
+
+      // Extract GO/NO-GO from report
+      const reportText = simResult.report || "";
+      const isGo = /\bGO\b/i.test(reportText) && !/\bNO[- ]?GO\b/i.test(reportText.slice(reportText.lastIndexOf("VERDICT")));
+      const verdictMatch = reportText.match(/NO[- ]?GO|(?:^|\s)GO(?:\s|$)/i);
+      const verdictIsNoGo = /NO[- ]?GO/i.test(reportText.slice(Math.max(0, reportText.lastIndexOf("VERDICT"))));
+
+      // Get unique rounds
+      const uniqueRounds = [...new Set(simulation.map((m: any) => m.round))].sort();
+      // Get unique agents for filter
+      const uniqueAgentNames = [...new Set(simulation.map((m: any) => m.agentName))] as string[];
+      const filteredSimulation = agentFilter ? simulation.filter((m: any) => m.agentName === agentFilter) : simulation;
+
+      // Collapsible section helper for report
+      const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }));
+
+      // Risk level color helper
+      const getRiskColor = (text: string) => {
+        const lower = text.toLowerCase();
+        if (lower.includes("high") || lower.includes("alto") || lower.includes("alta")) return { border: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.04)", color: "#EF4444" };
+        if (lower.includes("medium") || lower.includes("médio") || lower.includes("média") || lower.includes("moderado")) return { border: "rgba(234,179,8,0.25)", bg: "rgba(234,179,8,0.04)", color: "#EAB308" };
+        return { border: "rgba(34,197,94,0.25)", bg: "rgba(34,197,94,0.04)", color: "#22C55E" };
+      };
+
+      // Parse report into sections for collapsible rendering
+      const reportSections: { heading: string; content: string; level: number }[] = [];
+      const lines = reportText.split("\n");
+      let currentHeading = "";
+      let currentContent = "";
+      let currentLevel = 0;
+      for (const line of lines) {
+        const h2Match = line.match(/^## (.+)/);
+        const h3Match = line.match(/^### (.+)/);
+        if (h2Match) {
+          if (currentHeading) reportSections.push({ heading: currentHeading, content: currentContent.trim(), level: currentLevel });
+          currentHeading = h2Match[1];
+          currentContent = "";
+          currentLevel = 2;
+        } else if (h3Match && currentLevel < 2) {
+          if (currentHeading) reportSections.push({ heading: currentHeading, content: currentContent.trim(), level: currentLevel });
+          currentHeading = h3Match[1];
+          currentContent = "";
+          currentLevel = 3;
+        } else {
+          currentContent += line + "\n";
+        }
+      }
+      if (currentHeading) reportSections.push({ heading: currentHeading, content: currentContent.trim(), level: currentLevel });
 
       return (
         <div style={{ flex: 1, overflowY: "auto", padding: 32 }} className="sim-result-outer">
-          {/* Header */}
-          <div className="sim-result-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, maxWidth: 1000, margin: "0 auto 32px", flexWrap: "wrap", gap: 12 }}>
-            <div style={{ fontSize: 24, fontFamily: SERIF, color: "white" }}>Resultado da Simulação</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => { setSimResult(null); setSimScenario(""); }}
-                style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", background: "transparent", border: "1px solid rgba(255,255,255,0.06)", padding: "8px 16px", borderRadius: 8, cursor: "pointer", fontFamily: SANS, transition: "all 0.2s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "rgba(255,255,255,0.5)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "rgba(255,255,255,0.3)"; }}>
-                Nova simulação
-              </button>
-              <button onClick={exportReport}
-                style={{ fontSize: 12, color: "#0A0A0A", background: GOLD, border: "none", padding: "8px 16px", borderRadius: 8, cursor: "pointer", fontFamily: SANS, fontWeight: 500 }}>
-                Exportar
-              </button>
-            </div>
-          </div>
-
           <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-            {/* Metadata cards */}
-            <div className="sim-meta-cards" style={{ display: "flex", gap: 12, marginBottom: 32, flexWrap: "wrap" }}>
+            {/* ═══ HERO VERDICT ═══ */}
+            <div style={{ textAlign: "center", marginBottom: 40, paddingTop: 16, animation: "fadeInUp 0.4s ease-out" }}>
+              <div style={{ fontSize: 64, fontFamily: SERIF, fontWeight: 700, letterSpacing: "0.05em",
+                color: verdictIsNoGo ? "#EF4444" : "#22C55E",
+                textShadow: verdictIsNoGo ? "0 0 40px rgba(239,68,68,0.2)" : "0 0 40px rgba(34,197,94,0.2)",
+                marginBottom: 8 }}>
+                {verdictIsNoGo ? "NO-GO" : "GO"}
+              </div>
+              <div style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", maxWidth: 500, margin: "0 auto", lineHeight: 1.7 }}>
+                Simulação completa com {meta.agents_count || 0} agentes em {meta.rounds || 0} rodadas.
+              </div>
+            </div>
+
+            {/* ═══ HEADER BAR ═══ */}
+            <div className="sim-result-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
+              <div style={{ fontSize: 20, fontFamily: SERIF, color: "white" }}>Resultado da Simulação</div>
+              <div style={{ display: "flex", gap: 8, position: "relative" }}>
+                <button onClick={() => { setSimResult(null); setSimScenario(""); setSimStartTime(null); }}
+                  style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", background: "transparent", border: "1px solid rgba(255,255,255,0.06)", padding: "8px 16px", borderRadius: 8, cursor: "pointer", fontFamily: SANS, transition: "all 0.2s" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "rgba(255,255,255,0.5)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "rgba(255,255,255,0.3)"; }}>
+                  Nova simulação
+                </button>
+                {/* Export dropdown */}
+                <div style={{ position: "relative" }}>
+                  <button onClick={() => setExportOpen(!exportOpen)}
+                    style={{ fontSize: 12, color: "#0A0A0A", background: GOLD, border: "none", padding: "8px 16px", borderRadius: 8, cursor: "pointer", fontFamily: SANS, fontWeight: 500, display: "flex", alignItems: "center", gap: 6 }}>
+                    Exportar <span style={{ fontSize: 10 }}>▾</span>
+                  </button>
+                  {exportOpen && (
+                    <div style={{ position: "absolute", top: "calc(100% + 4px)", right: 0, background: "#111", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: 4, minWidth: 180, zIndex: 20, animation: "fadeIn 0.15s ease" }}>
+                      <button onClick={() => { exportReport(); setExportOpen(false); addToast("Relatório exportado como TXT", "success"); }}
+                        style={{ width: "100%", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,0.7)", textAlign: "left", borderRadius: 6, transition: "background 0.15s", display: "flex", alignItems: "center", gap: 8 }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")} onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                        📄 Export as TXT
+                      </button>
+                      <button disabled style={{ width: "100%", padding: "10px 14px", background: "none", border: "none", fontSize: 12, color: "rgba(255,255,255,0.15)", textAlign: "left", borderRadius: 6, cursor: "not-allowed", display: "flex", alignItems: "center", gap: 8 }}>
+                        📋 Export as PDF <span style={{ fontSize: 9, color: "rgba(255,255,255,0.1)", marginLeft: "auto" }}>Soon</span>
+                      </button>
+                      <button disabled style={{ width: "100%", padding: "10px 14px", background: "none", border: "none", fontSize: 12, color: "rgba(255,255,255,0.15)", textAlign: "left", borderRadius: 6, cursor: "not-allowed", display: "flex", alignItems: "center", gap: 8 }}>
+                        🔗 Share Link <span style={{ fontSize: 9, color: "rgba(255,255,255,0.1)", marginLeft: "auto" }}>Soon</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ═══ METADATA CARDS ═══ */}
+            <div className="sim-meta-cards" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 32 }}>
               {[
-                { value: `${meta.agents_count || 0}`, label: "Especialistas" },
-                { value: `${meta.rounds || 0}`, label: "Rodadas" },
-                { value: `${meta.total_interactions || 0}`, label: "Interações" },
-                { value: simParams.scenario_type || "—", label: "Tipo" },
-              ].map(card => (
-                <div key={card.label} style={{ flex: "1 1 140px", padding: 16, borderRadius: 10, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
-                  <div style={{ fontSize: 18, fontFamily: SERIF, color: GOLD, marginBottom: 4 }}>{card.value}</div>
+                { icon: "👥", value: `${meta.agents_count || 0}`, label: "Especialistas" },
+                { icon: "🔄", value: `${meta.rounds || 0}`, label: "Rodadas" },
+                { icon: "💬", value: `${meta.total_interactions || 0}`, label: "Interações" },
+                { icon: "📊", value: simParams.scenario_type || "—", label: "Tipo" },
+                { icon: "⏱️", value: duration > 60 ? `${Math.floor(duration / 60)}m ${duration % 60}s` : `${duration}s`, label: "Duração" },
+              ].map((card, ci) => (
+                <div key={card.label} style={{ padding: 18, borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", animation: `fadeInUp ${0.3 + ci * 0.08}s ease-out` }}>
+                  <div style={{ fontSize: 14, marginBottom: 8 }}>{card.icon}</div>
+                  <div style={{ fontSize: 20, fontFamily: SERIF, color: GOLD, marginBottom: 4 }}>{card.value}</div>
                   <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", letterSpacing: "0.08em", textTransform: "uppercase" }}>{card.label}</div>
                 </div>
               ))}
             </div>
 
-            {/* Agents */}
-            <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", marginBottom: 16, textTransform: "uppercase" }}>Agentes na simulação</div>
+            {/* ═══ AGENTS PILLS ═══ */}
+            <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", marginBottom: 12, textTransform: "uppercase" }}>Agentes na simulação</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 32 }}>
               {simAgents.map((a: any) => (
-                <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 20, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
-                  <span style={{ fontSize: 16 }}>{a.emoji}</span>
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{a.name}</span>
-                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>{a.role}</span>
+                <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 24, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", transition: "all 0.2s" }}
+                  className="card-hover">
+                  <span style={{ fontSize: 18 }}>{a.emoji}</span>
+                  <div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>{a.name}</div>
+                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>{a.role}</div>
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Tabs */}
-            <div style={{ display: "flex", gap: 0, marginBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+            {/* ═══ TABS — Pill Style ═══ */}
+            <div style={{ display: "flex", gap: 6, marginBottom: 28, padding: 4, background: "rgba(255,255,255,0.02)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.04)", width: "fit-content" }}>
               {(["report", "simulation", "graph"] as const).map(tab => (
                 <button key={tab} onClick={() => setResultTab(tab)}
-                  style={{ padding: "12px 24px", fontSize: 12, letterSpacing: "0.08em", cursor: "pointer", background: "none", border: "none", borderBottom: resultTab === tab ? `2px solid ${GOLD}` : "2px solid transparent", color: resultTab === tab ? GOLD : "rgba(255,255,255,0.25)", fontFamily: SANS, transition: "all 0.2s", textTransform: "capitalize" }}>
-                  {tab === "report" ? "Relatório" : tab === "simulation" ? "Simulação" : "Grafo"}
+                  style={{ padding: "10px 22px", fontSize: 12, letterSpacing: "0.06em", cursor: "pointer", borderRadius: 8, border: "none", transition: "all 0.25s", fontFamily: SANS,
+                    background: resultTab === tab ? GOLD : "transparent",
+                    color: resultTab === tab ? "#0A0A0A" : "rgba(255,255,255,0.3)",
+                    fontWeight: resultTab === tab ? 600 : 400 }}>
+                  {tab === "report" ? "📊 Relatório" : tab === "simulation" ? "💬 Simulação" : "🔗 Grafo"}
                 </button>
               ))}
             </div>
 
-            {/* Tab content */}
+            {/* ═══ TAB: RELATÓRIO ═══ */}
             {resultTab === "report" && (
-              <div style={{ padding: "24px 28px", borderRadius: 14, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", fontSize: 14, lineHeight: 1.8, color: "rgba(255,255,255,0.75)", fontFamily: SANS }}>
-                <ReactMarkdown components={MD_COMPONENTS}>{simResult.report || ""}</ReactMarkdown>
-              </div>
-            )}
+              <div style={{ animation: "fadeIn 0.25s ease" }}>
+                {reportSections.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {reportSections.map((section, si) => {
+                      const sKey = `s-${si}`;
+                      const isCollapsed = collapsedSections[sKey];
+                      const isRiskMap = section.heading.toLowerCase().includes("risk");
+                      const isScenarios = section.heading.toLowerCase().includes("scenario") || section.heading.toLowerCase().includes("cenário");
 
-            {resultTab === "simulation" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {simulation.map((msg: any, i: number) => (
-                  <div key={i} style={{ padding: 20, borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                      <span style={{ fontSize: 20 }}>{msg.emoji}</span>
-                      <span style={{ fontSize: 14, fontWeight: 500, color: "white" }}>{msg.agentName}</span>
-                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{msg.role}</span>
-                      <span style={{ fontSize: 10, color: "rgba(201,168,76,0.4)", marginLeft: "auto", padding: "2px 8px", borderRadius: 10, background: "rgba(201,168,76,0.06)" }}>Round {msg.round}</span>
-                    </div>
-                    <div style={{ fontSize: 14, lineHeight: 1.8, color: "rgba(255,255,255,0.7)", whiteSpace: "pre-wrap" }}>{msg.content}</div>
+                      return (
+                        <div key={si} style={{ borderRadius: 14, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", overflow: "hidden", animation: `fadeInUp ${0.2 + si * 0.05}s ease-out` }}>
+                          {/* Collapsible header */}
+                          <button onClick={() => toggleSection(sKey)}
+                            style={{ width: "100%", padding: "18px 24px", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "background 0.15s" }}
+                            onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.01)")} onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                            <span style={{ fontSize: 15, fontFamily: SERIF, color: GOLD, fontWeight: 500 }}>{section.heading}</span>
+                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", transition: "transform 0.2s", transform: isCollapsed ? "rotate(-90deg)" : "rotate(0)" }}>▾</span>
+                          </button>
+                          {/* Content */}
+                          {!isCollapsed && (
+                            <div style={{ padding: "0 24px 24px", fontSize: 14, lineHeight: 1.8, color: "rgba(255,255,255,0.75)", fontFamily: SANS }}>
+                              {isRiskMap ? (
+                                // Render risks as colored cards
+                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                  {section.content.split(/(?=^-\s)/m).filter(Boolean).map((risk, ri) => {
+                                    const rc = getRiskColor(risk);
+                                    return (
+                                      <div key={ri} style={{ padding: "14px 18px", borderRadius: 10, background: rc.bg, borderLeft: `3px solid ${rc.border}`, fontSize: 13, lineHeight: 1.7, color: "rgba(255,255,255,0.65)" }}>
+                                        <ReactMarkdown components={MD_COMPONENTS}>{risk.trim()}</ReactMarkdown>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : isScenarios ? (
+                                // Render scenarios in columns
+                                <div className="sim-scenarios-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
+                                  {section.content.split(/(?=^###\s)/m).filter(s => s.trim()).map((scenario, sci) => {
+                                    const titleMatch = scenario.match(/^###\s*(.+)/);
+                                    const title = titleMatch ? titleMatch[1] : `Scenario ${sci + 1}`;
+                                    const body = titleMatch ? scenario.slice(titleMatch[0].length) : scenario;
+                                    const isOptimistic = title.toLowerCase().includes("otimist") || title.toLowerCase().includes("optimist");
+                                    const isPessimistic = title.toLowerCase().includes("pessimist");
+                                    const borderColor = isOptimistic ? "rgba(34,197,94,0.2)" : isPessimistic ? "rgba(239,68,68,0.2)" : "rgba(234,179,8,0.2)";
+                                    return (
+                                      <div key={sci} style={{ padding: "18px 20px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: `1px solid ${borderColor}`, borderTop: `2px solid ${borderColor}` }}>
+                                        <div style={{ fontSize: 14, fontFamily: SERIF, color: "white", marginBottom: 10, fontWeight: 500 }}>{title}</div>
+                                        <div style={{ fontSize: 13, lineHeight: 1.7, color: "rgba(255,255,255,0.6)" }}>
+                                          <ReactMarkdown components={MD_COMPONENTS}>{body.trim()}</ReactMarkdown>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                // Highlight currency/numbers in gold
+                                <div className="sim-report-content">
+                                  <ReactMarkdown components={{
+                                    ...MD_COMPONENTS,
+                                    p: ({ children }: any) => {
+                                      // Highlight $, R$, USD, BRL amounts
+                                      if (typeof children === "string") {
+                                        const highlighted = children.replace(
+                                          /(\$[\d,.]+|R\$[\d,.]+|USD\s*[\d,.]+|BRL\s*[\d,.]+|[\d,.]+%)/g,
+                                          `<span style="color:${GOLD};font-weight:500">$&</span>`
+                                        );
+                                        return <p style={{ marginBottom: 10, lineHeight: 1.8 }} dangerouslySetInnerHTML={{ __html: highlighted }} />;
+                                      }
+                                      return <p style={{ marginBottom: 10, lineHeight: 1.8 }}>{children}</p>;
+                                    },
+                                  }}>{section.content}</ReactMarkdown>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+                ) : (
+                  <div style={{ padding: "24px 28px", borderRadius: 14, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", fontSize: 14, lineHeight: 1.8, color: "rgba(255,255,255,0.75)", fontFamily: SANS }}>
+                    <ReactMarkdown components={MD_COMPONENTS}>{reportText}</ReactMarkdown>
+                  </div>
+                )}
               </div>
             )}
 
-            {resultTab === "graph" && (
-              <div>
-                {/* Entities */}
-                <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", marginBottom: 16, textTransform: "uppercase" }}>Entidades</div>
-                <div style={{ marginBottom: 32 }}>
-                  {(graph.entities || []).map((e: any, i: number) => {
-                    const c = ENTITY_COLORS[e.type] || DEFAULT_ENTITY_COLOR;
+            {/* ═══ TAB: SIMULAÇÃO ═══ */}
+            {resultTab === "simulation" && (
+              <div style={{ animation: "fadeIn 0.25s ease" }}>
+                {/* Agent filter chips */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
+                  <button onClick={() => setAgentFilter(null)}
+                    style={{ padding: "6px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", transition: "all 0.2s", border: "none",
+                      background: !agentFilter ? "rgba(201,168,76,0.1)" : "rgba(255,255,255,0.03)",
+                      color: !agentFilter ? GOLD : "rgba(255,255,255,0.3)" }}>
+                    Todos
+                  </button>
+                  {uniqueAgentNames.map(name => {
+                    const agentData = simulation.find((m: any) => m.agentName === name);
                     return (
-                      <span key={i} style={{ padding: "6px 14px", borderRadius: 16, fontSize: 12, marginRight: 6, marginBottom: 6, display: "inline-block", background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>
-                        {e.name} <span style={{ opacity: 0.6, fontSize: 10 }}>({e.type})</span>
-                      </span>
+                      <button key={name} onClick={() => setAgentFilter(agentFilter === name ? null : name)}
+                        style={{ padding: "6px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", transition: "all 0.2s", border: "none", display: "flex", alignItems: "center", gap: 4,
+                          background: agentFilter === name ? "rgba(201,168,76,0.1)" : "rgba(255,255,255,0.03)",
+                          color: agentFilter === name ? GOLD : "rgba(255,255,255,0.3)" }}>
+                        {agentData?.emoji} {name}
+                      </button>
                     );
                   })}
                 </div>
 
-                {/* Relationships */}
+                {/* Round-separated messages */}
+                {uniqueRounds.map((round: any) => {
+                  const roundMsgs = filteredSimulation.filter((m: any) => m.round === round);
+                  if (roundMsgs.length === 0) return null;
+                  return (
+                    <div key={round} style={{ marginBottom: 24 }}>
+                      {/* Round header */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                        <div style={{ height: 1, flex: 1, background: "rgba(255,255,255,0.04)" }} />
+                        <span style={{ fontSize: 10, letterSpacing: "0.15em", color: "rgba(201,168,76,0.4)", textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace" }}>Round {round}</span>
+                        <div style={{ height: 1, flex: 1, background: "rgba(255,255,255,0.04)" }} />
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {roundMsgs.map((msg: any, i: number) => {
+                          const hasDisagreement = msg.content.toLowerCase().includes("discordo") || msg.content.toLowerCase().includes("disagree") || msg.content.toLowerCase().includes("porém") || msg.content.toLowerCase().includes("however") || msg.content.toLowerCase().includes("mas ");
+                          return (
+                            <div key={i} style={{ padding: 20, borderRadius: 14, background: "rgba(255,255,255,0.02)", border: hasDisagreement ? "1px solid rgba(234,179,8,0.12)" : "1px solid rgba(255,255,255,0.04)", borderLeft: hasDisagreement ? "3px solid rgba(234,179,8,0.3)" : "3px solid rgba(255,255,255,0.04)", transition: "all 0.2s" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                                <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{msg.emoji}</div>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontSize: 15, fontWeight: 600, color: "white" }}>{msg.agentName}</div>
+                                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>{msg.role}</div>
+                                </div>
+                                {hasDisagreement && (
+                                  <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 10, background: "rgba(234,179,8,0.06)", border: "1px solid rgba(234,179,8,0.12)", color: "#EAB308", letterSpacing: "0.05em" }}>DEBATE</span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: 14, lineHeight: 1.8, color: "rgba(255,255,255,0.65)", whiteSpace: "pre-wrap" }}>{msg.content}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ═══ TAB: GRAFO ═══ */}
+            {resultTab === "graph" && (
+              <div style={{ animation: "fadeIn 0.25s ease" }}>
+                {/* Entity map visual */}
+                <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", marginBottom: 16, textTransform: "uppercase" }}>Entidades</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 36 }}>
+                  {(graph.entities || []).map((e: any, i: number) => {
+                    const c = ENTITY_COLORS[e.type] || DEFAULT_ENTITY_COLOR;
+                    return (
+                      <div key={i} style={{ padding: "12px 18px", borderRadius: 14, background: c.bg, border: `1px solid ${c.border}`, display: "flex", flexDirection: "column", gap: 4, minWidth: 120, animation: `fadeInUp ${0.2 + i * 0.05}s ease-out` }}>
+                        <div style={{ fontSize: 14, color: c.color, fontWeight: 500 }}>{e.name}</div>
+                        <div style={{ fontSize: 10, color: `${c.color}88`, textTransform: "uppercase", letterSpacing: "0.08em" }}>{e.type}</div>
+                        {e.details && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>{e.details}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Relationships as styled arrow cards */}
                 <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", marginBottom: 16, textTransform: "uppercase" }}>Relações</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 36 }}>
                   {(graph.relationships || []).map((r: any, i: number) => (
-                    <div key={i} style={{ padding: "10px 16px", borderRadius: 8, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
-                      <span style={{ color: "rgba(255,255,255,0.7)" }}>{r.from}</span>
-                      <span style={{ color: GOLD, margin: "0 8px" }}>→</span>
-                      <span style={{ color: "rgba(255,255,255,0.7)" }}>{r.to}</span>
-                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginLeft: 8 }}>({r.type})</span>
-                      {r.details && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 4 }}>{r.details}</div>}
+                    <div key={i} style={{ padding: "16px 20px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", gap: 12, animation: `fadeInUp ${0.3 + i * 0.05}s ease-out` }}>
+                      <span style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", fontWeight: 500 }}>{r.from}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, flex: 1 }}>
+                        <div style={{ height: 1, flex: 1, background: `linear-gradient(90deg, rgba(201,168,76,0.3), rgba(201,168,76,0.1))` }} />
+                        <span style={{ fontSize: 16, color: GOLD }}>→</span>
+                        <div style={{ height: 1, flex: 1, background: `linear-gradient(90deg, rgba(201,168,76,0.1), rgba(201,168,76,0.3))` }} />
+                      </div>
+                      <span style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", fontWeight: 500 }}>{r.to}</span>
+                      <span style={{ fontSize: 10, padding: "3px 10px", borderRadius: 12, background: "rgba(201,168,76,0.06)", border: "1px solid rgba(201,168,76,0.1)", color: "rgba(201,168,76,0.6)", whiteSpace: "nowrap" }}>{r.type?.replace(/_/g, " ")}</span>
                     </div>
                   ))}
                 </div>
@@ -648,10 +1022,10 @@ export default function Home() {
                 {/* Key variables */}
                 {graph.key_variables?.length > 0 && (
                   <>
-                    <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", marginTop: 32, marginBottom: 16, textTransform: "uppercase" }}>Variáveis-chave</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", marginBottom: 16, textTransform: "uppercase" }}>Variáveis-chave</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 36 }}>
                       {graph.key_variables.map((v: string, i: number) => (
-                        <span key={i} style={{ padding: "4px 12px", borderRadius: 12, fontSize: 12, background: "rgba(201,168,76,0.06)", border: "1px solid rgba(201,168,76,0.1)", color: "rgba(255,255,255,0.4)" }}>{v}</span>
+                        <span key={i} style={{ padding: "8px 16px", borderRadius: 12, fontSize: 12, background: "rgba(201,168,76,0.06)", border: "1px solid rgba(201,168,76,0.1)", color: "rgba(255,255,255,0.45)" }}>{v}</span>
                       ))}
                     </div>
                   </>
@@ -660,10 +1034,12 @@ export default function Home() {
                 {/* Critical questions */}
                 {graph.critical_questions?.length > 0 && (
                   <>
-                    <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", marginTop: 32, marginBottom: 16, textTransform: "uppercase" }}>Questões críticas</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)", marginBottom: 16, textTransform: "uppercase" }}>Questões críticas</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {graph.critical_questions.map((q: string, i: number) => (
-                        <div key={i} style={{ padding: "10px 16px", borderRadius: 8, background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.08)", fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{q}</div>
+                        <div key={i} style={{ padding: "14px 18px", borderRadius: 10, background: "rgba(239,68,68,0.03)", borderLeft: "3px solid rgba(239,68,68,0.2)", fontSize: 13, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
+                          <span style={{ color: "#EF4444", marginRight: 8 }}>?</span>{q}
+                        </div>
                       ))}
                     </div>
                   </>
@@ -977,12 +1353,17 @@ export default function Home() {
         }
         .sim-pulse-icon { animation: simPulse 3s ease-in-out infinite; }
         @keyframes simPulse {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
+          0%, 100% { opacity: 0.3; transform: scale(0.95); }
+          50% { opacity: 1; transform: scale(1); }
         }
         textarea::placeholder { color: rgba(255,255,255,0.15); }
-        .sim-textarea:focus { border-color: rgba(201,168,76,0.15) !important; }
-        .sim-example-card:hover { border-color: rgba(201,168,76,0.08) !important; color: rgba(255,255,255,0.5) !important; }
+        .sim-textarea:focus { border-color: rgba(201,168,76,0.25) !important; box-shadow: 0 0 20px rgba(201,168,76,0.05) !important; }
+        .sim-example-card:hover { border-color: rgba(201,168,76,0.15) !important; background: rgba(201,168,76,0.02) !important; transform: translateX(4px); }
+        .sim-start-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(201,168,76,0.2); }
+        @keyframes simBtnSpin {
+          to { transform: rotate(360deg); }
+        }
+        .sim-btn-spinner { animation: simBtnSpin 0.6s linear infinite; }
         .send-btn:hover:not(:disabled) { transform: scale(1.05); }
         .card-hover:hover { border-color: rgba(201,168,76,0.1) !important; color: rgba(255,255,255,0.5) !important; background: rgba(201,168,76,0.02) !important; transform: translateY(-1px); }
         @media (max-width: 768px) {
@@ -1004,7 +1385,10 @@ export default function Home() {
           .sim-input-container { padding: 0 !important; }
           .sim-result-outer { padding: 20px !important; }
           .sim-result-header { flex-direction: column !important; align-items: flex-start !important; }
-          .sim-meta-cards { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+          .sim-meta-cards { grid-template-columns: 1fr 1fr !important; }
+          .sim-progress-layout { grid-template-columns: 1fr !important; }
+          .sim-progress-container { padding-top: 0 !important; }
+          .sim-scenarios-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
