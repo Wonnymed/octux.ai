@@ -8,7 +8,43 @@ function sendSSE(controller: ReadableStreamDefaultController, encoder: TextEncod
   controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
 }
 
-async function buildGraph(scenario: string) {
+async function getWorldContext(scenario: string): Promise<string> {
+  try {
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 2000,
+      tools: [
+        {
+          type: "web_search_20250305",
+          name: "web_search",
+          max_uses: 5,
+        } as any,
+      ],
+      messages: [{
+        role: "user",
+        content: `You are a research analyst. Search for and summarize the CURRENT real-world context relevant to this business scenario. Focus on:
+1. Current regulations and recent policy changes in the countries involved
+2. Current market conditions (prices, demand, competition)
+3. Current geopolitical situation affecting the trade route
+4. Current logistics conditions (shipping rates, port delays, route disruptions)
+5. Any recent news that would affect this specific operation
+
+Scenario: ${scenario}
+
+Provide a concise briefing (max 500 words) with specific numbers and dates. This will be used to ground a business simulation in reality.`
+      }],
+    });
+
+    return response.content
+      .filter((block: any) => block.type === "text")
+      .map((block: any) => block.text)
+      .join("\n");
+  } catch {
+    return "";
+  }
+}
+
+async function buildGraph(scenario: string, worldContext: string) {
   const response = await client.messages.create({
     model: "claude-sonnet-4-20250514",
     max_tokens: 2000,
@@ -23,14 +59,14 @@ async function buildGraph(scenario: string) {
   "key_variables": ["string"],
   "critical_questions": ["string"]
 }`,
-    messages: [{ role: "user", content: scenario }],
+    messages: [{ role: "user", content: `${scenario}${worldContext ? `\n\nCURRENT WORLD CONTEXT:\n${worldContext}` : ""}` }],
   });
   const text = (response.content[0] as any).text || "{}";
   try { return JSON.parse(text.replace(/```json|```/g, "").trim()); }
   catch { return { entities: [], relationships: [], key_variables: [], critical_questions: [] }; }
 }
 
-async function setupAgents(graph: any, scenario: string, userLang: string) {
+async function setupAgents(graph: any, scenario: string, userLang: string, worldContext: string) {
   const response = await client.messages.create({
     model: "claude-sonnet-4-20250514",
     max_tokens: 4000,
@@ -83,7 +119,7 @@ Return ONLY valid JSON:
 }
 
 Respond in ${userLang}. Generate at least 12 agents with good diversity across categories.`,
-    messages: [{ role: "user", content: `SCENARIO: ${scenario}\n\nENTITY GRAPH:\n${JSON.stringify(graph)}` }],
+    messages: [{ role: "user", content: `SCENARIO: ${scenario}\n\nENTITY GRAPH:\n${JSON.stringify(graph)}${worldContext ? `\n\nCURRENT WORLD CONTEXT (use real numbers from this):\n${worldContext}` : ""}` }],
   });
   const text = (response.content[0] as any).text || "{}";
   try { return JSON.parse(text.replace(/```json|```/g, "").trim()); }
@@ -92,7 +128,7 @@ Respond in ${userLang}. Generate at least 12 agents with good diversity across c
 
 async function processAgent(
   agent: any, round: number, rounds: number, scenario: string,
-  graph: any, context: any, previousDiscussion: string, userLang: string
+  graph: any, context: any, previousDiscussion: string, userLang: string, worldContext: string
 ): Promise<string> {
   try {
     const response = await client.messages.create({
@@ -119,7 +155,7 @@ RULES:
 - Respond in ${userLang}.`,
       messages: [{
         role: "user",
-        content: `SCENARIO: ${scenario}\n\nENTITY GRAPH: ${JSON.stringify(graph)}\n\nUSER CONTEXT: ${JSON.stringify(context || {})}\n\nPREVIOUS DISCUSSION:\n${previousDiscussion || "This is the opening round. Present your initial analysis."}\n\nYour analysis for round ${round}:`
+        content: `SCENARIO: ${scenario}\n\nENTITY GRAPH: ${JSON.stringify(graph)}\n\nUSER CONTEXT: ${JSON.stringify(context || {})}${worldContext ? `\n\nCURRENT WORLD CONTEXT:\n${worldContext}` : ""}\n\nPREVIOUS DISCUSSION:\n${previousDiscussion || "This is the opening round. Present your initial analysis."}\n\nYour analysis for round ${round}:`
       }],
     });
     return (response.content[0] as any).text || "";
@@ -128,7 +164,7 @@ RULES:
   }
 }
 
-async function generateReport(scenario: string, graph: any, agents: any[], simulation: any[], params: any, userLang: string) {
+async function generateReport(scenario: string, graph: any, agents: any[], simulation: any[], params: any, userLang: string, worldContext: string) {
   const simText = simulation.map(m =>
     `[${m.agentName} (${m.role}, ${m.category}) — Round ${m.round}]:\n${m.content}`
   ).join("\n\n---\n\n");
@@ -151,6 +187,7 @@ RULES:
 - Calculate all costs in USD AND BRL (use approximate rate 1 USD = 5.5 BRL)
 - The report must be actionable — reader should know exactly what to do next
 - Synthesize ALL perspectives across all agent categories
+- Use the CURRENT WORLD CONTEXT to ground all numbers in reality
 - Respond in ${userLang}`,
     messages: [{
       role: "user",
@@ -158,7 +195,7 @@ RULES:
 
 ENTITY GRAPH:
 ${JSON.stringify(graph)}
-
+${worldContext ? `\nCURRENT WORLD CONTEXT (use these real-world numbers):\n${worldContext}\n` : ""}
 AGENTS IN SIMULATION (${agentCount} agents):
 ${agents.map((a: any) => `${a.name} — ${a.role} [${a.category}]`).join("\n")}
 
@@ -225,17 +262,22 @@ export async function POST(req: NextRequest) {
   const readable = new ReadableStream({
     async start(controller) {
       try {
-        // Stage 1: Graph
+        // Stage -1: Gather real-time intelligence
+        sendSSE(controller, encoder, { type: "stage", stage: -1 });
+        const worldContext = await getWorldContext(scenario);
+        sendSSE(controller, encoder, { type: "stage_done", stage: -1 });
+
+        // Stage 0: Graph
         sendSSE(controller, encoder, { type: "stage", stage: 0 });
-        const graph = await buildGraph(scenario);
+        const graph = await buildGraph(scenario, worldContext);
         sendSSE(controller, encoder, { type: "stage_done", stage: 0, data: { graph } });
 
-        // Stage 2: Agents
+        // Stage 1: Agents
         sendSSE(controller, encoder, { type: "stage", stage: 1 });
-        const { agents, simulation_parameters } = await setupAgents(graph, scenario, userLang);
+        const { agents, simulation_parameters } = await setupAgents(graph, scenario, userLang, worldContext);
         sendSSE(controller, encoder, { type: "stage_done", stage: 1, data: { agents, simulation_parameters }, totalAgents: agents.length });
 
-        // Stage 3+4: Simulation rounds with parallel batching
+        // Stage 2+3: Simulation rounds with parallel batching
         sendSSE(controller, encoder, { type: "stage", stage: 2 });
         const allMessages: any[] = [];
         const rounds = Math.min(simulation_parameters.rounds || 3, 4);
@@ -245,11 +287,9 @@ export async function POST(req: NextRequest) {
             sendSSE(controller, encoder, { type: "stage", stage: 3 });
           }
 
-          // Process agents in parallel batches
           for (let batchStart = 0; batchStart < agents.length; batchStart += BATCH_SIZE) {
             const batch = agents.slice(batchStart, batchStart + BATCH_SIZE);
 
-            // Emit agent_start for all in batch
             for (const agent of batch) {
               sendSSE(controller, encoder, { type: "agent_start", agentName: agent.name, role: agent.role, category: agent.category, round });
             }
@@ -258,12 +298,10 @@ export async function POST(req: NextRequest) {
               .map(m => `[${m.agentName} (${m.role}) — Round ${m.round}]: ${m.content}`)
               .join("\n\n");
 
-            // Run batch in parallel
             const batchResults = await Promise.all(
-              batch.map(agent => processAgent(agent, round, rounds, scenario, graph, context, previousDiscussion, userLang))
+              batch.map(agent => processAgent(agent, round, rounds, scenario, graph, context, previousDiscussion, userLang, worldContext))
             );
 
-            // Emit results
             for (let i = 0; i < batch.length; i++) {
               const agent = batch[i];
               const content = batchResults[i];
@@ -274,9 +312,9 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // Stage 5: Report
+        // Stage 4: Report
         sendSSE(controller, encoder, { type: "stage", stage: 4 });
-        const report = await generateReport(scenario, graph, agents, allMessages, simulation_parameters, userLang);
+        const report = await generateReport(scenario, graph, agents, allMessages, simulation_parameters, userLang, worldContext);
         sendSSE(controller, encoder, { type: "stage_done", stage: 4 });
 
         // Final result

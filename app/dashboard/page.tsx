@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { getProfile, updateProfile } from "../lib/profile";
 import { t, Language } from "../lib/i18n";
 import {
-  IconZap, IconCopy, IconRetry, IconThumbUp, IconThumbDown, IconExport, IconPlus,
+  IconZap, IconGlobe, IconCopy, IconRetry, IconThumbUp, IconThumbDown, IconExport, IconPlus,
   IconChevron, IconClose, IconMenu, IconArrowUp, IconCheck, IconWarning,
   IconInfo, IconSearch, IconAgents, IconSimulate, IconDebate, IconReport,
   IconGraph, IconFile, IconLink, IconArrowDown, IconChat, IconSettings,
@@ -32,7 +32,7 @@ function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id
 /* ═══ Keyboard Shortcuts Modal ═══ */
 const SHORTCUTS = [
   { keys: ["\u2318", "K"], desc: "Focus input" },
-  { keys: ["\u2318", "\u21e7", "S"], desc: "Toggle Chat / Simulate" },
+  { keys: ["\u2318", "\u21e7", "S"], desc: "Cycle Chat / Simulate / Intel" },
   { keys: ["\u2318", "N"], desc: "New conversation" },
   { keys: ["Esc"], desc: "Close sidebar / modal" },
   { keys: ["?"], desc: "Show shortcuts" },
@@ -60,7 +60,9 @@ const SIM_EXAMPLE_KEYS = [
   "sim.example.1", "sim.example.2", "sim.example.3",
 ];
 
-const SIM_STAGE_KEYS = ["stage.0", "stage.1", "stage.2", "stage.3", "stage.4"];
+const SIM_STAGE_KEYS = ["stage.intelligence", "stage.0", "stage.1", "stage.2", "stage.3", "stage.4"];
+
+const INTEL_FOCUS_OPTIONS = ["geopolitics", "regulations", "markets", "logistics", "crypto"];
 
 const ENTITY_COLORS: Record<string, { bg: string; color: string; border: string }> = {
   product: { bg: "rgba(59,130,246,0.08)", color: "#3B82F6", border: "rgba(59,130,246,0.15)" },
@@ -111,7 +113,12 @@ export default function Home() {
   const [lang, setLang] = useState<Language>("en");
   const [rates, setRates] = useState<any>(null);
   const [profileName, setProfileName] = useState("");
-  const [mode, setMode] = useState<"chat" | "simulate">("chat");
+  const [mode, setMode] = useState<"chat" | "simulate" | "intel">("chat");
+  const [searching, setSearching] = useState(false);
+  const [intelContent, setIntelContent] = useState("");
+  const [intelLoading, setIntelLoading] = useState(false);
+  const [intelTimestamp, setIntelTimestamp] = useState<string | null>(null);
+  const [intelFocus, setIntelFocus] = useState<string[]>([]);
   const [simulating, setSimulating] = useState(false);
   const [simResult, setSimResult] = useState<any>(null);
   const [simScenario, setSimScenario] = useState("");
@@ -177,7 +184,7 @@ export default function Home() {
     const handler = (e: KeyboardEvent) => {
       const meta = e.metaKey || e.ctrlKey;
       if (meta && e.key === "k") { e.preventDefault(); inputRef.current?.focus(); }
-      else if (meta && e.shiftKey && e.key.toLowerCase() === "s") { e.preventDefault(); setMode(prev => prev === "chat" ? "simulate" : "chat"); }
+      else if (meta && e.shiftKey && e.key.toLowerCase() === "s") { e.preventDefault(); setMode(prev => prev === "chat" ? "simulate" : prev === "simulate" ? "intel" : "chat"); }
       else if (meta && e.key === "n") { e.preventDefault(); if (mode === "chat") { setMessages([]); } else { setSimResult(null); setSimScenario(""); setSimulating(false); } addToast(mode === "chat" ? t("sidebar.new_chat", lang) : t("sidebar.new_simulation", lang), "info"); }
       else if (e.key === "Escape") { setSidebarOpen(false); setShowShortcuts(false); }
       else if (e.key === "?" && !e.metaKey && !e.ctrlKey && document.activeElement?.tagName !== "TEXTAREA" && document.activeElement?.tagName !== "INPUT") { e.preventDefault(); setShowShortcuts(prev => !prev); }
@@ -195,6 +202,7 @@ export default function Home() {
     setMessages(newMessages);
     setInput("");
     setLoading(true);
+    setSearching(false);
     setMessages([...newMessages, { role: "assistant", content: "" }]);
 
     try {
@@ -218,7 +226,10 @@ export default function Home() {
             if (!line.startsWith("data: ")) continue;
             try {
               const data = JSON.parse(line.slice(6));
-              if (data.type === "text") {
+              if (data.type === "searching") {
+                setSearching(true);
+              } else if (data.type === "text") {
+                setSearching(false);
                 fullText += data.text;
                 setMessages(prev => { const u = [...prev]; u[u.length - 1] = { role: "assistant", content: fullText }; return u; });
               } else if (data.type === "tool") {
@@ -239,6 +250,7 @@ export default function Home() {
       setMessages(prev => { const u = [...prev]; u[u.length - 1] = { role: "assistant", content: t("chat.connection_error", lang) }; return u; });
     }
     setLoading(false);
+    setSearching(false);
     inputRef.current?.focus();
   };
 
@@ -274,7 +286,7 @@ export default function Home() {
           if (!line.startsWith("data: ")) continue;
           try {
             const data = JSON.parse(line.slice(6));
-            if (data.type === "stage") setSimStage(data.stage);
+            if (data.type === "stage") setSimStage(data.stage === -1 ? 0 : data.stage + 1);
             else if (data.type === "stage_done" && data.totalAgents) setSimTotalAgents(data.totalAgents);
             else if (data.type === "agent_start") setSimLiveAgents(prev => [...prev, { name: data.agentName, role: data.role, category: data.category, done: false }]);
             else if (data.type === "agent_done") setSimLiveAgents(prev => prev.map(a => a.name === data.agentName && !a.done ? { ...a, done: true } : a));
@@ -285,6 +297,54 @@ export default function Home() {
       }
     } catch { setSimResult({ error: "Simulation error. Try again." }); }
     setSimulating(false);
+  };
+
+  /* ═══ Intel ═══ */
+  const generateIntel = async () => {
+    setIntelLoading(true);
+    setIntelContent("");
+    setIntelTimestamp(null);
+    try {
+      const res = await fetch("/api/intel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ focus_areas: intelFocus, language: lang }),
+      });
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullText = "";
+      let buffer = "";
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.type === "text") {
+                fullText += data.text;
+                setIntelContent(fullText);
+              } else if (data.type === "done") {
+                setIntelTimestamp(data.timestamp || new Date().toISOString());
+              }
+            } catch {}
+          }
+        }
+      }
+    } catch {
+      setIntelContent("Error generating briefing. Please try again.");
+    }
+    setIntelLoading(false);
+  };
+
+  const askAboutIntel = (section: string) => {
+    setMode("chat");
+    const question = section.slice(0, 300);
+    setTimeout(() => send(question), 200);
   };
 
   const exportReport = () => {
@@ -318,7 +378,7 @@ export default function Home() {
   /* ══════════════════════════════════════════════════════ */
   const renderSimulation = () => {
     const FOCUS_OPTIONS = ["Cost", "Risk", "Timeline", "Legal", "Market"];
-    const progressPct = Math.min(((simStage + 1) / 5) * 100, 100);
+    const progressPct = Math.min(((simStage + 1) / 6) * 100, 100);
     const ringR = 70, ringC = 2 * Math.PI * ringR, ringOff = ringC - (progressPct / 100) * ringC;
 
     if (!simResult && !simulating) {
@@ -410,7 +470,7 @@ export default function Home() {
                 </svg>
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)" }}>
                   <StageIcon index={simStage} size={28} />
-                  <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", marginTop: 6 }}>Stage {simStage + 1}/5</span>
+                  <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", marginTop: 6 }}>Stage {simStage + 1}/6</span>
                 </div>
               </div>
               <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>{t(SIM_STAGE_KEYS[simStage] || "stage.0", lang)}</div>
@@ -434,7 +494,7 @@ export default function Home() {
                           ...(isCurrent ? { animation: "accentPulse 2s ease-in-out infinite" } : {}) }}>
                           {isDone && <IconCheck size={8} style={{ color: "#fff" }} />}
                         </div>
-                        {idx < 4 && <div style={{ width: 1, flex: 1, minHeight: 28, background: isDone ? "var(--accent)" : "var(--border-light)", transition: "background 0.3s", opacity: isDone ? 0.4 : 1 }} />}
+                        {idx < 5 && <div style={{ width: 1, flex: 1, minHeight: 28, background: isDone ? "var(--accent)" : "var(--border-light)", transition: "background 0.3s", opacity: isDone ? 0.4 : 1 }} />}
                       </div>
                       <div style={{ paddingBottom: 20 }}>
                         <div style={{ fontSize: 12, color: isDone ? "var(--text-tertiary)" : isCurrent ? "var(--text-primary)" : "var(--text-tertiary)", fontWeight: isCurrent ? 500 : 400, display: "flex", alignItems: "center", gap: 6, transition: "color 0.3s" }}>
@@ -777,12 +837,16 @@ export default function Home() {
         {/* Mode toggle */}
         <div style={{ display: "flex", marginBottom: 16, borderRadius: 8, overflow: "hidden", background: "var(--bg-secondary)", border: "1px solid var(--border-light)" }}>
           <button onClick={() => setMode("chat")}
-            style={{ flex: 1, padding: "10px 0", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: mode === "chat" ? "var(--sidebar-active)" : "transparent", color: mode === "chat" ? "var(--accent)" : "var(--text-tertiary)", border: "none", cursor: "pointer", transition: "all 0.2s" }}>
-            <IconChat size={14} /> {t("sidebar.mode_chat", lang)}
+            style={{ flex: 1, padding: "10px 0", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, background: mode === "chat" ? "var(--sidebar-active)" : "transparent", color: mode === "chat" ? "var(--accent)" : "var(--text-tertiary)", border: "none", cursor: "pointer", transition: "all 0.2s" }}>
+            <IconChat size={13} /> {t("sidebar.mode_chat", lang)}
           </button>
           <button onClick={() => { setMode("simulate"); setSimResult(null); setSimulating(false); }}
-            style={{ flex: 1, padding: "10px 0", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: mode === "simulate" ? "var(--sidebar-active)" : "transparent", color: mode === "simulate" ? "var(--accent)" : "var(--text-tertiary)", border: "none", cursor: "pointer", transition: "all 0.2s" }}>
-            <IconSimulate size={14} /> {t("sidebar.mode_simulate", lang)}
+            style={{ flex: 1, padding: "10px 0", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, background: mode === "simulate" ? "var(--sidebar-active)" : "transparent", color: mode === "simulate" ? "var(--accent)" : "var(--text-tertiary)", border: "none", cursor: "pointer", transition: "all 0.2s" }}>
+            <IconSimulate size={13} /> {t("sidebar.mode_simulate", lang)}
+          </button>
+          <button onClick={() => setMode("intel")}
+            style={{ flex: 1, padding: "10px 0", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, background: mode === "intel" ? "var(--sidebar-active)" : "transparent", color: mode === "intel" ? "var(--accent)" : "var(--text-tertiary)", border: "none", cursor: "pointer", transition: "all 0.2s" }}>
+            <IconGlobe size={13} /> {t("sidebar.mode_intel", lang)}
           </button>
         </div>
 
@@ -846,7 +910,122 @@ export default function Home() {
           <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>SIGNUX</span>
         </div>
 
-        {mode === "simulate" ? renderSimulation() : (
+        {mode === "intel" ? (
+          /* ═══ INTEL MODE ═══ */
+          <div style={{ flex: 1, overflowY: "auto", padding: 24 }}>
+            <div style={{ maxWidth: 800, margin: "0 auto" }}>
+              {!intelContent && !intelLoading ? (
+                /* Intel welcome state */
+                <div style={{ paddingTop: 48, textAlign: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12 }}>
+                    <div style={{ color: "var(--accent)", animation: "accentPulse 3s ease-in-out infinite" }}><IconGlobe size={20} /></div>
+                    <span style={{ fontSize: 11, letterSpacing: "0.2em", color: "var(--accent)", fontFamily: "var(--font-mono)", textTransform: "uppercase" }}>GOD&apos;S VIEW</span>
+                  </div>
+                  <div style={{ fontSize: 28, fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>{t("intel.title", lang)}</div>
+                  <div style={{ fontSize: 14, color: "var(--text-tertiary)", lineHeight: 1.7, marginBottom: 40, maxWidth: 500, margin: "0 auto 40px" }}>{t("intel.subtitle", lang)}</div>
+                  <div style={{ marginBottom: 32 }}>
+                    <div style={{ fontSize: 11, letterSpacing: "0.05em", color: "var(--text-tertiary)", textTransform: "uppercase", marginBottom: 12 }}>{t("intel.focus", lang)}</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
+                      {INTEL_FOCUS_OPTIONS.map(f => (
+                        <button key={f} onClick={() => setIntelFocus(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])}
+                          style={{ padding: "8px 18px", borderRadius: 20, fontSize: 12, cursor: "pointer", transition: "all 0.2s",
+                            background: intelFocus.includes(f) ? "var(--accent-light)" : "transparent",
+                            border: intelFocus.includes(f) ? "1px solid var(--accent)" : "1px solid var(--border)",
+                            color: intelFocus.includes(f) ? "var(--accent)" : "var(--text-tertiary)" }}>
+                          {t(`intel.focus.${f}`, lang)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <button onClick={generateIntel}
+                    style={{ padding: "14px 32px", borderRadius: 10, background: "var(--accent)", color: "#fff", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <IconSearch size={16} /> {t("intel.generate", lang)}
+                  </button>
+                </div>
+              ) : intelLoading && !intelContent ? (
+                /* Loading state */
+                <div style={{ paddingTop: 80, textAlign: "center" }}>
+                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--accent-light)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", animation: "accentPulse 2s ease-in-out infinite" }}>
+                    <IconGlobe size={24} style={{ color: "var(--accent)" }} />
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 500, color: "var(--text-primary)", marginBottom: 8 }}>{t("intel.generating", lang)}</div>
+                  <span className="loading-dots"><span /><span /><span /></span>
+                </div>
+              ) : (
+                /* Intel content */
+                <div style={{ animation: "fadeIn 0.2s ease" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>{t("intel.title", lang)}</div>
+                      {intelTimestamp && (
+                        <div style={{ fontSize: 11, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", marginTop: 4 }}>
+                          {t("intel.generated_at", lang)} {new Date(intelTimestamp).toLocaleString()}
+                        </div>
+                      )}
+                    </div>
+                    <button onClick={generateIntel} disabled={intelLoading}
+                      style={{ fontSize: 13, color: "#fff", background: "var(--accent)", border: "none", padding: "8px 16px", borderRadius: 8, cursor: intelLoading ? "not-allowed" : "pointer", fontWeight: 500, display: "flex", alignItems: "center", gap: 6, opacity: intelLoading ? 0.6 : 1 }}>
+                      <IconRetry size={14} /> {t("intel.update", lang)}
+                    </button>
+                  </div>
+                  {(() => {
+                    const sections: { heading: string; content: string }[] = [];
+                    const lines = intelContent.split("\n");
+                    let curHead = "", curContent = "";
+                    for (const line of lines) {
+                      const h2 = line.match(/^## (.+)/);
+                      if (h2) {
+                        if (curHead) sections.push({ heading: curHead, content: curContent.trim() });
+                        curHead = h2[1]; curContent = "";
+                      } else {
+                        curContent += line + "\n";
+                      }
+                    }
+                    if (curHead) sections.push({ heading: curHead, content: curContent.trim() });
+                    if (sections.length === 0 && intelContent) sections.push({ heading: "", content: intelContent });
+
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {sections.map((sec, si) => {
+                          const riskMatch = sec.content.match(/CRITICAL|HIGH|MEDIUM|LOW/gi);
+                          const maxRisk = riskMatch ? (riskMatch.some(r => r.toUpperCase() === "CRITICAL") ? "critical" : riskMatch.some(r => r.toUpperCase() === "HIGH") ? "high" : riskMatch.some(r => r.toUpperCase() === "MEDIUM") ? "medium" : "low") : null;
+                          const riskColors: Record<string, string> = { low: "var(--success)", medium: "var(--warning)", high: "#F97316", critical: "var(--error)" };
+                          const isCollapsed = collapsedSections[`intel-${si}`];
+                          return (
+                            <div key={`intel-${si}`} style={{ borderRadius: 10, background: "var(--bg-secondary)", border: "1px solid var(--border-light)", overflow: "hidden", animation: `fadeInUp ${0.15 + si * 0.04}s ease-out` }}>
+                              <button onClick={() => setCollapsedSections(prev => ({ ...prev, [`intel-${si}`]: !prev[`intel-${si}`] }))}
+                                style={{ width: "100%", padding: "16px 20px", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                  <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>{sec.heading || "Briefing"}</span>
+                                  {maxRisk && <span style={{ fontSize: 9, padding: "2px 8px", borderRadius: 8, background: `${riskColors[maxRisk]}15`, color: riskColors[maxRisk], letterSpacing: "0.05em", textTransform: "uppercase" }}>{t(`intel.risk.${maxRisk}`, lang)}</span>}
+                                </div>
+                                <IconChevron size={14} direction={isCollapsed ? "right" : "down"} style={{ color: "var(--text-tertiary)" }} />
+                              </button>
+                              {!isCollapsed && (
+                                <div style={{ padding: "0 20px 16px" }}>
+                                  <div style={{ fontSize: 15, lineHeight: 1.7, color: "var(--text-secondary)" }}>
+                                    <ReactMarkdown components={MD_COMPONENTS}>{sec.content}</ReactMarkdown>
+                                  </div>
+                                  {sec.heading && (
+                                    <button onClick={() => askAboutIntel(`Tell me more about: ${sec.heading}. ${sec.content.slice(0, 200)}`)}
+                                      style={{ marginTop: 12, fontSize: 12, color: "var(--accent)", background: "var(--accent-light)", border: "none", padding: "6px 14px", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                                      <IconChat size={12} /> {t("intel.ask", lang)}
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                  {intelLoading && <div style={{ textAlign: "center", padding: 20 }}><span className="loading-dots"><span /><span /><span /></span></div>}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : mode === "simulate" ? renderSimulation() : (
           <>
             <div ref={messagesAreaRef} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }} className="messages-area">
               {messages.length === 0 ? (
@@ -923,7 +1102,7 @@ export default function Home() {
                       </div>
                     </div>
                   ))}
-                  {/* Loading dots */}
+                  {/* Loading / Searching indicator */}
                   {loading && messages[messages.length - 1]?.content === "" && (
                     <div style={{ padding: "24px 0", borderBottom: "1px solid var(--border-light)" }}>
                       <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px", display: "flex", gap: 14, alignItems: "flex-start" }}>
@@ -931,7 +1110,11 @@ export default function Home() {
                         <div>
                           <div style={{ fontSize: 13, fontWeight: 500, fontFamily: "var(--font-sans)", color: "var(--text-primary)", marginBottom: 8 }}>Signux</div>
                           <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-tertiary)" }}>
-                            <span className="loading-dots"><span /><span /><span /></span>
+                            {searching ? (
+                              <><IconSearch size={14} /> <span style={{ fontSize: 13 }}>{t("chat.searching", lang)}</span></>
+                            ) : (
+                              <span className="loading-dots"><span /><span /><span /></span>
+                            )}
                           </div>
                         </div>
                       </div>

@@ -3,7 +3,10 @@ import { NextRequest } from "next/server";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SIGNUX_SYSTEM = `You are Signux — an operational intelligence platform for global operators. You are the world's most knowledgeable AI on international business operations.
+function buildSystemPrompt(): string {
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  return `You are Signux — an operational intelligence platform for global operators. You are the world's most knowledgeable AI on international business operations.
 
 YOUR KNOWLEDGE DOMAINS:
 
@@ -40,7 +43,45 @@ BEHAVIOR:
 - You respond in the user's preferred language (provided in context).
 - You use your tools (calculate_landed_cost, estimate_setup_cost, get_exchange_rate) proactively when relevant.
 - You are not a generic chatbot. You are a specialist platform. Your responses should feel like talking to a senior consultant who has done 500+ international deals.
-- When a question spans multiple domains (e.g. "import from China via Hong Kong company"), seamlessly combine your knowledge across domains.`;
+- When a question spans multiple domains (e.g. "import from China via Hong Kong company"), seamlessly combine your knowledge across domains.
+
+TEMPORAL AWARENESS:
+Today is ${today}.
+You are LIVE. You have web search. You know what is happening RIGHT NOW in the world.
+
+When a user asks about ANY country, jurisdiction, or market:
+1. FIRST search for the latest news/changes about that topic
+2. THEN give your analysis incorporating current events
+3. Flag any recent changes that might affect the user's plans
+
+Never give stale advice. If Hong Kong changed a regulation last week, you should know about it.
+If there's a new shipping route disruption, factor it into cost estimates.
+If a country had an election, consider how the new government might affect business.
+
+You are not an encyclopedia. You are a LIVE intelligence system.
+
+REAL-TIME INTELLIGENCE (GOD'S VIEW):
+You have access to web search. You MUST use it proactively in these situations:
+- ANY question about current events, news, politics, regulations, or market conditions
+- ANY question about current exchange rates, commodity prices, or shipping costs
+- ANY question about government policies, tax laws, or regulatory changes in ANY country
+- ANY question where the answer might have changed in the last 6 months
+- ANY question about sanctions, trade restrictions, or geopolitical tensions
+- BEFORE giving advice on any country's business environment — search for recent changes first
+
+When you search, synthesize the information naturally into your response. Cite the key findings but don't just list search results. Analyze what the news MEANS for the user's specific situation.
+
+CRITICAL: Never say "I don't have access to current information" or "my knowledge cutoff is...". You HAVE web search. Use it. Always give current, real-time answers.
+
+Examples of when to ALWAYS search:
+- "Should I set up in Hong Kong?" → Search for latest HK business regulations, tax changes, geopolitical situation
+- "Import from China to Brazil" → Search for current tariffs, shipping rates, any new trade restrictions
+- "Is Dubai still tax free?" → Search for latest UAE tax policy updates
+- "How does the [current event] affect my business?" → Search for the event + business impact analysis
+- "What's happening with crypto regulation?" → Search for latest regulatory news in relevant jurisdictions
+
+You are not a static AI. You are a LIVE intelligence platform. Act like it.`;
+}
 
 const TOOLS: Anthropic.Tool[] = [
   {
@@ -160,7 +201,7 @@ export async function POST(req: NextRequest) {
       contextPrefix += `\nCURRENT EXCHANGE RATES (use these for calculations):\n- 1 USD = ${rates.USDBRL} BRL\n- 1 USD = ${rates.USDHKD} HKD\n- 1 USD = ${rates.USDCNY} CNY\n- 1 USD = ${rates.USDEUR} EUR\n- 1 USD = ${rates.USDKRW} KRW\nUpdated: ${rates.updated}\n`;
     }
 
-    const fullSystemPrompt = SIGNUX_SYSTEM + contextPrefix;
+    const fullSystemPrompt = buildSystemPrompt() + contextPrefix;
     const encoder = new TextEncoder();
 
     const readable = new ReadableStream({
@@ -176,19 +217,32 @@ export async function POST(req: NextRequest) {
               model: "claude-sonnet-4-20250514",
               max_tokens: 4096,
               system: fullSystemPrompt,
-              tools: TOOLS,
+              tools: [
+                ...TOOLS,
+                {
+                  type: "web_search_20250305",
+                  name: "web_search",
+                  max_uses: 5,
+                } as any,
+              ],
               messages: currentMessages,
               stream: true,
             });
 
             let toolUseBlock: { id: string; name: string } | null = null;
             let toolInput = "";
+            let hasEmittedSearching = false;
 
             for await (const event of response) {
               if (event.type === "content_block_start") {
                 if (event.content_block.type === "tool_use") {
                   toolUseBlock = { id: event.content_block.id, name: event.content_block.name };
                   toolInput = "";
+                  // If web_search is being used, notify the frontend
+                  if (event.content_block.name === "web_search" && !hasEmittedSearching) {
+                    sendSSE(controller, encoder, { type: "searching" });
+                    hasEmittedSearching = true;
+                  }
                 }
               } else if (event.type === "content_block_delta") {
                 if (event.delta.type === "text_delta") {
@@ -197,6 +251,15 @@ export async function POST(req: NextRequest) {
                   toolInput += event.delta.partial_json;
                 }
               } else if (event.type === "content_block_stop" && toolUseBlock) {
+                // web_search is handled natively by Anthropic — no custom execution needed
+                if (toolUseBlock.name === "web_search") {
+                  // The API handles web_search internally; results flow into the next text block
+                  // We just need to continue the loop so Claude can use the results
+                  toolUseBlock = null;
+                  toolInput = "";
+                  continue;
+                }
+
                 let parsedInput: any = {};
                 try { parsedInput = JSON.parse(toolInput); } catch {}
 

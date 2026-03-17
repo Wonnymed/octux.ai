@@ -310,9 +310,10 @@ export function IconChat({ size = 20, ...p }: { size?: number } & React.SVGProps
 
 // Sim stage icon map
 export const SIM_STAGE_ICONS: React.FC<{ size?: number }>[] = [
-  IconSearch,
-  IconAgents,
-  IconSimulate,
-  IconDebate,
-  IconReport,
+  IconGlobe,    // Stage -1: Gathering intelligence
+  IconSearch,   // Stage 0: Extracting entities
+  IconAgents,   // Stage 1: Generating agents
+  IconSimulate, // Stage 2: Running simulation
+  IconDebate,   // Stage 3: Agents debating
+  IconReport,   // Stage 4: Compiling report
 ];
