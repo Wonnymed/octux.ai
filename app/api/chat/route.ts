@@ -220,7 +220,9 @@ export async function POST(req: NextRequest) {
 
     let contextPrefix = "";
     if (profile) {
-      contextPrefix = `\n\nUSER PROFILE (use this context to personalize responses):\n- Name: ${profile.name}\n- Tax residence: ${profile.taxResidence}\n- Operations: ${profile.operations?.join(", ")}\n- Existing structures: ${profile.structures?.join(", ") || "None"}\n- Monthly volume: ${profile.monthlyVolume || "Not specified"}\n- Languages: ${profile.languages?.join(", ") || "Not specified"}\n\nUse this context to give specific, personalized recommendations instead of generic advice.\n`;
+      const langMap: Record<string, string> = { en: "English", pt: "Portuguese", es: "Spanish", zh: "Chinese", ko: "Korean", ja: "Japanese", fr: "French", de: "German", it: "Italian" };
+      const userLang = langMap[profile.language] || "English";
+      contextPrefix = `\n\nUSER PROFILE (use this context to personalize responses):\n- Name: ${profile.name}\n- Tax residence: ${profile.taxResidence}\n- Operations: ${profile.operations?.join(", ")}\n- Existing structures: ${profile.structures?.join(", ") || "None"}\n- Monthly volume: ${profile.monthlyVolume || "Not specified"}\n- Languages: ${profile.languages?.join(", ") || "Not specified"}\n- Preferred language: ${userLang}\n\nIMPORTANT: You MUST respond in ${userLang}. Use this context to give specific, personalized recommendations instead of generic advice.\n`;
     }
     if (rates) {
       contextPrefix += `\nCURRENT EXCHANGE RATES (use these for calculations):\n- 1 USD = ${rates.USDBRL} BRL\n- 1 USD = ${rates.USDHKD} HKD\n- 1 USD = ${rates.USDCNY} CNY\n- 1 USD = ${rates.USDEUR} EUR\n- 1 USD = ${rates.USDKRW} KRW\nUpdated: ${rates.updated}\n`;

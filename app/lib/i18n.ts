@@ -1082,6 +1082,91 @@ const translations: Record<string, Record<string, string>> = {
     de: "Wählen Sie Ihre Sprache",
     it: "Scegli la tua lingua",
   },
+
+  // ═══════════════════════════════════════════════════════
+  // COMMON (additional)
+  // ═══════════════════════════════════════════════════════
+  "common.disclaimer": {
+    en: "Signux can make mistakes. Verify important information.",
+    pt: "Signux pode cometer erros. Verifique informações importantes.",
+    es: "Signux puede cometer errores. Verifica la información importante.",
+    zh: "Signux 可能会出错。请核实重要信息。",
+    ko: "Signux는 실수할 수 있습니다. 중요한 정보를 확인하세요.",
+    ja: "Signux は間違える可能性があります。重要な情報はご確認ください。",
+    fr: "Signux peut faire des erreurs. Vérifiez les informations importantes.",
+    de: "Signux kann Fehler machen. Überprüfen Sie wichtige Informationen.",
+    it: "Signux può commettere errori. Verifica le informazioni importanti.",
+  },
+  "common.today": {
+    en: "Today",
+    pt: "Hoje",
+    es: "Hoy",
+    zh: "今天",
+    ko: "오늘",
+    ja: "今日",
+    fr: "Aujourd'hui",
+    de: "Heute",
+    it: "Oggi",
+  },
+  "common.previous_7_days": {
+    en: "Previous 7 Days",
+    pt: "Últimos 7 dias",
+    es: "Últimos 7 días",
+    zh: "过去 7 天",
+    ko: "지난 7일",
+    ja: "過去7日間",
+    fr: "7 derniers jours",
+    de: "Letzte 7 Tage",
+    it: "Ultimi 7 giorni",
+  },
+  "common.previous_30_days": {
+    en: "Previous 30 Days",
+    pt: "Últimos 30 dias",
+    es: "Últimos 30 días",
+    zh: "过去 30 天",
+    ko: "지난 30일",
+    ja: "過去30日間",
+    fr: "30 derniers jours",
+    de: "Letzte 30 Tage",
+    it: "Ultimi 30 giorni",
+  },
+  "common.version": {
+    en: "v0.1 Beta",
+    pt: "v0.1 Beta",
+    es: "v0.1 Beta",
+    zh: "v0.1 测试版",
+    ko: "v0.1 베타",
+    ja: "v0.1 ベータ",
+    fr: "v0.1 Bêta",
+    de: "v0.1 Beta",
+    it: "v0.1 Beta",
+  },
+
+  // ═══════════════════════════════════════════════════════
+  // SIDEBAR (additional)
+  // ═══════════════════════════════════════════════════════
+  "sidebar.mode_chat": {
+    en: "Chat",
+    pt: "Chat",
+    es: "Chat",
+    zh: "对话",
+    ko: "채팅",
+    ja: "チャット",
+    fr: "Chat",
+    de: "Chat",
+    it: "Chat",
+  },
+  "sidebar.mode_simulate": {
+    en: "Simulate",
+    pt: "Simular",
+    es: "Simular",
+    zh: "模拟",
+    ko: "시뮬레이션",
+    ja: "シミュレーション",
+    fr: "Simuler",
+    de: "Simulieren",
+    it: "Simula",
+  },
 };
 
 export function t(key: string, lang: string, params?: Record<string, string>): string {
