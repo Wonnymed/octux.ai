@@ -3,7 +3,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getProfile } from "../lib/profile";
 import { t, Language, setLanguage } from "../lib/i18n";
-import type { Message, Toast, SimAgent, SimResult, Mode } from "../lib/types";
+import type { Message, Toast, Attachment, SimAgent, SimResult, Mode } from "../lib/types";
 import { Check, AlertTriangle, Info } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
@@ -11,6 +11,71 @@ import SimulationEngine from "../components/SimulationEngine";
 import IntelBriefing from "../components/IntelBriefing";
 import SettingsModal from "../components/SettingsModal";
 import OnboardingTour, { isTourCompleted } from "../components/OnboardingTour";
+import type { FileAttachment } from "../components/ChatInput";
+
+/* ═══ File Helpers ═══ */
+async function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64 = result.split(",")[1];
+      resolve(base64);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function fileToText(file: File): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.readAsText(file);
+  });
+}
+
+async function buildMessageContent(
+  text: string,
+  attachments: FileAttachment[],
+): Promise<any[]> {
+  const content: any[] = [];
+
+  for (const att of attachments) {
+    if (att.type === "image") {
+      const base64 = await fileToBase64(att.file);
+      content.push({
+        type: "image",
+        source: {
+          type: "base64",
+          media_type: att.file.type,
+          data: base64,
+        },
+      });
+    } else if (att.file.name.toLowerCase().endsWith(".pdf")) {
+      const base64 = await fileToBase64(att.file);
+      content.push({
+        type: "document",
+        source: {
+          type: "base64",
+          media_type: "application/pdf",
+          data: base64,
+        },
+      });
+    } else {
+      const textContent = await fileToText(att.file);
+      content.push({
+        type: "text",
+        text: `[File: ${att.file.name}]\n\`\`\`\n${textContent}\n\`\`\``,
+      });
+    }
+  }
+
+  if (text.trim()) {
+    content.push({ type: "text", text: text });
+  }
+
+  return content;
+}
 
 /* ═══ Toast System ═══ */
 let toastId = 0;
@@ -48,6 +113,7 @@ export default function ChatPage() {
   const [profileName, setProfileName] = useState("");
   const [mode, setMode] = useState<Mode>("chat");
   const [searching, setSearching] = useState(false);
+  const [attachments, setAttachments] = useState<FileAttachment[]>([]);
 
   /* Intel */
   const [intelContent, setIntelContent] = useState("");
@@ -109,7 +175,6 @@ export default function ChatPage() {
         setTimeout(() => addToast(message, type), 300);
       } catch {}
     }
-    // Show tour for first-time users
     if (!isTourCompleted()) {
       setTimeout(() => setShowTour(true), 500);
     }
@@ -129,6 +194,7 @@ export default function ChatPage() {
         e.preventDefault();
         if (mode === "chat") {
           setMessages([]);
+          setAttachments([]);
         } else {
           setSimResult(null);
           setSimScenario("");
@@ -149,20 +215,56 @@ export default function ChatPage() {
   /* ═══ Chat Handler ═══ */
   const send = async (text?: string) => {
     const msg = text || input.trim();
-    if (!msg || loading) return;
-    const userMsg: Message = { role: "user", content: msg };
-    const newMessages = [...messages, userMsg];
-    setMessages(newMessages);
+    const currentAttachments = attachments;
+    if ((!msg && currentAttachments.length === 0) || loading) return;
+
+    // Build the API content (string or array)
+    let apiContent: string | any[];
+    if (currentAttachments.length > 0) {
+      apiContent = await buildMessageContent(msg, currentAttachments);
+    } else {
+      apiContent = msg;
+    }
+
+    // Build display attachments for the message
+    const displayAttachments: Attachment[] = currentAttachments.map(a => ({
+      type: a.type,
+      name: a.file.name,
+      preview: a.preview,
+      size: a.file.size,
+    }));
+
+    const userMsg: Message = {
+      role: "user",
+      content: msg,
+      ...(displayAttachments.length > 0 ? { attachments: displayAttachments } : {}),
+    };
+
+    // Build the API message with the actual content blocks
+    const apiMsg = { role: "user", content: apiContent };
+
+    const newDisplayMessages = [...messages, userMsg];
+    const newApiMessages = [...messages.map(m => ({ role: m.role, content: m.content }))];
+    // Replace the last display message's content with the API version if it had attachments
+    // Actually, we need to track API messages separately for ones with attachments
+    // Simpler: build API messages from all previous (text-only) + current (multimodal)
+    const apiMessages = [
+      ...messages.map(m => ({ role: m.role, content: m.content })),
+      apiMsg,
+    ];
+
+    setMessages(newDisplayMessages);
     setInput("");
+    setAttachments([]);
     setLoading(true);
     setSearching(false);
-    setMessages([...newMessages, { role: "assistant", content: "" }]);
+    setMessages([...newDisplayMessages, { role: "assistant", content: "" }]);
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages, profile: getProfile(), rates }),
+        body: JSON.stringify({ messages: apiMessages, profile: getProfile(), rates }),
       });
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
@@ -350,6 +452,7 @@ export default function ChatPage() {
   const onNewConversation = () => {
     if (mode === "chat") {
       setMessages([]);
+      setAttachments([]);
     } else {
       setSimResult(null);
       setSimScenario("");
@@ -374,7 +477,6 @@ export default function ChatPage() {
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      {/* Sidebar — always visible */}
       <Sidebar
         mode={mode}
         setMode={setMode}
@@ -426,6 +528,9 @@ export default function ChatPage() {
             profileName={profileName}
             onRetry={onRetry}
             onCopy={handleCopy}
+            attachments={attachments}
+            onAttachmentsChange={setAttachments}
+            onToast={addToast}
           />
         )}
       </main>

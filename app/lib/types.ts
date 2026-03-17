@@ -1,6 +1,14 @@
+export type Attachment = {
+  type: "image" | "document";
+  name: string;
+  preview?: string;
+  size: number;
+};
+
 export type Message = {
   role: "user" | "assistant";
   content: string;
+  attachments?: Attachment[];
 };
 
 export type Toast = {

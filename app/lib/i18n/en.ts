@@ -198,6 +198,12 @@ const en: Record<string, string> = {
   "tour.finish": "Get Started",
   "tour.step_of": "{current} of {total}",
 
+  // FILE UPLOAD
+  "file.too_large": "File too large. Maximum size is 10MB.",
+  "file.not_supported": "File type not supported.",
+  "file.drop_here": "Drop files here",
+  "file.uploading": "Uploading...",
+
   "intel.focus.geopolitics": "Geopolitics",
   "intel.focus.regulations": "Regulations",
   "intel.focus.markets": "Markets",

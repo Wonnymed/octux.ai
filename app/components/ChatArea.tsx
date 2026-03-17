@@ -4,7 +4,7 @@ import { ArrowDown } from "lucide-react";
 import type { Message } from "../lib/types";
 import MessageBlock from "./MessageBlock";
 import WelcomeScreen from "./WelcomeScreen";
-import ChatInput from "./ChatInput";
+import ChatInput, { type FileAttachment } from "./ChatInput";
 
 type ChatAreaProps = {
   messages: Message[];
@@ -16,9 +16,15 @@ type ChatAreaProps = {
   profileName: string;
   onRetry: () => void;
   onCopy: (text: string) => void;
+  attachments: FileAttachment[];
+  onAttachmentsChange: (atts: FileAttachment[]) => void;
+  onToast?: (msg: string, type: "success" | "error" | "info") => void;
 };
 
-export default function ChatArea({ messages, loading, searching, input, setInput, onSend, profileName, onRetry, onCopy }: ChatAreaProps) {
+export default function ChatArea({
+  messages, loading, searching, input, setInput, onSend,
+  profileName, onRetry, onCopy, attachments, onAttachmentsChange, onToast,
+}: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
   const [showScroll, setShowScroll] = useState(false);
@@ -47,6 +53,9 @@ export default function ChatArea({ messages, loading, searching, input, setInput
           setInput={setInput}
           onSend={onSend}
           loading={loading}
+          attachments={attachments}
+          onAttachmentsChange={onAttachmentsChange}
+          onToast={onToast}
         />
       </div>
     );
@@ -109,6 +118,9 @@ export default function ChatArea({ messages, loading, searching, input, setInput
             onChange={setInput}
             onSend={() => onSend()}
             loading={loading}
+            attachments={attachments}
+            onAttachmentsChange={onAttachmentsChange}
+            onToast={onToast}
           />
         </div>
       </div>

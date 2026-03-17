@@ -1,6 +1,6 @@
 "use client";
 import { t } from "../lib/i18n";
-import ChatInput from "./ChatInput";
+import ChatInput, { type FileAttachment } from "./ChatInput";
 
 const SUGGESTION_KEYS = ["suggestion.1", "suggestion.2", "suggestion.3", "suggestion.4"];
 
@@ -10,16 +10,19 @@ type WelcomeScreenProps = {
   setInput: (v: string) => void;
   onSend: (text?: string) => void;
   loading: boolean;
+  attachments: FileAttachment[];
+  onAttachmentsChange: (atts: FileAttachment[]) => void;
+  onToast?: (msg: string, type: "success" | "error" | "info") => void;
 };
 
-export default function WelcomeScreen({ profileName, input, setInput, onSend, loading }: WelcomeScreenProps) {
+export default function WelcomeScreen({ profileName, input, setInput, onSend, loading, attachments, onAttachmentsChange, onToast }: WelcomeScreenProps) {
   return (
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "center",
       justifyContent: "center", flex: 1,
       maxWidth: 640, margin: "0 auto", width: "100%", padding: "24px 24px 32px",
     }}>
-      {/* Brand name — large, centered */}
+      {/* Brand name */}
       <div style={{
         fontSize: 44, fontWeight: 300, letterSpacing: "0.12em",
         color: "var(--text-primary)", marginBottom: 8,
@@ -36,7 +39,7 @@ export default function WelcomeScreen({ profileName, input, setInput, onSend, lo
         {t("chat.welcome_subtitle")}
       </div>
 
-      {/* Input — compact pill */}
+      {/* Input */}
       <div style={{ width: "100%", maxWidth: 600, marginBottom: 16 }}>
         <ChatInput
           value={input}
@@ -44,6 +47,9 @@ export default function WelcomeScreen({ profileName, input, setInput, onSend, lo
           onSend={() => onSend()}
           loading={loading}
           showDisclaimer={false}
+          attachments={attachments}
+          onAttachmentsChange={onAttachmentsChange}
+          onToast={onToast}
         />
       </div>
 
