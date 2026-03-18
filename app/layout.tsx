@@ -2,23 +2,23 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Signux AI — The AI that knows global business",
-  description: "Offshore structures, China imports, crypto security, geopolitics. One AI that actually understands all of it.",
+  title: "SIGNUX AI — Operational Intelligence",
+  description: "AI-powered analysis for structures, imports, crypto, and markets.",
   metadataBase: new URL("https://signux.ai"),
   icons: {
     icon: "/favicon.svg",
     apple: "/icon.svg",
   },
   openGraph: {
-    title: "Signux AI — The AI that knows global business",
-    description: "Offshore structures, China imports, crypto security, geopolitics. One AI that actually understands all of it.",
+    title: "SIGNUX AI — Operational Intelligence",
+    description: "AI-powered analysis for structures, imports, crypto, and markets.",
     images: [{ url: "/og-image.svg", width: 1200, height: 630 }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Signux AI — The AI that knows global business",
-    description: "Offshore structures, China imports, crypto security, geopolitics. One AI that actually understands all of it.",
+    title: "SIGNUX AI — Operational Intelligence",
+    description: "AI-powered analysis for structures, imports, crypto, and markets.",
     images: ["/og-image.svg"],
   },
 };
@@ -30,8 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#0A0A0A" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#D4AF37" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

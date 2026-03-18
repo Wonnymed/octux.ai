@@ -1,6 +1,6 @@
 "use client";
 
-export function SignuxIcon({ color = "#D4AF37", size = 200, className = "" }: { color?: string; size?: number; className?: string }) {
+export function SignuxIcon({ color = "#D4AF37", size = 200, className = "", onClick }: { color?: string; size?: number; className?: string; onClick?: () => void }) {
   return (
     <svg
       width={size}
@@ -9,6 +9,8 @@ export function SignuxIcon({ color = "#D4AF37", size = 200, className = "" }: { 
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
+      onClick={onClick}
+      style={onClick ? { cursor: "pointer" } : undefined}
     >
       <path d="M30 105 L30 90 L60 30 L90 30 L170 85 L170 105 L130 105 L90 75 L70 105Z" fill={color} />
       <path d="M170 95 L170 110 L140 170 L110 170 L30 115 L30 95 L70 95 L110 125 L130 95Z" fill={color} />
