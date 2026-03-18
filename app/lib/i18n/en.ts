@@ -217,6 +217,10 @@ const en: Record<string, string> = {
   "auth.log_in": "Log in",
   "auth.sign_up_free": "Sign up free",
   "auth.coming_soon": "Coming soon! We're working on accounts.",
+
+  // ERRORS
+  "intel.error": "Error generating briefing. Please try again.",
+  "common.copy_failed": "Failed to copy",
 };
 
 export default en;

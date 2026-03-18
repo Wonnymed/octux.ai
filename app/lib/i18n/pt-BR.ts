@@ -198,10 +198,30 @@ const ptBR: Record<string, string> = {
   "sidebar.empty_history": "Suas conversas aparecerão aqui",
   "sidebar.sign_in_to_save": "Faça login para salvar suas conversas",
 
+  // FILE UPLOAD
+  "file.too_large": "Arquivo muito grande. Máximo 10MB.",
+  "file.not_supported": "Tipo de arquivo não suportado.",
+  "file.drop_here": "Solte arquivos aqui",
+  "file.uploading": "Enviando...",
+
+  // VOICE INPUT
+  "voice.not_supported": "Entrada por voz não suportada neste navegador. Tente Chrome ou Edge.",
+  "voice.denied": "Acesso ao microfone negado. Permita nas configurações do navegador.",
+  "voice.listening": "Ouvindo...",
+  "voice.tooltip": "Entrada por voz",
+
+  // SIMULATION (missing)
+  "sim.agent_done": "Concluído",
+  "sim.export_txt": "Exportar como TXT",
+
   // AUTH
   "auth.log_in": "Entrar",
   "auth.sign_up_free": "Criar conta grátis",
   "auth.coming_soon": "Em breve! Estamos trabalhando nas contas.",
+
+  // ERRORS
+  "intel.error": "Erro ao gerar briefing. Tente novamente.",
+  "common.copy_failed": "Falha ao copiar",
 };
 
 export default ptBR;

@@ -198,10 +198,30 @@ const es: Record<string, string> = {
   "sidebar.empty_history": "Tus conversaciones aparecerán aquí",
   "sidebar.sign_in_to_save": "Inicia sesión para guardar tus conversaciones",
 
+  // FILE UPLOAD
+  "file.too_large": "Archivo demasiado grande. Máximo 10MB.",
+  "file.not_supported": "Tipo de archivo no soportado.",
+  "file.drop_here": "Suelta archivos aquí",
+  "file.uploading": "Subiendo...",
+
+  // VOICE INPUT
+  "voice.not_supported": "Entrada de voz no soportada en este navegador. Prueba Chrome o Edge.",
+  "voice.denied": "Acceso al micrófono denegado. Permítelo en la configuración del navegador.",
+  "voice.listening": "Escuchando...",
+  "voice.tooltip": "Entrada de voz",
+
+  // SIMULATION (missing)
+  "sim.agent_done": "Completado",
+  "sim.export_txt": "Exportar como TXT",
+
   // AUTH
   "auth.log_in": "Iniciar sesión",
   "auth.sign_up_free": "Crear cuenta gratis",
   "auth.coming_soon": "¡Próximamente! Estamos trabajando en las cuentas.",
+
+  // ERRORS
+  "intel.error": "Error al generar briefing. Inténtalo de nuevo.",
+  "common.copy_failed": "Error al copiar",
 };
 
 export default es;

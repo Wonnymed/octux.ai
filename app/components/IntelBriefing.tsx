@@ -192,6 +192,7 @@ export default function IntelBriefing({ intelContent, intelLoading, intelTimesta
               }}>
                 <button
                   onClick={() => setCollapsedSections(prev => ({ ...prev, [sKey]: !prev[sKey] }))}
+                  aria-expanded={!isCollapsed}
                   style={{
                     width: "100%", padding: "16px 20px", background: "none",
                     border: "none", cursor: "pointer", display: "flex",

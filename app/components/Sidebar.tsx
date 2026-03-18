@@ -115,7 +115,7 @@ export default function Sidebar({
                 <button
                   key={key}
                   onClick={() => handleMode(key)}
-
+                  aria-label={label}
                   className={`sidebar-icon-btn${mode === key ? " active" : ""}`}
                 >
                   <Icon size={18} style={{ flexShrink: 0 }} />

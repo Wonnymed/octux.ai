@@ -196,6 +196,7 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
         >
           <button
             onClick={() => setLightboxSrc(null)}
+            aria-label="Close image"
             style={{
               position: "absolute", top: 20, right: 20,
               background: "none", border: "none", color: "#fff",

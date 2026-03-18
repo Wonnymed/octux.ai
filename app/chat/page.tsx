@@ -491,7 +491,7 @@ export default function ChatPage() {
         }
       }
     } catch {
-      setIntelContent("Error generating briefing. Please try again.");
+      setIntelContent(t("intel.error"));
     }
     setIntelLoading(false);
   };
@@ -508,7 +508,7 @@ export default function ChatPage() {
     navigator.clipboard.writeText(text).then(() => {
       addToast(t("chat.copied"), "success");
     }).catch(() => {
-      addToast("Failed to copy", "error");
+      addToast(t("common.copy_failed"), "error");
     });
   };
 
@@ -568,6 +568,7 @@ export default function ChatPage() {
         }}>
           <button
             onClick={() => addToast(t("auth.coming_soon"), "info")}
+            aria-label="Log in"
             style={{
               padding: "8px 16px", borderRadius: "var(--radius-pill)",
               background: "transparent", border: "1px solid var(--border-primary)",
@@ -579,6 +580,7 @@ export default function ChatPage() {
           </button>
           <button
             onClick={() => addToast(t("auth.coming_soon"), "info")}
+            aria-label="Sign up"
             style={{
               padding: "8px 16px", borderRadius: "var(--radius-pill)",
               background: "var(--accent)", border: "none",

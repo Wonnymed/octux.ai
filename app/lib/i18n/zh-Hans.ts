@@ -198,10 +198,30 @@ const zhHans: Record<string, string> = {
   "sidebar.empty_history": "您的对话将显示在这里",
   "sidebar.sign_in_to_save": "登录以保存您的对话",
 
+  // FILE UPLOAD
+  "file.too_large": "文件过大。最大10MB。",
+  "file.not_supported": "不支持的文件类型。",
+  "file.drop_here": "将文件拖放到此处",
+  "file.uploading": "上传中...",
+
+  // VOICE INPUT
+  "voice.not_supported": "此浏览器不支持语音输入。请尝试Chrome或Edge。",
+  "voice.denied": "麦克风访问被拒绝。请在浏览器设置中允许。",
+  "voice.listening": "正在听...",
+  "voice.tooltip": "语音输入",
+
+  // SIMULATION (missing)
+  "sim.agent_done": "完成",
+  "sim.export_txt": "导出为TXT",
+
   // AUTH
   "auth.log_in": "登录",
   "auth.sign_up_free": "免费注册",
   "auth.coming_soon": "即将上线！我们正在开发账户功能。",
+
+  // ERRORS
+  "intel.error": "生成简报时出错。请重试。",
+  "common.copy_failed": "复制失败",
 };
 
 export default zhHans;
