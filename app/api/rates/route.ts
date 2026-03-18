@@ -1,10 +1,19 @@
 import { NextResponse } from "next/server";
 
+let cachedRates: Record<string, unknown> | null = null;
+let cachedAt = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export async function GET() {
+  const now = Date.now();
+  if (cachedRates && now - cachedAt < CACHE_TTL) {
+    return NextResponse.json(cachedRates);
+  }
+
   try {
     const res = await fetch("https://open.er-api.com/v6/latest/USD");
     const data = await res.json();
-    return NextResponse.json({
+    cachedRates = {
       USDBRL: data.rates?.BRL || 5.2,
       USDCNY: data.rates?.CNY || 7.2,
       USDHKD: data.rates?.HKD || 7.8,
@@ -24,7 +33,9 @@ export async function GET() {
       USDZAR: data.rates?.ZAR || 18.5,
       USDTRY: data.rates?.TRY || 32,
       updated: new Date().toISOString(),
-    });
+    };
+    cachedAt = now;
+    return NextResponse.json(cachedRates);
   } catch {
     return NextResponse.json({ error: "Failed to fetch rates" }, { status: 500 });
   }

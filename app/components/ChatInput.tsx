@@ -139,10 +139,15 @@ export default function ChatInput({
     }
   };
 
+  const growRaf = useRef(0);
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange(e.target.value);
-    e.target.style.height = "auto";
-    e.target.style.height = Math.min(e.target.scrollHeight, 160) + "px";
+    const ta = e.target;
+    cancelAnimationFrame(growRaf.current);
+    growRaf.current = requestAnimationFrame(() => {
+      ta.style.height = "auto";
+      ta.style.height = Math.min(ta.scrollHeight, 160) + "px";
+    });
   };
 
   /* ═══ File Processing ═══ */

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { getProfile } from "../lib/profile";
 import { t, Language, setLanguage } from "../lib/i18n";
@@ -7,11 +8,12 @@ import type { Message, Toast, Attachment, SimAgent, SimResult, Mode } from "../l
 import { Check, AlertTriangle, Info } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
-import SimulationEngine from "../components/SimulationEngine";
-import IntelBriefing from "../components/IntelBriefing";
-import SettingsModal from "../components/SettingsModal";
 import OnboardingTour, { isTourCompleted } from "../components/OnboardingTour";
 import type { FileAttachment } from "../components/ChatInput";
+
+const SimulationEngine = dynamic(() => import("../components/SimulationEngine"), { ssr: false });
+const IntelBriefing = dynamic(() => import("../components/IntelBriefing"), { ssr: false });
+const SettingsModal = dynamic(() => import("../components/SettingsModal"), { ssr: false });
 
 /* ═══ File Helpers ═══ */
 async function fileToBase64(file: File): Promise<string> {
