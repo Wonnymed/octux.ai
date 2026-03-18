@@ -235,6 +235,13 @@ const en: Record<string, string> = {
   "login.skip": "Continue without account",
   "login.error": "Something went wrong. Please try again.",
 
+  // GLOBAL OPS
+  "globalops.subtitle": "Cross-border operational intelligence",
+  "globalops.input_label": "DESCRIBE YOUR CROSS-BORDER OPERATION",
+  "globalops.placeholder": "I need to set up a holding structure for my SaaS company serving US and EU clients...",
+  "globalops.cta": "ANALYZE OPERATION",
+  "globalops.disclaimer": "Specialized for cross-border, offshore, crypto, and trade intelligence.",
+
   // LAUNCHPAD
   "launchpad.subtitle": "From zero to business in 90 days",
   "launchpad.central_text": "Tell us about yourself and we'll find the right business for you",

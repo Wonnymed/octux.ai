@@ -236,6 +236,13 @@ const zhHans: Record<string, string> = {
   "login.skip": "不登录继续使用",
   "login.error": "出了点问题，请重试。",
 
+  // GLOBAL OPS
+  "globalops.subtitle": "跨境运营情报",
+  "globalops.input_label": "描述你的跨境业务",
+  "globalops.placeholder": "我需要为我的SaaS公司建立控股结构，服务美国和欧盟客户...",
+  "globalops.cta": "分析运营",
+  "globalops.disclaimer": "专注于跨境、离岸、加密货币和贸易情报。",
+
   // LAUNCHPAD
   "launchpad.subtitle": "90天内从零到创业",
   "launchpad.central_text": "告诉我们你的情况，我们会为你找到合适的商业方向",

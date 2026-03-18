@@ -236,6 +236,13 @@ const ptBR: Record<string, string> = {
   "login.skip": "Continuar sem conta",
   "login.error": "Algo deu errado. Tente novamente.",
 
+  // GLOBAL OPS
+  "globalops.subtitle": "Inteligência operacional transfronteiriça",
+  "globalops.input_label": "DESCREVA SUA OPERAÇÃO INTERNACIONAL",
+  "globalops.placeholder": "Preciso montar uma estrutura de holding para minha empresa SaaS atendendo clientes nos EUA e UE...",
+  "globalops.cta": "ANALISAR OPERAÇÃO",
+  "globalops.disclaimer": "Especializado em operações internacionais, offshore, cripto e comércio exterior.",
+
   // LAUNCHPAD
   "launchpad.subtitle": "Do zero ao negócio em 90 dias",
   "launchpad.central_text": "Conte sobre você e encontraremos o negócio ideal para você",
