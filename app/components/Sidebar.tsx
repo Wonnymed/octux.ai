@@ -1,15 +1,9 @@
 "use client";
-import { PenSquare, MessageSquare, Zap, Globe, Settings, X, LogIn, LogOut } from "lucide-react";
+import { SquarePen, MessageSquare, Zap, Globe, BookOpen, Settings, X, LogIn, LogOut } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
 import { motion, AnimatePresence } from "framer-motion";
 import { t } from "../lib/i18n";
-import { useIsMobile } from "../lib/useIsMobile";
 import type { Mode } from "../lib/types";
-
-const HISTORY_PLACEHOLDERS = [
-  "sidebar.history.1", "sidebar.history.2", "sidebar.history.3",
-  "sidebar.history.4", "sidebar.history.5",
-];
 
 type SidebarProps = {
   mode: Mode;
@@ -28,7 +22,6 @@ export default function Sidebar({
   mode, setMode, profileName, lang,
   onNewConversation, onOpenSettings, open, onClose, isLoggedIn, onSignOut,
 }: SidebarProps) {
-  const isMobile = useIsMobile();
   const userInitials = profileName ? profileName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "?";
 
   const handleMode = (m: Mode) => { setMode(m); onClose(); };
@@ -57,13 +50,13 @@ export default function Sidebar({
             exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
           >
-            {/* Header: Logo + Close */}
+            {/* Header */}
             <div style={{
-              padding: "12px 14px", display: "flex", alignItems: "center",
+              padding: "14px 16px", display: "flex", alignItems: "center",
               justifyContent: "space-between",
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <SignuxIcon color="var(--accent)" size={24} />
+                <SignuxIcon color="var(--accent)" size={20} />
                 <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
                   <span style={{
                     fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 700,
@@ -71,7 +64,7 @@ export default function Sidebar({
                   }}>SIGNUX</span>
                   <span style={{
                     fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 300,
-                    letterSpacing: 2, color: "var(--text-primary)", opacity: 0.5,
+                    letterSpacing: 2, color: "var(--text-primary)", opacity: 0.4,
                   }}>AI</span>
                 </div>
               </div>
@@ -79,8 +72,8 @@ export default function Sidebar({
                 onClick={onClose}
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  width: 32, height: 32, border: "none", background: "none",
-                  cursor: "pointer", borderRadius: "var(--radius-sm)",
+                  width: 28, height: 28, border: "none", background: "none",
+                  cursor: "pointer", borderRadius: "var(--radius-xs)",
                   color: "var(--text-tertiary)", transition: "color 0.15s",
                 }}
               >
@@ -89,20 +82,26 @@ export default function Sidebar({
             </div>
 
             {/* New chat */}
-            <div style={{ padding: "0 8px 8px" }}>
+            <div style={{ margin: "0 12px 8px" }}>
               <button
                 onClick={handleNew}
-                className="sidebar-icon-btn"
-                style={{ justifyContent: "flex-start" }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10, width: "100%",
+                  padding: "8px 12px", border: "1px solid var(--border-secondary)",
+                  borderRadius: "var(--radius-sm)", background: "none",
+                  cursor: "pointer", color: "var(--text-primary)", fontSize: 13,
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 aria-label="New conversation"
               >
-                <PenSquare size={18} style={{ flexShrink: 0 }} />
-                <span style={{ fontSize: 13 }}>
-                  {mode === "chat" ? t("sidebar.new_chat") : t("sidebar.new_simulation")}
-                </span>
+                <SquarePen size={16} style={{ flexShrink: 0 }} />
+                <span>{mode === "chat" ? t("sidebar.new_chat") : t("sidebar.new_simulation")}</span>
               </button>
             </div>
 
+            {/* Separator */}
             <div style={{ height: 1, background: "var(--border-secondary)", margin: "0 12px 8px" }} />
 
             {/* Mode buttons */}
@@ -116,67 +115,46 @@ export default function Sidebar({
                   key={key}
                   onClick={() => handleMode(key)}
                   aria-label={label}
-                  className={`sidebar-icon-btn${mode === key ? " active" : ""}`}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12, width: "100%",
+                    padding: "8px 12px", border: "none",
+                    borderRadius: "var(--radius-xs)", cursor: "pointer",
+                    background: mode === key ? "var(--bg-hover)" : "none",
+                    color: mode === key ? "var(--text-primary)" : "var(--text-secondary)",
+                    fontWeight: mode === key ? 500 : 400,
+                    fontSize: 13, transition: "all 0.15s", textAlign: "left",
+                  }}
+                  onMouseEnter={e => { if (mode !== key) e.currentTarget.style.background = "var(--bg-hover)"; }}
+                  onMouseLeave={e => { if (mode !== key) e.currentTarget.style.background = "transparent"; }}
                 >
-                  <Icon size={18} style={{ flexShrink: 0 }} />
+                  <Icon size={16} style={{ flexShrink: 0 }} />
                   <span>{label}</span>
                 </button>
               ))}
             </div>
 
+            {/* Separator */}
             <div style={{ height: 1, background: "var(--border-secondary)", margin: "0 12px 8px" }} />
 
             {/* History */}
-            <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "0 8px" }}>
-              {isLoggedIn ? (
-                <>
-                  <div style={{
-                    fontSize: 10, letterSpacing: "0.1em", color: "var(--text-tertiary)",
-                    textTransform: "uppercase", marginBottom: 6, padding: "0 8px",
-                  }}>
-                    {t("common.today")}
-                  </div>
-                  {HISTORY_PLACEHOLDERS.slice(0, 2).map(key => (
-                    <div
-                      key={key}
-                      className="sidebar-history-item"
-                      style={{
-                        padding: "7px 10px", borderRadius: 6, fontSize: 13,
-                        color: "var(--text-secondary)", cursor: "pointer",
-                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                      }}
-                    >
-                      {t(key)}
-                    </div>
-                  ))}
-                  <div style={{
-                    fontSize: 10, letterSpacing: "0.1em", color: "var(--text-tertiary)",
-                    textTransform: "uppercase", marginTop: 14, marginBottom: 6, padding: "0 8px",
-                  }}>
-                    {t("common.previous_7_days")}
-                  </div>
-                  {HISTORY_PLACEHOLDERS.slice(2).map(key => (
-                    <div
-                      key={key}
-                      className="sidebar-history-item"
-                      style={{
-                        padding: "7px 10px", borderRadius: 6, fontSize: 13,
-                        color: "var(--text-secondary)", cursor: "pointer",
-                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                      }}
-                    >
-                      {t(key)}
-                    </div>
-                  ))}
-                </>
-              ) : (
+            <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "0 12px" }}>
+              {!isLoggedIn && (
                 <div style={{
-                  display: "flex", flexDirection: "column", alignItems: "center",
-                  justifyContent: "center", padding: "32px 16px", gap: 8,
-                  color: "var(--text-tertiary)", fontSize: 13, textAlign: "center",
+                  padding: "12px 0", fontSize: 12, color: "var(--text-tertiary)",
+                  lineHeight: 1.5,
                 }}>
-                  <LogIn size={20} style={{ opacity: 0.4 }} />
-                  <span>{t("sidebar.sign_in_to_save")}</span>
+                  <span>{t("sidebar.sign_in_to_save").replace(
+                    t("auth.sign_in"),
+                    ""
+                  )}</span>
+                  <a
+                    href="/login"
+                    onClick={e => { e.preventDefault(); window.location.href = "/login"; onClose(); }}
+                    style={{ color: "var(--accent)", textDecoration: "none", cursor: "pointer" }}
+                  >
+                    {t("auth.sign_in")}
+                  </a>
+                  <span> {t("sidebar.sign_in_to_save").includes(t("auth.sign_in")) ? "" : t("sidebar.sign_in_to_save")}</span>
                 </div>
               )}
             </div>
@@ -184,29 +162,61 @@ export default function Sidebar({
             {/* Bottom */}
             <div style={{ borderTop: "1px solid var(--border-secondary)", padding: "8px" }}>
               {/* Settings */}
-              <button onClick={handleSettings} className="sidebar-icon-btn" aria-label="Settings">
-                <Settings size={18} style={{ flexShrink: 0 }} />
+              <button
+                onClick={handleSettings}
+                aria-label="Settings"
+                style={{
+                  display: "flex", alignItems: "center", gap: 12, width: "100%",
+                  padding: "8px 12px", border: "none", background: "none",
+                  borderRadius: "var(--radius-xs)", cursor: "pointer",
+                  color: "var(--text-secondary)", fontSize: 13, transition: "all 0.15s",
+                  textAlign: "left",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >
+                <Settings size={16} style={{ flexShrink: 0 }} />
                 <span>{t("sidebar.settings")}</span>
               </button>
 
-              {/* Profile + Sign out (if logged in) */}
+              {/* Auth section */}
               {isLoggedIn && profileName ? (
                 <>
-                  <button onClick={handleSettings} className="sidebar-icon-btn" style={{ marginTop: 2 }}>
+                  <button
+                    onClick={handleSettings}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 12, width: "100%",
+                      padding: "8px 12px", border: "none", background: "none",
+                      borderRadius: "var(--radius-xs)", cursor: "pointer",
+                      fontSize: 13, transition: "all 0.15s", textAlign: "left",
+                      marginTop: 2, color: "var(--text-primary)",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                  >
                     <div style={{
-                      width: 24, height: 24, borderRadius: "50%", background: "var(--accent-bg)",
+                      width: 24, height: 24, borderRadius: "50%", background: "rgba(212,175,55,0.1)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: 10, fontWeight: 600, color: "var(--accent)", flexShrink: 0,
                     }}>
                       {userInitials}
                     </div>
-                    <span style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500 }}>
-                      {profileName}
-                    </span>
+                    <span style={{ fontWeight: 500 }}>{profileName}</span>
                   </button>
                   {onSignOut && (
-                    <button onClick={() => { onSignOut(); onClose(); }} className="sidebar-icon-btn" style={{ marginTop: 2 }}>
-                      <LogOut size={18} style={{ flexShrink: 0 }} />
+                    <button
+                      onClick={() => { onSignOut(); onClose(); }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 12, width: "100%",
+                        padding: "8px 12px", border: "none", background: "none",
+                        borderRadius: "var(--radius-xs)", cursor: "pointer",
+                        color: "var(--text-secondary)", fontSize: 13, transition: "all 0.15s",
+                        textAlign: "left", marginTop: 2,
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
+                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                    >
+                      <LogOut size={16} style={{ flexShrink: 0 }} />
                       <span>{t("auth.sign_out")}</span>
                     </button>
                   )}
@@ -214,10 +224,17 @@ export default function Sidebar({
               ) : (
                 <button
                   onClick={() => { window.location.href = "/login"; onClose(); }}
-                  className="sidebar-icon-btn"
-                  style={{ marginTop: 2 }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12, width: "100%",
+                    padding: "8px 12px", border: "none", background: "none",
+                    borderRadius: "var(--radius-xs)", cursor: "pointer",
+                    color: "var(--text-secondary)", fontSize: 13, transition: "all 0.15s",
+                    textAlign: "left", marginTop: 2,
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >
-                  <LogIn size={18} style={{ flexShrink: 0 }} />
+                  <LogIn size={16} style={{ flexShrink: 0 }} />
                   <span>{t("auth.sign_in")}</span>
                 </button>
               )}

@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { getProfile } from "../lib/profile";
 import { t, Language, setLanguage } from "../lib/i18n";
 import type { Message, Toast, Attachment, SimAgent, SimResult, Mode } from "../lib/types";
-import { Check, AlertTriangle, Info, WifiOff, PanelLeft } from "lucide-react";
+import { Check, AlertTriangle, Info, WifiOff, PanelLeftOpen, PanelLeftClose } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
 import { SignuxIcon } from "../components/SignuxIcon";
@@ -163,7 +163,6 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
   const [lang, setLang] = useState<Language>("en");
-  const [rates, setRates] = useState<any>(null);
   const [profileName, setProfileName] = useState("");
   const [mode, setMode] = useState<Mode>("chat");
   const [searching, setSearching] = useState(false);
@@ -215,7 +214,7 @@ export default function ChatPage() {
   }, []);
 
   /* ═══ Profile Loading Effect ═══ */
-  const isLoggedIn = !!(authUser) || !!(profileName);
+  const isLoggedIn = !!authUser;
   useEffect(() => {
     // Load localStorage profile
     const profile = getProfile();
@@ -257,7 +256,6 @@ export default function ChatPage() {
     });
 
     setReady(true);
-    fetch("/api/rates").then(r => r.json()).then(setRates).catch(() => {});
     const toastData = sessionStorage.getItem("signux_welcome_toast");
     if (toastData) {
       sessionStorage.removeItem("signux_welcome_toast");
@@ -367,7 +365,7 @@ export default function ChatPage() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages, profile: getProfile(), rates }),
+        body: JSON.stringify({ messages: apiMessages, profile: getProfile() }),
       });
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
@@ -595,25 +593,27 @@ export default function ChatPage() {
       <OfflineBanner />
 
       {/* Sidebar toggle (always visible) */}
-      <button className="sidebar-toggle-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
-        <PanelLeft size={18} />
+      <button className="sidebar-toggle-btn" onClick={() => setSidebarOpen(o => !o)} aria-label="Toggle menu">
+        {sidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
       </button>
 
       {/* Auth buttons (top-right, floating) */}
-      {!isLoggedIn ? (
+      {!authUser ? (
         <div style={{
           position: "fixed", top: 14, right: 20,
-          display: "flex", gap: 8, zIndex: 50,
+          display: "flex", gap: 12, zIndex: 100,
         }}>
           <button
             onClick={() => { window.location.href = "/login"; }}
             aria-label="Log in"
             style={{
-              padding: "8px 16px", borderRadius: "var(--radius-pill)",
-              background: "transparent", border: "1px solid var(--border-primary)",
-              color: "var(--text-secondary)", fontSize: 13, fontWeight: 500,
-              cursor: "pointer", transition: "all 0.15s",
+              padding: isMobile ? "4px 12px" : "6px 16px",
+              background: "transparent", border: "none",
+              color: "var(--text-secondary)", fontSize: isMobile ? 12 : 13,
+              cursor: "pointer", transition: "color 0.15s",
             }}
+            onMouseEnter={e => e.currentTarget.style.color = "var(--text-primary)"}
+            onMouseLeave={e => e.currentTarget.style.color = "var(--text-secondary)"}
           >
             {t("auth.log_in")}
           </button>
@@ -621,9 +621,10 @@ export default function ChatPage() {
             onClick={() => { window.location.href = "/login"; }}
             aria-label="Sign up"
             style={{
-              padding: "8px 16px", borderRadius: "var(--radius-pill)",
+              padding: isMobile ? "4px 12px" : "6px 16px",
+              borderRadius: "var(--radius-full)",
               background: "var(--accent)", border: "none",
-              color: "#fff", fontSize: 13, fontWeight: 500,
+              color: "#000", fontSize: isMobile ? 12 : 13, fontWeight: 500,
               cursor: "pointer", transition: "opacity 0.15s",
             }}
           >
@@ -633,13 +634,13 @@ export default function ChatPage() {
       ) : authUser && profileName ? (
         <div style={{
           position: "fixed", top: 14, right: 20,
-          zIndex: 50,
+          zIndex: 100,
         }}>
           <div style={{
-            width: 32, height: 32, borderRadius: "50%", background: "var(--accent-bg)",
+            width: 32, height: 32, borderRadius: "50%",
+            background: "rgba(212,175,55,0.1)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 11, fontWeight: 600, color: "var(--accent)",
-            border: "1px solid var(--border-secondary)",
+            fontSize: 13, fontWeight: 600, color: "var(--accent)",
           }}>
             {profileName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
           </div>

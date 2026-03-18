@@ -652,7 +652,7 @@ textarea, input, button {
   box-shadow: 0 0 0 1px rgba(212,175,55,0.0);
 }
 .input-glow:hover {
-  border-color: var(--border-primary);
+  border-color: rgba(212,175,55,0.15);
   box-shadow: 0 0 10px rgba(212,175,55,0.04);
 }
 .input-glow.focused {

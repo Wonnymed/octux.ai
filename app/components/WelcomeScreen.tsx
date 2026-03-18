@@ -37,11 +37,11 @@ export default function WelcomeScreen({ input, setInput, onSend, loading, attach
         animation: "fadeIn 0.4s ease-out", marginBottom: 40,
       }}>
         <span style={{
-          fontFamily: "var(--font-brand)", fontSize: 40,
+          fontFamily: "var(--font-brand)", fontSize: 44,
           fontWeight: 700, letterSpacing: 5, color: "var(--text-primary)",
         }}>SIGNUX</span>
         <span style={{
-          fontFamily: "var(--font-brand)", fontSize: 40,
+          fontFamily: "var(--font-brand)", fontSize: 44,
           fontWeight: 300, letterSpacing: 3, color: "var(--text-primary)", opacity: 0.4,
         }}>AI</span>
       </div>

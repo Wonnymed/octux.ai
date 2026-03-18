@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from "react";
-import { ArrowUp, Paperclip, Search, X, FileText, FileCode, Mic, MicOff } from "lucide-react";
+import { ArrowUp, Paperclip, Globe, X, FileText, FileCode, Mic, MicOff } from "lucide-react";
 import { t, getLanguage } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
 
@@ -502,7 +502,7 @@ export default function ChatInput({
                 }}
                 aria-label="Web search"
               >
-                <Search size={16} />
+                <Globe size={16} />
               </button>
             )}
             {/* Mic button */}
@@ -532,14 +532,14 @@ export default function ChatInput({
               width: sendSize,
               height: sendSize,
               borderRadius: "50%",
-              background: canSend ? "var(--text-primary)" : "var(--bg-tertiary)",
+              background: canSend ? "var(--accent)" : "var(--bg-tertiary)",
               border: "none",
               cursor: canSend ? "pointer" : "not-allowed",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               transition: "all 0.15s",
-              color: canSend ? "var(--text-inverse)" : "var(--text-tertiary)",
+              color: canSend ? "#fff" : "var(--text-tertiary)",
               flexShrink: 0,
             }}
           >
