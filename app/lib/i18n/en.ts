@@ -220,6 +220,10 @@ const en: Record<string, string> = {
   "auth.sign_out": "Sign out",
   "auth.sign_in": "Sign in",
 
+  // SIMULATE BANNER
+  "sim.banner_title": "Ecosystem Simulation",
+  "sim.banner_subtitle": "Test your operation with 15+ AI specialists before investing",
+
   // LOGIN
   "login.google": "Continue with Google",
   "login.or": "or",

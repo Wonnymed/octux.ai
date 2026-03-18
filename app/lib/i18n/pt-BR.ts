@@ -221,6 +221,10 @@ const ptBR: Record<string, string> = {
   "auth.sign_out": "Sair",
   "auth.sign_in": "Entrar",
 
+  // SIMULATE BANNER
+  "sim.banner_title": "Simulação de Ecossistema",
+  "sim.banner_subtitle": "Teste sua operação com 15+ especialistas de IA antes de investir",
+
   // LOGIN
   "login.google": "Continuar com Google",
   "login.or": "ou",

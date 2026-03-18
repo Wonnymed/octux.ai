@@ -221,6 +221,10 @@ const es: Record<string, string> = {
   "auth.sign_out": "Cerrar sesión",
   "auth.sign_in": "Iniciar sesión",
 
+  // SIMULATE BANNER
+  "sim.banner_title": "Simulación de Ecosistema",
+  "sim.banner_subtitle": "Prueba tu operación con 15+ especialistas de IA antes de invertir",
+
   // LOGIN
   "login.google": "Continuar con Google",
   "login.or": "o",

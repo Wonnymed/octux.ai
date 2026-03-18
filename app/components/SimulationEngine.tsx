@@ -47,43 +47,51 @@ export default function SimulationEngine(props: SimulationEngineProps) {
       <div style={{
         flex: 1, display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        padding: isMobile ? "24px 16px" : "40px 24px",
+        padding: isMobile ? "16px 16px 24px" : "24px 24px 32px",
       }}>
-        <div style={{ maxWidth: 680, width: "100%", textAlign: "center" }}>
+        <div style={{ maxWidth: 580, width: "100%", textAlign: "center" }}>
+          {/* Icon */}
+          <div style={{
+            width: 56, height: 56, borderRadius: "50%",
+            background: "rgba(212,175,55,0.08)", display: "flex",
+            alignItems: "center", justifyContent: "center",
+            margin: "0 auto 12px", animation: "fadeIn 0.3s ease-out",
+          }}>
+            <Zap size={28} style={{ color: "var(--accent)" }} />
+          </div>
+
           {/* Branded header */}
           <div style={{
-            fontSize: 36, fontWeight: 300, letterSpacing: "0.15em",
-            color: "var(--text-primary)", marginBottom: 8,
-            animation: "fadeIn 0.4s ease-out",
+            fontFamily: "var(--font-brand)", fontSize: 40, fontWeight: 700,
+            letterSpacing: 5, color: "var(--text-primary)",
+            marginBottom: 8, animation: "fadeIn 0.4s ease-out",
           }}>
             SIMULATE
           </div>
 
-          {/* Subtitle */}
+          {/* Gold line */}
           <div style={{
-            fontSize: 14, color: "var(--text-tertiary)", lineHeight: 1.6,
-            marginBottom: 40, maxWidth: 480, margin: "0 auto 40px",
-          }}>
-            {t("sim.ecosystem_subtitle")}
-          </div>
+            width: 40, height: 2, background: "var(--accent)",
+            margin: "0 auto 32px", opacity: 0.4,
+          }} />
 
-          {/* Textarea — larger */}
-          <textarea
-            value={simScenario}
-            onChange={e => setSimScenario(e.target.value)}
-            placeholder={t("sim.placeholder")}
-            style={{
-              width: "100%", minHeight: 120, padding: 20,
-              borderRadius: "var(--radius-lg)",
-              background: "var(--bg-input)",
-              border: "1px solid var(--border-primary)",
-              color: "var(--text-primary)", fontSize: 15, lineHeight: 1.6,
-              resize: "vertical", outline: "none", transition: "border-color 0.2s",
-              marginBottom: 16,
-            }}
-            onFocus={e => (e.currentTarget.style.borderColor = "var(--text-tertiary)")}
-            onBlur={e => (e.currentTarget.style.borderColor = "var(--border-primary)")}
-          />
+          {/* Glow input */}
+          <div
+            className={`input-glow${simScenario.trim() ? " focused" : ""}`}
+            style={{ padding: "12px 16px", marginBottom: 16 }}
+          >
+            <textarea
+              value={simScenario}
+              onChange={e => setSimScenario(e.target.value)}
+              placeholder={t("sim.placeholder")}
+              style={{
+                width: "100%", minHeight: 80, padding: 0,
+                background: "transparent", border: "none",
+                color: "var(--text-primary)", fontSize: 15, lineHeight: 1.6,
+                resize: "none", outline: "none",
+              }}
+            />
+          </div>
 
           {/* Example chips */}
           <div style={{
@@ -94,9 +102,8 @@ export default function SimulationEngine(props: SimulationEngineProps) {
               <button
                 key={key}
                 onClick={() => setSimScenario(t(key))}
-                className="suggestion-chip"
                 style={{
-                  padding: "8px 16px", borderRadius: "var(--radius-xl)",
+                  padding: "8px 16px", borderRadius: "var(--radius-full, 9999px)",
                   background: "transparent", border: "1px solid var(--border-secondary)",
                   fontSize: 13, color: "var(--text-secondary)",
                   cursor: "pointer", transition: "all 0.15s",
@@ -108,7 +115,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
             ))}
           </div>
 
-          {/* Start button — full width */}
+          {/* Start button */}
           <button
             onClick={onSimulate}
             disabled={!simScenario.trim() || simStarting}

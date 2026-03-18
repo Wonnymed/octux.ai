@@ -321,15 +321,18 @@ export default function ChatInput({
   }, [isListening, startListening, stopListening]);
 
   const isMobile = useIsMobile();
+  const [focused, setFocused] = useState(false);
   const canSend = (value.trim() || attachments.length > 0) && !loading;
   const speechSupported = typeof window !== "undefined" && isSpeechSupported();
-  const iconSize = isMobile ? 16 : 16;
+  const iconSize = 16;
   const sendSize = isMobile ? 36 : 32;
   const touchPad = isMobile ? 10 : 6;
 
+  const glowActive = focused || !!value.trim();
+
   return (
     <div
-      style={{ width: "100%", maxWidth: 600, margin: "0 auto", position: "relative" }}
+      style={{ width: "100%", maxWidth: 580, margin: "0 auto", position: "relative" }}
 
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
@@ -340,7 +343,7 @@ export default function ChatInput({
       {dragging && (
         <div style={{
           position: "absolute", inset: 0, zIndex: 10,
-          background: "var(--bg-primary)", borderRadius: "var(--radius-pill)",
+          background: "var(--bg-primary)", borderRadius: 20,
           border: "2px dashed var(--accent)", display: "flex",
           alignItems: "center", justifyContent: "center",
           color: "var(--accent)", fontSize: 14, fontWeight: 500,
@@ -350,14 +353,14 @@ export default function ChatInput({
         </div>
       )}
 
-      {/* Pill container */}
+      {/* Glow container */}
       <div
+        className={`input-glow${glowActive ? " focused" : ""}`}
         style={{
-          border: isListening ? "1px solid var(--error)" : "1px solid var(--border-primary)",
-          borderRadius: attachments.length > 0 ? "var(--radius-lg)" : "var(--radius-pill)",
-          background: "var(--bg-input)",
           overflow: "hidden",
-          transition: "border-color 0.15s, border-radius 0.15s",
+          padding: "10px 16px 8px 16px",
+          ...(isListening ? { borderColor: "var(--error)", boxShadow: "none" } : {}),
+          ...(attachments.length > 0 ? { borderRadius: "var(--radius-lg)" } : {}),
         }}
       >
         {/* Listening indicator bar */}
@@ -436,10 +439,36 @@ export default function ChatInput({
           </div>
         )}
 
-        {/* Textarea row */}
-        <div style={{ display: "flex", alignItems: "flex-end" }}>
+        {/* Textarea */}
+        <textarea
+          ref={ref}
+          value={value}
+          onChange={handleInput}
+          onKeyDown={handleKey}
+          onPaste={handlePaste}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder={isListening ? t("voice.listening") : (placeholder || t("chat.placeholder"))}
+          rows={1}
+          style={{
+            width: "100%",
+            resize: "none",
+            padding: 0,
+            background: "transparent",
+            border: "none",
+            color: "var(--text-primary)",
+            fontSize: 15,
+            outline: "none",
+            lineHeight: 1.5,
+            minHeight: 22,
+            maxHeight: 120,
+          }}
+        />
+
+        {/* Toolbar row */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 }}>
           {/* Left toolbar icons */}
-          <div style={{ display: "flex", alignItems: "center", gap: 0, paddingLeft: isMobile ? 8 : 12, paddingBottom: 8, paddingTop: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
             <button
               onClick={() => fileInputRef.current?.click()}
               style={{
@@ -482,12 +511,12 @@ export default function ChatInput({
               style={{
                 background: "none", border: "none",
                 cursor: speechSupported ? "pointer" : "default",
-                padding: touchPad, borderRadius: "50%", display: "flex",
+                padding: touchPad, borderRadius: "var(--radius-xs)", display: "flex",
                 color: isListening ? "var(--error)" : "var(--text-tertiary)",
                 opacity: speechSupported ? 1 : 0.3,
                 transition: "color 0.15s",
                 animation: isListening ? "voicePulse 1.5s ease-in-out infinite" : "none",
-                minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center",
+                width: 28, height: 28, alignItems: "center", justifyContent: "center",
               }}
               aria-label={t("voice.tooltip")}
             >
@@ -495,50 +524,27 @@ export default function ChatInput({
             </button>
           </div>
 
-          {/* Textarea */}
-          <textarea
-            ref={ref}
-            value={value}
-            onChange={handleInput}
-            onKeyDown={handleKey}
-            onPaste={handlePaste}
-            placeholder={isListening ? t("voice.listening") : (placeholder || t("chat.placeholder"))}
-            rows={1}
-            style={{
-              flex: 1,
-              resize: "none",
-              padding: "12px 8px 12px 8px",
-              background: "transparent",
-              border: "none",
-              color: "var(--text-primary)",
-              fontSize: 15,
-              outline: "none",
-              lineHeight: 1.5,
-            }}
-          />
-
           {/* Send button */}
-          <div style={{ paddingRight: 8, paddingBottom: 8, paddingTop: 8 }}>
-            <button
-              onClick={onSend}
-              disabled={!canSend}
-              style={{
-                width: sendSize,
-                height: sendSize,
-                borderRadius: "50%",
-                background: canSend ? "var(--text-primary)" : "var(--bg-tertiary)",
-                border: "none",
-                cursor: canSend ? "pointer" : "not-allowed",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.15s",
-                color: canSend ? "var(--text-inverse)" : "var(--text-tertiary)",
-              }}
-            >
-              <ArrowUp size={16} />
-            </button>
-          </div>
+          <button
+            onClick={onSend}
+            disabled={!canSend}
+            style={{
+              width: sendSize,
+              height: sendSize,
+              borderRadius: "50%",
+              background: canSend ? "var(--text-primary)" : "var(--bg-tertiary)",
+              border: "none",
+              cursor: canSend ? "pointer" : "not-allowed",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.15s",
+              color: canSend ? "var(--text-inverse)" : "var(--text-tertiary)",
+              flexShrink: 0,
+            }}
+          >
+            <ArrowUp size={16} />
+          </button>
         </div>
       </div>
 

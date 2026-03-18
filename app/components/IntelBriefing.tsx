@@ -27,25 +27,33 @@ export default function IntelBriefing({ intelContent, intelLoading, intelTimesta
       <div style={{
         flex: 1, display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        padding: isMobile ? "24px 16px" : "40px 24px",
+        padding: isMobile ? "16px 16px 24px" : "24px 24px 32px",
       }}>
-        <div style={{ maxWidth: 520, width: "100%", textAlign: "center" }}>
+        <div style={{ maxWidth: 580, width: "100%", textAlign: "center" }}>
+          {/* Icon */}
+          <div style={{
+            width: 56, height: 56, borderRadius: "50%",
+            background: "rgba(212,175,55,0.08)", display: "flex",
+            alignItems: "center", justifyContent: "center",
+            margin: "0 auto 12px", animation: "fadeIn 0.3s ease-out",
+          }}>
+            <Globe size={28} style={{ color: "var(--accent)" }} />
+          </div>
+
           {/* Branded header */}
           <div style={{
-            fontSize: 36, fontWeight: 300, letterSpacing: "0.15em",
-            color: "var(--text-primary)", marginBottom: 8,
-            animation: "fadeIn 0.4s ease-out",
+            fontFamily: "var(--font-brand)", fontSize: 40, fontWeight: 700,
+            letterSpacing: 5, color: "var(--text-primary)",
+            marginBottom: 8, animation: "fadeIn 0.4s ease-out",
           }}>
             INTEL
           </div>
 
-          {/* Subtitle */}
+          {/* Gold line */}
           <div style={{
-            fontSize: 14, color: "var(--text-tertiary)", lineHeight: 1.6,
-            marginBottom: 40,
-          }}>
-            {t("intel.subtitle")}
-          </div>
+            width: 40, height: 2, background: "var(--accent)",
+            margin: "0 auto 32px", opacity: 0.4,
+          }} />
 
           {/* Focus area chips */}
           <div style={{
@@ -56,9 +64,8 @@ export default function IntelBriefing({ intelContent, intelLoading, intelTimesta
               <button
                 key={f}
                 onClick={() => setIntelFocus(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])}
-                className="suggestion-chip"
                 style={{
-                  padding: "8px 18px", borderRadius: 20, fontSize: 13, cursor: "pointer",
+                  padding: "8px 18px", borderRadius: "var(--radius-full, 9999px)", fontSize: 13, cursor: "pointer",
                   transition: "all 0.15s",
                   background: intelFocus.includes(f) ? "var(--accent-bg)" : "transparent",
                   border: intelFocus.includes(f) ? "1px solid var(--accent)" : "1px solid var(--border-secondary)",

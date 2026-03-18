@@ -602,7 +602,7 @@ export default function ChatPage() {
       {/* Auth buttons (top-right, floating) */}
       {!isLoggedIn ? (
         <div style={{
-          position: "fixed", top: "var(--safe-top, 8px)", right: 8,
+          position: "fixed", top: 14, right: 20,
           display: "flex", gap: 8, zIndex: 50,
         }}>
           <button
@@ -632,7 +632,7 @@ export default function ChatPage() {
         </div>
       ) : authUser && profileName ? (
         <div style={{
-          position: "fixed", top: "var(--safe-top, 8px)", right: 8,
+          position: "fixed", top: 14, right: 20,
           zIndex: 50,
         }}>
           <div style={{
@@ -651,7 +651,6 @@ export default function ChatPage() {
         setMode={setMode}
         profileName={profileName}
         lang={lang}
-        rates={rates}
         onNewConversation={onNewConversation}
         onOpenSettings={() => setShowSettings(true)}
         open={sidebarOpen}
@@ -729,6 +728,7 @@ export default function ChatPage() {
                 attachments={attachments}
                 onAttachmentsChange={setAttachments}
                 onToast={addToast}
+                onSwitchToSimulate={() => setMode("simulate")}
               />
             </motion.div>
           )}

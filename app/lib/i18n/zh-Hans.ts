@@ -221,6 +221,10 @@ const zhHans: Record<string, string> = {
   "auth.sign_out": "退出登录",
   "auth.sign_in": "登录",
 
+  // SIMULATE BANNER
+  "sim.banner_title": "生态系统模拟",
+  "sim.banner_subtitle": "在投资前用15+位AI专家测试你的运营方案",
+
   // LOGIN
   "login.google": "使用 Google 继续",
   "login.or": "或",

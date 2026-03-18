@@ -1,10 +1,9 @@
 "use client";
+import { Zap, ArrowRight } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
 import ChatInput, { type FileAttachment } from "./ChatInput";
 import { SignuxIcon } from "./SignuxIcon";
-
-const SUGGESTION_KEYS = ["suggestion.1", "suggestion.2", "suggestion.3", "suggestion.4"];
 
 type WelcomeScreenProps = {
   profileName: string;
@@ -15,9 +14,10 @@ type WelcomeScreenProps = {
   attachments: FileAttachment[];
   onAttachmentsChange: (atts: FileAttachment[]) => void;
   onToast?: (msg: string, type: "success" | "error" | "info") => void;
+  onSwitchToSimulate?: () => void;
 };
 
-export default function WelcomeScreen({ profileName, input, setInput, onSend, loading, attachments, onAttachmentsChange, onToast }: WelcomeScreenProps) {
+export default function WelcomeScreen({ input, setInput, onSend, loading, attachments, onAttachmentsChange, onToast, onSwitchToSimulate }: WelcomeScreenProps) {
   const isMobile = useIsMobile();
   return (
     <div style={{
@@ -28,35 +28,26 @@ export default function WelcomeScreen({ profileName, input, setInput, onSend, lo
     }}>
       {/* Brand icon */}
       <div style={{ animation: "fadeIn 0.3s ease-out", marginBottom: 8 }}>
-        <SignuxIcon color="var(--accent)" size={isMobile ? 48 : 64} />
+        <SignuxIcon color="var(--accent)" size={56} />
       </div>
 
       {/* Brand name */}
       <div style={{
         display: "flex", alignItems: "baseline", gap: 6,
-        animation: "fadeIn 0.4s ease-out", marginBottom: 4,
+        animation: "fadeIn 0.4s ease-out", marginBottom: 40,
       }}>
         <span style={{
-          fontFamily: "var(--font-brand)", fontSize: isMobile ? 28 : 36,
+          fontFamily: "var(--font-brand)", fontSize: 40,
           fontWeight: 700, letterSpacing: 5, color: "var(--text-primary)",
         }}>SIGNUX</span>
         <span style={{
-          fontFamily: "var(--font-brand)", fontSize: isMobile ? 28 : 36,
-          fontWeight: 300, letterSpacing: 3, color: "var(--text-primary)", opacity: 0.5,
+          fontFamily: "var(--font-brand)", fontSize: 40,
+          fontWeight: 300, letterSpacing: 3, color: "var(--text-primary)", opacity: 0.4,
         }}>AI</span>
       </div>
 
-      {/* Subtitle */}
-      <div style={{
-        fontSize: isMobile ? 14 : 15, color: "var(--text-tertiary)",
-        marginBottom: isMobile ? 24 : 48,
-        animation: "fadeIn 0.5s ease-out",
-      }}>
-        {t("chat.welcome_subtitle")}
-      </div>
-
       {/* Input */}
-      <div style={{ width: "100%", maxWidth: 600, marginBottom: 16 }}>
+      <div style={{ width: "100%", maxWidth: 580, marginBottom: 16, animation: "fadeIn 0.5s ease-out" }}>
         <ChatInput
           value={input}
           onChange={setInput}
@@ -69,42 +60,46 @@ export default function WelcomeScreen({ profileName, input, setInput, onSend, lo
         />
       </div>
 
-      {/* Suggestion chips */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, auto)",
-          gap: 8,
-          justifyContent: isMobile ? "stretch" : "center",
-          width: "100%",
-          animation: "fadeIn 0.6s ease-out",
-        }}
-      >
-        {SUGGESTION_KEYS.map(key => (
-          <button
-            key={key}
-            onClick={() => onSend(t(key))}
-            style={{
-              padding: isMobile ? "10px 12px" : "8px 16px",
-              borderRadius: "var(--radius-pill)",
-              background: "transparent", border: "1px solid var(--border-secondary)",
-              fontSize: 13, color: "var(--text-secondary)",
-              cursor: "pointer", transition: "all 0.15s",
-              whiteSpace: isMobile ? "normal" : "nowrap",
-              textAlign: "center", lineHeight: 1.3,
-              minHeight: 44,
-            }}
-            className="suggestion-chip"
-          >
-            {t(key)}
-          </button>
-        ))}
-      </div>
-
-      {/* Disclaimer */}
-      <div style={{ textAlign: "center", marginTop: 12, fontSize: 11, color: "var(--text-tertiary)" }}>
-        {t("common.disclaimer")}
-      </div>
+      {/* Simulate banner */}
+      {onSwitchToSimulate && (
+        <button
+          onClick={onSwitchToSimulate}
+          style={{
+            width: "100%", maxWidth: 580, padding: "12px 16px",
+            background: "linear-gradient(135deg, rgba(212,175,55,0.06), rgba(212,175,55,0.02))",
+            border: "1px solid rgba(212,175,55,0.12)",
+            borderRadius: 14, display: "flex", alignItems: "center", gap: 12,
+            cursor: "pointer", transition: "all 200ms",
+            animation: "fadeIn 0.6s ease-out",
+            textAlign: "left",
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = "rgba(212,175,55,0.08)";
+            e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)";
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,175,55,0.06), rgba(212,175,55,0.02))";
+            e.currentTarget.style.borderColor = "rgba(212,175,55,0.12)";
+          }}
+        >
+          <div style={{
+            width: 32, height: 32, borderRadius: "50%",
+            background: "rgba(212,175,55,0.1)", display: "flex",
+            alignItems: "center", justifyContent: "center", flexShrink: 0,
+          }}>
+            <Zap size={18} style={{ color: "var(--accent)" }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
+              {t("sim.banner_title")}
+            </div>
+            <div style={{ fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.4 }}>
+              {t("sim.banner_subtitle")}
+            </div>
+          </div>
+          <ArrowRight size={16} style={{ color: "var(--text-tertiary)", flexShrink: 0 }} />
+        </button>
+      )}
     </div>
   );
 }

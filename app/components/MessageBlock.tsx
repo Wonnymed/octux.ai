@@ -5,6 +5,7 @@ import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
 import type { Attachment, Message } from "../lib/types";
 import MarkdownRenderer from "./MarkdownRenderer";
+import { SignuxIcon } from "./SignuxIcon";
 
 const CODE_EXTENSIONS = [
   ".py", ".js", ".ts", ".tsx", ".jsx", ".html", ".css", ".json",
@@ -60,8 +61,8 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
         <div style={{ maxWidth: 640, margin: "0 auto", padding: isMobile ? "0 16px" : "0 24px" }}>
           {/* Sender label + timestamp on hover */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-tertiary)", letterSpacing: "0.02em" }}>
-              {isUser ? t("common.you") : "Signux"}
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-tertiary)", letterSpacing: "0.02em", display: "flex", alignItems: "center", gap: 5 }}>
+              {isUser ? t("common.you") : (<><SignuxIcon size={14} color="var(--text-tertiary)" />Signux</>)}
             </span>
             {message.timestamp && (
               <span style={{

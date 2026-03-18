@@ -16,7 +16,6 @@ type SidebarProps = {
   setMode: (m: Mode) => void;
   profileName: string;
   lang: string;
-  rates: any;
   onNewConversation: () => void;
   onOpenSettings: () => void;
   open: boolean;
@@ -26,7 +25,7 @@ type SidebarProps = {
 };
 
 export default function Sidebar({
-  mode, setMode, profileName, lang, rates,
+  mode, setMode, profileName, lang,
   onNewConversation, onOpenSettings, open, onClose, isLoggedIn, onSignOut,
 }: SidebarProps) {
   const isMobile = useIsMobile();
@@ -184,18 +183,6 @@ export default function Sidebar({
 
             {/* Bottom */}
             <div style={{ borderTop: "1px solid var(--border-secondary)", padding: "8px" }}>
-              {/* Rates */}
-              {rates && (
-                <div style={{
-                  padding: "4px 10px 8px", fontSize: 10,
-                  color: "var(--text-tertiary)", fontFamily: "var(--font-mono)",
-                }}>
-                  USD/BRL {rates.USDBRL?.toFixed(2)} · USD/CNY {rates.USDCNY?.toFixed(2)}
-                </div>
-              )}
-
-              <div style={{ height: 1, background: "var(--border-secondary)", margin: "6px 4px" }} />
-
               {/* Settings */}
               <button onClick={handleSettings} className="sidebar-icon-btn" aria-label="Settings">
                 <Settings size={18} style={{ flexShrink: 0 }} />
