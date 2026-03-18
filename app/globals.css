@@ -531,26 +531,7 @@ textarea, input, button {
 .prose a:hover { text-decoration: underline; }
 .prose hr { border: none; border-top: 1px solid var(--border-secondary); margin: 16px 0; }
 
-/* ═══ Sidebar Drawer (Okara-style overlay) ═══ */
-.sidebar-drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.3);
-  z-index: 199;
-}
-.sidebar-drawer {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--sidebar-expanded);
-  background: var(--bg-primary);
-  border-right: 1px solid var(--border-secondary);
-  display: flex;
-  flex-direction: column;
-  z-index: 200;
-  overflow: hidden;
-}
+/* ═══ Sidebar Drawer ═══ */
 
 .sidebar-icon-btn {
   display: flex;
@@ -626,7 +607,7 @@ textarea, input, button {
   position: fixed;
   top: 14px;
   left: 16px;
-  z-index: 100;
+  z-index: 201;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -707,8 +688,6 @@ textarea, input, button {
 
 /* ═══ Print ═══ */
 @media print {
-  .sidebar-drawer,
-  .sidebar-drawer-backdrop,
   .sidebar-toggle-btn,
   .toast,
   .toast-container {

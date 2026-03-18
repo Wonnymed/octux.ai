@@ -197,6 +197,7 @@ export default function ChatPage() {
 
   /* Refs */
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
   /* ═══ Toast Callbacks ═══ */
   const addToast = useCallback((message: string, type: Toast["type"] = "success") => {
@@ -587,7 +588,7 @@ export default function ChatPage() {
       <OfflineBanner />
 
       {/* Sidebar toggle (always visible) */}
-      <button className="sidebar-toggle-btn" onClick={() => setSidebarOpen(o => !o)} aria-label="Toggle menu">
+      <button ref={toggleRef} className="sidebar-toggle-btn" onClick={() => setSidebarOpen(o => !o)} aria-label="Toggle menu">
         {sidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
       </button>
 
@@ -652,6 +653,7 @@ export default function ChatPage() {
         onClose={() => setSidebarOpen(false)}
         isLoggedIn={isLoggedIn}
         onSignOut={authUser ? authSignOut : undefined}
+        toggleRef={toggleRef}
       />
 
       <main style={{
