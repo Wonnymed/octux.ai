@@ -148,7 +148,7 @@ const es: Record<string, string> = {
   "settings.cancel": "Cancelar",
   "settings.delete": "Eliminar",
   "settings.saved": "Configuración guardada",
-  "settings.replay_tutorial": "Repetir tutorial",
+
 
   // SIMULATION (additional)
   "sim.complete": "Análisis completo",
@@ -181,22 +181,7 @@ const es: Record<string, string> = {
   "intel.risk.medium": "Riesgo Medio",
   "intel.risk.high": "Riesgo Alto",
   "intel.risk.critical": "Crítico",
-  // TOUR
-  "tour.step1.title": "Pregunta lo que sea",
-  "tour.step1.desc": "Estructuras, importaciones, crypto, mercados, geopolítica — Signux cubre más de 20 dominios. Solo escribe tu pregunta.",
-  "tour.step2.title": "Tu espacio de trabajo",
-  "tour.step2.desc": "Conversaciones, modos y configuración — todo en la barra lateral.",
-  "tour.step3.title": "Ejecuta una simulación",
-  "tour.step3.desc": "Describe una operación y 15 agentes especialistas la simularán de principio a fin con un veredicto GO/NO-GO.",
-  "tour.step3.recommended": "Recomendado",
-  "tour.step4.title": "Intel diario",
-  "tour.step4.desc": "Recibe un briefing en tiempo real sobre eventos globales — cambios regulatorios, movimientos de mercado y riesgos geopolíticos.",
-  "tour.step5.title": "Hazlo tuyo",
-  "tour.step5.desc": "Configura tu idioma, describe tu negocio y personaliza cómo responde Signux.",
-  "tour.skip": "Saltar",
-  "tour.next": "Siguiente",
-  "tour.finish": "Vamos",
-  "tour.step_of": "{current} de {total}",
+
 
   "intel.focus.geopolitics": "Geopolítica",
   "intel.focus.regulations": "Regulaciones",

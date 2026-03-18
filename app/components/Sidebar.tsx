@@ -117,7 +117,7 @@ export default function Sidebar({
                 <button
                   key={key}
                   onClick={() => handleMode(key)}
-                  data-tour={key === "simulate" ? "simulate-mode" : key === "intel" ? "intel-mode" : undefined}
+
                   className={`sidebar-icon-btn${mode === key ? " active" : ""}`}
                 >
                   <Icon size={18} style={{ flexShrink: 0 }} />
@@ -205,7 +205,7 @@ export default function Sidebar({
 
               {/* Profile (only if logged in) */}
               {isLoggedIn && profileName && (
-                <button onClick={handleSettings} data-tour="profile-settings" className="sidebar-icon-btn" style={{ marginTop: 2 }}>
+                <button onClick={handleSettings} className="sidebar-icon-btn" style={{ marginTop: 2 }}>
                   <div style={{
                     width: 24, height: 24, borderRadius: "50%", background: "var(--accent-bg)",
                     display: "flex", alignItems: "center", justifyContent: "center",

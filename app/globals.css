@@ -671,7 +671,6 @@ textarea, input, button {
   .sidebar-drawer,
   .sidebar-drawer-backdrop,
   .sidebar-toggle-btn,
-  [data-tour],
   .toast,
   .toast-container {
     display: none !important;

@@ -330,7 +330,7 @@ export default function ChatInput({
   return (
     <div
       style={{ width: "100%", maxWidth: 600, margin: "0 auto", position: "relative" }}
-      data-tour="chat-input"
+
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}

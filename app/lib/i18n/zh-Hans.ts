@@ -148,7 +148,7 @@ const zhHans: Record<string, string> = {
   "settings.cancel": "取消",
   "settings.delete": "删除",
   "settings.saved": "设置已保存",
-  "settings.replay_tutorial": "重播教程",
+
 
   // SIMULATION (additional)
   "sim.complete": "分析完成",
@@ -181,22 +181,7 @@ const zhHans: Record<string, string> = {
   "intel.risk.medium": "中等风险",
   "intel.risk.high": "高风险",
   "intel.risk.critical": "严重",
-  // TOUR
-  "tour.step1.title": "随便问",
-  "tour.step1.desc": "架构、进口、加密资产、市场、地缘政治 — Signux 覆盖20+专业领域。输入你的问题即可。",
-  "tour.step2.title": "您的工作区",
-  "tour.step2.desc": "对话、模式、设置 — 都在侧边栏中集中管理。",
-  "tour.step3.title": "运行模拟",
-  "tour.step3.desc": "描述一项运营方案，15位专业分析师将进行端到端模拟，给出 GO/NO-GO 判定。",
-  "tour.step3.recommended": "推荐",
-  "tour.step4.title": "每日情报",
-  "tour.step4.desc": "实时掌握全球动态 — 监管变化、市场波动和地缘政治风险。",
-  "tour.step5.title": "按你的方式定制",
-  "tour.step5.desc": "设置语言，描述你的业务，自定义 Signux 的回复方式。",
-  "tour.skip": "跳过",
-  "tour.next": "下一步",
-  "tour.finish": "开始使用",
-  "tour.step_of": "{current} / {total}",
+
 
   "intel.focus.geopolitics": "地缘政治",
   "intel.focus.regulations": "法规",

@@ -8,7 +8,7 @@ import type { Message, Toast, Attachment, SimAgent, SimResult, Mode } from "../l
 import { Check, AlertTriangle, Info, WifiOff, PanelLeft } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
-import OnboardingTour, { isTourCompleted } from "../components/OnboardingTour";
+
 import { useIsMobile } from "../lib/useIsMobile";
 import type { FileAttachment } from "../components/ChatInput";
 
@@ -181,7 +181,7 @@ export default function ChatPage() {
   /* UI */
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [showSettings, setShowSettings] = useState(false);
-  const [showTour, setShowTour] = useState(false);
+
   const [splashDone, setSplashDone] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -223,9 +223,6 @@ export default function ChatPage() {
         const { message, type } = JSON.parse(toastData);
         setTimeout(() => addToast(message, type), 300);
       } catch {}
-    }
-    if (!isTourCompleted()) {
-      setTimeout(() => setShowTour(true), 500);
     }
   }, [addToast]);
 
@@ -684,13 +681,7 @@ export default function ChatPage() {
           onNameChange={(newName) => { setProfileName(newName); }}
         />
       )}
-      {showTour && (
-        <OnboardingTour
-          onComplete={() => setShowTour(false)}
-          onOpenSidebar={() => setSidebarOpen(true)}
-          onCloseSidebar={() => setSidebarOpen(false)}
-        />
-      )}
+
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
   );

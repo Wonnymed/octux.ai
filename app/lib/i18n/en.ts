@@ -150,7 +150,7 @@ const en: Record<string, string> = {
   "settings.cancel": "Cancel",
   "settings.delete": "Delete",
   "settings.saved": "Settings saved",
-  "settings.replay_tutorial": "Replay tutorial",
+
 
   // SIMULATION (additional)
   "sim.complete": "Analysis complete",
@@ -184,22 +184,7 @@ const en: Record<string, string> = {
   "intel.risk.high": "High Risk",
   "intel.risk.critical": "Critical",
 
-  // TOUR
-  "tour.step1.title": "Ask anything",
-  "tour.step1.desc": "Structures, imports, crypto, markets, geopolitics — Signux covers 20+ domains. Just type your question.",
-  "tour.step2.title": "Your workspace",
-  "tour.step2.desc": "Conversations, modes, and settings — all in the sidebar.",
-  "tour.step3.title": "Run a simulation",
-  "tour.step3.desc": "Describe an operation and 15 specialist agents will simulate it end-to-end with a GO/NO-GO verdict.",
-  "tour.step3.recommended": "Recommended",
-  "tour.step4.title": "Daily intel",
-  "tour.step4.desc": "Get a real-time briefing on global events — regulatory changes, market shifts, and geopolitical risks.",
-  "tour.step5.title": "Make it yours",
-  "tour.step5.desc": "Set your language, describe your business, and customize how Signux responds.",
-  "tour.skip": "Skip",
-  "tour.next": "Next",
-  "tour.finish": "Let's go",
-  "tour.step_of": "{current} of {total}",
+
 
   // FILE UPLOAD
   "file.too_large": "File too large. Maximum size is 10MB.",

@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { t, ALL_LANGUAGES, Language, setLanguage } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
 import { getProfile, updateProfile } from "../lib/profile";
-import { resetTour } from "./OnboardingTour";
+
 
 type Tab = "general" | "personalization" | "account";
 
@@ -295,20 +295,6 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange 
                   </button>
                 </div>
 
-                {/* Replay tutorial */}
-                <div style={{ height: 1, background: "var(--border-secondary)" }} />
-                <button
-                  onClick={() => {
-                    resetTour();
-                    onClose();
-                  }}
-                  style={{
-                    background: "none", border: "none", color: "var(--accent)",
-                    fontSize: 13, cursor: "pointer", padding: 0, textAlign: "left",
-                  }}
-                >
-                  {t("settings.replay_tutorial")}
-                </button>
               </div>
             )}
 
