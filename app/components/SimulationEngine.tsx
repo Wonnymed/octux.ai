@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Check, AlertTriangle, Download, ChevronDown, ChevronRight,
   FileText, RotateCcw, MessageSquare, BarChart3, Network,
-  Globe, Users, Clock, Zap, Search,
+  Globe, Users, Clock, Zap, Search, Shield, Activity,
 } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
@@ -14,6 +14,15 @@ import { AGENT_CATEGORY_COLORS, DEFAULT_CATEGORY_COLOR, ENTITY_COLORS, DEFAULT_E
 const SIM_EXAMPLE_KEYS = ["sim.example.1", "sim.example.2", "sim.example.3"];
 const SIM_STAGE_KEYS = ["stage.intelligence", "stage.0", "stage.1", "stage.2", "stage.3", "stage.4"];
 const SIM_STAGE_ICONS = [Globe, Network, Users, Zap, MessageSquare, FileText];
+
+type AgentMessage = {
+  agentId?: string;
+  agentName: string;
+  role?: string;
+  category?: string;
+  content: string;
+  round?: number;
+};
 
 type SimulationEngineProps = {
   simulating: boolean;
@@ -27,10 +36,39 @@ type SimulationEngineProps = {
   onSimulate: () => void;
   onReset: () => void;
   simStarting: boolean;
+  simAgentMessages: AgentMessage[];
 };
 
+function calculateRiskScore(agents: SimAgent[], messages: AgentMessage[]): { score: number; label: string; color: string } {
+  if (messages.length === 0) return { score: 0, label: "Calculating...", color: "var(--text-tertiary)" };
+  const doneCount = agents.filter(a => a.done).length;
+  const total = agents.length || 1;
+  const completionRatio = doneCount / total;
+  const contentLength = messages.reduce((sum, m) => sum + (m.content?.length || 0), 0);
+  const avgLength = contentLength / messages.length;
+  const riskKeywords = ["risk", "threat", "vulnerability", "danger", "critical", "warning", "alert", "concern", "failure", "exploit"];
+  const riskMentions = messages.reduce((sum, m) => {
+    const lower = (m.content || "").toLowerCase();
+    return sum + riskKeywords.filter(k => lower.includes(k)).length;
+  }, 0);
+  const riskDensity = riskMentions / messages.length;
+  const rawScore = Math.min(100, Math.round(
+    (completionRatio * 30) + (Math.min(avgLength / 500, 1) * 30) + (Math.min(riskDensity, 3) / 3 * 40)
+  ));
+  if (rawScore >= 70) return { score: rawScore, label: "High Risk", color: "var(--error)" };
+  if (rawScore >= 40) return { score: rawScore, label: "Medium Risk", color: "var(--warning)" };
+  return { score: rawScore, label: "Low Risk", color: "var(--success)" };
+}
+
 export default function SimulationEngine(props: SimulationEngineProps) {
-  const { simulating, simResult, simScenario, setSimScenario, simStage, simLiveAgents, simTotalAgents, simStartTime, onSimulate, onReset, simStarting } = props;
+  const { simulating, simResult, simScenario, setSimScenario, simStage, simLiveAgents, simTotalAgents, simStartTime, onSimulate, onReset, simStarting, simAgentMessages } = props;
+  const feedRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (feedRef.current) {
+      feedRef.current.scrollTop = feedRef.current.scrollHeight;
+    }
+  }, [simAgentMessages]);
 
   const [resultTab, setResultTab] = useState<"report" | "simulation" | "graph">("report");
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
@@ -141,110 +179,266 @@ export default function SimulationEngine(props: SimulationEngineProps) {
   if (simulating) {
     const progressPct = Math.min(((simStage + 1) / 6) * 100, 100);
     const doneAgents = simLiveAgents.filter(a => a.done).length;
+    const risk = calculateRiskScore(simLiveAgents, simAgentMessages);
+    const elapsed = simStartTime ? Math.floor((Date.now() - simStartTime) / 1000) : 0;
+    const categoryCount: Record<string, number> = {};
+    simAgentMessages.forEach(m => { if (m.category) categoryCount[m.category] = (categoryCount[m.category] || 0) + 1; });
 
-    return (
-      <div style={{ flex: 1, overflowY: "auto", padding: "32px 24px" }}>
-        <div style={{ maxWidth: 700, margin: "0 auto" }}>
-          {/* Linear progress bar */}
+    const leftPanel = (
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        {/* Progress bar */}
+        <div style={{
+          width: "100%", height: 3, background: "var(--bg-tertiary)",
+          borderRadius: 2, overflow: "hidden",
+        }}>
           <div style={{
-            width: "100%", height: 3, background: "var(--bg-tertiary)",
-            borderRadius: 2, marginBottom: 40, overflow: "hidden",
-          }}>
-            <div style={{
-              height: "100%", background: "var(--accent)",
-              borderRadius: 2, transition: "width 0.8s ease",
-              width: `${progressPct}%`,
-            }} />
-          </div>
+            height: "100%", background: "var(--accent)",
+            borderRadius: 2, transition: "width 0.8s ease",
+            width: `${progressPct}%`,
+          }} />
+        </div>
 
-          {/* Stages list */}
-          <div style={{ display: "flex", flexDirection: "column", marginBottom: 32 }}>
-            {SIM_STAGE_KEYS.map((key, idx) => {
-              const isDone = idx < simStage;
-              const isCurrent = idx === simStage;
-              return (
-                <div key={key} style={{ display: "flex", gap: 14, paddingBottom: idx < 5 ? 0 : 0 }}>
-                  {/* Dot column */}
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 20 }}>
-                    <div style={{
-                      width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: "all 0.3s",
-                      background: isDone ? "var(--success)" : isCurrent ? "var(--bg-primary)" : "var(--bg-tertiary)",
-                      border: isCurrent ? "2px solid var(--accent)" : isDone ? "none" : "1px solid var(--border-primary)",
-                    }}>
-                      {isDone && <Check size={11} style={{ color: "#fff" }} />}
-                      {isCurrent && <span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} />}
-                    </div>
-                    {idx < 5 && (
-                      <div style={{
-                        width: 1, flex: 1, minHeight: 24,
-                        background: isDone ? "var(--success)" : "var(--border-secondary)",
-                        opacity: isDone ? 0.3 : 1,
-                        transition: "background 0.3s",
-                      }} />
-                    )}
-                  </div>
-                  {/* Label */}
-                  <div style={{ paddingBottom: 20, paddingTop: 1 }}>
-                    <span style={{
-                      fontSize: 14,
-                      color: isCurrent ? "var(--text-primary)" : isDone ? "var(--text-secondary)" : "var(--text-tertiary)",
-                      fontWeight: isCurrent ? 500 : 400,
-                    }}>
-                      {t(key)}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Agent counter */}
-          {simTotalAgents > 0 && (
-            <div style={{
-              fontSize: 13, color: "var(--accent)", fontFamily: "var(--font-mono)",
-              marginBottom: 16, animation: "fadeIn 0.3s ease",
-            }}>
-              {t("sim.agent_progress", { current: String(doneAgents), total: String(simTotalAgents) })}
-            </div>
-          )}
-
-          {/* Agent items */}
-          {simLiveAgents.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {simLiveAgents.map((a, i) => {
-                const cc = AGENT_CATEGORY_COLORS[a.category || ""] || DEFAULT_CATEGORY_COLOR;
-                return (
-                  <div key={`${a.name}-${i}`} style={{
-                    display: "flex", alignItems: "center", gap: 12,
-                    padding: "10px 14px", borderRadius: "var(--radius-sm)",
-                    background: "var(--bg-secondary)",
-                    animation: "fadeInUp 0.2s ease-out",
+        {/* Stages list */}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {SIM_STAGE_KEYS.map((key, idx) => {
+            const isDone = idx < simStage;
+            const isCurrent = idx === simStage;
+            const StageIcon = SIM_STAGE_ICONS[idx];
+            return (
+              <div key={key} style={{ display: "flex", gap: 12 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 20 }}>
+                  <div style={{
+                    width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    transition: "all 0.3s",
+                    background: isDone ? "var(--success)" : isCurrent ? "var(--bg-primary)" : "var(--bg-tertiary)",
+                    border: isCurrent ? "2px solid var(--accent)" : isDone ? "none" : "1px solid var(--border-primary)",
                   }}>
+                    {isDone && <Check size={11} style={{ color: "#fff" }} />}
+                    {isCurrent && <span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} />}
+                  </div>
+                  {idx < 5 && (
                     <div style={{
-                      width: 28, height: 28, borderRadius: "50%",
-                      background: cc.bg, display: "flex",
-                      alignItems: "center", justifyContent: "center",
-                      fontSize: 11, fontWeight: 600, color: cc.color,
-                      flexShrink: 0,
-                    }}>
-                      {a.name.charAt(0)}
-                    </div>
-                    <span style={{ fontSize: 13, color: "var(--text-primary)", flex: 1 }}>{a.name}</span>
-                    {a.done ? (
-                      <span style={{ fontSize: 11, color: "var(--success)", display: "flex", alignItems: "center", gap: 4 }}>
-                        <Check size={12} /> {t("sim.agent_done")}
-                      </span>
-                    ) : (
-                      <span className="loading-dots"><span /><span /><span /></span>
-                    )}
+                      width: 1, flex: 1, minHeight: 20,
+                      background: isDone ? "var(--success)" : "var(--border-secondary)",
+                      opacity: isDone ? 0.3 : 1,
+                      transition: "background 0.3s",
+                    }} />
+                  )}
+                </div>
+                <div style={{ paddingBottom: 16, paddingTop: 1, display: "flex", alignItems: "center", gap: 6 }}>
+                  <StageIcon size={13} style={{ color: isCurrent ? "var(--accent)" : isDone ? "var(--text-tertiary)" : "var(--text-tertiary)", opacity: isDone ? 0.5 : 1 }} />
+                  <span style={{
+                    fontSize: 13,
+                    color: isCurrent ? "var(--text-primary)" : isDone ? "var(--text-secondary)" : "var(--text-tertiary)",
+                    fontWeight: isCurrent ? 500 : 400,
+                  }}>
+                    {t(key)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Risk Dashboard */}
+        <div style={{
+          padding: 16, borderRadius: "var(--radius-md)",
+          background: "var(--bg-secondary)", border: "1px solid var(--border-secondary)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <Shield size={14} style={{ color: risk.color }} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Risk Assessment
+            </span>
+          </div>
+          {/* Score bar */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontSize: 22, fontWeight: 700, color: risk.color }}>{risk.score}</span>
+              <span style={{ fontSize: 11, color: risk.color, fontWeight: 500, alignSelf: "flex-end" }}>{risk.label}</span>
+            </div>
+            <div style={{ width: "100%", height: 4, background: "var(--bg-tertiary)", borderRadius: 2, overflow: "hidden" }}>
+              <div style={{
+                height: "100%", borderRadius: 2,
+                background: risk.color,
+                width: `${risk.score}%`,
+                transition: "width 0.5s ease",
+              }} />
+            </div>
+          </div>
+          {/* Stats row */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div style={{ padding: "8px 10px", borderRadius: "var(--radius-sm)", background: "var(--bg-tertiary)" }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)" }}>{doneAgents}/{simTotalAgents || "?"}</div>
+              <div style={{ fontSize: 10, color: "var(--text-tertiary)", textTransform: "uppercase" }}>Agents</div>
+            </div>
+            <div style={{ padding: "8px 10px", borderRadius: "var(--radius-sm)", background: "var(--bg-tertiary)" }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)" }}>{simAgentMessages.length}</div>
+              <div style={{ fontSize: 10, color: "var(--text-tertiary)", textTransform: "uppercase" }}>Messages</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Category breakdown */}
+        {Object.keys(categoryCount).length > 0 && (
+          <div style={{
+            padding: 16, borderRadius: "var(--radius-md)",
+            background: "var(--bg-secondary)", border: "1px solid var(--border-secondary)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <Activity size={14} style={{ color: "var(--text-tertiary)" }} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Categories
+              </span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {Object.entries(categoryCount).map(([cat, count]) => {
+                const cc = AGENT_CATEGORY_COLORS[cat] || DEFAULT_CATEGORY_COLOR;
+                return (
+                  <div key={cat} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: cc.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, color: "var(--text-secondary)", flex: 1 }}>{t(`sim.category.${cat}`)}</span>
+                    <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--text-tertiary)" }}>{count}</span>
                   </div>
                 );
               })}
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Agent list */}
+        {simLiveAgents.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {simLiveAgents.map((a, i) => {
+              const cc = AGENT_CATEGORY_COLORS[a.category || ""] || DEFAULT_CATEGORY_COLOR;
+              return (
+                <div key={`${a.name}-${i}`} style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "8px 12px", borderRadius: "var(--radius-sm)",
+                  background: "var(--bg-secondary)",
+                  animation: "fadeInUp 0.2s ease-out",
+                }}>
+                  <div style={{
+                    width: 24, height: 24, borderRadius: "50%",
+                    background: cc.bg, display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                    fontSize: 10, fontWeight: 600, color: cc.color,
+                    flexShrink: 0,
+                  }}>
+                    {a.name.charAt(0)}
+                  </div>
+                  <span style={{ fontSize: 12, color: "var(--text-primary)", flex: 1 }}>{a.name}</span>
+                  {a.done ? (
+                    <Check size={12} style={{ color: "var(--success)" }} />
+                  ) : (
+                    <span className="loading-dots" style={{ transform: "scale(0.7)" }}><span /><span /><span /></span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+
+    const rightPanel = (
+      <div
+        ref={feedRef}
+        style={{
+          flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8,
+          padding: isMobile ? 0 : "0 4px",
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "0 0 12px", borderBottom: "1px solid var(--border-secondary)",
+          position: "sticky", top: 0, background: "var(--bg-primary)", zIndex: 2,
+        }}>
+          <MessageSquare size={14} style={{ color: "var(--accent)" }} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Live Agent Feed
+          </span>
+          <span style={{
+            marginLeft: "auto", fontSize: 11, fontFamily: "var(--font-mono)",
+            color: "var(--text-tertiary)",
+          }}>
+            {simAgentMessages.length} messages
+          </span>
         </div>
+
+        {simAgentMessages.length === 0 ? (
+          <div style={{
+            flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+            color: "var(--text-tertiary)", fontSize: 13,
+          }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="loading-dots"><span /><span /><span /></span>
+              Waiting for agent reports...
+            </span>
+          </div>
+        ) : (
+          simAgentMessages.map((msg, i) => {
+            const cc = AGENT_CATEGORY_COLORS[msg.category || ""] || DEFAULT_CATEGORY_COLOR;
+            return (
+              <div key={i} style={{
+                padding: "14px 16px", borderRadius: "var(--radius-md)",
+                background: "var(--bg-secondary)", border: "1px solid var(--border-secondary)",
+                borderLeft: `3px solid ${cc.color}`,
+                animation: "fadeInUp 0.2s ease-out",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <div style={{
+                    width: 26, height: 26, borderRadius: "50%",
+                    background: cc.bg, display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                    fontSize: 10, fontWeight: 600, color: cc.color, flexShrink: 0,
+                  }}>
+                    {msg.agentName.charAt(0)}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{msg.agentName}</div>
+                    <div style={{ fontSize: 10, color: "var(--text-tertiary)" }}>
+                      {msg.role}{msg.category && ` · ${t(`sim.category.${msg.category}`)}`}
+                      {msg.round != null && ` · Round ${msg.round}`}
+                    </div>
+                  </div>
+                </div>
+                <div style={{
+                  fontSize: 13, lineHeight: 1.6, color: "var(--text-secondary)",
+                  whiteSpace: "pre-wrap", maxHeight: 200, overflow: "hidden",
+                  maskImage: (msg.content?.length || 0) > 600 ? "linear-gradient(to bottom, black 80%, transparent)" : undefined,
+                  WebkitMaskImage: (msg.content?.length || 0) > 600 ? "linear-gradient(to bottom, black 80%, transparent)" : undefined,
+                }}>
+                  {msg.content}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    );
+
+    return (
+      <div style={{ flex: 1, overflow: "hidden", padding: isMobile ? "16px" : "24px 32px", display: "flex", flexDirection: "column" }}>
+        {isMobile ? (
+          /* Mobile: single column, feed then agents */
+          <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 20 }}>
+            {leftPanel}
+            <div style={{ flex: 1, minHeight: 300, display: "flex", flexDirection: "column" }}>{rightPanel}</div>
+          </div>
+        ) : (
+          /* Desktop: 2-column */
+          <div style={{ flex: 1, display: "flex", gap: 24, minHeight: 0 }}>
+            <div style={{ width: 300, flexShrink: 0, overflowY: "auto" }}>
+              {leftPanel}
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+              {rightPanel}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

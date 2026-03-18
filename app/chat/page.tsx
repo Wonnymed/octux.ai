@@ -177,6 +177,7 @@ export default function ChatPage() {
   const [simResult, setSimResult] = useState<SimResult | null>(null);
   const [simScenario, setSimScenario] = useState("");
   const [simStage, setSimStage] = useState(0);
+  const [simAgentMessages, setSimAgentMessages] = useState<any[]>([]);
   const [simLiveAgents, setSimLiveAgents] = useState<SimAgent[]>([]);
   const [simTotalAgents, setSimTotalAgents] = useState(0);
   const [simStarting, setSimStarting] = useState(false);
@@ -575,6 +576,7 @@ export default function ChatPage() {
     setSimLiveAgents([]);
     setSimTotalAgents(0);
     setSimStage(0);
+    setSimAgentMessages([]);
     setSimStartTime(Date.now());
     try {
       const res = await fetch("/api/simulate", {
@@ -599,7 +601,10 @@ export default function ChatPage() {
             if (data.type === "stage") setSimStage(data.stage === -1 ? 0 : data.stage + 1);
             else if (data.type === "stage_done" && data.totalAgents) setSimTotalAgents(data.totalAgents);
             else if (data.type === "agent_start") setSimLiveAgents(prev => [...prev, { name: data.agentName, role: data.role, category: data.category, done: false }]);
-            else if (data.type === "agent_done") setSimLiveAgents(prev => prev.map(a => a.name === data.agentName && !a.done ? { ...a, done: true } : a));
+            else if (data.type === "agent_done") {
+                setSimLiveAgents(prev => prev.map(a => a.name === data.agentName && !a.done ? { ...a, done: true } : a));
+                setSimAgentMessages(prev => [...prev, data]);
+              }
             else if (data.type === "complete") setSimResult(data.result);
             else if (data.type === "error") setSimResult({ error: data.error || "Simulation error." });
           } catch {}
@@ -700,6 +705,7 @@ export default function ChatPage() {
     setSimLiveAgents([]);
     setSimTotalAgents(0);
     setSimStage(0);
+    setSimAgentMessages([]);
     setSimStartTime(null);
   };
 
@@ -831,6 +837,7 @@ export default function ChatPage() {
                 onSimulate={simulate}
                 onReset={onReset}
                 simStarting={simStarting}
+                simAgentMessages={simAgentMessages}
               />
             </motion.div>
           ) : (
