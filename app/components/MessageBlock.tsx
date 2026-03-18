@@ -46,6 +46,10 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
   const isStreaming = loading && isLast;
   const isEmpty = !message.content;
 
+  const pad = isMobile ? "8px 12px" : "8px 24px";
+  const userMaxWidth = isMobile ? "85%" : "70%";
+  const aiMaxWidth = isMobile ? "90%" : "75%";
+
   const handleCopy = async () => {
     const ok = await copyToClipboard(message.content);
     if (ok) onCopy(message.content);
@@ -53,119 +57,154 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
     setTimeout(() => setCopied(false), 2000);
   };
 
-  return (
-    <>
-      <div
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{ padding: "20px 0", contain: "content" }}
-      >
-        <div style={{ maxWidth: 640, margin: "0 auto", padding: isMobile ? "0 16px" : "0 24px" }}>
-          {/* Sender label + timestamp on hover — not selectable */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, userSelect: "none", WebkitUserSelect: "none" as any }}>
-            {isUser ? (
-              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
-                {t("common.you")}
-              </span>
-            ) : (
-              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <SignuxIcon size={20} color="#D4AF37" />
-                <span style={{
-                  fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 600,
-                  color: "var(--text-secondary)",
-                }}>
-                  Signux
-                </span>
-              </span>
+  /* ═══ USER MESSAGE ═══ */
+  if (isUser) {
+    return (
+      <>
+        <div
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={{ display: "flex", justifyContent: "flex-end", padding: pad }}
+        >
+          <div style={{ maxWidth: userMaxWidth, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+            {/* Attachments above text */}
+            {message.attachments && message.attachments.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6, justifyContent: "flex-end" }}>
+                {message.attachments.map((att, i) => (
+                  att.type === "image" && att.preview ? (
+                    <img
+                      key={i}
+                      src={att.preview}
+                      alt={att.name}
+                      style={{
+                        maxWidth: 180, maxHeight: 180,
+                        borderRadius: 14,
+                        cursor: "pointer", display: "block",
+                        objectFit: "cover",
+                      }}
+                      onClick={() => setLightboxSrc(att.preview || null)}
+                    />
+                  ) : (
+                    <div key={i} style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "6px 10px", background: "rgba(0,0,0,0.08)",
+                      borderRadius: 12, fontSize: 12,
+                    }}>
+                      {isCodeFile(att.name) ? <FileCode size={14} style={{ opacity: 0.6 }} /> : <FileText size={14} style={{ opacity: 0.6 }} />}
+                      <span style={{ fontWeight: 500 }}>{att.name}</span>
+                      <span style={{ opacity: 0.6 }}>{formatFileSize(att.size)}</span>
+                    </div>
+                  )
+                ))}
+              </div>
             )}
-            {message.timestamp && (
+
+            {/* Bubble */}
+            <div style={{
+              padding: "12px 16px",
+              borderRadius: "18px 18px 4px 18px",
+              background: "var(--accent)",
+              color: "#000",
+              fontSize: 15,
+              lineHeight: 1.6,
+              wordBreak: "break-word",
+              whiteSpace: "pre-wrap",
+              userSelect: "text",
+              WebkitUserSelect: "text" as any,
+            }}>
+              {message.content}
+            </div>
+
+            {/* Timestamp on hover */}
+            {message.timestamp && hovered && (
               <span style={{
-                fontSize: 12, color: "var(--text-tertiary)",
-                opacity: hovered ? 1 : 0, transition: "opacity 0.15s",
-                fontFamily: "var(--font-mono)",
+                fontSize: 10, color: "var(--text-tertiary)",
+                marginTop: 4, fontFamily: "var(--font-mono)",
+                animation: "fadeIn 0.15s ease",
               }}>
                 {new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </span>
             )}
           </div>
+        </div>
 
-          {/* Attachment display — not selectable */}
-          {isUser && message.attachments && message.attachments.length > 0 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10, userSelect: "none" as any }}>
-              {message.attachments.map((att, i) => (
-                att.type === "image" && att.preview ? (
-                  <img
-                    key={i}
-                    src={att.preview}
-                    alt={att.name}
-                    style={{
-                      maxWidth: 200, maxHeight: 200,
-                      borderRadius: "var(--radius-md)",
-                      cursor: "pointer", display: "block",
-                      objectFit: "cover",
-                    }}
-                    onClick={() => setLightboxSrc(att.preview || null)}
-                  />
+        {/* Lightbox */}
+        {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+      </>
+    );
+  }
+
+  /* ═══ AI MESSAGE ═══ */
+  return (
+    <>
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{ display: "flex", justifyContent: "flex-start", padding: pad, gap: 10 }}
+      >
+        {/* Avatar */}
+        <div style={{
+          width: 28, height: 28, borderRadius: "50%",
+          background: "var(--bg-secondary)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0, marginTop: 2,
+        }}>
+          <SignuxIcon size={14} color="var(--accent)" />
+        </div>
+
+        {/* Message column */}
+        <div style={{ maxWidth: aiMaxWidth, minWidth: 0 }}>
+          {/* Bubble */}
+          <div style={{
+            padding: "12px 16px",
+            borderRadius: "4px 18px 18px 18px",
+            background: "var(--bg-secondary)",
+            color: "var(--text-primary)",
+            fontSize: 15,
+            lineHeight: 1.7,
+            wordBreak: "break-word",
+            userSelect: "text",
+            WebkitUserSelect: "text" as any,
+          }}>
+            {/* Loading state — empty AI message */}
+            {isEmpty && isStreaming && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-tertiary)" }}>
+                {searching ? (
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                    <Search size={14} className="spinner" />
+                    {t("chat.searching")}
+                  </span>
                 ) : (
-                  <div key={i} style={{
-                    display: "inline-flex", alignItems: "center", gap: 8,
-                    padding: "8px 12px", background: "var(--bg-secondary)",
-                    border: "1px solid var(--border-secondary)",
-                    borderRadius: "var(--radius-sm)",
-                  }}>
-                    {isCodeFile(att.name) ? <FileCode size={16} style={{ color: "var(--text-tertiary)" }} /> : <FileText size={16} style={{ color: "var(--text-tertiary)" }} />}
-                    <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)" }}>{att.name}</span>
-                    <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{formatFileSize(att.size)}</span>
+                  <span className="loading-dots"><span /><span /><span /></span>
+                )}
+              </div>
+            )}
+
+            {/* Message content */}
+            {message.content && (
+              <>
+                {searching && isStreaming && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-tertiary)", marginBottom: 8 }}>
+                    <Search size={14} className="spinner" />
+                    {t("chat.searching")}
                   </div>
-                )
-              ))}
-            </div>
-          )}
+                )}
+                <MarkdownRenderer content={message.content} />
+                {isStreaming && (
+                  <span style={{
+                    display: "inline-block", width: 2, height: 16,
+                    background: "var(--text-primary)", marginLeft: 2,
+                    animation: "blink 1s infinite", verticalAlign: "text-bottom",
+                  }} />
+                )}
+              </>
+            )}
+          </div>
 
-          {/* Loading state */}
-          {!isUser && isEmpty && isStreaming && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-tertiary)", marginTop: 4 }}>
-              {searching ? (
-                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                  <Search size={14} className="spinner" />
-                  {t("chat.searching")}
-                </span>
-              ) : (
-                <span className="loading-dots"><span /><span /><span /></span>
-              )}
-            </div>
-          )}
-
-          {/* Message content — SELECTABLE */}
-          {message.content && (
-            <div style={{ fontSize: 15, lineHeight: 1.7, color: "var(--text-primary)", wordBreak: "break-word", userSelect: "text", WebkitUserSelect: "text" as any }}>
-              {isUser ? (
-                <span style={{ whiteSpace: "pre-wrap" }}>{message.content}</span>
-              ) : (
-                <>
-                  {searching && isStreaming && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-tertiary)", marginBottom: 8 }}>
-                      <Search size={14} className="spinner" />
-                      {t("chat.searching")}
-                    </div>
-                  )}
-                  <MarkdownRenderer content={message.content} />
-                  {isStreaming && (
-                    <span style={{
-                      display: "inline-block", width: 2, height: 16,
-                      background: "var(--text-primary)", marginLeft: 2,
-                      animation: "blink 1s infinite", verticalAlign: "text-bottom",
-                    }} />
-                  )}
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Actions — on hover (always visible on mobile), not selectable */}
-          {!isUser && !isStreaming && message.content && (
+          {/* Actions — below bubble */}
+          {!isStreaming && message.content && (
             <div style={{
-              display: "flex", gap: 2, marginTop: 8,
+              display: "flex", gap: 2, marginTop: 4,
               opacity: isMobile || hovered || feedback ? 1 : 0,
               transition: "opacity 0.15s",
               userSelect: "none", WebkitUserSelect: "none" as any,
@@ -201,44 +240,61 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
               </Tooltip>
             </div>
           )}
+
+          {/* Timestamp on hover */}
+          {message.timestamp && hovered && !isStreaming && (
+            <span style={{
+              fontSize: 10, color: "var(--text-tertiary)",
+              marginTop: 2, display: "block",
+              fontFamily: "var(--font-mono)",
+              animation: "fadeIn 0.15s ease",
+            }}>
+              {new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
         </div>
       </div>
 
       {/* Lightbox */}
-      {lightboxSrc && (
-        <div
-          onClick={() => setLightboxSrc(null)}
-          style={{
-            position: "fixed", inset: 0, zIndex: 300,
-            background: "rgba(0,0,0,0.8)", display: "flex",
-            alignItems: "center", justifyContent: "center",
-            cursor: "pointer", animation: "fadeIn 0.15s ease",
-          }}
-        >
-          <button
-            onClick={() => setLightboxSrc(null)}
-            aria-label="Close image"
-            style={{
-              position: "absolute", top: 20, right: 20,
-              background: "none", border: "none", color: "#fff",
-              cursor: "pointer", display: "flex",
-            }}
-          >
-            <X size={24} />
-          </button>
-          <img
-            src={lightboxSrc}
-            alt="Full size"
-            style={{
-              maxWidth: "90vw", maxHeight: "90vh",
-              borderRadius: "var(--radius-md)",
-              objectFit: "contain",
-            }}
-            onClick={e => e.stopPropagation()}
-          />
-        </div>
-      )}
+      {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
     </>
+  );
+}
+
+/* ═══ Lightbox ═══ */
+function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 300,
+        background: "rgba(0,0,0,0.8)", display: "flex",
+        alignItems: "center", justifyContent: "center",
+        cursor: "pointer", animation: "fadeIn 0.15s ease",
+      }}
+    >
+      <button
+        onClick={onClose}
+        aria-label="Close image"
+        style={{
+          position: "absolute", top: 20, right: 20,
+          background: "none", border: "none", color: "#fff",
+          cursor: "pointer", display: "flex",
+        }}
+      >
+        <X size={24} />
+      </button>
+      <img
+        src={src}
+        alt="Full size"
+        style={{
+          maxWidth: "90vw", maxHeight: "90vh",
+          borderRadius: "var(--radius-md)",
+          objectFit: "contain",
+        }}
+        onClick={e => e.stopPropagation()}
+      />
+    </div>
   );
 }
 
@@ -303,7 +359,7 @@ function ActionBtn({ icon, onClick, active, activeColor }: {
         border: "none", cursor: "pointer",
         padding: "4px 6px", borderRadius: 6, display: "flex",
         alignItems: "center", justifyContent: "center",
-        minWidth: 44, minHeight: 44,
+        minWidth: 32, minHeight: 32,
         color: active ? activeColor : btnHovered ? "var(--text-secondary)" : "var(--text-tertiary)",
         transition: "all 0.15s",
       }}

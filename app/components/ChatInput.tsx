@@ -332,7 +332,7 @@ export default function ChatInput({
 
   return (
     <div
-      style={{ width: "100%", maxWidth: 580, margin: "0 auto", position: "relative" }}
+      style={{ width: "100%", maxWidth: 740, margin: "0 auto", position: "relative" }}
 
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}

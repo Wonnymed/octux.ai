@@ -87,7 +87,7 @@ export default function ChatArea({
         onScroll={handleScroll}
         style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", position: "relative", userSelect: "none", WebkitUserSelect: "none" as any }}
       >
-        <div style={{ width: "100%", paddingBottom: 32 }}>
+        <div style={{ width: "100%", maxWidth: 900, margin: "0 auto", paddingTop: 20, paddingBottom: 32 }}>
           {messages.map((m, i) => (
             <MessageBlock
               key={i}

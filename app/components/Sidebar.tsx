@@ -160,7 +160,7 @@ export default function Sidebar({
       <>
         {open && <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 199 }} />}
         <aside ref={sidebarRef} style={{
-          position: "fixed", top: 0, left: 0, bottom: 0, width: 260, zIndex: 200,
+          position: "fixed", top: 0, left: 0, bottom: 0, width: 280, zIndex: 200,
           transform: open ? "translateX(0)" : "translateX(-100%)",
           transition: "transform 250ms ease",
           background: "var(--bg-primary)", borderRight: "1px solid var(--border-secondary)",
@@ -173,7 +173,7 @@ export default function Sidebar({
   }
 
   // Desktop: expanded or collapsed
-  const width = open ? 240 : 56;
+  const width = open ? 280 : 56;
   return (
     <aside ref={sidebarRef} style={{
       width, minWidth: width, transition: "width 200ms ease, min-width 200ms ease",

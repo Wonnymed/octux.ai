@@ -23,7 +23,7 @@ export default function WelcomeScreen({ input, setInput, onSend, loading, attach
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "center",
       justifyContent: "center", flex: 1,
-      maxWidth: 640, margin: "0 auto", width: "100%",
+      maxWidth: 800, margin: "0 auto", width: "100%",
       padding: isMobile ? "16px 16px 24px" : "24px 24px 32px",
     }}>
       {/* Brand — horizontal layout */}
@@ -56,7 +56,7 @@ export default function WelcomeScreen({ input, setInput, onSend, loading, attach
       </div>
 
       {/* Input */}
-      <div style={{ width: "100%", maxWidth: 580, marginBottom: 16, animation: "fadeIn 0.5s ease-out" }}>
+      <div style={{ width: "100%", maxWidth: 740, marginBottom: 16, animation: "fadeIn 0.5s ease-out" }}>
         <ChatInput
           value={input}
           onChange={setInput}
@@ -74,7 +74,7 @@ export default function WelcomeScreen({ input, setInput, onSend, loading, attach
         <button
           onClick={onSwitchToSimulate}
           style={{
-            width: "100%", maxWidth: 580, padding: "12px 16px",
+            width: "100%", maxWidth: 740, padding: "12px 16px",
             background: "linear-gradient(135deg, rgba(212,175,55,0.06), rgba(212,175,55,0.02))",
             border: "1px solid rgba(212,175,55,0.12)",
             borderRadius: 14, display: "flex", alignItems: "center", gap: 12,
