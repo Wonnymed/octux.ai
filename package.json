@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.79.0",
+    "@supabase/supabase-js": "^2.99.2",
     "ai": "^6.0.116",
     "eventsource-parser": "^3.0.6",
     "framer-motion": "^12.37.0",
