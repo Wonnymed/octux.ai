@@ -6,6 +6,7 @@ import {
   Globe, Users, Clock, Zap, Search,
 } from "lucide-react";
 import { t } from "../lib/i18n";
+import { useIsMobile } from "../lib/useIsMobile";
 import MarkdownRenderer from "./MarkdownRenderer";
 import type { SimAgent, SimResult } from "../lib/types";
 import { AGENT_CATEGORY_COLORS, DEFAULT_CATEGORY_COLOR, ENTITY_COLORS, DEFAULT_ENTITY_COLOR } from "../lib/types";
@@ -35,6 +36,8 @@ export default function SimulationEngine(props: SimulationEngineProps) {
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [agentFilter, setAgentFilter] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const isMobile = useIsMobile();
+  const pad = isMobile ? "16px" : "24px";
 
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }));
 
@@ -44,7 +47,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
       <div style={{
         flex: 1, display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        padding: "40px 24px",
+        padding: isMobile ? "24px 16px" : "40px 24px",
       }}>
         <div style={{ maxWidth: 680, width: "100%", textAlign: "center" }}>
           {/* Branded header */}

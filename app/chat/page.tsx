@@ -2,13 +2,15 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { getProfile } from "../lib/profile";
 import { t, Language, setLanguage } from "../lib/i18n";
 import type { Message, Toast, Attachment, SimAgent, SimResult, Mode } from "../lib/types";
-import { Check, AlertTriangle, Info } from "lucide-react";
+import { Check, AlertTriangle, Info, WifiOff, Menu } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
 import OnboardingTour, { isTourCompleted } from "../components/OnboardingTour";
+import { useIsMobile } from "../lib/useIsMobile";
 import type { FileAttachment } from "../components/ChatInput";
 
 const SimulationEngine = dynamic(() => import("../components/SimulationEngine"), { ssr: false });
@@ -79,24 +81,70 @@ async function buildMessageContent(
   return content;
 }
 
-/* ═══ Toast System ═══ */
+/* ═══ Toast System (top-center, max 1) ═══ */
 let toastId = 0;
 
 function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: number) => void }) {
+  const visible = toasts.slice(-1);
   return (
-    <div style={{ position: "fixed", bottom: 24, right: 24, display: "flex", flexDirection: "column", gap: 8, zIndex: 200 }}>
-      {toasts.map(toast => (
-        <div
-          key={toast.id}
-          className={`toast toast-${toast.type}${toast.dismissing ? " dismissing" : ""}`}
-          onClick={() => onDismiss(toast.id)}
-        >
-          <span style={{ display: "flex" }}>
-            {toast.type === "success" ? <Check size={14} /> : toast.type === "error" ? <AlertTriangle size={14} /> : <Info size={14} />}
-          </span>
-          <span>{toast.message}</span>
-        </div>
-      ))}
+    <div className="toast-container">
+      <AnimatePresence>
+        {visible.map(toast => (
+          <motion.div
+            key={toast.id}
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className={`toast toast-${toast.type}`}
+            onClick={() => onDismiss(toast.id)}
+            style={{ animation: "none" }}
+          >
+            <span style={{ display: "flex" }}>
+              {toast.type === "success" ? <Check size={14} /> : toast.type === "error" ? <AlertTriangle size={14} /> : <Info size={14} />}
+            </span>
+            <span>{toast.message}</span>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ═══ Splash Screen ═══ */
+function SplashScreen({ onDone }: { onDone: () => void }) {
+  const [exiting, setExiting] = useState(false);
+  useEffect(() => {
+    const t1 = setTimeout(() => setExiting(true), 400);
+    const t2 = setTimeout(onDone, 700);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [onDone]);
+  return (
+    <div className={`splash-screen${exiting ? " splash-exit" : ""}`}>
+      <div style={{ textAlign: "center" }}>
+        <div className="splash-logo">SIGNUX</div>
+        <div className="splash-bar" />
+      </div>
+    </div>
+  );
+}
+
+/* ═══ Offline Banner ═══ */
+function OfflineBanner() {
+  const [offline, setOffline] = useState(false);
+  useEffect(() => {
+    const on = () => setOffline(false);
+    const off = () => setOffline(true);
+    setOffline(!navigator.onLine);
+    window.addEventListener("online", on);
+    window.addEventListener("offline", off);
+    return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
+  }, []);
+  if (!offline) return null;
+  return (
+    <div className="offline-banner">
+      <WifiOff size={14} />
+      <span>{t("common.offline")}</span>
     </div>
   );
 }
@@ -137,6 +185,9 @@ export default function ChatPage() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  const [splashDone, setSplashDone] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   /* Refs */
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -496,11 +547,23 @@ export default function ChatPage() {
     setSimStartTime(null);
   };
 
+  const handleSplashDone = useCallback(() => setSplashDone(true), []);
+
   /* ═══ Render ═══ */
-  if (!ready) return null;
+  if (!ready) return <SplashScreen onDone={handleSplashDone} />;
+  if (!splashDone) return <SplashScreen onDone={handleSplashDone} />;
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+      <OfflineBanner />
+
+      {/* Mobile hamburger */}
+      {isMobile && (
+        <button className="hamburger-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+          <Menu size={22} />
+        </button>
+      )}
+
       <Sidebar
         mode={mode}
         setMode={setMode}
@@ -509,54 +572,85 @@ export default function ChatPage() {
         rates={rates}
         onNewConversation={onNewConversation}
         onOpenSettings={() => setShowSettings(true)}
+        mobileOpen={sidebarOpen}
+        onMobileClose={() => setSidebarOpen(false)}
       />
 
       <main style={{
         flex: 1, display: "flex", flexDirection: "column",
         background: "var(--bg-primary)", minWidth: 0,
-        marginLeft: "var(--sidebar-collapsed)",
+        marginLeft: isMobile ? 0 : "var(--sidebar-collapsed)",
         transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
       }}>
-        {mode === "intel" ? (
-          <IntelBriefing
-            intelContent={intelContent}
-            intelLoading={intelLoading}
-            intelTimestamp={intelTimestamp}
-            intelFocus={intelFocus}
-            setIntelFocus={setIntelFocus}
-            onGenerate={generateIntel}
-            onAskAbout={askAboutIntel}
-          />
-        ) : mode === "simulate" ? (
-          <SimulationEngine
-            simulating={simulating}
-            simResult={simResult}
-            simScenario={simScenario}
-            setSimScenario={setSimScenario}
-            simStage={simStage}
-            simLiveAgents={simLiveAgents}
-            simTotalAgents={simTotalAgents}
-            simStartTime={simStartTime}
-            onSimulate={simulate}
-            onReset={onReset}
-            simStarting={simStarting}
-          />
-        ) : (
-          <ChatArea
-            messages={messages}
-            loading={loading}
-            searching={searching}
-            input={input}
-            setInput={setInput}
-            onSend={send}
-            profileName={profileName}
-            onRetry={onRetry}
-            onCopy={handleCopy}
-            attachments={attachments}
-            onAttachmentsChange={setAttachments}
-            onToast={addToast}
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {mode === "intel" ? (
+            <motion.div
+              key="intel"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
+              style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}
+            >
+              <IntelBriefing
+                intelContent={intelContent}
+                intelLoading={intelLoading}
+                intelTimestamp={intelTimestamp}
+                intelFocus={intelFocus}
+                setIntelFocus={setIntelFocus}
+                onGenerate={generateIntel}
+                onAskAbout={askAboutIntel}
+              />
+            </motion.div>
+          ) : mode === "simulate" ? (
+            <motion.div
+              key="simulate"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
+              style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}
+            >
+              <SimulationEngine
+                simulating={simulating}
+                simResult={simResult}
+                simScenario={simScenario}
+                setSimScenario={setSimScenario}
+                simStage={simStage}
+                simLiveAgents={simLiveAgents}
+                simTotalAgents={simTotalAgents}
+                simStartTime={simStartTime}
+                onSimulate={simulate}
+                onReset={onReset}
+                simStarting={simStarting}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="chat"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
+              style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}
+            >
+              <ChatArea
+                messages={messages}
+                loading={loading}
+                searching={searching}
+                input={input}
+                setInput={setInput}
+                onSend={send}
+                profileName={profileName}
+                onRetry={onRetry}
+                onCopy={handleCopy}
+                attachments={attachments}
+                onAttachmentsChange={setAttachments}
+                onToast={addToast}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {showSettings && (

@@ -2,6 +2,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { ArrowUp, Paperclip, Search, X, FileText, FileCode, Mic, MicOff } from "lucide-react";
 import { t, getLanguage } from "../lib/i18n";
+import { useIsMobile } from "../lib/useIsMobile";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FILES = 10;
@@ -319,8 +320,12 @@ export default function ChatInput({
     }
   }, [isListening, startListening, stopListening]);
 
+  const isMobile = useIsMobile();
   const canSend = (value.trim() || attachments.length > 0) && !loading;
   const speechSupported = typeof window !== "undefined" && isSpeechSupported();
+  const iconSize = isMobile ? 16 : 16;
+  const sendSize = isMobile ? 36 : 32;
+  const touchPad = isMobile ? 10 : 6;
 
   return (
     <div
@@ -434,17 +439,18 @@ export default function ChatInput({
         {/* Textarea row */}
         <div style={{ display: "flex", alignItems: "flex-end" }}>
           {/* Left toolbar icons */}
-          <div style={{ display: "flex", alignItems: "center", gap: 0, paddingLeft: 12, paddingBottom: 8, paddingTop: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 0, paddingLeft: isMobile ? 8 : 12, paddingBottom: 8, paddingTop: 8 }}>
             <button
               onClick={() => fileInputRef.current?.click()}
               style={{
                 background: "none", border: "none", cursor: "pointer",
-                padding: 6, borderRadius: 6, display: "flex",
+                padding: touchPad, borderRadius: 6, display: "flex",
                 color: "var(--text-tertiary)", transition: "color 0.15s",
+                minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center",
               }}
               aria-label="Attach file"
             >
-              <Paperclip size={16} />
+              <Paperclip size={iconSize} />
             </button>
             <input
               ref={fileInputRef}
@@ -476,15 +482,16 @@ export default function ChatInput({
               style={{
                 background: "none", border: "none",
                 cursor: speechSupported ? "pointer" : "default",
-                padding: 6, borderRadius: "50%", display: "flex",
+                padding: touchPad, borderRadius: "50%", display: "flex",
                 color: isListening ? "var(--error)" : "var(--text-tertiary)",
                 opacity: speechSupported ? 1 : 0.3,
                 transition: "color 0.15s",
                 animation: isListening ? "voicePulse 1.5s ease-in-out infinite" : "none",
+                minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center",
               }}
               aria-label={t("voice.tooltip")}
             >
-              {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+              {isListening ? <MicOff size={iconSize} /> : <Mic size={iconSize} />}
             </button>
           </div>
 
@@ -516,8 +523,8 @@ export default function ChatInput({
               onClick={onSend}
               disabled={!canSend}
               style={{
-                width: 32,
-                height: 32,
+                width: sendSize,
+                height: sendSize,
                 borderRadius: "50%",
                 background: canSend ? "var(--text-primary)" : "var(--bg-tertiary)",
                 border: "none",

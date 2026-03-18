@@ -203,6 +203,14 @@ const ptBR: Record<string, string> = {
   "intel.focus.markets": "Mercados",
   "intel.focus.logistics": "Logística",
   "intel.focus.crypto": "Crypto",
+
+  // STATES
+  "common.offline": "Você está offline. Reconectando...",
+  "common.rate_limit": "Você atingiu o limite de consultas deste período.",
+  "common.rate_limit_upgrade": "Fazer upgrade",
+  "common.retry": "Tentar novamente",
+  "common.error_generic": "Algo deu errado. Tente novamente.",
+  "sidebar.empty_history": "Suas conversas aparecerão aqui",
 };
 
 export default ptBR;

@@ -203,6 +203,14 @@ const es: Record<string, string> = {
   "intel.focus.markets": "Mercados",
   "intel.focus.logistics": "Logística",
   "intel.focus.crypto": "Cripto",
+
+  // STATES
+  "common.offline": "Estás sin conexión. Reconectando...",
+  "common.rate_limit": "Has alcanzado el límite de consultas de este período.",
+  "common.rate_limit_upgrade": "Mejorar plan",
+  "common.retry": "Intentar de nuevo",
+  "common.error_generic": "Algo salió mal. Inténtalo de nuevo.",
+  "sidebar.empty_history": "Tus conversaciones aparecerán aquí",
 };
 
 export default es;

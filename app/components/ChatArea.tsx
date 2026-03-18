@@ -2,6 +2,7 @@
 import { useRef, useEffect, useState } from "react";
 import { ArrowDown } from "lucide-react";
 import type { Message } from "../lib/types";
+import { useIsMobile } from "../lib/useIsMobile";
 import MessageBlock from "./MessageBlock";
 import WelcomeScreen from "./WelcomeScreen";
 import ChatInput, { type FileAttachment } from "./ChatInput";
@@ -28,6 +29,7 @@ export default function ChatArea({
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
   const [showScroll, setShowScroll] = useState(false);
+  const isMobile = useIsMobile();
 
   const userInitials = profileName ? profileName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "OP";
 
@@ -112,7 +114,7 @@ export default function ChatArea({
           background: "linear-gradient(to bottom, transparent, var(--bg-primary))",
           pointerEvents: "none",
         }} />
-        <div style={{ padding: "12px 24px 16px" }}>
+        <div style={{ padding: isMobile ? "8px 12px 16px" : "12px 24px 16px", paddingBottom: "calc(16px + var(--safe-bottom, 0px))" }}>
           <ChatInput
             value={input}
             onChange={setInput}

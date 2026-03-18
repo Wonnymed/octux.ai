@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Globe, RotateCcw, ChevronDown, ChevronRight, MessageSquare } from "lucide-react";
 import { t } from "../lib/i18n";
+import { useIsMobile } from "../lib/useIsMobile";
 import MarkdownRenderer from "./MarkdownRenderer";
 
 const INTEL_FOCUS_OPTIONS = ["geopolitics", "regulations", "markets", "logistics", "crypto"];
@@ -18,6 +19,7 @@ type IntelBriefingProps = {
 
 export default function IntelBriefing({ intelContent, intelLoading, intelTimestamp, intelFocus, setIntelFocus, onGenerate, onAskAbout }: IntelBriefingProps) {
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const isMobile = useIsMobile();
 
   /* ═══ WELCOME STATE ═══ */
   if (!intelContent && !intelLoading) {
@@ -25,7 +27,7 @@ export default function IntelBriefing({ intelContent, intelLoading, intelTimesta
       <div style={{
         flex: 1, display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        padding: "40px 24px",
+        padding: isMobile ? "24px 16px" : "40px 24px",
       }}>
         <div style={{ maxWidth: 520, width: "100%", textAlign: "center" }}>
           {/* Branded header */}
@@ -93,7 +95,7 @@ export default function IntelBriefing({ intelContent, intelLoading, intelTimesta
       <div style={{
         flex: 1, display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        padding: "40px 24px",
+        padding: isMobile ? "24px 16px" : "40px 24px",
       }}>
         <div style={{
           width: 48, height: 48, borderRadius: "50%",

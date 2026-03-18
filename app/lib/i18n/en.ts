@@ -218,6 +218,14 @@ const en: Record<string, string> = {
   "intel.focus.markets": "Markets",
   "intel.focus.logistics": "Logistics",
   "intel.focus.crypto": "Crypto",
+
+  // STATES
+  "common.offline": "You're offline. Reconnecting...",
+  "common.rate_limit": "You've reached your query limit for this period.",
+  "common.rate_limit_upgrade": "Upgrade",
+  "common.retry": "Try again",
+  "common.error_generic": "Something went wrong. Please try again.",
+  "sidebar.empty_history": "Your conversations will appear here",
 };
 
 export default en;

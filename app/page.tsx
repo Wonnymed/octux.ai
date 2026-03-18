@@ -154,7 +154,7 @@ export default function LandingPage() {
         <div style={{ textAlign: "center" }}>
           {/* Logo */}
           <h1 style={{
-            fontSize: 56, fontWeight: 800, letterSpacing: "-0.02em",
+            fontSize: "clamp(36px, 8vw, 56px)", fontWeight: 800, letterSpacing: "-0.02em",
             margin: 0, color: "var(--text-primary)",
           }}>
             SIGNUX

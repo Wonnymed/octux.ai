@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { ClipboardCopy, Check, RotateCcw, ThumbsUp, ThumbsDown, Search, FileText, FileCode, X } from "lucide-react";
 import { t } from "../lib/i18n";
+import { useIsMobile } from "../lib/useIsMobile";
 import type { Attachment } from "../lib/types";
 import MarkdownRenderer from "./MarkdownRenderer";
 
@@ -37,6 +38,7 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   const isUser = message.role === "user";
   const isStreaming = loading && isLast;
@@ -55,7 +57,7 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
         onMouseLeave={() => setHovered(false)}
         style={{ padding: "20px 0" }}
       >
-        <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 24px" }}>
+        <div style={{ maxWidth: 640, margin: "0 auto", padding: isMobile ? "0 16px" : "0 24px" }}>
           {/* Sender label + timestamp on hover */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-tertiary)", letterSpacing: "0.02em" }}>
@@ -145,11 +147,11 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
             </div>
           )}
 
-          {/* Actions — on hover */}
+          {/* Actions — on hover (always visible on mobile) */}
           {!isUser && !isStreaming && message.content && (
             <div style={{
               display: "flex", gap: 2, marginTop: 8,
-              opacity: hovered || feedback ? 1 : 0,
+              opacity: isMobile || hovered || feedback ? 1 : 0,
               transition: "opacity 0.15s",
             }}>
               <ActionBtn
@@ -228,6 +230,8 @@ function ActionBtn({ icon, onClick, active, activeColor, label }: {
       style={{
         background: "none", border: "none", cursor: "pointer",
         padding: "4px 6px", borderRadius: 6, display: "flex",
+        alignItems: "center", justifyContent: "center",
+        minWidth: 44, minHeight: 44,
         color: active ? activeColor : "var(--text-tertiary)",
         transition: "all 0.15s",
       }}

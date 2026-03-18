@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { t, ALL_LANGUAGES, Language, setLanguage } from "../lib/i18n";
+import { useIsMobile } from "../lib/useIsMobile";
 import { getProfile, updateProfile } from "../lib/profile";
 import { resetTour } from "./OnboardingTour";
 
@@ -25,6 +26,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange 
   const [referenceHistory, setReferenceHistory] = useState(profile?.referenceHistory !== false);
   const [name, setName] = useState(profile?.name || "");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const isMobile = useIsMobile();
 
   // Apply theme
   useEffect(() => {
@@ -132,6 +134,24 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange 
     boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
   });
 
+  const modalStyle: React.CSSProperties = isMobile
+    ? {
+        position: "fixed", bottom: 0, left: 0, right: 0, top: 0, zIndex: 101,
+        borderRadius: 0,
+        background: "var(--bg-primary)",
+        display: "flex", flexDirection: "column", overflow: "hidden",
+      }
+    : {
+        position: "fixed", top: "50%", left: "50%",
+        transform: "translate(-50%, -50%)", zIndex: 101,
+        width: "95vw", maxWidth: 560, maxHeight: "80vh",
+        borderRadius: "var(--radius-lg)",
+        background: "var(--bg-primary)", border: "1px solid var(--border-primary)",
+        boxShadow: "0 24px 48px rgba(0,0,0,0.2)",
+        animation: isMobile ? "none" : "scaleIn 0.15s ease-out",
+        display: "flex", flexDirection: "column", overflow: "hidden",
+      };
+
   return (
     <>
       {/* Backdrop */}
@@ -144,20 +164,14 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange 
       />
 
       {/* Modal */}
-      <div style={{
-        position: "fixed", top: "50%", left: "50%",
-        transform: "translate(-50%, -50%)", zIndex: 101,
-        width: "95vw", maxWidth: 560, maxHeight: "80vh",
-        borderRadius: "var(--radius-lg)",
-        background: "var(--bg-primary)", border: "1px solid var(--border-primary)",
-        boxShadow: "0 24px 48px rgba(0,0,0,0.2)",
-        animation: "scaleIn 0.15s ease-out",
-        display: "flex", flexDirection: "column", overflow: "hidden",
-      }}>
+      <div style={modalStyle}>
+        {/* Drag handle (mobile only) */}
+        {isMobile && <div className="bottom-sheet-handle" />}
+
         {/* Header */}
         <div style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
-          padding: "20px 24px 0",
+          padding: isMobile ? "12px 16px 0" : "20px 24px 0",
           flexShrink: 0,
         }}>
           <span style={{ fontSize: 17, fontWeight: 600, color: "var(--text-primary)" }}>
@@ -165,7 +179,11 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange 
           </span>
           <button
             onClick={onClose}
-            style={{ background: "none", border: "none", color: "var(--text-tertiary)", cursor: "pointer", display: "flex", padding: 4, borderRadius: 6 }}
+            style={{
+              background: "none", border: "none", color: "var(--text-tertiary)",
+              cursor: "pointer", display: "flex", padding: 4, borderRadius: 6,
+              minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center",
+            }}
           >
             <X size={18} />
           </button>
@@ -173,8 +191,9 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange 
 
         {/* Horizontal tabs */}
         <div style={{
-          display: "flex", gap: 0, padding: "12px 24px 0",
+          display: "flex", gap: 0, padding: isMobile ? "12px 16px 0" : "12px 24px 0",
           borderBottom: "1px solid var(--border-secondary)",
+          overflowX: "auto", WebkitOverflowScrolling: "touch",
         }}>
           {tabs.map(tb => (
             <button
@@ -186,7 +205,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange 
                 color: tab === tb.key ? "var(--text-primary)" : "var(--text-tertiary)",
                 fontWeight: tab === tb.key ? 500 : 400,
                 borderBottom: tab === tb.key ? "2px solid var(--text-primary)" : "2px solid transparent",
-                marginBottom: -1,
+                marginBottom: -1, whiteSpace: "nowrap", minHeight: 44,
               }}
             >
               {tb.label}
@@ -198,8 +217,12 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange 
         <div style={{ flex: 1, minHeight: 0 }}>
           {/* Content */}
           <div style={{
-            overflowY: "auto", padding: "20px 24px 24px",
-            minHeight: 0, maxHeight: "calc(80vh - 120px)",
+            overflowY: "auto",
+            padding: isMobile ? "16px 16px 24px" : "20px 24px 24px",
+            minHeight: 0,
+            maxHeight: isMobile ? "none" : "calc(80vh - 120px)",
+            flex: isMobile ? 1 : undefined,
+            paddingBottom: isMobile ? "calc(24px + var(--safe-bottom, 0px))" : "24px",
           }}>
             {/* GENERAL TAB */}
             {tab === "general" && (

@@ -203,6 +203,14 @@ const zhHans: Record<string, string> = {
   "intel.focus.markets": "市场",
   "intel.focus.logistics": "物流",
   "intel.focus.crypto": "加密货币",
+
+  // STATES
+  "common.offline": "您已离线。正在重新连接...",
+  "common.rate_limit": "您已达到本期查询限额。",
+  "common.rate_limit_upgrade": "升级",
+  "common.retry": "重试",
+  "common.error_generic": "出了点问题，请重试。",
+  "sidebar.empty_history": "您的对话将显示在这里",
 };
 
 export default zhHans;
