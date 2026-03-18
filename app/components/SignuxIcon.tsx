@@ -62,7 +62,7 @@ export function SignuxIcon({
  * Automatically swaps to white icon + white text in dark mode.
  */
 export function SignuxWordmark({
-  fontSize = 42,
+  fontSize = 40,
   iconSize,
   className = "",
   style,
@@ -73,7 +73,7 @@ export function SignuxWordmark({
   style?: React.CSSProperties;
 }) {
   const dark = useIsDark();
-  const iSize = iconSize ?? Math.round(fontSize * 1.14);
+  const iSize = iconSize ?? fontSize;
   const variant = dark ? "white" : "gold";
   const textColor = "var(--text-primary)";
 
@@ -100,14 +100,14 @@ export function SignuxWordmark({
         width={iSize}
         height={iSize}
         draggable={false}
-        style={{ objectFit: "contain", marginRight: -4 }}
+        style={{ objectFit: "contain", marginRight: -2, marginBottom: -2 }}
       />
       <span
         style={{
           fontFamily: "var(--font-brand)",
           fontSize,
           fontWeight: 700,
-          letterSpacing: Math.max(3, Math.round(fontSize * 0.13)),
+          letterSpacing: Math.max(3, Math.round(fontSize * 0.125)),
           color: textColor,
           lineHeight: 1,
         }}
@@ -121,9 +121,9 @@ export function SignuxWordmark({
           fontWeight: 300,
           letterSpacing: Math.max(2, Math.round(fontSize * 0.09)),
           color: textColor,
-          opacity: 0.4,
+          opacity: 0.35,
           lineHeight: 1,
-          marginLeft: Math.round(fontSize * 0.22),
+          marginLeft: Math.round(fontSize * 0.25),
         }}
       >
         AI
