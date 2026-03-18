@@ -8,6 +8,7 @@ import type { Message, Toast, Attachment, SimAgent, SimResult, Mode } from "../l
 import { Check, AlertTriangle, Info, WifiOff } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
+import UserMenu from "../components/UserMenu";
 import { useAuth } from "../lib/auth";
 import { getUser, createUser, updateUser } from "../lib/database";
 
@@ -565,6 +566,45 @@ export default function ChatPage() {
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       <OfflineBanner />
 
+      {/* Auth header — top-right, always visible */}
+      {!authUser ? (
+        <div style={{
+          position: "fixed", top: 0, right: 0,
+          height: 56, display: "flex", alignItems: "center",
+          padding: "0 20px", gap: 12, zIndex: 50,
+        }}>
+          <button
+            onClick={() => { window.location.href = "/login"; }}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              fontSize: 14, fontWeight: 500, color: "var(--text-secondary)",
+              fontFamily: "var(--font-brand)", letterSpacing: 1,
+              transition: "color 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = "var(--text-primary)"}
+            onMouseLeave={e => e.currentTarget.style.color = "var(--text-secondary)"}
+          >
+            Log in
+          </button>
+          <button
+            onClick={() => { window.location.href = "/signup"; }}
+            style={{
+              background: "var(--text-primary)", color: "var(--bg-primary)",
+              border: "none", borderRadius: 20, padding: "8px 20px",
+              cursor: "pointer", fontSize: 14, fontWeight: 600,
+              fontFamily: "var(--font-brand)", letterSpacing: 1,
+              transition: "opacity 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >
+            Sign up free
+          </button>
+        </div>
+      ) : (
+        <UserMenu user={authUser} onSignOut={authSignOut} />
+      )}
+
       <Sidebar
         mode={mode}
         setMode={setMode}
@@ -578,6 +618,7 @@ export default function ChatPage() {
         isLoggedIn={isLoggedIn}
         onSignOut={authUser ? authSignOut : undefined}
         isMobile={isMobile}
+        authUser={authUser}
       />
 
       <main style={{

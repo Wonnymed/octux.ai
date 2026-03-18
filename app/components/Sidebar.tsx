@@ -1,9 +1,10 @@
 "use client";
 import { useRef, useEffect } from "react";
-import { SquarePen, MessageSquare, Zap, Globe, Settings, X, LogIn, LogOut } from "lucide-react";
+import { SquarePen, MessageSquare, Zap, Globe, Settings, LogIn, LogOut } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
 import { t } from "../lib/i18n";
 import type { Mode } from "../lib/types";
+import type { AuthUser } from "../lib/auth";
 
 type SidebarProps = {
   mode: Mode;
@@ -18,6 +19,7 @@ type SidebarProps = {
   isLoggedIn: boolean;
   onSignOut?: () => void;
   isMobile: boolean;
+  authUser?: AuthUser | null;
 };
 
 const MODES = [
@@ -26,12 +28,23 @@ const MODES = [
   { key: "intel" as Mode, icon: Globe, label: "sidebar.mode_intel" },
 ];
 
+/* Sidebar panel toggle icon — two rectangles like Okara */
+function SidebarToggleIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <line x1="9" y1="3" x2="9" y2="21" />
+    </svg>
+  );
+}
+
 export default function Sidebar({
   mode, setMode, profileName, onNewConversation, onOpenSettings,
-  open, onClose, onOpen, isLoggedIn, onSignOut, isMobile,
+  open, onClose, onOpen, isLoggedIn, onSignOut, isMobile, authUser,
 }: SidebarProps) {
   const sidebarRef = useRef<HTMLElement>(null);
-  const userInitials = profileName ? profileName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "?";
+  const userInitials = profileName ? profileName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : (authUser?.initials || "?");
+  const displayName = profileName || authUser?.name || "";
 
   const handleMode = (m: Mode) => { setMode(m); if (isMobile) onClose(); };
   const handleNew = () => { onNewConversation(); if (isMobile) onClose(); };
@@ -91,18 +104,25 @@ export default function Sidebar({
   function renderExpandedContent() {
     return (
       <>
-        {/* Header: logo + close */}
-        <div style={{ padding: "14px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Header: toggle + logo */}
+        <div style={{ padding: "14px 12px", display: "flex", alignItems: "center", gap: 10 }}>
+          <button onClick={onClose} title="Close sidebar" style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: 28, height: 28, border: "none", background: "none",
+            cursor: "pointer", borderRadius: "var(--radius-xs)",
+            color: "var(--text-tertiary)", transition: "color 0.15s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = "var(--text-primary)"}
+          onMouseLeave={e => e.currentTarget.style.color = "var(--text-tertiary)"}>
+            <SidebarToggleIcon size={20} />
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <SignuxIcon color="var(--accent)" size={20} />
             <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
               <span style={{ fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 700, letterSpacing: 3, color: "var(--text-primary)" }}>SIGNUX</span>
               <span style={{ fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 300, letterSpacing: 2, color: "var(--text-primary)", opacity: 0.4 }}>AI</span>
             </div>
           </div>
-          <button onClick={onClose} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, border: "none", background: "none", cursor: "pointer", borderRadius: "var(--radius-xs)", color: "var(--text-tertiary)" }}>
-            <X size={18} />
-          </button>
         </div>
 
         {/* New conversation */}
@@ -133,11 +153,11 @@ export default function Sidebar({
 
         <div style={{ height: 1, background: "var(--border-secondary)", margin: "0 8px 8px" }} />
 
-        {/* History placeholder */}
+        {/* History area */}
         <div style={{ flex: 1, overflowY: "auto", padding: "0 12px" }}>
           {!isLoggedIn && (
             <div style={{ padding: "12px 0", fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.5 }}>
-              <a href="/login" style={{ color: "var(--accent)", textDecoration: "none" }}>{t("auth.sign_in")}</a>{" "}
+              <a href="/login" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>{t("auth.sign_in")}</a>{" "}
               <span>{t("sidebar.sign_in_to_save")}</span>
             </div>
           )}
@@ -145,21 +165,53 @@ export default function Sidebar({
 
         {/* Bottom */}
         <div style={{ borderTop: "1px solid var(--border-secondary)", padding: 8 }}>
+          {/* Settings */}
           <button onClick={handleSettings} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px", border: "none", background: "none", borderRadius: "var(--radius-xs)", cursor: "pointer", color: "var(--text-secondary)", fontSize: 13, textAlign: "left" }}
             onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
             <Settings size={16} /> <span>{t("sidebar.settings")}</span>
           </button>
-          {isLoggedIn && onSignOut ? (
-            <button onClick={() => { onSignOut(); if (isMobile) onClose(); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px", border: "none", background: "none", borderRadius: "var(--radius-xs)", cursor: "pointer", color: "var(--text-secondary)", fontSize: 13, textAlign: "left", marginTop: 2 }}
-              onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-              <LogOut size={16} /> <span>{t("auth.sign_out")}</span>
-            </button>
-          ) : (
+
+          {/* User profile when logged in */}
+          {isLoggedIn && displayName ? (
+            <div style={{ marginTop: 4 }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 12px", borderRadius: "var(--radius-xs)",
+              }}>
+                {authUser?.avatar ? (
+                  <img src={authUser.avatar} alt={displayName} width={36} height={36} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} referrerPolicy="no-referrer" />
+                ) : (
+                  <div style={{
+                    width: 36, height: 36, borderRadius: "50%",
+                    background: "var(--bg-tertiary)", color: "var(--text-primary)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 14, fontWeight: 600, flexShrink: 0,
+                  }}>
+                    {userInitials}
+                  </div>
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {displayName}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+                    Free plan
+                  </div>
+                </div>
+              </div>
+              {onSignOut && (
+                <button onClick={() => { onSignOut(); if (isMobile) onClose(); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px", border: "none", background: "none", borderRadius: "var(--radius-xs)", cursor: "pointer", color: "var(--text-secondary)", fontSize: 13, textAlign: "left", marginTop: 2 }}
+                  onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <LogOut size={16} /> <span>{t("auth.sign_out")}</span>
+                </button>
+              )}
+            </div>
+          ) : !isLoggedIn ? (
             <button onClick={() => { window.location.href = "/login"; }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px", border: "none", background: "none", borderRadius: "var(--radius-xs)", cursor: "pointer", color: "var(--text-secondary)", fontSize: 13, textAlign: "left", marginTop: 2 }}
               onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
               <LogIn size={16} /> <span>{t("auth.sign_in")}</span>
             </button>
-          )}
+          ) : null}
         </div>
       </>
     );
@@ -169,10 +221,15 @@ export default function Sidebar({
   function renderCollapsedContent() {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%", paddingTop: 10 }}>
-        {/* Logo icon — click to expand */}
-        <button onClick={onOpen} title="Open sidebar" style={{ width: iconBtnSize, height: iconBtnSize, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", cursor: "pointer", borderRadius: "var(--radius-sm)", marginBottom: 8 }}
-          onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-          <SignuxIcon color="var(--accent)" size={22} />
+        {/* Toggle icon — click to expand */}
+        <button onClick={onOpen} title="Open sidebar" style={{
+          width: iconBtnSize, height: iconBtnSize, display: "flex", alignItems: "center", justifyContent: "center",
+          border: "none", background: "none", cursor: "pointer", borderRadius: "var(--radius-sm)",
+          color: "var(--text-tertiary)", marginBottom: 8,
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text-primary)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-tertiary)"; }}>
+          <SidebarToggleIcon size={20} />
         </button>
 
         {/* New conversation */}
@@ -204,9 +261,17 @@ export default function Sidebar({
           onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
           <Settings size={iconSize} />
         </button>
+
+        {/* User avatar or login icon */}
         {isLoggedIn ? (
-          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(212,175,55,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 600, color: "var(--accent)", marginBottom: 10 }}>
-            {userInitials}
+          <div style={{ marginBottom: 10, cursor: "pointer" }} onClick={onOpen} title={displayName}>
+            {authUser?.avatar ? (
+              <img src={authUser.avatar} alt={displayName} width={32} height={32} style={{ borderRadius: "50%", objectFit: "cover", display: "block" }} referrerPolicy="no-referrer" />
+            ) : (
+              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--bg-tertiary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600, color: "var(--text-primary)" }}>
+                {userInitials}
+              </div>
+            )}
           </div>
         ) : (
           <button onClick={() => { window.location.href = "/login"; }} title={t("auth.sign_in")} style={{ width: iconBtnSize, height: iconBtnSize, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", cursor: "pointer", borderRadius: "var(--radius-sm)", color: "var(--text-tertiary)", marginBottom: 10 }}
