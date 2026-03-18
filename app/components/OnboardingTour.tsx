@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { t } from "../lib/i18n";
 
 const TOUR_COMPLETED_KEY = "signux_tour_completed";
@@ -23,7 +23,7 @@ interface TourStep {
   description: string;
   position: "top" | "bottom" | "left" | "right";
   recommended?: boolean;
-  action?: () => void;
+  openSidebar?: boolean;
 }
 
 type OnboardingTourProps = {
@@ -32,111 +32,54 @@ type OnboardingTourProps = {
   onCloseSidebar: () => void;
 };
 
+const STEPS: TourStep[] = [
+  {
+    target: "chat-input",
+    title: "tour.step1.title",
+    description: "tour.step1.desc",
+    position: "top",
+  },
+  {
+    target: "sidebar-toggle",
+    title: "tour.step2.title",
+    description: "tour.step2.desc",
+    position: "right",
+  },
+  {
+    target: "simulate-mode",
+    title: "tour.step3.title",
+    description: "tour.step3.desc",
+    position: "right",
+    recommended: true,
+    openSidebar: true,
+  },
+  {
+    target: "intel-mode",
+    title: "tour.step4.title",
+    description: "tour.step4.desc",
+    position: "right",
+  },
+  {
+    target: "profile-settings",
+    title: "tour.step5.title",
+    description: "tour.step5.desc",
+    position: "top",
+  },
+];
+
 export default function OnboardingTour({ onComplete, onOpenSidebar, onCloseSidebar }: OnboardingTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [visible, setVisible] = useState(false);
   const [fading, setFading] = useState(false);
-  const [highlight, setHighlight] = useState<DOMRect | null>(null);
+  const highlightRef = useRef<DOMRect | null>(null);
+  const [, forceUpdate] = useState(0);
   const [popoverPos, setPopoverPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const popoverRef = useRef<HTMLDivElement>(null);
   const sidebarOpenedByTour = useRef(false);
 
-  const STEPS: TourStep[] = [
-    {
-      target: "chat-input",
-      title: "tour.step1.title",
-      description: "tour.step1.desc",
-      position: "top",
-    },
-    {
-      target: "sidebar-toggle",
-      title: "tour.step2.title",
-      description: "tour.step2.desc",
-      position: "right",
-    },
-    {
-      target: "simulate-mode",
-      title: "tour.step3.title",
-      description: "tour.step3.desc",
-      position: "right",
-      recommended: true,
-      action: () => {
-        onOpenSidebar();
-        sidebarOpenedByTour.current = true;
-      },
-    },
-    {
-      target: "intel-mode",
-      title: "tour.step4.title",
-      description: "tour.step4.desc",
-      position: "right",
-    },
-    {
-      target: "profile-settings",
-      title: "tour.step5.title",
-      description: "tour.step5.desc",
-      position: "top",
-    },
-  ];
-
   const totalSteps = STEPS.length;
   const step = STEPS[currentStep];
   const isLast = currentStep === totalSteps - 1;
-
-  const findAndPosition = useCallback(() => {
-    if (!step) return;
-    const el = document.querySelector(`[data-tour="${step.target}"]`);
-    if (!el) return;
-
-    const rect = el.getBoundingClientRect();
-    const pad = 8;
-    setHighlight({
-      top: rect.top - pad,
-      left: rect.left - pad,
-      width: rect.width + pad * 2,
-      height: rect.height + pad * 2,
-      x: rect.x - pad,
-      y: rect.y - pad,
-      bottom: rect.bottom + pad,
-      right: rect.right + pad,
-      toJSON: () => {},
-    });
-
-    // Calculate popover position
-    const popW = 320;
-    const popH = 200; // estimate
-    const gap = 12;
-    const isMobile = window.innerWidth < 768;
-
-    let top = 0;
-    let left = 0;
-    const pos = isMobile ? "bottom" : step.position;
-
-    switch (pos) {
-      case "top":
-        top = rect.top - pad - popH - gap;
-        left = rect.left + rect.width / 2 - popW / 2;
-        break;
-      case "bottom":
-        top = rect.bottom + pad + gap;
-        left = rect.left + rect.width / 2 - popW / 2;
-        break;
-      case "left":
-        top = rect.top + rect.height / 2 - popH / 2;
-        left = rect.left - pad - popW - gap;
-        break;
-      case "right":
-        top = rect.top + rect.height / 2 - popH / 2;
-        left = rect.right + pad + gap;
-        break;
-    }
-
-    // Clamp to viewport
-    left = Math.max(12, Math.min(left, window.innerWidth - popW - 12));
-    top = Math.max(12, Math.min(top, window.innerHeight - popH - 12));
-
-    setPopoverPos({ top, left });
-  }, [step]);
 
   // Initial fade in
   useEffect(() => {
@@ -144,75 +87,135 @@ export default function OnboardingTour({ onComplete, onOpenSidebar, onCloseSideb
     return () => clearTimeout(timer);
   }, []);
 
-  // Position on step change
+  // Position on step change — depends ONLY on currentStep
   useEffect(() => {
-    if (!step) return;
+    if (!STEPS[currentStep]) return;
+    const s = STEPS[currentStep];
 
-    // Execute step action (e.g., open sidebar)
-    if (step.action) {
-      step.action();
-      // Wait for sidebar animation
-      const timer = setTimeout(findAndPosition, 350);
+    function position() {
+      const el = document.querySelector(`[data-tour="${s.target}"]`);
+      if (!el) return;
+
+      const rect = el.getBoundingClientRect();
+      const pad = 8;
+      highlightRef.current = {
+        top: rect.top - pad,
+        left: rect.left - pad,
+        width: rect.width + pad * 2,
+        height: rect.height + pad * 2,
+        x: rect.x - pad,
+        y: rect.y - pad,
+        bottom: rect.bottom + pad,
+        right: rect.right + pad,
+        toJSON: () => {},
+      };
+
+      const popW = 320;
+      const popH = 200;
+      const gap = 12;
+      const isMobile = window.innerWidth < 768;
+      const pos = isMobile ? "bottom" : s.position;
+
+      let top = 0;
+      let left = 0;
+
+      switch (pos) {
+        case "top":
+          top = rect.top - pad - popH - gap;
+          left = rect.left + rect.width / 2 - popW / 2;
+          break;
+        case "bottom":
+          top = rect.bottom + pad + gap;
+          left = rect.left + rect.width / 2 - popW / 2;
+          break;
+        case "left":
+          top = rect.top + rect.height / 2 - popH / 2;
+          left = rect.left - pad - popW - gap;
+          break;
+        case "right":
+          top = rect.top + rect.height / 2 - popH / 2;
+          left = rect.right + pad + gap;
+          break;
+      }
+
+      left = Math.max(12, Math.min(left, window.innerWidth - popW - 12));
+      top = Math.max(12, Math.min(top, window.innerHeight - popH - 12));
+
+      setPopoverPos({ top, left });
+      forceUpdate(n => n + 1);
+
+      // Refine after popover renders with actual height
+      requestAnimationFrame(() => {
+        if (!popoverRef.current) return;
+        const popRect = popoverRef.current.getBoundingClientRect();
+
+        let refinedTop = top;
+        let refinedLeft = left;
+
+        switch (pos) {
+          case "top":
+            refinedTop = rect.top - pad - popRect.height - gap;
+            refinedLeft = rect.left + rect.width / 2 - popRect.width / 2;
+            break;
+          case "bottom":
+            refinedTop = rect.bottom + pad + gap;
+            refinedLeft = rect.left + rect.width / 2 - popRect.width / 2;
+            break;
+          case "left":
+            refinedTop = rect.top + rect.height / 2 - popRect.height / 2;
+            refinedLeft = rect.left - pad - popRect.width - gap;
+            break;
+          case "right":
+            refinedTop = rect.top + rect.height / 2 - popRect.height / 2;
+            refinedLeft = rect.right + pad + gap;
+            break;
+        }
+
+        refinedLeft = Math.max(12, Math.min(refinedLeft, window.innerWidth - popRect.width - 12));
+        refinedTop = Math.max(12, Math.min(refinedTop, window.innerHeight - popRect.height - 12));
+
+        setPopoverPos({ top: refinedTop, left: refinedLeft });
+      });
+    }
+
+    if (s.openSidebar) {
+      onOpenSidebar();
+      sidebarOpenedByTour.current = true;
+      const timer = setTimeout(position, 350);
       return () => clearTimeout(timer);
     } else {
-      findAndPosition();
+      position();
     }
-  }, [currentStep, step, findAndPosition]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]);
 
   // Reposition on resize
   useEffect(() => {
-    const handler = () => findAndPosition();
+    const handler = () => {
+      const s = STEPS[currentStep];
+      if (!s) return;
+      const el = document.querySelector(`[data-tour="${s.target}"]`);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const pad = 8;
+      highlightRef.current = {
+        top: rect.top - pad, left: rect.left - pad,
+        width: rect.width + pad * 2, height: rect.height + pad * 2,
+        x: rect.x - pad, y: rect.y - pad,
+        bottom: rect.bottom + pad, right: rect.right + pad,
+        toJSON: () => {},
+      };
+      forceUpdate(n => n + 1);
+    };
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
-  }, [findAndPosition]);
-
-  // Reposition after popover renders (to get actual height)
-  useEffect(() => {
-    if (!popoverRef.current || !step) return;
-    const el = document.querySelector(`[data-tour="${step.target}"]`);
-    if (!el) return;
-
-    const rect = el.getBoundingClientRect();
-    const pad = 8;
-    const popRect = popoverRef.current.getBoundingClientRect();
-    const gap = 12;
-    const isMobile = window.innerWidth < 768;
-    const pos = isMobile ? "bottom" : step.position;
-
-    let top = popoverPos.top;
-    let left = popoverPos.left;
-
-    switch (pos) {
-      case "top":
-        top = rect.top - pad - popRect.height - gap;
-        left = rect.left + rect.width / 2 - popRect.width / 2;
-        break;
-      case "bottom":
-        top = rect.bottom + pad + gap;
-        left = rect.left + rect.width / 2 - popRect.width / 2;
-        break;
-      case "left":
-        top = rect.top + rect.height / 2 - popRect.height / 2;
-        left = rect.left - pad - popRect.width - gap;
-        break;
-      case "right":
-        top = rect.top + rect.height / 2 - popRect.height / 2;
-        left = rect.right + pad + gap;
-        break;
-    }
-
-    left = Math.max(12, Math.min(left, window.innerWidth - popRect.width - 12));
-    top = Math.max(12, Math.min(top, window.innerHeight - popRect.height - 12));
-
-    setPopoverPos({ top, left });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [highlight]);
+  }, [currentStep]);
 
   // Keyboard
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        handleSkip();
+        finish();
       } else if (e.key === "Enter" || e.key === " ") {
         if (document.activeElement?.tagName !== "TEXTAREA" && document.activeElement?.tagName !== "INPUT") {
           e.preventDefault();
@@ -230,7 +233,7 @@ export default function OnboardingTour({ onComplete, onOpenSidebar, onCloseSideb
     const handler = (e: Event) => {
       const target = e.target as HTMLElement;
       if (target.tagName === "TEXTAREA" || target.tagName === "INPUT") {
-        handleSkip();
+        finish();
       }
     };
     window.addEventListener("focus", handler, true);
@@ -240,7 +243,7 @@ export default function OnboardingTour({ onComplete, onOpenSidebar, onCloseSideb
 
   function handleNext() {
     if (isLast) {
-      handleFinish();
+      finish();
       return;
     }
     setFading(true);
@@ -250,7 +253,7 @@ export default function OnboardingTour({ onComplete, onOpenSidebar, onCloseSideb
     }, 150);
   }
 
-  function handleSkip() {
+  function finish() {
     completeTour();
     setVisible(false);
     if (sidebarOpenedByTour.current) {
@@ -259,15 +262,7 @@ export default function OnboardingTour({ onComplete, onOpenSidebar, onCloseSideb
     setTimeout(onComplete, 200);
   }
 
-  function handleFinish() {
-    completeTour();
-    setVisible(false);
-    if (sidebarOpenedByTour.current) {
-      onCloseSidebar();
-    }
-    setTimeout(onComplete, 200);
-  }
-
+  const highlight = highlightRef.current;
   if (!step || !highlight) return null;
 
   return (
@@ -297,7 +292,7 @@ export default function OnboardingTour({ onComplete, onOpenSidebar, onCloseSideb
         }}
       />
 
-      {/* Clickable backdrop areas (don't close tour) */}
+      {/* Clickable backdrop areas */}
       <div style={{ position: "absolute", inset: 0, zIndex: 9998 }} />
 
       {/* Popover */}
@@ -361,7 +356,6 @@ export default function OnboardingTour({ onComplete, onOpenSidebar, onCloseSideb
           alignItems: "center",
           justifyContent: "space-between",
         }}>
-          {/* Step counter */}
           <span style={{
             fontSize: 12,
             color: "var(--text-tertiary)",
@@ -370,10 +364,9 @@ export default function OnboardingTour({ onComplete, onOpenSidebar, onCloseSideb
             {t("tour.step_of", { current: String(currentStep + 1), total: String(totalSteps) })}
           </span>
 
-          {/* Buttons */}
           <div style={{ display: "flex", gap: 8 }}>
             <button
-              onClick={handleSkip}
+              onClick={finish}
               style={{
                 background: "none",
                 border: "none",
