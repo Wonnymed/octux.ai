@@ -12,7 +12,6 @@ import UserMenu from "../components/UserMenu";
 import { useAuth } from "../lib/auth";
 import { getUser, createUser, updateUser } from "../lib/database";
 import {
-  getInternalUserId,
   getConversations as fetchConversationsDB,
   createConversation as createConversationDB,
   updateConversationTitle as updateTitleDB,
@@ -190,7 +189,6 @@ export default function ChatPage() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [internalUserId, setInternalUserId] = useState<string | null>(null);
 
   /* UI */
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -272,22 +270,14 @@ export default function ChatPage() {
   useEffect(() => {
     if (!authUser) {
       // Not logged in — use localStorage
-      setInternalUserId(null);
       setConversations(localGetConversations() as any as Conversation[]);
       setConversationId(null);
       return;
     }
     let cancelled = false;
     (async () => {
-      const uid = await getInternalUserId(authUser.id);
-      if (cancelled || !uid) {
-        // Fallback to localStorage if DB user not found
-        if (!cancelled) setConversations(localGetConversations() as any as Conversation[]);
-        return;
-      }
-      setInternalUserId(uid);
       setLoadingHistory(true);
-      const convs = await fetchConversationsDB(uid);
+      const convs = await fetchConversationsDB(authUser.id);
       if (!cancelled) {
         setConversations(convs.length > 0 ? convs : localGetConversations() as any as Conversation[]);
         setLoadingHistory(false);
@@ -303,8 +293,7 @@ export default function ChatPage() {
     setMessages([]);
     setLoading(true);
     try {
-      if (internalUserId) {
-        // Try Supabase first
+      if (authUser) {
         const dbMessages = await fetchMessagesDB(convId);
         if (dbMessages.length > 0) {
           setMessages(dbMessages.map(m => ({
@@ -324,7 +313,6 @@ export default function ChatPage() {
         timestamp: new Date(m.created_at).getTime(),
       })));
     } catch {
-      // Last resort: try localStorage
       const localMsgs = localGetMessages(convId);
       setMessages(localMsgs.map(m => ({
         role: m.role as "user" | "assistant",
@@ -333,7 +321,7 @@ export default function ChatPage() {
       })));
     }
     setLoading(false);
-  }, [conversationId, internalUserId]);
+  }, [conversationId, authUser]);
 
   /* ═══ Retry Effect — sends after messages state is updated ═══ */
   useEffect(() => {
@@ -442,10 +430,10 @@ export default function ChatPage() {
     // Create conversation on first message (non-blocking)
     let activeConvId = conversationId;
     if (!activeConvId) {
-      if (internalUserId) {
+      if (authUser) {
         // Logged in → try Supabase
         try {
-          const conv = await createConversationDB(internalUserId, mode);
+          const conv = await createConversationDB(authUser.id);
           if (conv) {
             activeConvId = conv.id;
             setConversationId(conv.id);
@@ -464,9 +452,7 @@ export default function ChatPage() {
 
     // Save user message (non-blocking)
     if (activeConvId) {
-      if (internalUserId) {
-        saveMessageDB(activeConvId, "user", msg).catch(() => {});
-      }
+      if (authUser) saveMessageDB(activeConvId, "user", msg).catch(() => {});
       localSaveMessage(activeConvId, "user", msg);
     }
 
@@ -554,7 +540,7 @@ export default function ChatPage() {
       setMessages(prev => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant" && last.content) {
-          if (internalUserId) saveMessageDB(activeConvId!, "assistant", last.content).catch(() => {});
+          if (authUser) saveMessageDB(activeConvId!, "assistant", last.content).catch(() => {});
           localSaveMessage(activeConvId!, "assistant", last.content);
         }
         return prev;
@@ -563,12 +549,12 @@ export default function ChatPage() {
       const isFirstMessage = newDisplayMessages.filter(m => m.role === "user").length === 1;
       if (isFirstMessage) {
         generateTitle(msg).then(title => {
-          if (internalUserId) updateTitleDB(activeConvId!, title).catch(() => {});
+          if (authUser) updateTitleDB(activeConvId!, title).catch(() => {});
           localUpdateConversationTitle(activeConvId!, title);
           setConversations(prev => prev.map(c => c.id === activeConvId ? { ...c, title } : c));
         });
       } else {
-        if (internalUserId) touchConvDB(activeConvId).catch(() => {});
+        if (authUser) touchConvDB(activeConvId).catch(() => {});
         localTouchConversation(activeConvId);
       }
     }
@@ -724,9 +710,9 @@ export default function ChatPage() {
       setConversationId(null);
       setMessages([]);
     }
-    if (internalUserId) removeConversationDB(convId).catch(() => {});
+    if (authUser) removeConversationDB(convId).catch(() => {});
     localDeleteConversation(convId);
-  }, [conversationId, internalUserId]);
+  }, [conversationId, authUser]);
 
   /* Close sidebar on mobile */
   useEffect(() => {

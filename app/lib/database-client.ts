@@ -8,18 +8,6 @@ function supabase() {
   return createSupabaseBrowser();
 }
 
-/* ═══ Internal user lookup ═══ */
-
-export async function getInternalUserId(authId: string): Promise<string | null> {
-  const { data, error } = await supabase()
-    .from("users")
-    .select("id")
-    .eq("auth_id", authId)
-    .single();
-  if (error || !data) return null;
-  return data.id;
-}
-
 /* ═══ Conversations ═══ */
 
 export async function getConversations(userId: string, limit = 50): Promise<Conversation[]> {
@@ -33,10 +21,10 @@ export async function getConversations(userId: string, limit = 50): Promise<Conv
   return (data ?? []) as Conversation[];
 }
 
-export async function createConversation(userId: string, mode: string): Promise<Conversation | null> {
+export async function createConversation(userId: string): Promise<Conversation | null> {
   const { data, error } = await supabase()
     .from("conversations")
-    .insert({ user_id: userId, mode })
+    .insert({ user_id: userId })
     .select()
     .single();
   if (error) return null;
@@ -58,7 +46,6 @@ export async function touchConversation(id: string): Promise<void> {
 }
 
 export async function deleteConversation(id: string): Promise<void> {
-  // Delete messages first, then conversation
   await supabase().from("messages").delete().eq("conversation_id", id);
   await supabase().from("conversations").delete().eq("id", id);
 }
