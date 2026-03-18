@@ -84,17 +84,17 @@ export default function SimulationEngine(props: SimulationEngineProps) {
     const scenarios = [
       {
         tag: "LAUNCH", dotColor: "#22c55e",
-        title: "Open a coffee franchise in 3 cities",
+        title: "Open a franchise in 3 new cities",
         fill: "I want to open a specialty coffee franchise in São Paulo, Mexico City, and Miami. $150K initial capital per unit. Need to evaluate real estate, supply chain, licensing, and break-even timeline.",
       },
       {
         tag: "SCALE", dotColor: "#3b82f6",
-        title: "Expand my SaaS to the European market",
+        title: "Expand SaaS product into new market",
         fill: "B2B SaaS platform with 2K customers in the US, $80K MRR. Want to expand to EU: pricing strategy, GDPR compliance, local payment methods, hiring first EU team, and go-to-market plan.",
       },
       {
         tag: "OPTIMIZE", dotColor: "#f59e0b",
-        title: "Restructure costs for a 200-person company",
+        title: "Restructure operations to cut 30% costs",
         fill: "200-employee company spending $3.2M/year on operations. Need to identify cost reduction opportunities across SaaS tools, office space, vendor contracts, and staffing without impacting quality.",
       },
     ];
@@ -131,7 +131,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
           pointerEvents: "none",
         }} />
 
-        {/* Ambient glow */}
+        {/* Ambient glow bottom */}
         <div style={{
           position: "absolute", bottom: -100, left: "50%", transform: "translateX(-50%)",
           width: 400, height: 200,
@@ -150,7 +150,6 @@ export default function SimulationEngine(props: SimulationEngineProps) {
               display: "flex", alignItems: "center", justifyContent: "center",
               margin: "0 auto 20px", position: "relative",
             }}>
-              {/* Outer ring */}
               <div style={{
                 position: "absolute", inset: -4, borderRadius: "50%",
                 border: "1px solid rgba(212,175,55,0.08)",
@@ -180,7 +179,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
               textTransform: "uppercase" as const, color: "rgba(212,175,55,0.6)",
               marginTop: 12,
             }}>
-              Operational ecosystem simulation
+              Predict outcomes before you invest
             </div>
 
             {/* Divider */}
@@ -254,14 +253,14 @@ export default function SimulationEngine(props: SimulationEngineProps) {
                 fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
                 textTransform: "uppercase" as const, color: "rgba(212,175,55,0.5)",
               }}>
-                DESCRIBE YOUR OPERATION
+                DESCRIBE YOUR SCENARIO
               </span>
             </div>
 
             <textarea
               value={simScenario}
               onChange={e => setSimScenario(e.target.value)}
-              placeholder="I want to set up a trading company in Hong Kong that imports electronics from Shenzhen, sells to Brazil and EU, with crypto treasury management..."
+              placeholder="I want to open a coffee franchise in 3 new cities with a $200K budget..."
               style={{
                 width: "100%", minHeight: 88, padding: 0,
                 background: "transparent", border: "none",
@@ -373,16 +372,8 @@ export default function SimulationEngine(props: SimulationEngineProps) {
                   +10
                 </div>
               </div>
-              <div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>
-                  <span style={{ fontWeight: 500, color: "rgba(255,255,255,0.7)" }}>15 specialist agents</span> will analyze your operation
-                </div>
-                <div style={{
-                  fontSize: 10, color: "rgba(255,255,255,0.25)",
-                  fontFamily: "var(--font-mono)", marginTop: 2,
-                }}>
-                  Regulatory, financial, adversarial, operational, market
-                </div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
+                <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>15 specialist agents</span>
               </div>
             </div>
 
@@ -457,7 +448,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
               fontSize: 11, color: "rgba(255,255,255,0.2)",
               marginTop: 16,
             }}>
-              Simulations take 60-120s. Always verify with qualified professionals.
+              Simulations take 60-120s.
             </div>
           </div>
 
