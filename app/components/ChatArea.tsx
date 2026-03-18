@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { ArrowDown } from "lucide-react";
-import type { Message } from "../lib/types";
+import type { Message, Mode } from "../lib/types";
 import { useIsMobile } from "../lib/useIsMobile";
 import MessageBlock from "./MessageBlock";
 import WelcomeScreen from "./WelcomeScreen";
@@ -22,12 +22,13 @@ type ChatAreaProps = {
   onToast?: (msg: string, type: "success" | "error" | "info") => void;
   onSwitchToSimulate?: () => void;
   onSwitchToResearch?: () => void;
+  onSwitchMode?: (mode: Mode) => void;
 };
 
 export default function ChatArea({
   messages, loading, searching, input, setInput, onSend,
   profileName, onRetry, onCopy, attachments, onAttachmentsChange, onToast,
-  onSwitchToSimulate, onSwitchToResearch,
+  onSwitchToSimulate, onSwitchToResearch, onSwitchMode,
 }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
@@ -80,6 +81,7 @@ export default function ChatArea({
           onToast={onToast}
           onSwitchToSimulate={onSwitchToSimulate}
           onSwitchToResearch={onSwitchToResearch}
+          onSwitchMode={onSwitchMode}
         />
       </div>
     );

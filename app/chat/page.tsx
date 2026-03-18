@@ -851,6 +851,7 @@ export default function ChatPage() {
                 onToast={addToast}
                 onSwitchToSimulate={() => setMode("simulate")}
                 onSwitchToResearch={() => setMode("research")}
+                onSwitchMode={setMode}
               />
             </motion.div>
           )}
