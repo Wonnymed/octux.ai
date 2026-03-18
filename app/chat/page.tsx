@@ -192,6 +192,7 @@ export default function ChatPage() {
 
   /* Refs */
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const retryRef = useRef<{ text: string; history: Message[] } | null>(null);
 
   /* ═══ Toast Callbacks ═══ */
   const addToast = useCallback((message: string, type: Toast["type"] = "success") => {
@@ -299,6 +300,16 @@ export default function ChatPage() {
     }
     setLoading(false);
   }, [conversationId, addToast]);
+
+  /* ═══ Retry Effect — sends after messages state is updated ═══ */
+  useEffect(() => {
+    if (retryRef.current && !loading) {
+      const { text } = retryRef.current;
+      retryRef.current = null;
+      send(text);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, loading]);
 
   /* ═══ Dynamic Page Title ═══ */
   useEffect(() => {
@@ -619,13 +630,16 @@ export default function ChatPage() {
     addToast(t("chat.copied"), "success");
   };
 
-  /* ═══ Retry Handler ═══ */
+  /* ═══ Retry Handler — auto-resend ═══ */
   const onRetry = () => {
-    if (messages.length < 2) return;
+    if (messages.length < 2 || loading) return;
     const lastUser = messages[messages.length - 2];
     if (lastUser.role !== "user") return;
-    setMessages(prev => prev.slice(0, -1));
-    setInput(lastUser.content);
+    const retryText = lastUser.content;
+    // Remove both the AI response AND the user message, then re-send
+    const history = messages.slice(0, -2);
+    retryRef.current = { text: retryText, history };
+    setMessages(history);
   };
 
   /* ═══ New Conversation ═══ */

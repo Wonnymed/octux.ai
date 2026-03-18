@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { ArrowDown } from "lucide-react";
 import type { Message } from "../lib/types";
 import { useIsMobile } from "../lib/useIsMobile";
@@ -30,22 +30,35 @@ export default function ChatArea({
 }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
-  const [showScroll, setShowScroll] = useState(false);
+  const isNearBottomRef = useRef(true);
+  const [userScrolledUp, setUserScrolledUp] = useState(false);
   const isMobile = useIsMobile();
 
   const userInitials = profileName ? profileName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "OP";
 
+  /* Detect manual scroll */
+  const handleScroll = useCallback(() => {
+    const area = areaRef.current;
+    if (!area) return;
+    const distFromBottom = area.scrollHeight - area.scrollTop - area.clientHeight;
+    isNearBottomRef.current = distFromBottom < 100;
+    setUserScrolledUp(distFromBottom > 200);
+  }, []);
+
+  /* Smart auto-scroll: only if user hasn't scrolled up */
   useEffect(() => {
+    if (!isNearBottomRef.current) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  useEffect(() => {
+  /* Scroll to bottom button handler */
+  const scrollToBottom = useCallback(() => {
     const area = areaRef.current;
     if (!area) return;
-    const onScroll = () => setShowScroll(area.scrollHeight - area.scrollTop - area.clientHeight > 200);
-    area.addEventListener("scroll", onScroll);
-    return () => area.removeEventListener("scroll", onScroll);
-  }, [messages.length]);
+    area.scrollTo({ top: area.scrollHeight, behavior: "smooth" });
+    isNearBottomRef.current = true;
+    setUserScrolledUp(false);
+  }, []);
 
   /* Welcome state */
   if (messages.length === 0) {
@@ -69,7 +82,11 @@ export default function ChatArea({
   /* Chat state */
   return (
     <>
-      <div ref={areaRef} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", position: "relative" }}>
+      <div
+        ref={areaRef}
+        onScroll={handleScroll}
+        style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", position: "relative", userSelect: "none", WebkitUserSelect: "none" as any }}
+      >
         <div style={{ width: "100%", paddingBottom: 32 }}>
           {messages.map((m, i) => (
             <MessageBlock
@@ -87,9 +104,9 @@ export default function ChatArea({
           <div ref={bottomRef} />
         </div>
 
-        {showScroll && (
+        {userScrolledUp && (
           <button
-            onClick={() => bottomRef.current?.scrollIntoView({ behavior: "smooth" })}
+            onClick={scrollToBottom}
             style={{
               position: "sticky", bottom: 16, alignSelf: "center",
               padding: "6px 14px", borderRadius: 20,

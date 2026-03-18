@@ -58,11 +58,11 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        style={{ padding: "20px 0" }}
+        style={{ padding: "20px 0", contain: "content" }}
       >
         <div style={{ maxWidth: 640, margin: "0 auto", padding: isMobile ? "0 16px" : "0 24px" }}>
-          {/* Sender label + timestamp on hover */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+          {/* Sender label + timestamp on hover — not selectable */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, userSelect: "none", WebkitUserSelect: "none" as any }}>
             {isUser ? (
               <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
                 {t("common.you")}
@@ -89,9 +89,9 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
             )}
           </div>
 
-          {/* Attachment display */}
+          {/* Attachment display — not selectable */}
           {isUser && message.attachments && message.attachments.length > 0 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10, userSelect: "none" as any }}>
               {message.attachments.map((att, i) => (
                 att.type === "image" && att.preview ? (
                   <img
@@ -136,7 +136,7 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
             </div>
           )}
 
-          {/* Message content */}
+          {/* Message content — SELECTABLE */}
           {message.content && (
             <div style={{ fontSize: 15, lineHeight: 1.7, color: "var(--text-primary)", wordBreak: "break-word", userSelect: "text", WebkitUserSelect: "text" as any }}>
               {isUser ? (
@@ -162,37 +162,43 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
             </div>
           )}
 
-          {/* Actions — on hover (always visible on mobile) */}
+          {/* Actions — on hover (always visible on mobile), not selectable */}
           {!isUser && !isStreaming && message.content && (
             <div style={{
               display: "flex", gap: 2, marginTop: 8,
               opacity: isMobile || hovered || feedback ? 1 : 0,
               transition: "opacity 0.15s",
+              userSelect: "none", WebkitUserSelect: "none" as any,
             }}>
-              <ActionBtn
-                icon={copied ? <Check size={14} /> : <ClipboardCopy size={14} />}
-                onClick={handleCopy}
-                active={copied}
-                activeColor="var(--success)"
-                label="Copy message"
-              />
+              <Tooltip label="Copy response">
+                <ActionBtn
+                  icon={copied ? <Check size={14} /> : <ClipboardCopy size={14} />}
+                  onClick={handleCopy}
+                  active={copied}
+                  activeColor="var(--success)"
+                />
+              </Tooltip>
               {isLast && onRetry && (
-                <ActionBtn icon={<RotateCcw size={14} />} onClick={onRetry} label="Retry" />
+                <Tooltip label="Retry">
+                  <ActionBtn icon={<RotateCcw size={14} />} onClick={onRetry} />
+                </Tooltip>
               )}
-              <ActionBtn
-                icon={<ThumbsUp size={14} />}
-                onClick={() => setFeedback(f => f === "up" ? null : "up")}
-                active={feedback === "up"}
-                activeColor="var(--success)"
-                label="Good response"
-              />
-              <ActionBtn
-                icon={<ThumbsDown size={14} />}
-                onClick={() => setFeedback(f => f === "down" ? null : "down")}
-                active={feedback === "down"}
-                activeColor="var(--error)"
-                label="Bad response"
-              />
+              <Tooltip label="Good response">
+                <ActionBtn
+                  icon={<ThumbsUp size={14} />}
+                  onClick={() => setFeedback(f => f === "up" ? null : "up")}
+                  active={feedback === "up"}
+                  activeColor="var(--success)"
+                />
+              </Tooltip>
+              <Tooltip label="Bad response">
+                <ActionBtn
+                  icon={<ThumbsDown size={14} />}
+                  onClick={() => setFeedback(f => f === "down" ? null : "down")}
+                  active={feedback === "down"}
+                  activeColor="var(--error)"
+                />
+              </Tooltip>
             </div>
           )}
         </div>
@@ -236,19 +242,69 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
   );
 }
 
-function ActionBtn({ icon, onClick, active, activeColor, label }: {
-  icon: React.ReactNode; onClick: () => void; active?: boolean; activeColor?: string; label?: string;
+/* ═══ Tooltip ═══ */
+function Tooltip({ children, label }: { children: React.ReactNode; label: string }) {
+  const [show, setShow] = useState(false);
+
+  return (
+    <div
+      style={{ position: "relative", display: "inline-flex" }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div style={{
+          position: "absolute",
+          bottom: "100%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          marginBottom: 6,
+          padding: "5px 10px",
+          background: "var(--text-primary)",
+          color: "var(--bg-primary)",
+          fontSize: 12,
+          fontWeight: 500,
+          borderRadius: 6,
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
+          zIndex: 100,
+        }}>
+          {label}
+          <div style={{
+            position: "absolute",
+            top: "100%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 0, height: 0,
+            borderLeft: "5px solid transparent",
+            borderRight: "5px solid transparent",
+            borderTop: "5px solid var(--text-primary)",
+          }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══ Action Button ═══ */
+function ActionBtn({ icon, onClick, active, activeColor }: {
+  icon: React.ReactNode; onClick: () => void; active?: boolean; activeColor?: string;
 }) {
+  const [btnHovered, setBtnHovered] = useState(false);
+
   return (
     <button
       onClick={onClick}
-      aria-label={label}
+      onMouseEnter={() => setBtnHovered(true)}
+      onMouseLeave={() => setBtnHovered(false)}
       style={{
-        background: "none", border: "none", cursor: "pointer",
+        background: btnHovered ? "var(--bg-hover)" : "none",
+        border: "none", cursor: "pointer",
         padding: "4px 6px", borderRadius: 6, display: "flex",
         alignItems: "center", justifyContent: "center",
         minWidth: 44, minHeight: 44,
-        color: active ? activeColor : "var(--text-tertiary)",
+        color: active ? activeColor : btnHovered ? "var(--text-secondary)" : "var(--text-tertiary)",
         transition: "all 0.15s",
       }}
     >
