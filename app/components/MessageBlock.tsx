@@ -169,15 +169,19 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
           }}>
             {/* Loading state — empty AI message */}
             {isEmpty && isStreaming && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-tertiary)" }}>
-                {searching ? (
-                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                    <Search size={14} className="spinner" />
-                    {t("chat.searching")}
-                  </span>
-                ) : (
-                  <span className="loading-dots"><span /><span /><span /></span>
-                )}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", gap: 4 }}>
+                  {[0, 1, 2].map(i => (
+                    <div key={i} style={{
+                      width: 6, height: 6, borderRadius: "50%",
+                      background: "var(--accent)",
+                      animation: `signuxBounce 1.4s ease-in-out infinite ${i * 0.16}s`,
+                    }} />
+                  ))}
+                </div>
+                <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+                  {searching ? t("chat.searching") : "Thinking..."}
+                </span>
               </div>
             )}
 

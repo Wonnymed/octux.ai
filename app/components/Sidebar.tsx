@@ -80,7 +80,30 @@ function ConversationItem({ conv, isActive, onLoad, onDelete }: {
   onDelete: () => void;
 }) {
   const [hovering, setHovering] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const title = conv.title || "New conversation";
+
+  if (confirmDelete) {
+    return (
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        width: "100%", padding: "8px 12px",
+        borderRadius: "var(--radius-xs)",
+        background: "rgba(239,68,68,0.05)",
+        fontSize: 11, color: "var(--text-secondary)",
+      }}>
+        <span style={{ flex: 1 }}>Delete this chat?</span>
+        <button onClick={() => { onDelete(); setConfirmDelete(false); }} style={{
+          background: "none", border: "none", cursor: "pointer",
+          color: "var(--error)", fontSize: 11, fontWeight: 600, padding: "2px 6px",
+        }}>Delete</button>
+        <button onClick={() => setConfirmDelete(false)} style={{
+          background: "none", border: "none", cursor: "pointer",
+          color: "var(--text-tertiary)", fontSize: 11, padding: "2px 6px",
+        }}>Cancel</button>
+      </div>
+    );
+  }
 
   return (
     <button
@@ -107,7 +130,7 @@ function ConversationItem({ conv, isActive, onLoad, onDelete }: {
       </span>
       {hovering && (
         <span
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
           style={{
             display: "flex", alignItems: "center", justifyContent: "center",
             width: 22, height: 22, borderRadius: "var(--radius-xs)",
@@ -213,9 +236,18 @@ export default function Sidebar({
 
         {/* New conversation */}
         <div style={{ padding: "0 8px 8px" }}>
-          <button onClick={handleNew} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 12px", border: "1px solid var(--border-secondary)", borderRadius: "var(--radius-sm)", background: "none", cursor: "pointer", color: "var(--text-primary)", fontSize: 13, transition: "background 0.15s" }}
-            onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-            <SquarePen size={16} /> <span>{t("sidebar.new_chat")}</span>
+          <button onClick={handleNew} style={{
+            display: "flex", alignItems: "center", gap: 10, width: "100%",
+            padding: "10px 14px", border: "1px solid var(--border-secondary)",
+            borderRadius: "var(--radius-sm)", background: "transparent",
+            cursor: "pointer", color: "var(--text-primary)", fontSize: 13,
+            transition: "all 200ms ease",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(212,175,55,0.05)"; e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "var(--border-secondary)"; }}>
+            <SquarePen size={16} />
+            <span>{t("sidebar.new_chat")}</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--text-tertiary)", marginLeft: "auto" }}>⌘K</span>
           </button>
         </div>
 

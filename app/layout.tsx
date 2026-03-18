@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SIGNUX AI — Operational Intelligence",
-  description: "AI-powered analysis for structures, imports, crypto, and markets.",
+  title: "Signux AI — Think through any business decision",
+  description: "AI-powered operational intelligence platform with 6 specialized modes: Chat, Simulate, Research, Launchpad, Global Ops, and Invest.",
   metadataBase: new URL("https://signux.ai"),
   icons: {
     icon: [
@@ -13,15 +13,17 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "SIGNUX AI — Operational Intelligence",
-    description: "AI-powered analysis for structures, imports, crypto, and markets.",
+    title: "Signux AI",
+    description: "Think through any business decision before you make it",
+    url: "https://signux.ai",
+    siteName: "Signux AI",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SIGNUX AI — Operational Intelligence",
-    description: "AI-powered analysis for structures, imports, crypto, and markets.",
+    title: "Signux AI",
+    description: "Think through any business decision before you make it",
     images: ["/og-image.png"],
   },
 };

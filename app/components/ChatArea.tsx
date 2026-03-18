@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from "react";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, Square } from "lucide-react";
 import type { Message, Mode } from "../lib/types";
 import { useIsMobile } from "../lib/useIsMobile";
 import MessageBlock from "./MessageBlock";
@@ -23,12 +23,13 @@ type ChatAreaProps = {
   onSwitchToSimulate?: () => void;
   onSwitchToResearch?: () => void;
   onSwitchMode?: (mode: Mode) => void;
+  onStop?: () => void;
 };
 
 export default function ChatArea({
   messages, loading, searching, input, setInput, onSend,
   profileName, onRetry, onCopy, attachments, onAttachmentsChange, onToast,
-  onSwitchToSimulate, onSwitchToResearch, onSwitchMode,
+  onSwitchToSimulate, onSwitchToResearch, onSwitchMode, onStop,
 }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
@@ -143,6 +144,21 @@ export default function ChatArea({
           pointerEvents: "none",
         }} />
         <div style={{ padding: isMobile ? "8px 12px 16px" : "12px 24px 16px", paddingBottom: "calc(16px + var(--safe-bottom, 0px))" }}>
+          {loading && onStop && (
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+              <button onClick={onStop} style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "6px 16px", borderRadius: 50,
+                border: "1px solid var(--border-secondary)",
+                background: "var(--bg-secondary)", color: "var(--text-secondary)",
+                fontSize: 12, cursor: "pointer", transition: "all 200ms",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--text-tertiary)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-secondary)"; }}>
+                <Square size={12} fill="currentColor" /> Stop generating
+              </button>
+            </div>
+          )}
           <ChatInput
             value={input}
             onChange={setInput}

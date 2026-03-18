@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { getProfile } from "../lib/profile";
 import { t, Language, setLanguage } from "../lib/i18n";
 import type { Message, Toast, Attachment, SimAgent, SimResult, Mode } from "../lib/types";
-import { Check, AlertTriangle, Info, WifiOff } from "lucide-react";
+import { Check, AlertTriangle, Info, WifiOff, Square } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
 import UserMenu from "../components/UserMenu";
@@ -19,7 +19,7 @@ import {
   deleteConversation as removeConversationDB,
   getMessages as fetchMessagesDB,
   saveMessage as saveMessageDB,
-  generateTitle,
+  generateSmartTitle,
 } from "../lib/database-client";
 import type { Conversation } from "../lib/database-client";
 import {
@@ -198,6 +198,7 @@ export default function ChatPage() {
   /* Refs */
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const retryRef = useRef<{ text: string; history: Message[] } | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   /* ═══ Toast Callbacks ═══ */
   const addToast = useCallback((message: string, type: Toast["type"] = "success") => {
@@ -346,9 +347,15 @@ export default function ChatPage() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const meta = e.metaKey || e.ctrlKey;
+      // ⌘K — New chat
       if (meta && e.key === "k") {
         e.preventDefault();
-        inputRef.current?.focus();
+        onNewConversation();
+      // ⌘B — Toggle sidebar
+      } else if (meta && e.key === "b") {
+        e.preventDefault();
+        setSidebarOpen(prev => !prev);
+      // ⌘⇧S — Cycle modes
       } else if (meta && e.shiftKey && e.key.toLowerCase() === "s") {
         e.preventDefault();
         setMode(prev => {
@@ -356,28 +363,33 @@ export default function ChatPage() {
           const idx = cycle.indexOf(prev);
           return cycle[(idx + 1) % cycle.length];
         });
+      // ⌘N — New conversation (alias)
       } else if (meta && e.key === "n") {
         e.preventDefault();
-        if (mode === "chat") {
-          setMessages([]);
-          setAttachments([]);
-          setConversationId(null);
-        } else {
-          setSimResult(null);
-          setSimScenario("");
-          setSimulating(false);
-        }
-        addToast(mode === "chat" ? t("sidebar.new_chat") : t("sidebar.new_simulation"), "info");
-      } else if (e.key === "Escape") {
-        setShowSettings(false);
-      } else if (e.key === "?" && !e.metaKey && !e.ctrlKey && document.activeElement?.tagName !== "TEXTAREA" && document.activeElement?.tagName !== "INPUT") {
+        onNewConversation();
+      // / — Focus input (when not typing)
+      } else if (e.key === "/" && !meta && document.activeElement?.tagName !== "TEXTAREA" && document.activeElement?.tagName !== "INPUT") {
         e.preventDefault();
-        setShowSettings(prev => !prev);
+        document.querySelector<HTMLTextAreaElement>("textarea")?.focus();
+      // Escape — Close settings/sidebar
+      } else if (e.key === "Escape") {
+        if (showSettings) setShowSettings(false);
+        else if (isMobile && sidebarOpen) setSidebarOpen(false);
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [mode, lang, addToast]);
+  }, [mode, lang, addToast, showSettings, isMobile, sidebarOpen]);
+
+  /* ═══ Error Messages ═══ */
+  const getErrorMessage = (error: any): string => {
+    const msg = error?.message || "";
+    if (msg.includes("429")) return "You've reached the message limit. Upgrade to Pro for unlimited messages.";
+    if (msg.includes("401")) return "Authentication error. Please sign in again.";
+    if (msg.includes("500")) return "Our AI is temporarily overloaded. Please try again in a moment.";
+    if (msg.includes("network") || msg.includes("fetch") || msg.includes("Failed to fetch")) return t("chat.connection_error");
+    return t("common.error_generic");
+  };
 
   /* ═══ Chat Handler ═══ */
   const send = async (text?: string) => {
@@ -459,10 +471,12 @@ export default function ChatPage() {
     }
 
     try {
+      abortRef.current = new AbortController();
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: apiMessages, profile: getProfile() }),
+        signal: abortRef.current.signal,
       });
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
@@ -520,10 +534,22 @@ export default function ChatPage() {
           }
         }
       }
-    } catch {
+    } catch (err: any) {
+      if (err?.name === "AbortError") {
+        // User cancelled — remove empty assistant message
+        setMessages(prev => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant" && !last.content) return prev.slice(0, -1);
+          return prev;
+        });
+        setLoading(false);
+        setSearching(false);
+        return;
+      }
+      const errorMsg = getErrorMessage(err);
       setMessages(prev => {
         const u = [...prev];
-        u[u.length - 1] = { role: "assistant", content: t("chat.connection_error") };
+        u[u.length - 1] = { role: "assistant", content: errorMsg, isError: true } as any;
         return u;
       });
     }
@@ -550,10 +576,15 @@ export default function ChatPage() {
       // Generate title from first user message if conversation is new
       const isFirstMessage = newDisplayMessages.filter(m => m.role === "user").length === 1;
       if (isFirstMessage) {
-        generateTitle(msg).then(title => {
-          if (authUser) updateTitleDB(activeConvId!, title).catch(() => {});
-          localUpdateConversationTitle(activeConvId!, title);
-          setConversations(prev => prev.map(c => c.id === activeConvId ? { ...c, title } : c));
+        setMessages(prev => {
+          const lastMsg = prev[prev.length - 1];
+          const responseText = lastMsg?.role === "assistant" ? lastMsg.content : "";
+          generateSmartTitle(msg, responseText).then(title => {
+            if (authUser) updateTitleDB(activeConvId!, title).catch(() => {});
+            localUpdateConversationTitle(activeConvId!, title);
+            setConversations(prev2 => prev2.map(c => c.id === activeConvId ? { ...c, title } : c));
+          });
+          return prev;
         });
       } else {
         if (authUser) touchConvDB(activeConvId).catch(() => {});
@@ -852,6 +883,7 @@ export default function ChatPage() {
                 onSwitchToSimulate={() => setMode("simulate")}
                 onSwitchToResearch={() => setMode("research")}
                 onSwitchMode={setMode}
+                onStop={() => abortRef.current?.abort()}
               />
             </motion.div>
           )}

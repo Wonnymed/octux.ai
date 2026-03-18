@@ -89,3 +89,18 @@ export async function generateTitle(firstMessage: string): Promise<string> {
   if (clean.length <= 40) return clean;
   return clean.slice(0, 40).trim() + "…";
 }
+
+export async function generateSmartTitle(firstMessage: string, firstResponse: string): Promise<string> {
+  try {
+    const res = await fetch("/api/title", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: firstMessage, response: firstResponse?.slice(0, 200) }),
+    });
+    if (res.ok) {
+      const { title } = await res.json();
+      return title || firstMessage.slice(0, 50);
+    }
+  } catch {}
+  return firstMessage.replace(/\n/g, " ").trim().slice(0, 50) + (firstMessage.length > 50 ? "…" : "");
+}
