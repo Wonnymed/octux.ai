@@ -9,7 +9,7 @@ import { Check, AlertTriangle, Info, WifiOff, PanelLeftOpen, PanelLeftClose } fr
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
 import { SignuxIcon } from "../components/SignuxIcon";
-import { getCurrentUser, signOut, onAuthStateChange } from "../lib/auth";
+import { useAuth } from "../lib/auth";
 import { getUser, createUser, updateUser } from "../lib/database";
 
 import { useIsMobile } from "../lib/useIsMobile";
@@ -185,7 +185,7 @@ export default function ChatPage() {
   const [simStartTime, setSimStartTime] = useState<number | null>(null);
 
   /* Auth */
-  const [authUser, setAuthUser] = useState<any>(null);
+  const { user: authUser, loading: authLoading, signOut: authSignOut } = useAuth();
 
   /* UI */
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -225,36 +225,6 @@ export default function ChatPage() {
       setLanguage(userLang);
     }
 
-    // Check Supabase auth
-    getCurrentUser().then(async (user) => {
-      if (user) {
-        setAuthUser(user);
-        // Sync profile from DB or migrate localStorage
-        const dbUser = await getUser(user.id);
-        if (dbUser) {
-          if (dbUser.name) setProfileName(dbUser.name);
-          if (dbUser.language) { setLang(dbUser.language as Language); setLanguage(dbUser.language as Language); }
-        } else {
-          // First login — create DB user, migrate localStorage profile if exists
-          const newUser = await createUser({
-            auth_id: user.id,
-            email: user.email || "",
-            ...(profile?.name ? { name: profile.name } : {}),
-            ...(profile?.taxResidence ? { country: profile.taxResidence } : {}),
-            ...(profile?.operations?.length ? { operations: profile.operations } : {}),
-            ...(profile?.language ? { language: profile.language } : {}),
-          });
-          if (newUser?.name) setProfileName(newUser.name);
-        }
-      }
-    }).catch(() => {});
-
-    // Listen for auth changes
-    const sub = onAuthStateChange((user) => {
-      setAuthUser(user);
-      if (!user) setProfileName(getProfile()?.name || "");
-    });
-
     setReady(true);
     const toastData = sessionStorage.getItem("signux_welcome_toast");
     if (toastData) {
@@ -264,9 +234,33 @@ export default function ChatPage() {
         setTimeout(() => addToast(message, type), 300);
       } catch {}
     }
-
-    return () => { sub.unsubscribe(); };
   }, [addToast]);
+
+  /* Sync profile when auth user changes */
+  useEffect(() => {
+    if (!authUser) {
+      setProfileName(getProfile()?.name || "");
+      return;
+    }
+    const profile = getProfile();
+    getUser(authUser.id).then(dbUser => {
+      if (dbUser) {
+        if (dbUser.name) setProfileName(dbUser.name);
+        if (dbUser.language) { setLang(dbUser.language as Language); setLanguage(dbUser.language as Language); }
+      } else {
+        createUser({
+          auth_id: authUser.id,
+          email: authUser.email || "",
+          ...(profile?.name ? { name: profile.name } : {}),
+          ...(profile?.taxResidence ? { country: profile.taxResidence } : {}),
+          ...(profile?.operations?.length ? { operations: profile.operations } : {}),
+          ...(profile?.language ? { language: profile.language } : {}),
+        }).then(newUser => {
+          if (newUser?.name) setProfileName(newUser.name);
+        });
+      }
+    }).catch(() => {});
+  }, [authUser]);
 
   /* ═══ Dynamic Page Title ═══ */
   useEffect(() => {
@@ -657,7 +651,7 @@ export default function ChatPage() {
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         isLoggedIn={isLoggedIn}
-        onSignOut={authUser ? signOut : undefined}
+        onSignOut={authUser ? authSignOut : undefined}
       />
 
       <main style={{

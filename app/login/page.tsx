@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { SignuxIcon } from "../components/SignuxIcon";
-import { createBrowserClient } from "../lib/supabase";
+import { createSupabaseBrowser } from "../lib/supabase-browser";
 import { t } from "../lib/i18n";
 
 export default function LoginPage() {
@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   const handleGoogle = async () => {
-    const supabase = createBrowserClient();
+    const supabase = createSupabaseBrowser();
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: window.location.origin + "/auth/callback" },
@@ -23,7 +23,7 @@ export default function LoginPage() {
     if (!email.trim()) return;
     setLoading(true);
     setError("");
-    const supabase = createBrowserClient();
+    const supabase = createSupabaseBrowser();
     const { error: err } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: window.location.origin + "/auth/callback" },

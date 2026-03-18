@@ -1,35 +1,33 @@
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { createBrowserClient } from "../../lib/supabase";
-import { getUser, createUser } from "../../lib/database";
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get("code");
 
-  if (!code) {
-    return NextResponse.redirect(`${origin}/login`);
+  if (code) {
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {}
+          },
+        },
+      }
+    );
+    await supabase.auth.exchangeCodeForSession(code);
   }
 
-  const supabase = createBrowserClient();
-  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-  if (error || !data.user) {
-    return NextResponse.redirect(`${origin}/login`);
-  }
-
-  // Ensure user exists in public.users table
-  const authId = data.user.id;
-  const email = data.user.email || "";
-  let dbUser = await getUser(authId);
-
-  if (!dbUser) {
-    const name = data.user.user_metadata?.full_name || data.user.user_metadata?.name || null;
-    await createUser({
-      auth_id: authId,
-      email,
-      ...(name ? { name } : {}),
-    });
-  }
-
-  return NextResponse.redirect(`${origin}/chat`);
+  return NextResponse.redirect(new URL("/chat", request.url));
 }
