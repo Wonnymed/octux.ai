@@ -1,5 +1,5 @@
 "use client";
-import { Zap, Search, Rocket, Globe, TrendingUp, Shield, Scan, Swords, GitBranch, Map } from "lucide-react";
+import { Zap, Shield, Rocket, Globe, TrendingUp, Scan, Swords, GitBranch, Map } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
 import ChatInput, { type FileAttachment } from "./ChatInput";
@@ -40,7 +40,7 @@ const MODE_BANNERS: {
   color: string; bg: string; border: string;
 }[] = [
   { key: "simulate", icon: Zap, label: "Simulate", desc: "Stress-test with AI agents", color: "#D4AF37", bg: "rgba(212,175,55,0.04)", border: "rgba(212,175,55,0.12)" },
-  { key: "research", icon: Search, label: "Research", desc: "Multi-source analysis", color: "#6B8AFF", bg: "rgba(107,138,255,0.04)", border: "rgba(107,138,255,0.12)" },
+  { key: "intel", icon: Shield, label: "Intel", desc: "Operational intelligence", color: "#DC2626", bg: "rgba(220,38,38,0.04)", border: "rgba(220,38,38,0.12)" },
   { key: "launchpad", icon: Rocket, label: "Launchpad", desc: "Zero to business", color: "#14B8A6", bg: "rgba(20,184,166,0.04)", border: "rgba(20,184,166,0.12)" },
   { key: "globalops", icon: Globe, label: "Global Ops", desc: "Cross-border intel", color: "#22C55E", bg: "rgba(34,197,94,0.04)", border: "rgba(34,197,94,0.12)" },
   { key: "invest", icon: TrendingUp, label: "Invest", desc: "Quantitative deals", color: "#A855F7", bg: "rgba(168,85,247,0.04)", border: "rgba(168,85,247,0.12)" },

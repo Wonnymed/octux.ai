@@ -59,11 +59,11 @@ const MODE_SECTIONS = [
     preview: SimulatePreview,
   },
   {
-    icon: Search, color: "#6B8AFF", name: "Deep Research", textOnColor: "#fff",
-    title: "Multi-source intelligence synthesis",
-    desc: "Signux plans 6-8 strategic queries, searches across multiple sources, cross-references findings, and compiles a structured report with citations and export to PDF.",
-    features: ["Auto-planned queries", "8-12 sources", "Cross-referenced", "Cited report", "PDF export"],
-    preview: ResearchPreview,
+    icon: Shield, color: "#DC2626", name: "Intel", textOnColor: "#fff",
+    title: "Operational intelligence suite",
+    desc: "7 specialized tools powered by proprietary knowledge across 27+ domains. Threat mapping, deception detection, competitive war gaming, causal analysis, negotiation preparation, scenario planning, and deep research.",
+    features: ["Threat Radar", "Deal X-Ray", "War Game", "Causal Map", "Negotiation", "Scenarios", "Deep Research"],
+    preview: IntelPreview,
   },
   {
     icon: Rocket, color: "#14B8A6", name: "Launchpad", textOnColor: "#000",
@@ -121,32 +121,32 @@ function SimulatePreview() {
   );
 }
 
-function ResearchPreview() {
-  const queries = [
-    { text: "Market size analysis", done: true },
-    { text: "Competitor pricing", done: true },
-    { text: "Regulatory landscape", loading: true },
-    { text: "Customer segments", pending: true },
-  ];
+function IntelPreview() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {queries.map((q, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 14, height: 14, borderRadius: "50%", flexShrink: 0, border: q.done ? "none" : "1.5px solid var(--card-hover-border)", background: q.done ? "rgba(107,138,255,0.3)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {q.done && <span style={{ fontSize: 8, color: "#6B8AFF" }}>&#10003;</span>}
-            {q.loading && <span style={{ fontSize: 7, color: "var(--text-tertiary)" }}>...</span>}
-          </div>
-          <span style={{ fontSize: 11, color: q.done ? "var(--text-secondary)" : "var(--text-tertiary)" }}>{q.text}</span>
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ textAlign: "center", marginBottom: 4 }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", color: "#DC2626", marginBottom: 6 }}>
+          Threat level
         </div>
-      ))}
-      <div style={{ marginTop: 6 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "var(--text-tertiary)", marginBottom: 4 }}>
-          <span>Progress</span><span>55%</span>
-        </div>
-        <div style={{ height: 3, borderRadius: 2, background: "var(--card-hover-bg)" }}>
-          <div style={{ height: "100%", width: "55%", borderRadius: 2, background: "#6B8AFF", opacity: 0.6 }} />
+        <div style={{ fontFamily: "var(--font-brand)", fontSize: 28, fontWeight: 700, color: "#F59E0B" }}>
+          ELEVATED
         </div>
       </div>
+      {[
+        { name: "Market", score: 7, color: "#ef4444" },
+        { name: "Regulatory", score: 4, color: "#22c55e" },
+        { name: "Operational", score: 6, color: "#f59e0b" },
+        { name: "Cyber", score: 3, color: "#22c55e" },
+        { name: "Geopolitical", score: 5, color: "#f59e0b" },
+      ].map((axis, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 10, color: "var(--text-tertiary)", width: 70 }}>{axis.name}</span>
+          <div style={{ flex: 1, height: 4, borderRadius: 2, background: "var(--card-border)" }}>
+            <div style={{ width: `${axis.score * 10}%`, height: "100%", borderRadius: 2, background: axis.color }} />
+          </div>
+          <span style={{ fontSize: 10, color: axis.color, fontWeight: 600, width: 16 }}>{axis.score}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -319,7 +319,7 @@ export default function LandingPage() {
             Think through any business decision before you make it
           </h1>
           <p style={{ fontSize: isMobile ? 15 : 18, color: "var(--text-secondary)", maxWidth: 520, margin: "0 auto 40px", lineHeight: 1.6 }}>
-            6 specialized AI modes. Multi-agent simulation. Deep research. Quantitative analysis. From idea to business in 90 days.
+            6 specialized AI modes. Multi-agent simulation. Operational intelligence. Quantitative analysis. From idea to business in 90 days.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/chat" style={{

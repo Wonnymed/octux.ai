@@ -61,6 +61,9 @@
   --mode-res: #4A6FE5;
   --mode-res-bg: rgba(74,111,229,0.08);
   --mode-res-border: rgba(74,111,229,0.15);
+  --mode-intel: #B91C1C;
+  --mode-intel-bg: rgba(220,38,38,0.04);
+  --mode-intel-border: rgba(220,38,38,0.12);
   --mode-lp: #0D9488;
   --mode-lp-bg: rgba(13,148,136,0.08);
   --mode-lp-border: rgba(13,148,136,0.15);
@@ -112,6 +115,9 @@
     --mode-res: #6B8AFF;
     --mode-res-bg: rgba(107,138,255,0.06);
     --mode-res-border: rgba(107,138,255,0.1);
+    --mode-intel: #DC2626;
+    --mode-intel-bg: rgba(220,38,38,0.04);
+    --mode-intel-border: rgba(220,38,38,0.12);
     --mode-lp: #14B8A6;
     --mode-lp-bg: rgba(20,184,166,0.06);
     --mode-lp-border: rgba(20,184,166,0.1);
@@ -164,6 +170,9 @@
   --mode-res: #4A6FE5;
   --mode-res-bg: rgba(74,111,229,0.08);
   --mode-res-border: rgba(74,111,229,0.15);
+  --mode-intel: #B91C1C;
+  --mode-intel-bg: rgba(220,38,38,0.04);
+  --mode-intel-border: rgba(220,38,38,0.12);
   --mode-lp: #0D9488;
   --mode-lp-bg: rgba(13,148,136,0.08);
   --mode-lp-border: rgba(13,148,136,0.15);
@@ -209,6 +218,9 @@
   --mode-res: #6B8AFF;
   --mode-res-bg: rgba(107,138,255,0.06);
   --mode-res-border: rgba(107,138,255,0.1);
+  --mode-intel: #DC2626;
+  --mode-intel-bg: rgba(220,38,38,0.04);
+  --mode-intel-border: rgba(220,38,38,0.12);
   --mode-lp: #14B8A6;
   --mode-lp-bg: rgba(20,184,166,0.06);
   --mode-lp-border: rgba(20,184,166,0.1);

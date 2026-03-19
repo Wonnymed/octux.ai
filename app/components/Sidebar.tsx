@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
-import { SquarePen, MessageSquare, Zap, Search, Rocket, Globe, TrendingUp, Settings, LogIn, LogOut, Trash2, Flame, FolderOpen, Plus, ChevronDown, X, Upload } from "lucide-react";
+import { SquarePen, MessageSquare, Zap, Shield, Rocket, Globe, TrendingUp, Settings, LogIn, LogOut, Trash2, Flame, FolderOpen, Plus, ChevronDown, X, Upload } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
 import { t } from "../lib/i18n";
 import type { Mode } from "../lib/types";
@@ -40,7 +40,7 @@ type SidebarProps = {
 const MODES: { key: Mode; icon: any; label: string; color?: string; tier?: "max" }[] = [
   { key: "chat", icon: MessageSquare, label: "sidebar.mode_chat" },
   { key: "simulate", icon: Zap, label: "sidebar.mode_simulate", color: "#D4AF37" },
-  { key: "research", icon: Search, label: "sidebar.mode_research", color: "#6B8AFF" },
+  { key: "intel", icon: Shield, label: "sidebar.mode_intel", color: "#DC2626" },
   { key: "launchpad", icon: Rocket, label: "sidebar.mode_launchpad", color: "#14B8A6" },
   { key: "globalops", icon: Globe, label: "sidebar.mode_globalops", color: "#22C55E", tier: "max" },
   { key: "invest", icon: TrendingUp, label: "sidebar.mode_invest", color: "#A855F7", tier: "max" },

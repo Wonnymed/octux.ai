@@ -36,7 +36,7 @@ const PLANS = [
     features: [
       "Unlimited chat",
       "20 simulations/month",
-      "Unlimited research reports",
+      "Intel suite (7 tools)",
       "Launchpad project tracker",
       "Decision journal",
       "Priority support",

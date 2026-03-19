@@ -30,7 +30,7 @@ const en: Record<string, string> = {
   "sidebar.settings": "Settings",
   "sidebar.mode_chat": "Chat",
   "sidebar.mode_simulate": "Simulate",
-  "sidebar.mode_research": "Research",
+  "sidebar.mode_intel": "Intel",
   "sidebar.mode_launchpad": "Launchpad",
   "sidebar.mode_globalops": "Global Ops",
   "sidebar.mode_invest": "Invest",

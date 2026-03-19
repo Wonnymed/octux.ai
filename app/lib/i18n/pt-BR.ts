@@ -30,7 +30,7 @@ const ptBR: Record<string, string> = {
   "sidebar.settings": "Configurações",
   "sidebar.mode_chat": "Chat",
   "sidebar.mode_simulate": "Simular",
-  "sidebar.mode_research": "Pesquisa",
+  "sidebar.mode_intel": "Intel",
   "sidebar.mode_launchpad": "Launchpad",
   "sidebar.mode_globalops": "Ops Global",
   "sidebar.mode_invest": "Investir",

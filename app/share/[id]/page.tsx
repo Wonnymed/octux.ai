@@ -54,6 +54,7 @@ export default function SharePage() {
   const typeColors: Record<string, { bg: string; color: string; label: string }> = {
     simulate: { bg: "var(--mode-sim-bg)", color: "var(--mode-sim)", label: "Simulation Report" },
     research: { bg: "var(--mode-res-bg)", color: "var(--mode-res)", label: "Research Report" },
+    intel: { bg: "var(--mode-intel-bg)", color: "var(--mode-intel)", label: "Intel Report" },
     reality_check: { bg: "rgba(239,68,68,0.08)", color: "#ef4444", label: "Reality Check" },
   };
   const tc = typeColors[result.type] || typeColors.simulate;

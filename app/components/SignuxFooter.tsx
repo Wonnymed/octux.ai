@@ -6,7 +6,7 @@ import type { Mode } from "../lib/types";
 const MODE_MAP: Record<string, Mode> = {
   "Chat": "chat",
   "Simulate": "simulate",
-  "Deep Research": "research",
+  "Intel": "intel",
   "Launchpad": "launchpad",
   "Global Ops": "globalops",
   "Invest": "invest",
@@ -14,7 +14,7 @@ const MODE_MAP: Record<string, Mode> = {
 
 const FOOTER_COLS = [
   { header: "PRODUCT", links: [
-    { text: "Chat" }, { text: "Simulate" }, { text: "Deep Research" },
+    { text: "Chat" }, { text: "Simulate" }, { text: "Intel" },
     { text: "Launchpad", badge: "NEW" }, { text: "Global Ops" },
     { text: "Invest" }, { text: "Pricing" },
   ]},

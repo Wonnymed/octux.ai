@@ -42,7 +42,7 @@ import { useProjects } from "../lib/useProjects";
 const ProjectKnowledge = dynamic(() => import("../components/ProjectKnowledge"), { ssr: false });
 
 const SimulationEngine = dynamic(() => import("../components/SimulationEngine"), { ssr: false });
-const ResearchView = dynamic(() => import("../components/ResearchView"), { ssr: false });
+const IntelView = dynamic(() => import("../components/IntelView"), { ssr: false });
 const LaunchpadView = dynamic(() => import("../components/LaunchpadView"), { ssr: false });
 const GlobalOpsView = dynamic(() => import("../components/GlobalOpsView"), { ssr: false });
 const InvestView = dynamic(() => import("../components/InvestView"), { ssr: false });
@@ -407,7 +407,7 @@ export default function ChatPage() {
         e.preventDefault();
         setActiveTool(null);
         setMode(prev => {
-          const cycle: Mode[] = ["chat", "simulate", "research", "launchpad", "globalops", "invest"];
+          const cycle: Mode[] = ["chat", "simulate", "intel", "launchpad", "globalops", "invest"];
           const idx = cycle.indexOf(prev);
           return cycle[(idx + 1) % cycle.length];
         });
@@ -905,16 +905,16 @@ export default function ChatPage() {
           </div>
         )}
         <AnimatePresence mode="wait">
-          {mode === "research" ? (
+          {mode === "intel" ? (
             <motion.div
-              key="research"
+              key="intel"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
               style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
-              <ResearchView
+              <IntelView
                 lang={lang}
                 onContinueInChat={continueResearchInChat}
                 onSetMode={setMode}
@@ -1077,7 +1077,7 @@ export default function ChatPage() {
                 onAttachmentsChange={setAttachments}
                 onToast={addToast}
                 onSwitchToSimulate={() => setMode("simulate")}
-                onSwitchToResearch={() => setMode("research")}
+                onSwitchToResearch={() => setMode("intel")}
                 onSwitchMode={setMode}
                 onOpenThreatRadar={() => setActiveTool("threat-radar")}
                 onOpenDealXRay={() => setActiveTool("deal-xray")}
