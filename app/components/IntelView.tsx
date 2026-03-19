@@ -26,7 +26,7 @@ const TOOLS = [
   {
     id: "threat-radar" as IntelTool,
     name: "Threat Radar",
-    description: "Map threats across 5 axes with real-time data",
+    description: "What could hurt your business right now?",
     icon: Shield,
     color: "#DC2626",
     command: "/threats",
@@ -34,7 +34,7 @@ const TOOLS = [
   {
     id: "deal-xray" as IntelTool,
     name: "Deal X-Ray",
-    description: "Detect deception and hidden incentives in any deal",
+    description: "Is this deal too good to be true?",
     icon: Crosshair,
     color: "#F59E0B",
     command: "/xray",
@@ -42,7 +42,7 @@ const TOOLS = [
   {
     id: "war-game" as IntelTool,
     name: "War Game",
-    description: "Simulate competitive moves with game theory",
+    description: "How will your competitors react?",
     icon: Swords,
     color: "#8B5CF6",
     command: "/wargame",
@@ -50,7 +50,7 @@ const TOOLS = [
   {
     id: "causal-map" as IntelTool,
     name: "Causal Map",
-    description: "Separate correlation from causation",
+    description: "Did that change actually cause the result?",
     icon: GitBranch,
     color: "#06B6D4",
     command: "/causal",
@@ -58,7 +58,7 @@ const TOOLS = [
   {
     id: "negotiation" as IntelTool,
     name: "Negotiation War Room",
-    description: "4-phase military-grade preparation",
+    description: "Walk in prepared. Walk out winning.",
     icon: Users,
     color: "#F97316",
     command: "/negotiate",
@@ -66,7 +66,7 @@ const TOOLS = [
   {
     id: "scenarios" as IntelTool,
     name: "Scenario Planner",
-    description: "4 alternative futures with hedging strategy",
+    description: "What could happen next — and how to prepare",
     icon: Map,
     color: "#22C55E",
     command: "/scenarios",
@@ -74,7 +74,7 @@ const TOOLS = [
   {
     id: "autopsy" as IntelTool,
     name: "Decision Autopsy",
-    description: "Analyze a past decision — what went right, wrong, and why",
+    description: "What went right, what went wrong, and why",
     icon: Microscope,
     color: "#A855F7",
     command: "/autopsy",
@@ -206,7 +206,7 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
         color: "#DC2626", textTransform: "uppercase", marginBottom: 24,
         opacity: 0.7,
       }}>
-        Operational intelligence suite
+        See what others miss
       </p>
 
       {/* Knowledge badge */}
@@ -217,7 +217,7 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
         marginBottom: 28, fontSize: 11, color: "var(--text-tertiary)",
       }}>
         <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#DC2626" }} />
-        Powered by proprietary intelligence across 27+ domains
+        7 tools backed by 100+ specialized knowledge domains
       </div>
 
       {/* Tools grid — 3+3 */}
@@ -283,7 +283,7 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
             Deep Research
           </div>
           <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>
-            Multi-source web search with structured report and PDF export
+            Get the full picture from multiple sources
           </div>
         </div>
         <span style={{ fontSize: 10, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>

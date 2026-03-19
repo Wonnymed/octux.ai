@@ -9,7 +9,7 @@ const PLANS = [
     name: "Free",
     price: "$0",
     period: "",
-    description: "Try Signux with basic chat",
+    description: "See what AI can do for your business.",
     features: [
       "10 chat messages/day",
       "AI business advisor",
@@ -32,7 +32,7 @@ const PLANS = [
     name: "Pro",
     price: "$29",
     period: "/month",
-    description: "100+ intelligence domains. Full power.",
+    description: "Everything you need to build and grow.",
     features: [
       "Unlimited chat",
       "100+ proprietary intelligence domains",
@@ -56,7 +56,7 @@ const PLANS = [
     name: "Max",
     price: "$99",
     period: "/month",
-    description: "Everything, unlimited",
+    description: "For serious founders making big decisions.",
     features: [
       "Everything in Pro",
       "Unlimited simulations",
@@ -77,7 +77,7 @@ const PLANS = [
     name: "Founding",
     price: "$500",
     period: " one-time",
-    description: "Lifetime access, forever",
+    description: "Join the founding team. Shape the product.",
     features: [
       "Everything in Max",
       "Lifetime access — no recurring fees",
@@ -157,10 +157,10 @@ export default function PricingPage() {
           fontSize: 36, fontWeight: 700, marginBottom: 12,
           fontFamily: "var(--font-brand)", letterSpacing: 2,
         }}>
-          Choose your plan
+          Choose how you want to grow
         </h1>
         <p style={{ fontSize: 16, color: "var(--text-secondary)", maxWidth: 500, margin: "0 auto" }}>
-          Think through any business decision before you make it.
+          From first idea to confident decisions — pick the plan that fits.
         </p>
       </div>
 

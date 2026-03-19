@@ -197,10 +197,10 @@ export default function SimulationEngine(props: SimulationEngineProps) {
     ];
 
     const capabilities = [
-      "Multi-agent analysis",
-      "Adversarial testing",
-      "Quantitative models",
-      "Risk scoring",
+      "15 AI specialists",
+      "Find hidden risks",
+      "Honest numbers",
+      "Stress-test anything",
     ];
 
     const agentAvatars = [
@@ -276,7 +276,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
               textTransform: "uppercase" as const, color: "rgba(212,175,55,0.6)",
               marginTop: 6,
             }}>
-              Predict outcomes before you invest
+              Test your idea before you risk real money
             </div>
 
             {/* Divider */}
@@ -320,7 +320,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
               animation: "fadeIn 0.5s ease-out",
             }}>
               <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-                See Simulate in action — 15 AI agents debate a real scenario
+                See it work — Watch AI find 3 risks in a coffee franchise idea
               </span>
               <button onClick={runDemoSimulation} style={{
                 padding: "5px 14px", borderRadius: 50,

@@ -53,41 +53,41 @@ function Divider() {
 const MODE_SECTIONS = [
   {
     icon: Zap, color: "#D4AF37", name: "Simulate", textOnColor: "#000",
-    title: "Predict outcomes before you invest",
-    desc: "15 AI specialist agents analyze your plan from every angle — regulatory, financial, adversarial, operational. Stress-test any decision with God's Eye variable injection and multi-round debate.",
-    features: ["Multi-agent debate", "Adversarial testing", "Risk scoring", "God's Eye injection", "Agent conversation"],
+    title: "Test your idea before you risk real money",
+    desc: "Describe your business scenario. 15 AI specialists will debate it from every angle — finding the risks you didn't think of, the competitors you didn't see, and the numbers that actually matter. Like having a board of advisors that disagrees with each other.",
+    features: ["15 AI specialists", "Find hidden risks", "Real numbers", "What-if testing", "Honest verdict"],
     domains: "game theory · mechanism design · scenario planning · risk modeling · causal reasoning + 12 more",
     preview: SimulatePreview,
   },
   {
     icon: Shield, color: "#DC2626", name: "Intel", textOnColor: "#fff",
-    title: "Operational intelligence suite",
-    desc: "7 specialized tools powered by proprietary knowledge across 27+ domains. Threat mapping, deception detection, competitive war gaming, causal analysis, negotiation preparation, scenario planning, and deep research.",
-    features: ["Threat Radar", "Deal X-Ray", "War Game", "Causal Map", "Negotiation", "Scenarios", "Deep Research"],
+    title: "See what others miss in every deal, threat, and decision",
+    desc: "Is that partnership offer legit? How will your competitors react? What's the biggest risk to your business right now? 7 specialized tools that analyze deals, detect lies, simulate competition, and prepare you for tough conversations.",
+    features: ["Catch red flags", "Predict competitor moves", "Prepare for negotiations", "Map your risks", "Plan for uncertainty", "Research anything"],
     domains: "deception detection · threat modeling · negotiation warfare · actor intelligence + 18 more",
     preview: IntelPreview,
   },
   {
     icon: Rocket, color: "#14B8A6", name: "Launchpad", textOnColor: "#000",
-    title: "From zero to business in 90 days",
-    desc: "Tell Signux your skills and budget. We find the right business, validate it with our simulation engine, generate a blueprint, and track your progress week by week.",
-    features: ["Skill-to-business matching", "Auto-validation", "90-day blueprint", "Weekly tracking", "Adaptive strategy"],
+    title: "Your first $1,000 in 90 days",
+    desc: "Tell us what you're good at and how much you can invest. We'll find the best business for you, test it with AI before you start, create your 90-day plan, and check in every week to keep you on track. Like a co-founder that never sleeps.",
+    features: ["Find your best business", "AI-tested before you start", "90-day plan", "Weekly check-ins", "Adapts as you grow"],
     domains: "customer intel · GTM · pricing · operating systems · founder finance + 15 more",
     preview: LaunchpadPreview,
   },
   {
     icon: Globe, color: "#22C55E", name: "Global Ops", textOnColor: "#000",
-    title: "Cross-border operational intelligence",
-    desc: "Specialized for international operations — offshore structures, import/export, crypto compliance, tax optimization. Proprietary knowledge across 100+ jurisdictions.",
-    features: ["100+ jurisdictions", "Tax structures", "Crypto frameworks", "Trade routes", "Compliance mapping"],
+    title: "Expand anywhere. Know the rules before you break them.",
+    desc: "Setting up in a new country? Importing from Asia? Need a tax-efficient structure? Get specific guidance for 100+ jurisdictions — not generic advice, but the exact steps, costs, and risks for YOUR situation.",
+    features: ["100+ jurisdictions", "Tax optimization", "Import/export", "Crypto compliance", "Step-by-step guidance"],
     domains: "geopolitics · jurisdictions · crypto opsec · trade routes · compliance + 20 more",
     preview: GlobalOpsPreview,
   },
   {
     icon: TrendingUp, color: "#A855F7", name: "Invest", textOnColor: "#fff",
-    title: "Quantitative deal evaluation",
-    desc: "Evaluate any investment with the formulas hedge funds use — expected value, Kelly criterion, Bayesian updates, base rate analysis. Numbers, not opinions.",
-    features: ["Expected value", "Kelly sizing", "Bayesian updates", "DCF / IRR", "Stress testing"],
+    title: "Should you invest? Get the real numbers.",
+    desc: "Paste a deal, describe an opportunity, or evaluate a startup. Get expected value, risk scores, and an honest verdict — the same math hedge funds use, explained in plain language. Stop guessing. Start calculating.",
+    features: ["Expected value", "Risk scores", "Honest verdict", "Plain language", "Stress testing"],
     domains: "pricing economics · risk intel · decision engines · base rates · founder finance + 10 more",
     preview: InvestPreview,
   },
@@ -327,10 +327,10 @@ export default function LandingPage() {
             letterSpacing: 2, color: "var(--text-primary)", maxWidth: 700,
             lineHeight: 1.1, margin: "32px auto 16px",
           }}>
-            Think through any business decision before you make it
+            Build smarter. Launch faster. Decide with confidence.
           </h1>
           <p style={{ fontSize: isMobile ? 15 : 18, color: "var(--text-secondary)", maxWidth: 520, margin: "0 auto 40px", lineHeight: 1.6 }}>
-            Powered by 100+ proprietary intelligence domains. Multi-agent simulation. Threat detection. War gaming. From idea to business in 90 days.
+            Test any business idea with 15 AI agents before you invest. Detect bad deals in seconds. Go from zero to business in 90 days. The AI that protects your money and your time.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/chat" style={{
@@ -347,7 +347,7 @@ export default function LandingPage() {
         </div>
 
         <div style={{ position: "absolute", bottom: 32, left: 0, right: 0, textAlign: "center", fontSize: 12, color: "var(--text-tertiary)" }}>
-          100+ intelligence domains. 7 analysis tools. 6 AI modes. Zero guesswork.
+          Backed by 100+ specialized intelligence domains
         </div>
       </section>
 
@@ -390,7 +390,7 @@ export default function LandingPage() {
                       </div>
                       <div style={{
                         fontSize: 10, fontFamily: "var(--font-mono)", color: "var(--text-tertiary)",
-                        marginBottom: 24, opacity: 0.5, letterSpacing: 0.5,
+                        marginBottom: 24, opacity: 0.3, letterSpacing: 0.5,
                       }}>
                         Powered by: {sec.domains}
                       </div>
@@ -426,19 +426,19 @@ export default function LandingPage() {
       <section style={{ padding: isMobile ? "48px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
         <FadeSection>
           <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 28, color: "var(--text-primary)", marginBottom: 8, textAlign: "center" }}>
-            Intelligence-grade tools
+            Tools that protect your decisions
           </h2>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", textAlign: "center", marginBottom: 40 }}>
-            Specialized analysis tools that go beyond chat. Type a slash command or click to launch.
+            Each one answers a question that could save you thousands.
           </p>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 16 }}>
             {([
-              { icon: Shield, title: "Threat Radar", desc: "Scan 5 risk axes — market, regulatory, operational, cyber, geopolitical — with real-time web data.", color: "#ef4444", cmd: "/threats" },
-              { icon: Scan, title: "Deal X-Ray", desc: "Forensic analysis of any deal. Detects red flags, hidden incentives, and deception patterns.", color: "#f59e0b", cmd: "/xray" },
-              { icon: Swords, title: "War Game", desc: "5 AI agents simulate competitive moves over 3 rounds. Find your dominant strategy.", color: "#D4AF37", cmd: "/wargame" },
-              { icon: GitBranch, title: "Causal Map", desc: "Map cause-and-effect chains with confidence scores. Identify confounders and verify hypotheses.", color: "#6366F1", cmd: "/causal" },
-              { icon: Map, title: "Scenario Planner", desc: "4 alternative futures in a 2×2 matrix with timelines, early warnings, and hedging strategies.", color: "#A855F7", cmd: "/scenarios" },
-              { icon: Target, title: "Negotiation War Room", desc: "Intel → Strategy → Practice → Debrief. Full lifecycle negotiation preparation.", color: "#F97316", cmd: "/negotiate" },
+              { icon: Shield, title: "Threat Radar", desc: "What could hurt my business right now? Scan market, regulatory, operational, cyber, and geopolitical risks.", color: "#ef4444", cmd: "/threats" },
+              { icon: Scan, title: "Deal X-Ray", desc: "Is this deal legit? Spot red flags, hidden incentives, and things that don't add up.", color: "#f59e0b", cmd: "/xray" },
+              { icon: Swords, title: "War Game", desc: "How will competitors react? 5 AI agents simulate their moves so you can plan yours.", color: "#D4AF37", cmd: "/wargame" },
+              { icon: GitBranch, title: "Causal Map", desc: "Did that actually work? Separate real causes from coincidences with confidence scores.", color: "#6366F1", cmd: "/causal" },
+              { icon: Map, title: "Scenario Planner", desc: "What could happen next year? 4 possible futures with early warnings and backup plans.", color: "#A855F7", cmd: "/scenarios" },
+              { icon: Target, title: "Negotiation War Room", desc: "Walk in prepared. Walk out winning. Full prep from intel to practice rounds.", color: "#F97316", cmd: "/negotiate" },
             ] as const).map((tool, i) => {
               const Icon = tool.icon;
               return (
@@ -472,26 +472,25 @@ export default function LandingPage() {
             fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 28,
             color: "var(--text-primary)", marginBottom: 8,
           }}>
-            The intelligence behind the AI
+            Why Signux knows more than other AIs
           </h2>
           <p style={{
             fontSize: 14, color: "var(--text-secondary)", marginBottom: 32,
             maxWidth: 540, margin: "0 auto 32px",
           }}>
-            Every response is powered by proprietary intelligence across 100+ specialized domains.
-            No other AI has this — because no one else built it.
+            We spent months building specialized knowledge across 100+ business domains. Every answer draws from this intelligence — not just the internet.
           </p>
           <div style={{
             display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(3, 1fr)", gap: 12,
             maxWidth: 720, margin: "0 auto 24px",
           }}>
             {[
-              { name: "Intelligence & Security", count: 12, domains: "Deception detection, threat modeling, crypto opsec, cybersecurity, risk intel...", color: "#DC2626" },
-              { name: "Strategy & Competition", count: 15, domains: "Game theory, mechanism design, competitive intel, scenario planning, coalition dynamics...", color: "#8B5CF6" },
-              { name: "Money & Growth", count: 18, domains: "Founder finance, pricing, unit economics, sales conversion, customer intel, GTM...", color: "#D4AF37" },
-              { name: "Operations & Systems", count: 14, domains: "Operating systems, SOPs, workflow intelligence, delegation, QA, automation...", color: "#14B8A6" },
-              { name: "Global & Compliance", count: 16, domains: "Geopolitics, jurisdictions, tax structures, trade routes, regulatory, contracts...", color: "#22C55E" },
-              { name: "Decision Science", count: 10, domains: "Causal reasoning, decision engines, behavioral economics, forecasting, Bayesian...", color: "#06B6D4" },
+              { name: "Protecting your deals", count: 12, domains: "Spot lies, detect threats, verify claims, stay secure...", color: "#DC2626" },
+              { name: "Outsmarting competitors", count: 15, domains: "Predict moves, find advantages, win markets...", color: "#8B5CF6" },
+              { name: "Growing your revenue", count: 18, domains: "Price right, spend smart, scale profitably...", color: "#D4AF37" },
+              { name: "Running your business", count: 14, domains: "Build systems, delegate, scale without chaos...", color: "#14B8A6" },
+              { name: "Going international", count: 16, domains: "Navigate regulations, optimize taxes, expand safely...", color: "#22C55E" },
+              { name: "Making better decisions", count: 10, domains: "Separate fact from noise, predict outcomes...", color: "#06B6D4" },
             ].map((cat, i) => (
               <div key={i} style={{
                 padding: "16px 14px", borderRadius: 10,
@@ -612,10 +611,10 @@ export default function LandingPage() {
                 <CircleSlash size={12} /> Reality Check
               </div>
               <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 32, color: "var(--text-primary)", marginBottom: 12, lineHeight: 1.2 }}>
-                Honest verdict in 10 seconds
+                Is it still worth it? Ask before you spend.
               </h2>
               <p style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 24 }}>
-                &quot;Is dropshipping still viable?&quot; &quot;Should I buy this course?&quot; Get a data-backed GO, CAUTION, or STOP with real numbers.
+                Thinking about dropshipping? Wondering if that $2,000 course is worth it? Get an honest GO, CAUTION, or STOP in 10 seconds — with real data, not opinions.
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
                 {["Web search", "Real data", "10 seconds", "GO / CAUTION / STOP"].map(f => (
@@ -726,10 +725,10 @@ export default function LandingPage() {
       <section style={{ padding: isMobile ? "48px 16px" : "48px 24px", textAlign: "center" }}>
         <FadeSection>
           <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 28 : 36, color: "var(--text-primary)", marginBottom: 16 }}>
-            Ready to think smarter?
+            Stop guessing. Start knowing.
           </h2>
           <p style={{ fontSize: 16, color: "var(--text-secondary)", marginBottom: 32 }}>
-            Free to start. No credit card required.
+            Free to try. See what your AI advisor finds in 30 seconds.
           </p>
           <Link href="/chat" style={{
             display: "inline-flex", padding: "16px 40px", borderRadius: 50,
