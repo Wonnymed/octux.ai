@@ -34,6 +34,7 @@ import {
 
 import { useIsMobile } from "../lib/useIsMobile";
 import type { FileAttachment } from "../components/ChatInput";
+import { createSupabaseBrowser } from "../lib/supabase-browser";
 
 const SimulationEngine = dynamic(() => import("../components/SimulationEngine"), { ssr: false });
 const ResearchView = dynamic(() => import("../components/ResearchView"), { ssr: false });
@@ -655,6 +656,25 @@ export default function ChatPage() {
     setTimeout(() => send(context), 200);
   };
 
+  /* ═══ Decision Auto-save ═══ */
+  const handleDecisionDetected = useCallback(async (decision: Record<string, string>, confidence: string) => {
+    if (!authUser || !conversationId) return;
+    try {
+      const supabase = createSupabaseBrowser();
+      await supabase.from("decision_journal").insert({
+        user_id: authUser.id,
+        conversation_id: conversationId,
+        decision_summary: decision.summary || "Untitled decision",
+        decision_category: decision.category || "other",
+        ai_recommendation: decision.recommendation || "",
+        ai_confidence: confidence || "MEDIUM",
+        follow_up_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+    } catch {
+      // Non-blocking — silently fail
+    }
+  }, [authUser, conversationId]);
+
   /* ═══ Copy Handler ═══ */
   const handleCopy = (_text: string) => {
     // Clipboard write already handled by MessageBlock; just show toast
@@ -888,6 +908,7 @@ export default function ChatPage() {
                 onStop={() => abortRef.current?.abort()}
                 lang={lang}
                 mode={mode}
+                onDecisionDetected={handleDecisionDetected}
               />
             </motion.div>
           )}

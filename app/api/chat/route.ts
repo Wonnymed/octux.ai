@@ -104,7 +104,15 @@ Rules for follow-ups:
 - Each should reveal a blind spot or critical angle they're missing
 - Use numbers and specifics ('What's the average CAC in this market?' not 'Have you thought about costs?')
 - If the user asked about pricing, don't suggest 'learn more about pricing' — suggest something they DIDN'T think of
-- Write in the same language the user used`;
+- Write in the same language the user used
+
+3. DECISION TRACKING — If the user is making or discussing a significant business decision, add AFTER the [/FOLLOWUPS] block:
+[DECISION]
+summary: One sentence describing the decision being made
+category: pricing|hiring|marketing|product|investment|structure|operations|other
+recommendation: What you recommended (one sentence)
+[/DECISION]
+Only add this when a REAL decision is being discussed, not for general questions.`;
 }
 
 const TOOLS: Anthropic.Tool[] = [
@@ -284,7 +292,15 @@ RESPONSE ENRICHMENT (mandatory on every response):
 2. Another angle they're missing — be specific to their exact situation
 3. A question that challenges their assumptions or reveals a blind spot
 [/FOLLOWUPS]
-Rules: each must be SPECIFIC, reveal blind spots, use numbers/specifics. Write in the user's language.`;
+Rules: each must be SPECIFIC, reveal blind spots, use numbers/specifics. Write in the user's language.
+
+3. DECISION TRACKING — If the user is making or discussing a significant business decision, add AFTER the [/FOLLOWUPS] block:
+[DECISION]
+summary: One sentence describing the decision being made
+category: pricing|hiring|marketing|product|investment|structure|operations|other
+recommendation: What you recommended (one sentence)
+[/DECISION]
+Only add this when a REAL decision is being discussed, not for general questions.`;
 }
 
 function buildInvestSystemPrompt(): string {
@@ -368,7 +384,15 @@ RESPONSE ENRICHMENT (mandatory on every response):
 2. Another angle they're missing — be specific to their exact situation
 3. A question that challenges their assumptions or reveals a blind spot
 [/FOLLOWUPS]
-Rules: each must be SPECIFIC, reveal blind spots, use numbers/specifics. Write in the user's language.`;
+Rules: each must be SPECIFIC, reveal blind spots, use numbers/specifics. Write in the user's language.
+
+3. DECISION TRACKING — If the user is making or discussing a significant business decision, add AFTER the [/FOLLOWUPS] block:
+[DECISION]
+summary: One sentence describing the decision being made
+category: pricing|hiring|marketing|product|investment|structure|operations|other
+recommendation: What you recommended (one sentence)
+[/DECISION]
+Only add this when a REAL decision is being discussed, not for general questions.`;
 }
 
 const RC_PATTERNS = [

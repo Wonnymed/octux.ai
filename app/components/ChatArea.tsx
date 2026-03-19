@@ -26,12 +26,13 @@ type ChatAreaProps = {
   onStop?: () => void;
   lang?: string;
   mode?: string;
+  onDecisionDetected?: (decision: Record<string, string>, confidence: string) => void;
 };
 
 export default function ChatArea({
   messages, loading, searching, input, setInput, onSend,
   profileName, onRetry, onCopy, attachments, onAttachmentsChange, onToast,
-  onSwitchToSimulate, onSwitchToResearch, onSwitchMode, onStop, lang, mode,
+  onSwitchToSimulate, onSwitchToResearch, onSwitchMode, onStop, lang, mode, onDecisionDetected,
 }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
@@ -112,6 +113,7 @@ export default function ChatArea({
               onRetry={i === messages.length - 1 ? onRetry : undefined}
               onCopy={onCopy}
               onSendFollowup={(text) => onSend(text)}
+              onDecisionDetected={onDecisionDetected}
             />
           ))}
           <div ref={bottomRef} />

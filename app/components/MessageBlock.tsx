@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ClipboardCopy, Check, RotateCcw, ThumbsUp, ThumbsDown, Search, FileText, FileCode, X } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
@@ -25,6 +25,19 @@ function isCodeFile(name: string): boolean {
 }
 
 /* ═══ Parsers ═══ */
+function parseDecision(content: string): { cleanContent: string; decision: Record<string, string> | null } {
+  const match = content.match(/\[DECISION\]\n?([\s\S]*?)\[\/DECISION\]/);
+  if (!match) return { cleanContent: content, decision: null };
+  const cleanContent = content.replace(/\[DECISION\][\s\S]*?\[\/DECISION\]/, "").trim();
+  const lines = match[1].split("\n").filter(l => l.trim());
+  const decision: Record<string, string> = {};
+  lines.forEach(line => {
+    const [key, ...rest] = line.split(":");
+    if (key && rest.length) decision[key.trim()] = rest.join(":").trim();
+  });
+  return { cleanContent, decision: Object.keys(decision).length > 0 ? decision : null };
+}
+
 function parseConfidence(content: string): { cleanContent: string; level: string; reason: string } {
   const match = content.match(/\[CONFIDENCE:(HIGH|MEDIUM|LOW)\|([^\]]+)\]/);
   if (!match) return { cleanContent: content, level: "", reason: "" };
@@ -53,9 +66,10 @@ type MessageBlockProps = {
   onRetry?: () => void;
   onCopy: (text: string) => void;
   onSendFollowup?: (text: string) => void;
+  onDecisionDetected?: (decision: Record<string, string>, confidence: string) => void;
 };
 
-export default function MessageBlock({ message, index, isLast, loading, searching, userInitials, onRetry, onCopy, onSendFollowup }: MessageBlockProps) {
+export default function MessageBlock({ message, index, isLast, loading, searching, userInitials, onRetry, onCopy, onSendFollowup, onDecisionDetected }: MessageBlockProps) {
   const [hovered, setHovered] = useState(false);
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -66,10 +80,20 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
   const isStreaming = loading && isLast;
   const isEmpty = !message.content;
 
-  // Parse confidence and followups from AI messages
-  const { cleanContent: c1, level: confidenceLevel, reason: confidenceReason } = !isUser ? parseConfidence(message.content) : { cleanContent: message.content, level: "", reason: "" };
+  // Parse decision, confidence and followups from AI messages (chain: decision → confidence → followups)
+  const { cleanContent: c0, decision } = !isUser ? parseDecision(message.content) : { cleanContent: message.content, decision: null };
+  const { cleanContent: c1, level: confidenceLevel, reason: confidenceReason } = !isUser ? parseConfidence(c0) : { cleanContent: c0, level: "", reason: "" };
   const { cleanContent: parsedContent, followups } = !isUser ? parseFollowups(c1) : { cleanContent: c1, followups: [] as string[] };
   const isLastAI = isLast && !isUser;
+
+  // Notify parent about detected decisions (only once when message completes)
+  const decisionNotifiedRef = useRef(false);
+  useEffect(() => {
+    if (decision && !isStreaming && !decisionNotifiedRef.current) {
+      decisionNotifiedRef.current = true;
+      onDecisionDetected?.(decision, confidenceLevel);
+    }
+  }, [decision, isStreaming]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pad = isMobile ? "8px 12px" : "8px 24px";
   const userMaxWidth = isMobile ? "85%" : "70%";
@@ -260,6 +284,24 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                                   confidenceLevel === "MEDIUM" ? "#f59e0b" : "#ef4444",
                     }} />
                     {confidenceLevel.toLowerCase()} confidence
+                  </div>
+                )}
+                {/* Decision tracked badge */}
+                {!isStreaming && decision && (
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    marginTop: 8,
+                    padding: "6px 10px",
+                    borderRadius: 8,
+                    background: "rgba(168,85,247,0.06)",
+                    border: "1px solid rgba(168,85,247,0.12)",
+                    fontSize: 11,
+                    color: "#A855F7",
+                  }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    Decision tracked — we&apos;ll follow up in 30 days
                   </div>
                 )}
               </>
