@@ -451,6 +451,7 @@ export default function ChatPage() {
     if (msg.toLowerCase() === "/wargame") { setInput(""); setActiveTool("wargame"); setMode("chat"); return; }
     if (msg.toLowerCase() === "/causal") { setInput(""); setActiveTool("causal-map"); setMode("chat"); return; }
     if (msg.toLowerCase() === "/scenarios") { setInput(""); setActiveTool("scenarios"); setMode("chat"); return; }
+    if (msg.toLowerCase() === "/autopsy") { setInput(""); setMode("intel"); return; }
 
     // Build the API content (string or array)
     let apiContent: string | any[];
@@ -1088,6 +1089,7 @@ export default function ChatPage() {
                 lang={lang}
                 mode={mode}
                 onDecisionDetected={handleDecisionDetected}
+                tier={tier}
               />
               </>
               )}

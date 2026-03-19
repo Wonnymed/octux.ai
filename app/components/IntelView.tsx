@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { Shield, Search, Crosshair, Swords, GitBranch, Users, Map, ChevronLeft } from "lucide-react";
+import { Shield, Search, Crosshair, Swords, GitBranch, Users, Map, ChevronLeft, Microscope } from "lucide-react";
 
 const ThreatRadar = dynamic(() => import("./ThreatRadar"), { ssr: false });
 const DealXRay = dynamic(() => import("./DealXRay"), { ssr: false });
@@ -10,8 +10,9 @@ const CausalMap = dynamic(() => import("./CausalMap"), { ssr: false });
 const NegotiationSim = dynamic(() => import("./NegotiationSim"), { ssr: false });
 const ScenarioPlanner = dynamic(() => import("./ScenarioPlanner"), { ssr: false });
 const ResearchView = dynamic(() => import("./ResearchView"), { ssr: false });
+const DecisionAutopsy = dynamic(() => import("./DecisionAutopsy"), { ssr: false });
 
-type IntelTool = "menu" | "threat-radar" | "deal-xray" | "war-game" | "causal-map" | "negotiation" | "scenarios" | "deep-research";
+type IntelTool = "menu" | "threat-radar" | "deal-xray" | "war-game" | "causal-map" | "negotiation" | "scenarios" | "deep-research" | "autopsy";
 
 type IntelViewProps = {
   lang: string;
@@ -69,6 +70,14 @@ const TOOLS = [
     icon: Map,
     color: "#22C55E",
     command: "/scenarios",
+  },
+  {
+    id: "autopsy" as IntelTool,
+    name: "Decision Autopsy",
+    description: "Analyze a past decision — what went right, wrong, and why",
+    icon: Microscope,
+    color: "#A855F7",
+    command: "/autopsy",
   },
 ];
 
@@ -153,6 +162,15 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
         <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflowY: "auto" }}>
           {backButton}
           <ScenarioPlanner lang={lang} />
+        </div>
+      );
+    }
+
+    if (activeTool === "autopsy") {
+      return (
+        <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflowY: "auto" }}>
+          {backButton}
+          <DecisionAutopsy lang={lang} />
         </div>
       );
     }

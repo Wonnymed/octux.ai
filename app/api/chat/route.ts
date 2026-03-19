@@ -136,7 +136,11 @@ Include 2-4 blind spots. Each must:
 - Be a specific, actionable question (not generic advice)
 - Include why it matters in 1 sentence
 - Be written in the same language the user used
-Only include blind spots on substantive responses (not greetings or simple clarifications).`;
+Only include blind spots on substantive responses (not greetings or simple clarifications).
+
+6. INTELLIGENCE DEPTH — After blind spots, add:
+<!-- signux_depth: X -->
+Where X is a percentage (0-100) representing how much of the available intelligence was relevant to this response. A simple greeting = 5%. A focused single-domain question = 20-40%. A complex multi-domain analysis = 60-90%. Be honest.`;
 }
 
 const TOOLS: Anthropic.Tool[] = [
@@ -339,7 +343,11 @@ Include 2-4 blind spots. Each must:
 - Be a specific, actionable question (not generic advice)
 - Include why it matters in 1 sentence
 - Be written in the same language the user used
-Only include blind spots on substantive responses (not greetings or simple clarifications).`;
+Only include blind spots on substantive responses (not greetings or simple clarifications).
+
+6. INTELLIGENCE DEPTH — After blind spots, add:
+<!-- signux_depth: X -->
+Where X is a percentage (0-100) representing how much of the available intelligence was relevant to this response. A simple greeting = 5%. A focused single-domain question = 20-40%. A complex multi-domain analysis = 60-90%. Be honest.`;
 }
 
 function buildInvestSystemPrompt(): string {
@@ -446,7 +454,11 @@ Include 2-4 blind spots. Each must:
 - Be a specific, actionable question (not generic advice)
 - Include why it matters in 1 sentence
 - Be written in the same language the user used
-Only include blind spots on substantive responses (not greetings or simple clarifications).`;
+Only include blind spots on substantive responses (not greetings or simple clarifications).
+
+6. INTELLIGENCE DEPTH — After blind spots, add:
+<!-- signux_depth: X -->
+Where X is a percentage (0-100) representing how much of the available intelligence was relevant to this response. A simple greeting = 5%. A focused single-domain question = 20-40%. A complex multi-domain analysis = 60-90%. Be honest.`;
 }
 
 const RC_PATTERNS = [

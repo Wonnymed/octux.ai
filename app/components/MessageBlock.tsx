@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { ClipboardCopy, Check, RotateCcw, ThumbsUp, ThumbsDown, Search, FileText, FileCode, X } from "lucide-react";
+import { ClipboardCopy, Check, RotateCcw, ThumbsUp, ThumbsDown, Search, FileText, FileCode, X, Eye, Swords } from "lucide-react";
+import { signuxFetch } from "../lib/api-client";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
 import type { Attachment, Message } from "../lib/types";
@@ -83,6 +84,14 @@ function parseBlindspots(content: string): { cleanContent: string; blindspots: B
   }
 }
 
+function parseDepth(content: string): { cleanContent: string; depth: number } {
+  const match = content.match(/<!--\s*signux_depth:\s*(\d+)\s*-->/);
+  const cleanContent = content.replace(/<!--\s*signux_depth:\s*\d+\s*-->/g, "").trim();
+  return { cleanContent, depth: match ? parseInt(match[1], 10) : 0 };
+}
+
+type SecondOpinion = { domain: string; color: string; analysis: string; confidence: string };
+
 type MessageBlockProps = {
   message: Message;
   index: number;
@@ -94,14 +103,21 @@ type MessageBlockProps = {
   onCopy: (text: string) => void;
   onSendFollowup?: (text: string) => void;
   onDecisionDetected?: (decision: Record<string, string>, confidence: string) => void;
+  tier?: string;
+  previousUserMessage?: string;
 };
 
-export default function MessageBlock({ message, index, isLast, loading, searching, userInitials, onRetry, onCopy, onSendFollowup, onDecisionDetected }: MessageBlockProps) {
+export default function MessageBlock({ message, index, isLast, loading, searching, userInitials, onRetry, onCopy, onSendFollowup, onDecisionDetected, tier, previousUserMessage }: MessageBlockProps) {
   const [hovered, setHovered] = useState(false);
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [domainsExpanded, setDomainsExpanded] = useState(false);
+  const [secondOpinion, setSecondOpinion] = useState<SecondOpinion[] | null>(null);
+  const [loadingOpinion, setLoadingOpinion] = useState(false);
+  const [challenge, setChallenge] = useState<string | null>(null);
+  const [loadingChallenge, setLoadingChallenge] = useState(false);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   const isUser = message.role === "user";
@@ -113,7 +129,8 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
   const { cleanContent: c1, level: confidenceLevel, reason: confidenceReason } = !isUser ? parseConfidence(c0) : { cleanContent: c0, level: "", reason: "" };
   const { cleanContent: c2, followups } = !isUser ? parseFollowups(c1) : { cleanContent: c1, followups: [] as string[] };
   const { cleanContent: c3, domains, domainCount } = !isUser ? parseDomains(c2) : { cleanContent: c2, domains: [] as string[], domainCount: 0 };
-  const { cleanContent: parsedContent, blindspots } = !isUser ? parseBlindspots(c3) : { cleanContent: c3, blindspots: [] as BlindSpot[] };
+  const { cleanContent: c4, blindspots } = !isUser ? parseBlindspots(c3) : { cleanContent: c3, blindspots: [] as BlindSpot[] };
+  const { cleanContent: parsedContent, depth } = !isUser ? parseDepth(c4) : { cleanContent: c4, depth: 0 };
   const isLastAI = isLast && !isUser;
 
   // Notify parent about detected decisions (only once when message completes)
@@ -134,6 +151,42 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
     if (ok) onCopy(message.content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const isMaxTier = tier === "max" || tier === "founding";
+
+  const fetchSecondOpinion = async () => {
+    if (!isMaxTier) { setShowUpgradePrompt("second-opinion"); return; }
+    setLoadingOpinion(true);
+    try {
+      const res = await signuxFetch("/api/second-opinion", {
+        method: "POST",
+        body: JSON.stringify({
+          originalQuestion: previousUserMessage || "",
+          originalAnswer: message.content?.slice(0, 500) || "",
+        }),
+      });
+      const data = await res.json();
+      if (data.opinions) setSecondOpinion(data.opinions);
+    } catch { /* ignore */ }
+    setLoadingOpinion(false);
+  };
+
+  const fetchChallenge = async () => {
+    if (!isMaxTier) { setShowUpgradePrompt("challenge"); return; }
+    setLoadingChallenge(true);
+    try {
+      const res = await signuxFetch("/api/challenge", {
+        method: "POST",
+        body: JSON.stringify({
+          originalQuestion: previousUserMessage || "",
+          originalAnswer: message.content?.slice(0, 1000) || "",
+        }),
+      });
+      const data = await res.json();
+      if (data.challenge) setChallenge(data.challenge);
+    } catch { /* ignore */ }
+    setLoadingChallenge(false);
   };
 
   /* ═══ USER MESSAGE ═══ */
@@ -377,6 +430,42 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                     )}
                   </div>
                 )}
+                {/* Intelligence depth bar */}
+                {!isStreaming && depth > 10 && (
+                  <div style={{ marginTop: 6 }}>
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      fontSize: 10, color: "var(--text-tertiary)",
+                    }}>
+                      <span style={{ fontFamily: "var(--font-mono)" }}>Intelligence depth:</span>
+                      <div style={{
+                        flex: 1, maxWidth: 120, height: 4, borderRadius: 2,
+                        background: "var(--border-secondary)",
+                      }}>
+                        <div style={{
+                          height: "100%", borderRadius: 2,
+                          width: `${Math.min(depth, 100)}%`,
+                          background: depth >= 70 ? "#22c55e" : depth >= 40 ? "#f59e0b" : "var(--text-tertiary)",
+                          transition: "width 500ms ease",
+                        }} />
+                      </div>
+                      <span style={{
+                        fontFamily: "var(--font-mono)", fontWeight: 600,
+                        color: depth >= 70 ? "#22c55e" : depth >= 40 ? "#f59e0b" : "var(--text-tertiary)",
+                      }}>
+                        {depth}%
+                      </span>
+                    </div>
+                    {depth < 70 && (
+                      <div style={{
+                        fontSize: 10, color: "var(--text-tertiary)", marginTop: 2,
+                        fontStyle: "italic", opacity: 0.6,
+                      }}>
+                        Add more context to activate deeper intelligence
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -474,6 +563,148 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                   activeColor="var(--error)"
                 />
               </Tooltip>
+              {parsedContent.length > 100 && (
+                <>
+                  <button
+                    onClick={fetchSecondOpinion}
+                    disabled={loadingOpinion}
+                    title="See this from 3 different intelligence perspectives"
+                    style={{
+                      display: "flex", alignItems: "center", gap: 4,
+                      padding: "4px 10px", borderRadius: 6,
+                      border: "1px solid var(--border-secondary)",
+                      background: loadingOpinion ? "var(--bg-tertiary)" : "transparent",
+                      cursor: loadingOpinion ? "wait" : "pointer",
+                      fontSize: 11, color: "var(--text-tertiary)",
+                      transition: "all 200ms",
+                    }}
+                  >
+                    <Eye size={12} />
+                    {loadingOpinion ? "Analyzing..." : "Second opinion"}
+                  </button>
+                  <button
+                    onClick={fetchChallenge}
+                    disabled={loadingChallenge}
+                    title="Find weaknesses in this analysis"
+                    style={{
+                      display: "flex", alignItems: "center", gap: 4,
+                      padding: "4px 10px", borderRadius: 6,
+                      border: "1px solid var(--border-secondary)",
+                      background: loadingChallenge ? "var(--bg-tertiary)" : "transparent",
+                      cursor: loadingChallenge ? "wait" : "pointer",
+                      fontSize: 11, color: "var(--text-tertiary)",
+                      transition: "all 200ms",
+                    }}
+                  >
+                    <Swords size={12} />
+                    {loadingChallenge ? "Challenging..." : "Challenge this"}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Upgrade prompt */}
+          {showUpgradePrompt && (
+            <div style={{
+              padding: "10px 14px", borderRadius: 8, marginTop: 8,
+              background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.2)",
+              fontSize: 12, display: "flex", alignItems: "center", gap: 8,
+            }}>
+              <span style={{ color: "var(--text-secondary)" }}>
+                {showUpgradePrompt === "second-opinion"
+                  ? "Second Opinion requires Max plan"
+                  : "Devil's Advocate requires Max plan"}
+              </span>
+              <a href="/pricing" style={{
+                padding: "4px 12px", borderRadius: 50, background: "var(--accent)",
+                color: "#000", fontSize: 11, fontWeight: 600, textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}>
+                Upgrade
+              </a>
+              <button onClick={() => setShowUpgradePrompt(null)} style={{
+                background: "none", border: "none", cursor: "pointer",
+                color: "var(--text-tertiary)", fontSize: 12, padding: 0,
+              }}>✕</button>
+            </div>
+          )}
+
+          {/* Second Opinion panel */}
+          {secondOpinion && (
+            <div style={{
+              marginTop: 12, border: "1px solid var(--border-secondary)",
+              borderRadius: 12, overflow: "hidden",
+            }}>
+              <div style={{
+                padding: "8px 14px", background: "var(--bg-tertiary)",
+                fontSize: 11, fontWeight: 600, color: "var(--text-secondary)",
+                borderBottom: "1px solid var(--border-secondary)",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+              }}>
+                <span>3 intelligence perspectives</span>
+                <button onClick={() => setSecondOpinion(null)} style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "var(--text-tertiary)", fontSize: 14, padding: 0,
+                }}>✕</button>
+              </div>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
+                minHeight: 0,
+              }}>
+                {secondOpinion.map((op, i) => (
+                  <div key={i} style={{
+                    padding: "12px 14px",
+                    borderRight: !isMobile && i < 2 ? "1px solid var(--border-secondary)" : "none",
+                    borderBottom: isMobile && i < 2 ? "1px solid var(--border-secondary)" : "none",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: op.color }} />
+                      <span style={{ fontSize: 11, fontWeight: 600, color: op.color }}>{op.domain}</span>
+                    </div>
+                    <div style={{
+                      fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5,
+                      maxHeight: 180, overflowY: "auto",
+                    }}>
+                      {op.analysis}
+                    </div>
+                    <div style={{
+                      marginTop: 8, fontSize: 10, fontFamily: "var(--font-mono)",
+                      color: op.confidence === "HIGH" ? "#22c55e" : op.confidence === "LOW" ? "#ef4444" : "#f59e0b",
+                    }}>
+                      Confidence: {op.confidence}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Challenge panel */}
+          {challenge && (
+            <div style={{
+              marginTop: 12, padding: "14px 16px", borderRadius: 12,
+              background: "rgba(239,68,68,0.04)",
+              border: "1px solid rgba(239,68,68,0.15)",
+            }}>
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10,
+              }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#EF4444", display: "flex", alignItems: "center", gap: 6 }}>
+                  <Swords size={14} /> Devil&apos;s Advocate
+                </span>
+                <button onClick={() => setChallenge(null)} style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "var(--text-tertiary)", fontSize: 14, padding: 0,
+                }}>✕</button>
+              </div>
+              <div style={{
+                fontSize: 13, color: "var(--text-primary)", lineHeight: 1.6,
+                whiteSpace: "pre-wrap",
+              }}>
+                {challenge}
+              </div>
             </div>
           )}
 

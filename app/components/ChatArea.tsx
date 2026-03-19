@@ -32,12 +32,13 @@ type ChatAreaProps = {
   lang?: string;
   mode?: string;
   onDecisionDetected?: (decision: Record<string, string>, confidence: string) => void;
+  tier?: string;
 };
 
 export default function ChatArea({
   messages, loading, searching, input, setInput, onSend,
   profileName, onRetry, onCopy, attachments, onAttachmentsChange, onToast,
-  onSwitchToSimulate, onSwitchToResearch, onSwitchMode, onStop, onOpenThreatRadar, onOpenDealXRay, onOpenWarGame, onOpenCausalMap, onOpenScenarios, lang, mode, onDecisionDetected,
+  onSwitchToSimulate, onSwitchToResearch, onSwitchMode, onStop, onOpenThreatRadar, onOpenDealXRay, onOpenWarGame, onOpenCausalMap, onOpenScenarios, lang, mode, onDecisionDetected, tier,
 }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
@@ -124,6 +125,8 @@ export default function ChatArea({
               onCopy={onCopy}
               onSendFollowup={(text) => onSend(text)}
               onDecisionDetected={onDecisionDetected}
+              tier={tier}
+              previousUserMessage={i > 0 && messages[i - 1]?.role === "user" ? messages[i - 1].content : undefined}
             />
           ))}
           <div ref={bottomRef} />
