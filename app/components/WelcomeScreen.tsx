@@ -1,5 +1,5 @@
 "use client";
-import { Zap, Search, Rocket, Globe, TrendingUp } from "lucide-react";
+import { Zap, Search, Rocket, Globe, TrendingUp, Shield, Scan } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
 import ChatInput, { type FileAttachment } from "./ChatInput";
@@ -18,6 +18,8 @@ type WelcomeScreenProps = {
   onSwitchToSimulate?: () => void;
   onSwitchToResearch?: () => void;
   onSwitchMode?: (mode: Mode) => void;
+  onOpenThreatRadar?: () => void;
+  onOpenDealXRay?: () => void;
   lang?: string;
 };
 
@@ -43,7 +45,7 @@ const MODE_BANNERS: {
 
 export default function WelcomeScreen({
   input, setInput, onSend, loading, attachments, onAttachmentsChange,
-  onToast, onSwitchMode, lang,
+  onToast, onSwitchMode, onOpenThreatRadar, onOpenDealXRay, lang,
 }: WelcomeScreenProps) {
   const isMobile = useIsMobile();
   const particleCount = isMobile ? 3 : 5;
@@ -149,6 +151,34 @@ export default function WelcomeScreen({
               </button>
             );
           })}
+        </div>
+
+        {/* Intelligence tools */}
+        <div style={{ display: "flex", gap: 8, marginTop: 12, width: "100%" }}>
+          <button onClick={() => onOpenThreatRadar?.()} style={{
+            flex: 1, display: "flex", alignItems: "center", gap: 8,
+            padding: "10px 14px", borderRadius: 10,
+            border: "1px solid rgba(239,68,68,0.12)", background: "rgba(239,68,68,0.03)",
+            cursor: "pointer", fontSize: 12, color: "var(--text-secondary)", transition: "all 200ms",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(239,68,68,0.12)"; }}
+          >
+            <Shield size={14} style={{ color: "#ef4444", flexShrink: 0 }} />
+            Threat Radar
+          </button>
+          <button onClick={() => onOpenDealXRay?.()} style={{
+            flex: 1, display: "flex", alignItems: "center", gap: 8,
+            padding: "10px 14px", borderRadius: 10,
+            border: "1px solid rgba(245,158,11,0.12)", background: "rgba(245,158,11,0.03)",
+            cursor: "pointer", fontSize: 12, color: "var(--text-secondary)", transition: "all 200ms",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(245,158,11,0.3)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(245,158,11,0.12)"; }}
+          >
+            <Scan size={14} style={{ color: "#f59e0b", flexShrink: 0 }} />
+            Deal X-Ray
+          </button>
         </div>
 
         {/* Disclaimer */}

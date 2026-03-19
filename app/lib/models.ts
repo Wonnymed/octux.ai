@@ -18,6 +18,8 @@ export type TierModels = {
   invest: string;
   globalops: string;
   gods_eye: string;
+  threat_radar: string;
+  deal_xray: string;
 };
 
 export function getModelsForTier(tier: string): TierModels {
@@ -37,6 +39,8 @@ export function getModelsForTier(tier: string): TierModels {
         invest: MODELS.fast,
         globalops: MODELS.fast,
         gods_eye: MODELS.fast,
+        threat_radar: MODELS.fast,
+        deal_xray: MODELS.fast,
       };
     case "pro":
       return {
@@ -53,6 +57,8 @@ export function getModelsForTier(tier: string): TierModels {
         invest: MODELS.balanced,
         globalops: MODELS.balanced,
         gods_eye: MODELS.balanced,
+        threat_radar: MODELS.balanced,
+        deal_xray: MODELS.balanced,
       };
     case "max":
     case "founding":
@@ -70,6 +76,8 @@ export function getModelsForTier(tier: string): TierModels {
         invest: MODELS.powerful,
         globalops: MODELS.balanced,
         gods_eye: MODELS.powerful,
+        threat_radar: MODELS.balanced,
+        deal_xray: MODELS.powerful,
       };
     default:
       return getModelsForTier("free");

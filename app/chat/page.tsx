@@ -46,6 +46,8 @@ const ResearchView = dynamic(() => import("../components/ResearchView"), { ssr: 
 const LaunchpadView = dynamic(() => import("../components/LaunchpadView"), { ssr: false });
 const GlobalOpsView = dynamic(() => import("../components/GlobalOpsView"), { ssr: false });
 const InvestView = dynamic(() => import("../components/InvestView"), { ssr: false });
+const ThreatRadar = dynamic(() => import("../components/ThreatRadar"), { ssr: false });
+const DealXRay = dynamic(() => import("../components/DealXRay"), { ssr: false });
 const SettingsModal = dynamic(() => import("../components/SettingsModal"), { ssr: false });
 const Onboarding = dynamic(() => import("../components/Onboarding"), { ssr: false });
 
@@ -176,6 +178,7 @@ export default function ChatPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [searching, setSearching] = useState(false);
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
+  const [activeTool, setActiveTool] = useState<"threat-radar" | "deal-xray" | null>(null);
 
   /* Simulation */
   const [simulating, setSimulating] = useState(false);
@@ -399,6 +402,7 @@ export default function ChatPage() {
       // ⌘⇧S — Cycle modes
       } else if (meta && e.shiftKey && e.key.toLowerCase() === "s") {
         e.preventDefault();
+        setActiveTool(null);
         setMode(prev => {
           const cycle: Mode[] = ["chat", "simulate", "research", "launchpad", "globalops", "invest"];
           const idx = cycle.indexOf(prev);
@@ -437,6 +441,10 @@ export default function ChatPage() {
     const msg = text || input.trim();
     const currentAttachments = attachments;
     if ((!msg && currentAttachments.length === 0) || loading) return;
+
+    // Handle slash commands for tools
+    if (msg.toLowerCase() === "/threats") { setInput(""); setActiveTool("threat-radar"); setMode("chat"); return; }
+    if (msg.toLowerCase() === "/xray") { setInput(""); setActiveTool("deal-xray"); setMode("chat"); return; }
 
     // Build the API content (string or array)
     let apiContent: string | any[];
@@ -983,6 +991,26 @@ export default function ChatPage() {
                   onComplete={(m) => { localStorage.setItem("signux_onboarded", "true"); setShowOnboarding(false); setMode(m); }}
                   onSkip={() => { localStorage.setItem("signux_onboarded", "true"); setShowOnboarding(false); }}
                 />
+              ) : activeTool === "threat-radar" ? (
+              <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 16px 0" }}>
+                  <button onClick={() => setActiveTool(null)} style={{
+                    fontSize: 11, color: "var(--text-tertiary)", background: "transparent",
+                    border: "1px solid var(--border-primary)", borderRadius: 6, padding: "4px 10px", cursor: "pointer",
+                  }}>← Back to chat</button>
+                </div>
+                <ThreatRadar lang={lang} />
+              </div>
+              ) : activeTool === "deal-xray" ? (
+              <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 16px 0" }}>
+                  <button onClick={() => setActiveTool(null)} style={{
+                    fontSize: 11, color: "var(--text-tertiary)", background: "transparent",
+                    border: "1px solid var(--border-primary)", borderRadius: 6, padding: "4px 10px", cursor: "pointer",
+                  }}>← Back to chat</button>
+                </div>
+                <DealXRay lang={lang} />
+              </div>
               ) : (
               <>
               {tier === "free" && isLoggedIn && limits.chat_daily < Infinity && (
@@ -1015,6 +1043,8 @@ export default function ChatPage() {
                 onSwitchToSimulate={() => setMode("simulate")}
                 onSwitchToResearch={() => setMode("research")}
                 onSwitchMode={setMode}
+                onOpenThreatRadar={() => setActiveTool("threat-radar")}
+                onOpenDealXRay={() => setActiveTool("deal-xray")}
                 onStop={() => abortRef.current?.abort()}
                 lang={lang}
                 mode={mode}
