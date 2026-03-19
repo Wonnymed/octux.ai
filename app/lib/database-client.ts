@@ -22,10 +22,12 @@ export async function getConversations(userId: string, limit = 50): Promise<Conv
   return (data ?? []) as Conversation[];
 }
 
-export async function createConversation(userId: string): Promise<Conversation | null> {
+export async function createConversation(userId: string, projectId?: string): Promise<Conversation | null> {
+  const row: Record<string, any> = { user_id: userId };
+  if (projectId) row.project_id = projectId;
   const { data, error } = await supabase()
     .from("conversations")
-    .insert({ user_id: userId })
+    .insert(row)
     .select()
     .single();
   if (error) return null;

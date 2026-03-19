@@ -24,6 +24,7 @@ export type Conversation = {
   user_id: string;
   mode: string;
   title: string | null;
+  project_id?: string | null;
   created_at: string;
   updated_at: string;
 };

@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
-import { SquarePen, MessageSquare, Zap, Search, Rocket, Globe, TrendingUp, Settings, LogIn, LogOut, Trash2, Flame } from "lucide-react";
+import { SquarePen, MessageSquare, Zap, Search, Rocket, Globe, TrendingUp, Settings, LogIn, LogOut, Trash2, Flame, FolderOpen, Plus, ChevronDown, X } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
 import { t } from "../lib/i18n";
 import type { Mode } from "../lib/types";
@@ -8,6 +8,7 @@ import type { AuthUser } from "../lib/auth";
 import type { Conversation } from "../lib/database-client";
 import { createSupabaseBrowser } from "../lib/supabase-browser";
 import { updateStreak } from "../lib/streak";
+import type { Project } from "../lib/useProjects";
 
 type SidebarProps = {
   mode: Mode;
@@ -28,6 +29,11 @@ type SidebarProps = {
   activeConversationId?: string | null;
   onLoadConversation?: (id: string) => void;
   onDeleteConversation?: (id: string) => void;
+  /* Projects */
+  projects?: Project[];
+  activeProject?: Project | null;
+  onSelectProject?: (id: string | null) => void;
+  onCreateProject?: (name: string) => void;
 };
 
 const MODES: { key: Mode; icon: any; label: string; color?: string; tier?: "max" }[] = [
@@ -153,6 +159,7 @@ export default function Sidebar({
   mode, setMode, profileName, onNewConversation, onOpenSettings,
   open, onClose, onOpen, isLoggedIn, onSignOut, isMobile, authUser,
   conversations = [], loadingHistory = false, activeConversationId, onLoadConversation, onDeleteConversation,
+  projects = [], activeProject, onSelectProject, onCreateProject,
 }: SidebarProps) {
   const sidebarRef = useRef<HTMLElement>(null);
   const userInitials = profileName ? profileName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : (authUser?.initials || "?");
@@ -161,6 +168,25 @@ export default function Sidebar({
   const handleMode = (m: Mode) => { setMode(m); if (isMobile) onClose(); };
   const handleNew = () => { onNewConversation(); if (isMobile) onClose(); };
   const handleSettings = () => { onOpenSettings(); if (isMobile) onClose(); };
+
+  /* ═══ Project Selector State ═══ */
+  const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
+  const [newProjectName, setNewProjectName] = useState("");
+  const [showNewProjectInput, setShowNewProjectInput] = useState(false);
+  const projectDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!projectDropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (projectDropdownRef.current && !projectDropdownRef.current.contains(e.target as Node)) {
+        setProjectDropdownOpen(false);
+        setShowNewProjectInput(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [projectDropdownOpen]);
 
   /* ═══ Decision Follow-up Badge ═══ */
   const [pendingDecisions, setPendingDecisions] = useState(0);
@@ -282,6 +308,132 @@ export default function Sidebar({
           </button>
         </div>
 
+        {/* Project selector */}
+        {isLoggedIn && (
+          <div style={{ padding: "0 8px 8px", position: "relative" }} ref={projectDropdownRef}>
+            <button
+              onClick={() => setProjectDropdownOpen(!projectDropdownOpen)}
+              style={{
+                display: "flex", alignItems: "center", gap: 8, width: "100%",
+                padding: "8px 12px", border: "1px solid var(--border-secondary)",
+                borderRadius: "var(--radius-xs)", background: "transparent",
+                cursor: "pointer", color: "var(--text-secondary)", fontSize: 12,
+                transition: "all 150ms",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)"; }}
+              onMouseLeave={e => { if (!projectDropdownOpen) e.currentTarget.style.borderColor = "var(--border-secondary)"; }}
+            >
+              <FolderOpen size={14} style={{ color: activeProject?.color || "var(--text-tertiary)", flexShrink: 0 }} />
+              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left" }}>
+                {activeProject ? activeProject.name : "All conversations"}
+              </span>
+              <ChevronDown size={12} style={{ flexShrink: 0, opacity: 0.5, transform: projectDropdownOpen ? "rotate(180deg)" : "none", transition: "transform 150ms" }} />
+            </button>
+
+            {/* Dropdown */}
+            {projectDropdownOpen && (
+              <div style={{
+                position: "absolute", top: "100%", left: 8, right: 8,
+                background: "var(--bg-secondary, #141414)", border: "1px solid var(--border-secondary)",
+                borderRadius: "var(--radius-sm)", zIndex: 100,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                maxHeight: 280, overflowY: "auto",
+              }}>
+                {/* All conversations option */}
+                <button
+                  onClick={() => { onSelectProject?.(null); setProjectDropdownOpen(false); }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8, width: "100%",
+                    padding: "8px 12px", border: "none", background: !activeProject ? "var(--bg-hover)" : "transparent",
+                    cursor: "pointer", color: "var(--text-secondary)", fontSize: 12, textAlign: "left",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
+                  onMouseLeave={e => { if (activeProject) e.currentTarget.style.background = "transparent"; }}
+                >
+                  <MessageSquare size={13} style={{ opacity: 0.5 }} />
+                  <span>All conversations</span>
+                </button>
+
+                {projects.length > 0 && (
+                  <div style={{ height: 1, background: "var(--border-secondary)", margin: "2px 0" }} />
+                )}
+
+                {/* Project list */}
+                {projects.filter(p => !p.archived).map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => { onSelectProject?.(p.id); setProjectDropdownOpen(false); }}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8, width: "100%",
+                      padding: "8px 12px", border: "none",
+                      background: p.id === activeProject?.id ? "var(--bg-hover)" : "transparent",
+                      cursor: "pointer", color: "var(--text-secondary)", fontSize: 12, textAlign: "left",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
+                    onMouseLeave={e => { if (p.id !== activeProject?.id) e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || "#D4AF37", flexShrink: 0 }} />
+                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
+                    {p.conversation_count > 0 && (
+                      <span style={{ fontSize: 10, opacity: 0.4 }}>{p.conversation_count}</span>
+                    )}
+                  </button>
+                ))}
+
+                <div style={{ height: 1, background: "var(--border-secondary)", margin: "2px 0" }} />
+
+                {/* New project */}
+                {showNewProjectInput ? (
+                  <div style={{ padding: "8px 12px", display: "flex", gap: 6 }}>
+                    <input
+                      autoFocus
+                      value={newProjectName}
+                      onChange={e => setNewProjectName(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === "Enter" && newProjectName.trim()) {
+                          onCreateProject?.(newProjectName.trim());
+                          setNewProjectName("");
+                          setShowNewProjectInput(false);
+                          setProjectDropdownOpen(false);
+                        } else if (e.key === "Escape") {
+                          setShowNewProjectInput(false);
+                          setNewProjectName("");
+                        }
+                      }}
+                      placeholder="Project name..."
+                      style={{
+                        flex: 1, padding: "4px 8px", fontSize: 12,
+                        background: "var(--bg-primary)", border: "1px solid var(--border-secondary)",
+                        borderRadius: 4, color: "var(--text-primary)", outline: "none",
+                      }}
+                    />
+                    <button
+                      onClick={() => { setShowNewProjectInput(false); setNewProjectName(""); }}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-tertiary)", padding: 2 }}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowNewProjectInput(true)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8, width: "100%",
+                      padding: "8px 12px", border: "none", background: "transparent",
+                      cursor: "pointer", color: "var(--accent)", fontSize: 12, textAlign: "left",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                  >
+                    <Plus size={13} />
+                    <span>New project</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         <div style={{ height: 1, background: "var(--border-secondary)", margin: "0 8px 8px" }} />
 
         {/* Mode buttons */}
@@ -318,6 +470,15 @@ export default function Sidebar({
 
         {/* History area */}
         <div style={{ flex: 1, overflowY: "auto", padding: "0 8px" }}>
+          {activeProject && (
+            <div style={{
+              padding: "6px 12px", fontSize: 10, fontWeight: 600,
+              color: activeProject.color || "var(--accent)",
+              textTransform: "uppercase", letterSpacing: 1, opacity: 0.7,
+            }}>
+              {activeProject.name}
+            </div>
+          )}
           {loadingHistory ? (
             <div style={{ padding: "16px 4px", fontSize: 12, color: "var(--text-tertiary)", textAlign: "center" }}>
               <span className="loading-dots">...</span>

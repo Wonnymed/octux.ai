@@ -37,6 +37,7 @@ import { useUserTier } from "../lib/useUserTier";
 import type { FileAttachment } from "../components/ChatInput";
 import { createSupabaseBrowser } from "../lib/supabase-browser";
 import { signuxFetch } from "../lib/api-client";
+import { useProjects } from "../lib/useProjects";
 
 const Paywall = dynamic(() => import("../components/Paywall"), { ssr: false });
 const SimulationEngine = dynamic(() => import("../components/SimulationEngine"), { ssr: false });
@@ -202,6 +203,10 @@ export default function ChatPage() {
   const [showCheckinReminder, setShowCheckinReminder] = useState(false);
   const isMobile = useIsMobile();
   const { tier, usage, limits, refresh: refreshUsage } = useUserTier(!!authUser);
+  const {
+    projects, activeProject, activeProjectId, selectProject,
+    createProject, updateProject,
+  } = useProjects(!!authUser);
 
   /* Refs */
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -481,7 +486,7 @@ export default function ChatPage() {
       if (authUser) {
         // Logged in → try Supabase
         try {
-          const conv = await createConversationDB(authUser.id);
+          const conv = await createConversationDB(authUser.id, activeProjectId || undefined);
           if (conv) {
             activeConvId = conv.id;
             setConversationId(conv.id);
@@ -509,7 +514,7 @@ export default function ChatPage() {
       const res = await signuxFetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages, profile: getProfile() }),
+        body: JSON.stringify({ messages: apiMessages, profile: getProfile(), projectId: activeProjectId }),
         signal: abortRef.current.signal,
       });
       const reader = res.body?.getReader();
@@ -623,6 +628,17 @@ export default function ChatPage() {
       } else {
         if (authUser) touchConvDB(activeConvId).catch(() => {});
         localTouchConversation(activeConvId);
+      }
+
+      // Auto-summarize project every 5 conversations
+      if (activeProjectId && isFirstMessage) {
+        const projectConvCount = conversations.filter((c: any) => c.project_id === activeProjectId).length + 1;
+        if (projectConvCount % 5 === 0) {
+          signuxFetch("/api/projects/summarize", {
+            method: "POST",
+            body: JSON.stringify({ projectId: activeProjectId }),
+          }).catch(() => {});
+        }
       }
     }
 
@@ -848,11 +864,17 @@ export default function ChatPage() {
         onSignOut={authUser ? authSignOut : undefined}
         isMobile={isMobile}
         authUser={authUser}
-        conversations={conversations}
+        conversations={activeProjectId
+          ? conversations.filter((c: any) => c.project_id === activeProjectId)
+          : conversations}
         loadingHistory={loadingHistory}
         activeConversationId={conversationId}
         onLoadConversation={loadConversation}
         onDeleteConversation={handleDeleteConversation}
+        projects={projects}
+        activeProject={activeProject}
+        onSelectProject={selectProject}
+        onCreateProject={(name) => createProject(name)}
       />
 
       <main style={{

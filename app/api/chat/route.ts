@@ -1,9 +1,14 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { SECURITY_PREFIX, verifyClientToken, applyRateLimit } from "../../lib/security";
 import { getUserFromRequest, checkUsageLimit, incrementUsage } from "../../lib/usage";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 function buildSystemPrompt(): string {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -454,7 +459,7 @@ export async function POST(req: NextRequest) {
     if (usageError) return usageError;
     if (userId) incrementUsage(userId, "chat_messages").catch(() => {});
 
-    const { messages, profile, rates, mode } = await req.json();
+    const { messages, profile, rates, mode, projectId } = await req.json();
 
     let contextPrefix = "";
     if (profile) {
@@ -479,6 +484,23 @@ export async function POST(req: NextRequest) {
     }
     if (rates) {
       contextPrefix += `\nCURRENT EXCHANGE RATES (use these for calculations):\n- 1 USD = ${rates.USDBRL} BRL\n- 1 USD = ${rates.USDHKD} HKD\n- 1 USD = ${rates.USDCNY} CNY\n- 1 USD = ${rates.USDEUR} EUR\n- 1 USD = ${rates.USDKRW} KRW\nUpdated: ${rates.updated}\n`;
+    }
+
+    // Inject project context if active
+    if (projectId) {
+      try {
+        const { data: project } = await supabaseAdmin
+          .from("projects")
+          .select("name, description, summary")
+          .eq("id", projectId)
+          .single();
+        if (project) {
+          contextPrefix += `\nACTIVE PROJECT: "${project.name}"`;
+          if (project.description) contextPrefix += `\nProject description: ${project.description}`;
+          if (project.summary) contextPrefix += `\nProject context (auto-generated summary of previous conversations):\n${project.summary}`;
+          contextPrefix += `\n\nIMPORTANT: The user is working within the "${project.name}" project. Keep your responses relevant to this project context. Reference previous decisions and findings when applicable.\n`;
+        }
+      } catch {}
     }
 
     let baseSystemPrompt: string;
