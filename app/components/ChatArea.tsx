@@ -26,6 +26,8 @@ type ChatAreaProps = {
   onStop?: () => void;
   onOpenThreatRadar?: () => void;
   onOpenDealXRay?: () => void;
+  onOpenWarGame?: () => void;
+  onOpenCausalMap?: () => void;
   lang?: string;
   mode?: string;
   onDecisionDetected?: (decision: Record<string, string>, confidence: string) => void;
@@ -34,7 +36,7 @@ type ChatAreaProps = {
 export default function ChatArea({
   messages, loading, searching, input, setInput, onSend,
   profileName, onRetry, onCopy, attachments, onAttachmentsChange, onToast,
-  onSwitchToSimulate, onSwitchToResearch, onSwitchMode, onStop, onOpenThreatRadar, onOpenDealXRay, lang, mode, onDecisionDetected,
+  onSwitchToSimulate, onSwitchToResearch, onSwitchMode, onStop, onOpenThreatRadar, onOpenDealXRay, onOpenWarGame, onOpenCausalMap, lang, mode, onDecisionDetected,
 }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
@@ -90,6 +92,8 @@ export default function ChatArea({
           onSwitchMode={onSwitchMode}
           onOpenThreatRadar={onOpenThreatRadar}
           onOpenDealXRay={onOpenDealXRay}
+          onOpenWarGame={onOpenWarGame}
+          onOpenCausalMap={onOpenCausalMap}
           lang={lang}
         />
       </div>

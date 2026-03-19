@@ -48,6 +48,8 @@ const GlobalOpsView = dynamic(() => import("../components/GlobalOpsView"), { ssr
 const InvestView = dynamic(() => import("../components/InvestView"), { ssr: false });
 const ThreatRadar = dynamic(() => import("../components/ThreatRadar"), { ssr: false });
 const DealXRay = dynamic(() => import("../components/DealXRay"), { ssr: false });
+const WarGame = dynamic(() => import("../components/WarGame"), { ssr: false });
+const CausalMap = dynamic(() => import("../components/CausalMap"), { ssr: false });
 const SettingsModal = dynamic(() => import("../components/SettingsModal"), { ssr: false });
 const Onboarding = dynamic(() => import("../components/Onboarding"), { ssr: false });
 
@@ -178,7 +180,7 @@ export default function ChatPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [searching, setSearching] = useState(false);
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
-  const [activeTool, setActiveTool] = useState<"threat-radar" | "deal-xray" | null>(null);
+  const [activeTool, setActiveTool] = useState<"threat-radar" | "deal-xray" | "wargame" | "causal-map" | null>(null);
 
   /* Simulation */
   const [simulating, setSimulating] = useState(false);
@@ -445,6 +447,8 @@ export default function ChatPage() {
     // Handle slash commands for tools
     if (msg.toLowerCase() === "/threats") { setInput(""); setActiveTool("threat-radar"); setMode("chat"); return; }
     if (msg.toLowerCase() === "/xray") { setInput(""); setActiveTool("deal-xray"); setMode("chat"); return; }
+    if (msg.toLowerCase() === "/wargame") { setInput(""); setActiveTool("wargame"); setMode("chat"); return; }
+    if (msg.toLowerCase() === "/causal") { setInput(""); setActiveTool("causal-map"); setMode("chat"); return; }
 
     // Build the API content (string or array)
     let apiContent: string | any[];
@@ -1011,6 +1015,26 @@ export default function ChatPage() {
                 </div>
                 <DealXRay lang={lang} />
               </div>
+              ) : activeTool === "wargame" ? (
+              <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 16px 0" }}>
+                  <button onClick={() => setActiveTool(null)} style={{
+                    fontSize: 11, color: "var(--text-tertiary)", background: "transparent",
+                    border: "1px solid var(--border-primary)", borderRadius: 6, padding: "4px 10px", cursor: "pointer",
+                  }}>← Back to chat</button>
+                </div>
+                <WarGame lang={lang} />
+              </div>
+              ) : activeTool === "causal-map" ? (
+              <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 16px 0" }}>
+                  <button onClick={() => setActiveTool(null)} style={{
+                    fontSize: 11, color: "var(--text-tertiary)", background: "transparent",
+                    border: "1px solid var(--border-primary)", borderRadius: 6, padding: "4px 10px", cursor: "pointer",
+                  }}>← Back to chat</button>
+                </div>
+                <CausalMap lang={lang} />
+              </div>
               ) : (
               <>
               {tier === "free" && isLoggedIn && limits.chat_daily < Infinity && (
@@ -1045,6 +1069,8 @@ export default function ChatPage() {
                 onSwitchMode={setMode}
                 onOpenThreatRadar={() => setActiveTool("threat-radar")}
                 onOpenDealXRay={() => setActiveTool("deal-xray")}
+                onOpenWarGame={() => setActiveTool("wargame")}
+                onOpenCausalMap={() => setActiveTool("causal-map")}
                 onStop={() => abortRef.current?.abort()}
                 lang={lang}
                 mode={mode}
