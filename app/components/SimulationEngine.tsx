@@ -4,9 +4,11 @@ import {
   Check, AlertTriangle, Download, ChevronDown, ChevronRight,
   FileText, RotateCcw, MessageSquare, BarChart3, Network,
   Globe, Users, Clock, Zap, Search, Shield, Activity, Play,
+  Wand2, Loader2,
 } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
+import { useEnhance } from "../lib/useEnhance";
 import MarkdownRenderer from "./MarkdownRenderer";
 import type { SimAgent, SimResult, Mode } from "../lib/types";
 import SignuxFooter from "./SignuxFooter";
@@ -78,6 +80,14 @@ export default function SimulationEngine(props: SimulationEngineProps) {
   const [exportOpen, setExportOpen] = useState(false);
   const isMobile = useIsMobile();
   const pad = isMobile ? "16px" : "24px";
+  const { enhance, enhancing, wasEnhanced } = useEnhance("simulate");
+
+  const handleEnhance = async () => {
+    const result = await enhance(simScenario);
+    if (result) {
+      setSimScenario(result);
+    }
+  };
 
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }));
 
@@ -266,6 +276,13 @@ export default function SimulationEngine(props: SimulationEngineProps) {
             <textarea
               value={simScenario}
               onChange={e => setSimScenario(e.target.value)}
+              onKeyDown={e => {
+                if ((e.metaKey || e.ctrlKey) && e.key === "e") {
+                  e.preventDefault();
+                  handleEnhance();
+                  return;
+                }
+              }}
               placeholder="I want to open a coffee franchise in 3 new cities with a $200K budget..."
               style={{
                 width: "100%", minHeight: 88, padding: 0,
@@ -273,6 +290,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
                 color: "var(--text-primary)", fontSize: 15, lineHeight: 1.6,
                 resize: "none", outline: "none",
                 fontFamily: "var(--font-sans)",
+                opacity: enhancing ? 0.5 : 1, transition: "opacity 150ms ease",
               }}
             />
           </div>
@@ -418,6 +436,28 @@ export default function SimulationEngine(props: SimulationEngineProps) {
 
           {/* ── CTA BUTTON ── */}
           <div style={{ textAlign: "center", animation: "fadeIn 0.8s ease-out" }}>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            {simScenario.trim().length >= 10 && (
+              <button
+                onClick={handleEnhance}
+                disabled={enhancing}
+                title="Enhance your scenario (⌘E)"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "6px 14px", borderRadius: 50,
+                  border: "1px solid var(--card-border)",
+                  background: wasEnhanced ? "var(--accent-soft, rgba(212,175,55,0.1))" : "none",
+                  color: wasEnhanced ? "var(--accent)" : "var(--text-tertiary)",
+                  fontSize: 11, cursor: enhancing ? "wait" : "pointer",
+                  transition: "all 200ms", fontFamily: "var(--font-mono)", letterSpacing: 0.5,
+                }}
+                onMouseEnter={e => { if (!enhancing && !wasEnhanced) { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.color = "var(--accent)"; } }}
+                onMouseLeave={e => { if (!enhancing && !wasEnhanced) { e.currentTarget.style.borderColor = "var(--card-border)"; e.currentTarget.style.color = "var(--text-tertiary)"; } }}
+              >
+                {enhancing ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : <Wand2 size={12} />}
+                {wasEnhanced ? "Enhanced" : "Enhance"}
+              </button>
+            )}
             <button
               onClick={onSimulate}
               disabled={!simScenario.trim() || simStarting}
@@ -450,6 +490,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
               )}
               {simStarting ? "INITIALIZING..." : "RUN SIMULATION"}
             </button>
+            </div>
             <div style={{
               fontSize: 11, color: "var(--text-tertiary)",
               marginTop: 16,

@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from "react";
-import { ArrowUp, Paperclip, Globe, X, FileText, FileCode, Mic, MicOff } from "lucide-react";
+import { ArrowUp, Paperclip, Globe, X, FileText, FileCode, Mic, MicOff, Wand2, Loader2 } from "lucide-react";
+import { useEnhance } from "../lib/useEnhance";
 import { t, getLanguage } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
 
@@ -96,17 +97,19 @@ type ChatInputProps = {
   attachments: FileAttachment[];
   onAttachmentsChange: (atts: FileAttachment[]) => void;
   onToast?: (msg: string, type: "success" | "error" | "info") => void;
+  mode?: string;
 };
 
 export default function ChatInput({
   value, onChange, onSend, loading, placeholder,
   searchActive, onToggleSearch, showDisclaimer = true,
-  attachments, onAttachmentsChange, onToast,
+  attachments, onAttachmentsChange, onToast, mode,
 }: ChatInputProps) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const dragCounter = useRef(0);
+  const { enhance, enhancing, wasEnhanced } = useEnhance(mode || "chat");
 
   /* Voice state */
   const [isListening, setIsListening] = useState(false);
@@ -133,7 +136,24 @@ export default function ChatInput({
     };
   }, []);
 
+  const handleEnhance = async () => {
+    if (!value.trim() || value.trim().length < 10 || enhancing) return;
+    const improved = await enhance(value);
+    if (improved !== value) {
+      onChange(improved);
+      setTimeout(() => {
+        const ta = ref.current;
+        if (ta) { ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 160) + "px"; }
+      }, 50);
+    }
+  };
+
   const handleKey = (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "e") {
+      e.preventDefault();
+      handleEnhance();
+      return;
+    }
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       onSend();
@@ -462,6 +482,8 @@ export default function ChatInput({
             lineHeight: 1.5,
             minHeight: 22,
             maxHeight: 120,
+            opacity: enhancing ? 0.5 : 1,
+            transition: "opacity 150ms ease",
           }}
         />
 
@@ -522,7 +544,59 @@ export default function ChatInput({
             >
               {isListening ? <MicOff size={iconSize} /> : <Mic size={iconSize} />}
             </button>
+            {/* Enhance button */}
+            {value.trim().length >= 10 && (
+              <button
+                onClick={handleEnhance}
+                disabled={enhancing}
+                title={`Enhance your message (${navigator?.platform?.includes("Mac") ? "⌘" : "Ctrl"}+E)`}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  border: "none",
+                  background: wasEnhanced ? "var(--accent-soft, rgba(212,175,55,0.1))" : enhancing ? "var(--bg-tertiary)" : "none",
+                  cursor: enhancing ? "wait" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: wasEnhanced ? "var(--accent)" : enhancing ? "var(--text-tertiary)" : "var(--text-tertiary)",
+                  transition: "all 200ms",
+                  padding: 0,
+                }}
+                onMouseEnter={e => {
+                  if (!enhancing && !wasEnhanced) { e.currentTarget.style.background = "var(--bg-hover, rgba(255,255,255,0.06))"; e.currentTarget.style.color = "var(--accent)"; }
+                }}
+                onMouseLeave={e => {
+                  if (!enhancing && !wasEnhanced) { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "var(--text-tertiary)"; }
+                }}
+              >
+                {enhancing ? (
+                  <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} />
+                ) : (
+                  <Wand2 size={15} />
+                )}
+              </button>
+            )}
           </div>
+
+          {/* Send button */}
+          {/* Enhanced badge */}
+          {wasEnhanced && (
+            <div style={{
+              fontSize: 10,
+              color: "var(--accent)",
+              fontFamily: "var(--font-mono)",
+              letterSpacing: 0.5,
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              animation: "fadeIn 200ms ease",
+              whiteSpace: "nowrap",
+            }}>
+              <Wand2 size={10} /> Enhanced — review and send
+            </div>
+          )}
 
           {/* Send button */}
           <button

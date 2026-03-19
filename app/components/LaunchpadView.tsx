@@ -1,8 +1,9 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Rocket, ChevronRight, ChevronLeft, Check, Shield, AlertTriangle, Target, TrendingUp, Brain, Zap, Copy, RotateCcw, FileText, Calendar, DollarSign, Users, ChevronDown, ChevronUp, X } from "lucide-react";
+import { Rocket, ChevronRight, ChevronLeft, Check, Shield, AlertTriangle, Target, TrendingUp, Brain, Zap, Copy, RotateCcw, FileText, Calendar, DollarSign, Users, ChevronDown, ChevronUp, X, Wand2, Loader2 } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
+import { useEnhance } from "../lib/useEnhance";
 import type { Mode } from "../lib/types";
 import SignuxFooter from "./SignuxFooter";
 
@@ -107,6 +108,7 @@ const AGENT_NAMES = ["Market Analyst", "Financial Advisor", "Risk Assessor", "Cu
 /* ═══ Component ═══ */
 export default function LaunchpadView({ lang, userId, onSetMode }: { lang: string; userId?: string; onSetMode?: (m: Mode) => void }) {
   const isMobile = useIsMobile();
+  const { enhance, enhancing, wasEnhanced } = useEnhance("launchpad");
   const [phase, setPhase] = useState<LaunchpadPhase>("welcome");
   const [questionIndex, setQuestionIndex] = useState(0);
 
@@ -181,6 +183,12 @@ export default function LaunchpadView({ lang, userId, onSetMode }: { lang: strin
 
   const togglePriority = (p: string) => {
     setPriorities(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
+  };
+
+  const handleEnhance = async () => {
+    if (enhancing || skills.trim().length < 10) return;
+    const result = await enhance(skills);
+    if (result) setSkills(result);
   };
 
   const runDiscovery = async () => {
@@ -628,9 +636,11 @@ export default function LaunchpadView({ lang, userId, onSetMode }: { lang: strin
                   borderRadius: 12, color: "var(--text-primary)",
                   fontSize: 15, lineHeight: 1.6, resize: "none", outline: "none",
                   fontFamily: "var(--font-sans)",
+                  opacity: enhancing ? 0.5 : 1, transition: "opacity 150ms ease",
                 }}
                 onFocus={e => e.currentTarget.style.borderColor = tealAlpha(0.3)}
                 onBlur={e => { if (!skills.trim()) e.currentTarget.style.borderColor = tealAlpha(0.12); }}
+                onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === "e") { e.preventDefault(); handleEnhance(); return; } }}
               />
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
                 {SKILL_PILLS.map(s => (
@@ -646,6 +656,22 @@ export default function LaunchpadView({ lang, userId, onSetMode }: { lang: strin
                   >{s}</button>
                 ))}
               </div>
+              {skills.trim().length >= 10 && (
+                <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
+                  <button onClick={handleEnhance} disabled={enhancing} title="Enhance (⌘E)" style={{
+                    display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 50,
+                    border: "1px solid var(--card-border)", background: wasEnhanced ? "var(--accent-soft, rgba(212,175,55,0.1))" : "none",
+                    color: wasEnhanced ? "var(--accent)" : "var(--text-tertiary)", fontSize: 11,
+                    cursor: enhancing ? "wait" : "pointer", transition: "all 200ms", fontFamily: "var(--font-mono)", letterSpacing: 0.5,
+                  }}
+                    onMouseEnter={e => { if (!enhancing && !wasEnhanced) { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.color = "var(--accent)"; } }}
+                    onMouseLeave={e => { if (!enhancing && !wasEnhanced) { e.currentTarget.style.borderColor = "var(--card-border)"; e.currentTarget.style.color = "var(--text-tertiary)"; } }}
+                  >
+                    {enhancing ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : <Wand2 size={12} />}
+                    {wasEnhanced ? "Enhanced" : "Enhance"}
+                  </button>
+                </div>
+              )}
             </div>
           );
         case 1:

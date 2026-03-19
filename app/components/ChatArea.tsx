@@ -25,12 +25,13 @@ type ChatAreaProps = {
   onSwitchMode?: (mode: Mode) => void;
   onStop?: () => void;
   lang?: string;
+  mode?: string;
 };
 
 export default function ChatArea({
   messages, loading, searching, input, setInput, onSend,
   profileName, onRetry, onCopy, attachments, onAttachmentsChange, onToast,
-  onSwitchToSimulate, onSwitchToResearch, onSwitchMode, onStop, lang,
+  onSwitchToSimulate, onSwitchToResearch, onSwitchMode, onStop, lang, mode,
 }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
@@ -169,6 +170,7 @@ export default function ChatArea({
             attachments={attachments}
             onAttachmentsChange={onAttachmentsChange}
             onToast={onToast}
+            mode={mode}
           />
         </div>
       </div>

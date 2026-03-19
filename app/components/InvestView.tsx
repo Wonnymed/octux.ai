@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { TrendingUp, ArrowDown } from "lucide-react";
+import { TrendingUp, ArrowDown, Wand2, Loader2 } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
 import { getProfile } from "../lib/profile";
@@ -8,6 +8,7 @@ import MessageBlock from "./MessageBlock";
 import ChatInput, { type FileAttachment } from "./ChatInput";
 import type { Message, Mode } from "../lib/types";
 import SignuxFooter from "./SignuxFooter";
+import { useEnhance } from "../lib/useEnhance";
 
 /* ═══ Constants ═══ */
 const PURPLE = "#A855F7";
@@ -76,6 +77,7 @@ export default function InvestView({ lang, onSetMode }: { lang: string; onSetMod
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [userScrolledUp, setUserScrolledUp] = useState(false);
   const isMobile = useIsMobile();
+  const { enhance, enhancing, wasEnhanced } = useEnhance("invest");
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
@@ -224,6 +226,10 @@ export default function InvestView({ lang, onSetMode }: { lang: string; onSetMod
   };
 
   const handleCopy = () => {};
+  const handleEnhance = async () => {
+    const result = await enhance(input);
+    if (result) setInput(result);
+  };
   const pad = isMobile ? "16px" : "24px";
 
   /* ═══ WELCOME STATE ═══ */
@@ -308,6 +314,7 @@ export default function InvestView({ lang, onSetMode }: { lang: string; onSetMod
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === "e") { e.preventDefault(); handleEnhance(); return; }
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
                       send();
@@ -320,12 +327,27 @@ export default function InvestView({ lang, onSetMode }: { lang: string; onSetMod
                     background: "transparent", color: "var(--text-primary)",
                     fontSize: 14, fontFamily: "var(--font-body)", resize: "none",
                     lineHeight: 1.6,
+                    opacity: enhancing ? 0.5 : 1, transition: "opacity 150ms ease",
                   }}
                 />
                 <div style={{
-                  display: "flex", justifyContent: "flex-end",
+                  display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8,
                   padding: "8px 12px", borderTop: "1px solid var(--border-primary)",
                 }}>
+                  {input.trim().length >= 10 && (
+                    <button onClick={handleEnhance} disabled={enhancing} title="Enhance (⌘E)" style={{
+                      display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 50,
+                      border: "1px solid var(--card-border)", background: wasEnhanced ? "var(--accent-soft, rgba(212,175,55,0.1))" : "none",
+                      color: wasEnhanced ? "var(--accent)" : "var(--text-tertiary)", fontSize: 11,
+                      cursor: enhancing ? "wait" : "pointer", transition: "all 200ms", fontFamily: "var(--font-mono)", letterSpacing: 0.5,
+                    }}
+                      onMouseEnter={e => { if (!enhancing && !wasEnhanced) { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.color = "var(--accent)"; } }}
+                      onMouseLeave={e => { if (!enhancing && !wasEnhanced) { e.currentTarget.style.borderColor = "var(--card-border)"; e.currentTarget.style.color = "var(--text-tertiary)"; } }}
+                    >
+                      {enhancing ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : <Wand2 size={12} />}
+                      {wasEnhanced ? "Enhanced" : "Enhance"}
+                    </button>
+                  )}
                   <button
                     onClick={() => send()}
                     disabled={!input.trim() || loading}
@@ -518,6 +540,7 @@ export default function InvestView({ lang, onSetMode }: { lang: string; onSetMod
             loading={loading}
             attachments={attachments}
             onAttachmentsChange={setAttachments}
+            mode="invest"
           />
         </div>
       </div>

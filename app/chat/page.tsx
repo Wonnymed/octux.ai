@@ -887,6 +887,7 @@ export default function ChatPage() {
                 onSwitchMode={setMode}
                 onStop={() => abortRef.current?.abort()}
                 lang={lang}
+                mode={mode}
               />
             </motion.div>
           )}

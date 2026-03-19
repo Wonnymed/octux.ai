@@ -1,11 +1,12 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Search, Check, FileText, Download, Package, Shield, BarChart3, Globe, Play, RotateCcw, MessageSquare } from "lucide-react";
+import { Search, Check, FileText, Download, Package, Shield, BarChart3, Globe, Play, RotateCcw, MessageSquare, Wand2, Loader2 } from "lucide-react";
 import { t } from "../lib/i18n";
 import type { Mode } from "../lib/types";
 import { useIsMobile } from "../lib/useIsMobile";
 import MarkdownRenderer from "./MarkdownRenderer";
 import SignuxFooter from "./SignuxFooter";
+import { useEnhance } from "../lib/useEnhance";
 
 type SearchResult = {
   query: string;
@@ -58,6 +59,12 @@ export default function ResearchView({ lang, onContinueInChat, onSetMode }: Rese
   const [loading, setLoading] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const { enhance, enhancing, wasEnhanced } = useEnhance("research");
+
+  const handleEnhance = async () => {
+    const result = await enhance(query);
+    if (result) setQuery(result);
+  };
 
   useEffect(() => {
     if (feedRef.current) {
@@ -320,11 +327,15 @@ export default function ResearchView({ lang, onContinueInChat, onSetMode }: Rese
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder={t("research.placeholder")}
+                onKeyDown={e => {
+                  if ((e.metaKey || e.ctrlKey) && e.key === "e") { e.preventDefault(); handleEnhance(); return; }
+                }}
                 style={{
                   width: "100%", minHeight: 80, padding: 0,
                   background: "transparent", border: "none",
                   color: "var(--text-primary)", fontSize: 15, lineHeight: 1.6,
                   resize: "none", outline: "none", fontFamily: "var(--font-sans)",
+                  opacity: enhancing ? 0.5 : 1, transition: "opacity 150ms ease",
                 }}
               />
             </div>
@@ -428,34 +439,57 @@ export default function ResearchView({ lang, onContinueInChat, onSetMode }: Rese
 
             {/* ── CTA ── */}
             <div style={{ textAlign: "center", animation: "fadeIn 0.8s ease-out" }}>
-              <button
-                onClick={startResearch}
-                disabled={!query.trim() || loading}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 10,
-                  background: query.trim() && !loading ? "#6B8AFF" : "rgba(107,138,255,0.3)",
-                  color: "var(--text-primary)", border: "none", borderRadius: 50,
-                  padding: "14px 36px",
-                  fontFamily: "var(--font-brand)", fontWeight: 600, fontSize: 14,
-                  letterSpacing: 2, textTransform: "uppercase",
-                  cursor: query.trim() && !loading ? "pointer" : "not-allowed",
-                  transition: "all 200ms",
-                  opacity: query.trim() && !loading ? 1 : 0.5,
-                }}
-                onMouseEnter={e => {
-                  if (query.trim() && !loading) {
-                    e.currentTarget.style.filter = "brightness(1.15)";
-                    e.currentTarget.style.boxShadow = "0 0 30px rgba(107,138,255,0.2)";
-                  }
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.filter = "none";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              >
-                <Search size={16} />
-                START RESEARCH
-              </button>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                {query.trim().length >= 10 && (
+                  <button
+                    onClick={handleEnhance}
+                    disabled={enhancing}
+                    title="Enhance your query (⌘E)"
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "6px 14px", borderRadius: 50,
+                      border: "1px solid var(--card-border)",
+                      background: wasEnhanced ? "var(--accent-soft, rgba(212,175,55,0.1))" : "none",
+                      color: wasEnhanced ? "var(--accent)" : "var(--text-tertiary)",
+                      fontSize: 11, cursor: enhancing ? "wait" : "pointer",
+                      transition: "all 200ms", fontFamily: "var(--font-mono)", letterSpacing: 0.5,
+                    }}
+                    onMouseEnter={e => { if (!enhancing && !wasEnhanced) { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.color = "var(--accent)"; } }}
+                    onMouseLeave={e => { if (!enhancing && !wasEnhanced) { e.currentTarget.style.borderColor = "var(--card-border)"; e.currentTarget.style.color = "var(--text-tertiary)"; } }}
+                  >
+                    {enhancing ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : <Wand2 size={12} />}
+                    {wasEnhanced ? "Enhanced" : "Enhance"}
+                  </button>
+                )}
+                <button
+                  onClick={startResearch}
+                  disabled={!query.trim() || loading}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 10,
+                    background: query.trim() && !loading ? "#6B8AFF" : "rgba(107,138,255,0.3)",
+                    color: "var(--text-primary)", border: "none", borderRadius: 50,
+                    padding: "14px 36px",
+                    fontFamily: "var(--font-brand)", fontWeight: 600, fontSize: 14,
+                    letterSpacing: 2, textTransform: "uppercase",
+                    cursor: query.trim() && !loading ? "pointer" : "not-allowed",
+                    transition: "all 200ms",
+                    opacity: query.trim() && !loading ? 1 : 0.5,
+                  }}
+                  onMouseEnter={e => {
+                    if (query.trim() && !loading) {
+                      e.currentTarget.style.filter = "brightness(1.15)";
+                      e.currentTarget.style.boxShadow = "0 0 30px rgba(107,138,255,0.2)";
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.filter = "none";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  <Search size={16} />
+                  START RESEARCH
+                </button>
+              </div>
               <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 16 }}>
                 {t("research.disclaimer")}
               </div>
