@@ -1,11 +1,13 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
-import { SquarePen, MessageSquare, Zap, Search, Rocket, Globe, TrendingUp, Settings, LogIn, LogOut, Trash2 } from "lucide-react";
+import { SquarePen, MessageSquare, Zap, Search, Rocket, Globe, TrendingUp, Settings, LogIn, LogOut, Trash2, Flame } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
 import { t } from "../lib/i18n";
 import type { Mode } from "../lib/types";
 import type { AuthUser } from "../lib/auth";
 import type { Conversation } from "../lib/database-client";
+import { createSupabaseBrowser } from "../lib/supabase-browser";
+import { updateStreak } from "../lib/streak";
 
 type SidebarProps = {
   mode: Mode;
@@ -160,6 +162,35 @@ export default function Sidebar({
   const handleNew = () => { onNewConversation(); if (isMobile) onClose(); };
   const handleSettings = () => { onOpenSettings(); if (isMobile) onClose(); };
 
+  /* ═══ Decision Follow-up Badge ═══ */
+  const [pendingDecisions, setPendingDecisions] = useState(0);
+  const userId = authUser?.id;
+
+  useEffect(() => {
+    if (!userId) { setPendingDecisions(0); return; }
+    const checkDecisions = async () => {
+      try {
+        const supabase = createSupabaseBrowser();
+        const { data } = await supabase
+          .from("decision_journal")
+          .select("id")
+          .eq("user_id", userId)
+          .is("outcome", null)
+          .lte("follow_up_date", new Date().toISOString());
+        setPendingDecisions(data?.length || 0);
+      } catch {}
+    };
+    checkDecisions();
+  }, [userId]);
+
+  /* ═══ Streak Counter ═══ */
+  const [streak, setStreak] = useState(0);
+
+  useEffect(() => {
+    const { streak: s } = updateStreak();
+    setStreak(s);
+  }, []);
+
   // Mobile: click outside to close
   useEffect(() => {
     if (!isMobile || !open) return;
@@ -267,6 +298,17 @@ export default function Sidebar({
                  onMouseLeave={e => { if (mode !== key) e.currentTarget.style.background = "transparent"; }}>
                 <Icon size={16} style={{ color: mode === key ? (color || "var(--accent)") : undefined }} />
                 <span style={{ flex: 1 }}>{t(label)}</span>
+                {key === "chat" && pendingDecisions > 0 && (
+                  <div style={{
+                    width: 18, height: 18, borderRadius: "50%",
+                    background: "#ef4444", color: "#fff",
+                    fontSize: 10, fontWeight: 600,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    lineHeight: 1,
+                  }}>
+                    {pendingDecisions}
+                  </div>
+                )}
                 {tier === "max" && (
                   <span style={{
                     fontSize: 9, fontWeight: 700, letterSpacing: 0.5,
@@ -281,6 +323,17 @@ export default function Sidebar({
               )}
             </div>
           ))}
+          {/* Streak counter */}
+          {streak >= 2 && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 5,
+              fontSize: 11, color: "var(--text-tertiary)",
+              padding: "6px 12px", marginTop: 4,
+            }}>
+              <Flame size={12} style={{ color: streak >= 7 ? "#ef4444" : streak >= 3 ? "#f59e0b" : "var(--text-tertiary)" }} />
+              {streak} day streak
+            </div>
+          )}
         </div>
 
         <div style={{ height: 1, background: "var(--border-secondary)", margin: "0 8px 8px" }} />
@@ -412,6 +465,18 @@ export default function Sidebar({
             }} onMouseEnter={e => { if (mode !== key) e.currentTarget.style.background = "var(--bg-hover)"; }}
                onMouseLeave={e => { if (mode !== key) e.currentTarget.style.background = "transparent"; }}>
               <Icon size={iconSize} />
+              {key === "chat" && pendingDecisions > 0 && (
+                <div style={{
+                  position: "absolute", top: 4, right: 4,
+                  width: 14, height: 14, borderRadius: "50%",
+                  background: "#ef4444", color: "#fff",
+                  fontSize: 8, fontWeight: 700,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  lineHeight: 1,
+                }}>
+                  {pendingDecisions}
+                </div>
+              )}
             </button>
             {/* Divider after launchpad (index 3) */}
             {idx === 3 && (

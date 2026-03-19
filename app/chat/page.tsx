@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { getProfile } from "../lib/profile";
 import { t, Language, setLanguage } from "../lib/i18n";
 import type { Message, Toast, Attachment, SimAgent, SimResult, Mode } from "../lib/types";
-import { Check, AlertTriangle, Info, WifiOff, Square } from "lucide-react";
+import { Check, AlertTriangle, Info, WifiOff, Square, Rocket } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
 import UserMenu from "../components/UserMenu";
@@ -197,6 +197,7 @@ export default function ChatPage() {
   const [showSettings, setShowSettings] = useState(false);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showCheckinReminder, setShowCheckinReminder] = useState(false);
   const isMobile = useIsMobile();
 
   /* Refs */
@@ -270,6 +271,29 @@ export default function ChatPage() {
         });
       }
     }).catch(() => {});
+  }, [authUser]);
+
+  /* ═══ Launchpad Check-in Reminder ═══ */
+  useEffect(() => {
+    if (!authUser) { setShowCheckinReminder(false); return; }
+    const checkLaunchpad = async () => {
+      try {
+        const supabase = createSupabaseBrowser();
+        const { data: project } = await supabase
+          .from("launchpad_projects")
+          .select("id, updated_at")
+          .eq("user_id", authUser.id)
+          .in("status", ["tracking", "launch"])
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .single();
+        if (project) {
+          const daysSince = (Date.now() - new Date(project.updated_at).getTime()) / 86400000;
+          if (daysSince >= 7) setShowCheckinReminder(true);
+        }
+      } catch {}
+    };
+    checkLaunchpad();
   }, [authUser]);
 
   /* ═══ Load Conversations ═══ */
@@ -814,6 +838,26 @@ export default function ChatPage() {
         flex: 1, display: "flex", flexDirection: "column",
         background: "var(--bg-primary)", minWidth: 0, minHeight: 0, overflow: "hidden",
       }}>
+        {/* Launchpad check-in reminder */}
+        {showCheckinReminder && (
+          <div
+            onClick={() => { setMode("launchpad"); setShowCheckinReminder(false); }}
+            style={{
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "10px 16px", margin: "8px 16px 0",
+              borderRadius: 10, background: "rgba(20,184,166,0.06)",
+              border: "1px solid rgba(20,184,166,0.15)",
+              fontSize: 13, color: "#14B8A6",
+              cursor: "pointer", transition: "background 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(20,184,166,0.1)"}
+            onMouseLeave={e => e.currentTarget.style.background = "rgba(20,184,166,0.06)"}
+          >
+            <Rocket size={14} />
+            <span style={{ flex: 1 }}>Your weekly check-in is due</span>
+            <span style={{ fontSize: 11, opacity: 0.6 }}>Open Launchpad &rarr;</span>
+          </div>
+        )}
         <AnimatePresence mode="wait">
           {mode === "research" ? (
             <motion.div
