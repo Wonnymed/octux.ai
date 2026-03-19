@@ -197,10 +197,10 @@ export default function SimulationEngine(props: SimulationEngineProps) {
     ];
 
     const capabilities = [
-      "15 AI specialists",
+      "Predict outcomes",
       "Find hidden risks",
-      "Honest numbers",
       "Stress-test anything",
+      "See the future first",
     ];
 
     const agentAvatars = [
@@ -276,7 +276,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
               textTransform: "uppercase" as const, color: "rgba(212,175,55,0.6)",
               marginTop: 6,
             }}>
-              Test your idea before you risk real money
+              See what happens before it happens
             </div>
 
             {/* Divider */}
@@ -320,7 +320,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
               animation: "fadeIn 0.5s ease-out",
             }}>
               <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-                See it work — Watch AI find 3 risks in a coffee franchise idea
+                See it work — Watch AI predict the future of a coffee franchise idea
               </span>
               <button onClick={runDemoSimulation} style={{
                 padding: "5px 14px", borderRadius: 50,
@@ -1419,7 +1419,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
               Upgrade to Pro
             </div>
             <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 20 }}>
-              Run unlimited simulations with 15 AI agents analyzing your scenario
+              Run unlimited simulations with AI agents analyzing your scenario
             </div>
             <a href="/pricing" style={{
               display: "inline-flex", padding: "10px 24px", borderRadius: 50,

@@ -35,9 +35,9 @@ const PLANS = [
     description: "Everything you need to build and grow.",
     features: [
       "Unlimited chat",
-      "100+ proprietary intelligence domains",
+      "Proprietary intelligence domains",
       "20 simulations/month",
-      "Intel suite (7 tools)",
+      "Full Intel suite",
       "Launchpad project tracker",
       "Decision journal",
       "Priority support",

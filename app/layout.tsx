@@ -4,8 +4,8 @@ import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
 import InstallPrompt from "./components/InstallPrompt";
 
 export const metadata: Metadata = {
-  title: "Signux AI — Build smarter. Launch faster. Decide with confidence.",
-  description: "Test any business idea with 15 AI agents. Detect bad deals. Plan your launch. The AI that protects your money and your time. Free to start.",
+  title: "Signux AI — See what happens before it happens",
+  description: "Test any business idea before you invest. Spot bad deals before you sign. Know how competitors will react before they move. Free to start.",
   metadataBase: new URL("https://signux-ai.vercel.app"),
   icons: {
     icon: [
@@ -14,8 +14,8 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "Signux AI — Build smarter. Launch faster.",
-    description: "Test any business idea with 15 AI agents before you invest. Free to start.",
+    title: "Signux AI — See what happens before it happens",
+    description: "The AI that sees around corners. Test ideas, detect lies, predict competitors. Free to start.",
     url: "https://signux-ai.vercel.app",
     siteName: "Signux AI",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
@@ -23,8 +23,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Signux AI — Build smarter. Launch faster.",
-    description: "The AI that protects your decisions. 15 agents. 100+ domains. Free to try.",
+    title: "Signux AI — See what happens before it happens",
+    description: "The AI that sees around corners. Free to start.",
     images: ["/og-image.png"],
   },
 };

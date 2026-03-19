@@ -53,36 +53,36 @@ function Divider() {
 const MODE_SECTIONS = [
   {
     icon: Zap, color: "#D4AF37", name: "Simulate", textOnColor: "#000",
-    title: "Test your idea before you risk real money",
-    desc: "Describe your business scenario. 15 AI specialists will debate it from every angle — finding the risks you didn't think of, the competitors you didn't see, and the numbers that actually matter. Like having a board of advisors that disagrees with each other.",
-    features: ["15 AI specialists", "Find hidden risks", "Real numbers", "What-if testing", "Honest verdict"],
+    title: "Know if your idea will work — before you spend a dollar",
+    desc: "Describe any business scenario. AI specialists will debate it from every angle — finding the risks you can't see, the competitors you forgot, and the numbers that actually matter. Like seeing the future of your business before it happens.",
+    features: ["Predict outcomes", "Find hidden risks", "Stress-test anything", "See the future first"],
     preview: SimulatePreview,
   },
   {
     icon: Shield, color: "#DC2626", name: "Intel", textOnColor: "#fff",
-    title: "See what others miss in every deal, threat, and decision",
-    desc: "Is that partnership offer legit? How will your competitors react? What's the biggest risk to your business right now? 7 specialized tools that analyze deals, detect lies, simulate competition, and prepare you for tough conversations.",
-    features: ["Catch red flags", "Predict competitor moves", "Prepare for negotiations", "Map your risks", "Plan for uncertainty", "Research anything"],
+    title: "See what others miss. Know what others don't.",
+    desc: "Is that partnership offer legit? How will competitors react? What's the real risk nobody is talking about? Specialized tools that analyze deals, detect lies, simulate competition, and prepare you for what's coming.",
+    features: ["Predict competitor moves", "Catch lies in deals", "Map threats before they hit", "Prepare for anything"],
     preview: IntelPreview,
   },
   {
     icon: Rocket, color: "#14B8A6", name: "Launchpad", textOnColor: "#000",
     title: "Your first $1,000 in 90 days",
-    desc: "Tell us what you're good at and how much you can invest. We'll find the best business for you, test it with AI before you start, create your 90-day plan, and check in every week to keep you on track. Like a co-founder that never sleeps.",
+    desc: "Tell us what you're good at and how much you can invest. We'll find the best business for you, predict if it will work before you start, create your 90-day plan, and check in every week. Like a co-founder who already knows what's coming.",
     features: ["Find your best business", "AI-tested before you start", "90-day plan", "Weekly check-ins", "Adapts as you grow"],
     preview: LaunchpadPreview,
   },
   {
     icon: Globe, color: "#22C55E", name: "Global Ops", textOnColor: "#000",
     title: "Expand anywhere. Know the rules before you break them.",
-    desc: "Setting up in a new country? Importing from Asia? Need a tax-efficient structure? Get specific guidance for 100+ jurisdictions — not generic advice, but the exact steps, costs, and risks for YOUR situation.",
-    features: ["100+ jurisdictions", "Tax optimization", "Import/export", "Crypto compliance", "Step-by-step guidance"],
+    desc: "Setting up in a new country? Importing from Asia? Need a tax-efficient structure? Get specific guidance for your exact situation — the steps, the costs, the risks, and what others got wrong before you.",
+    features: ["Any jurisdiction", "Tax optimization", "Import/export", "Crypto compliance", "Step-by-step guidance"],
     preview: GlobalOpsPreview,
   },
   {
     icon: TrendingUp, color: "#A855F7", name: "Invest", textOnColor: "#fff",
     title: "Should you invest? Get the real numbers.",
-    desc: "Paste a deal, describe an opportunity, or evaluate a startup. Get expected value, risk scores, and an honest verdict — the same math hedge funds use, explained in plain language. Stop guessing. Start calculating.",
+    desc: "Paste a deal, describe an opportunity, or evaluate a startup. Get the real math — expected value, risk scores, and an honest verdict. The same frameworks hedge funds use, in plain language. Know the answer before you wire the money.",
     features: ["Expected value", "Risk scores", "Honest verdict", "Plain language", "Stress testing"],
     preview: InvestPreview,
   },
@@ -322,10 +322,10 @@ export default function LandingPage() {
             letterSpacing: 2, color: "var(--text-primary)", maxWidth: 700,
             lineHeight: 1.1, margin: "32px auto 16px",
           }}>
-            Build smarter. Launch faster. Decide with confidence.
+            See what happens before it happens.
           </h1>
           <p style={{ fontSize: isMobile ? 15 : 18, color: "var(--text-secondary)", maxWidth: 520, margin: "0 auto 40px", lineHeight: 1.6 }}>
-            Test any business idea with 15 AI agents before you invest. Detect bad deals in seconds. Go from zero to business in 90 days. The AI that protects your money and your time.
+            Test any idea before you invest. Spot bad deals before you sign. Know how competitors will react before they move. The AI that sees around corners.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/chat" style={{
@@ -342,7 +342,7 @@ export default function LandingPage() {
         </div>
 
         <div style={{ position: "absolute", bottom: 32, left: 0, right: 0, textAlign: "center", fontSize: 12, color: "var(--text-tertiary)" }}>
-          Backed by 100+ specialized intelligence domains
+          Free to start. No credit card required.
         </div>
       </section>
 
@@ -415,19 +415,19 @@ export default function LandingPage() {
       <section style={{ padding: isMobile ? "48px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
         <FadeSection>
           <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 28, color: "var(--text-primary)", marginBottom: 8, textAlign: "center" }}>
-            Tools that protect your decisions
+            See around corners
           </h2>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", textAlign: "center", marginBottom: 40 }}>
-            Each one answers a question that could save you thousands.
+            Each tool answers a question you should ask before every big decision.
           </p>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 16 }}>
             {([
-              { icon: Shield, title: "Threat Radar", desc: "What could hurt my business right now? Scan market, regulatory, operational, cyber, and geopolitical risks.", color: "#ef4444", cmd: "/threats" },
-              { icon: Scan, title: "Deal X-Ray", desc: "Is this deal legit? Spot red flags, hidden incentives, and things that don't add up.", color: "#f59e0b", cmd: "/xray" },
-              { icon: Swords, title: "War Game", desc: "How will competitors react? 5 AI agents simulate their moves so you can plan yours.", color: "#D4AF37", cmd: "/wargame" },
-              { icon: GitBranch, title: "Causal Map", desc: "Did that actually work? Separate real causes from coincidences with confidence scores.", color: "#6366F1", cmd: "/causal" },
-              { icon: Map, title: "Scenario Planner", desc: "What could happen next year? 4 possible futures with early warnings and backup plans.", color: "#A855F7", cmd: "/scenarios" },
-              { icon: Target, title: "Negotiation War Room", desc: "Walk in prepared. Walk out winning. Full prep from intel to practice rounds.", color: "#F97316", cmd: "/negotiate" },
+              { icon: Shield, title: "Threat Radar", desc: "What could hurt my business next? Scan every risk before it becomes a problem.", color: "#ef4444", cmd: "/threats" },
+              { icon: Scan, title: "Deal X-Ray", desc: "Is this deal hiding something? Spot red flags and hidden incentives instantly.", color: "#f59e0b", cmd: "/xray" },
+              { icon: Swords, title: "War Game", desc: "What will competitors do next? AI simulates their moves so you can plan yours.", color: "#D4AF37", cmd: "/wargame" },
+              { icon: GitBranch, title: "Causal Map", desc: "Did that actually cause the result? Separate real causes from coincidences.", color: "#6366F1", cmd: "/causal" },
+              { icon: Map, title: "Scenario Planner", desc: "What could happen next year? See possible futures with early warnings and backup plans.", color: "#A855F7", cmd: "/scenarios" },
+              { icon: Target, title: "Negotiation War Room", desc: "How do I walk out winning? Full prep from intel to practice rounds.", color: "#F97316", cmd: "/negotiate" },
             ] as const).map((tool, i) => {
               const Icon = tool.icon;
               return (
@@ -461,25 +461,25 @@ export default function LandingPage() {
             fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 28,
             color: "var(--text-primary)", marginBottom: 8,
           }}>
-            Why Signux knows more than other AIs
+            Not just another AI
           </h2>
           <p style={{
             fontSize: 14, color: "var(--text-secondary)", marginBottom: 32,
             maxWidth: 540, margin: "0 auto 32px",
           }}>
-            We spent months building specialized knowledge across 100+ business domains. Every answer draws from this intelligence — not just the internet.
+            While other AIs search the internet, Signux draws from a proprietary knowledge base built over months across specialized business domains — from competitive strategy to risk detection to negotiation frameworks. This is why our answers are different.
           </p>
           <div style={{
             display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(3, 1fr)", gap: 12,
             maxWidth: 720, margin: "0 auto 24px",
           }}>
             {[
-              { name: "Protecting your deals", count: 12, domains: "Spot lies, detect threats, verify claims, stay secure...", color: "#DC2626" },
-              { name: "Outsmarting competitors", count: 15, domains: "Predict moves, find advantages, win markets...", color: "#8B5CF6" },
-              { name: "Growing your revenue", count: 18, domains: "Price right, spend smart, scale profitably...", color: "#D4AF37" },
-              { name: "Running your business", count: 14, domains: "Build systems, delegate, scale without chaos...", color: "#14B8A6" },
-              { name: "Going international", count: 16, domains: "Navigate regulations, optimize taxes, expand safely...", color: "#22C55E" },
-              { name: "Making better decisions", count: 10, domains: "Separate fact from noise, predict outcomes...", color: "#06B6D4" },
+              { name: "Protecting your deals", domains: "Spot lies, detect threats, verify claims, stay secure", color: "#DC2626" },
+              { name: "Outsmarting competitors", domains: "Predict moves, find advantages, win markets", color: "#8B5CF6" },
+              { name: "Growing your revenue", domains: "Price right, spend smart, scale profitably", color: "#D4AF37" },
+              { name: "Running your business", domains: "Build systems, delegate, scale without chaos", color: "#14B8A6" },
+              { name: "Going international", domains: "Navigate regulations, optimize taxes, expand safely", color: "#22C55E" },
+              { name: "Making better decisions", domains: "Separate fact from noise, predict outcomes", color: "#06B6D4" },
             ].map((cat, i) => (
               <div key={i} style={{
                 padding: "16px 14px", borderRadius: 10,
@@ -490,9 +490,7 @@ export default function LandingPage() {
                   <div style={{ width: 6, height: 6, borderRadius: "50%", background: cat.color, opacity: 0.6 }} />
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{cat.name}</span>
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: cat.color, fontFamily: "var(--font-brand)", marginBottom: 4 }}>
-                  {cat.count}+
-                </div>
+                <div style={{ height: 4 }} />
                 <div style={{ fontSize: 10, color: "var(--text-tertiary)", lineHeight: 1.4 }}>
                   {cat.domains}
                 </div>
@@ -505,11 +503,8 @@ export default function LandingPage() {
             background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.15)",
           }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#D4AF37", animation: "pulse 2s ease-in-out infinite" }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
-              100+
-            </span>
             <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-              intelligence domains and growing weekly
+              New domains added weekly
             </span>
           </div>
         </FadeSection>
@@ -594,10 +589,10 @@ export default function LandingPage() {
                 <CircleSlash size={12} /> Reality Check
               </div>
               <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 32, color: "var(--text-primary)", marginBottom: 12, lineHeight: 1.2 }}>
-                Is it still worth it? Ask before you spend.
+                Is it still worth it? Know in 10 seconds.
               </h2>
               <p style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 24 }}>
-                Thinking about dropshipping? Wondering if that $2,000 course is worth it? Get an honest GO, CAUTION, or STOP in 10 seconds — with real data, not opinions.
+                Thinking about dropshipping? Wondering if that course is worth it? Get an honest GO, CAUTION, or STOP — with real data, not opinions. Know before you spend.
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
                 {["Web search", "Real data", "10 seconds", "GO / CAUTION / STOP"].map(f => (
@@ -711,7 +706,7 @@ export default function LandingPage() {
             Stop guessing. Start knowing.
           </h2>
           <p style={{ fontSize: 16, color: "var(--text-secondary)", marginBottom: 32 }}>
-            Free to try. See what your AI advisor finds in 30 seconds.
+            See what your AI finds in 30 seconds. Free to start.
           </p>
           <Link href="/chat" style={{
             display: "inline-flex", padding: "16px 40px", borderRadius: 50,

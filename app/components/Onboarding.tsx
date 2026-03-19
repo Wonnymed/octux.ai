@@ -27,10 +27,10 @@ const LEVELS = [
 
 const MODE_DESCRIPTIONS: Record<string, string> = {
   launchpad: "Launchpad will find the right business for your skills, validate it, and build a 90-day blueprint.",
-  simulate: "Simulate will stress-test your decision with 15 AI agents debating from every angle.",
+  simulate: "Simulate will stress-test your decision with AI agents debating from every angle.",
   research: "Research will search multiple sources and compile a structured report with citations.",
   invest: "Invest will evaluate your deal with quantitative formulas — expected value, Kelly, Bayesian updates.",
-  globalops: "Global Ops will analyze cross-border structures, compliance, and tax optimization across 100+ jurisdictions.",
+  globalops: "Global Ops will analyze cross-border structures, compliance, and tax optimization across multiple jurisdictions.",
   chat: "Chat is your open canvas — ask anything about business, strategy, or operations.",
 };
 

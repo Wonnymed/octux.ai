@@ -39,8 +39,8 @@ const MODE_BANNERS: {
   key: Mode; icon: any; label: string; desc: string;
   color: string; bg: string; border: string;
 }[] = [
-  { key: "simulate", icon: Zap, label: "Simulate", desc: "Test before you invest", color: "#D4AF37", bg: "rgba(212,175,55,0.04)", border: "rgba(212,175,55,0.12)" },
-  { key: "intel", icon: Shield, label: "Intel", desc: "See what you're missing", color: "#DC2626", bg: "rgba(220,38,38,0.04)", border: "rgba(220,38,38,0.12)" },
+  { key: "simulate", icon: Zap, label: "Simulate", desc: "See what happens before it happens", color: "#D4AF37", bg: "rgba(212,175,55,0.04)", border: "rgba(212,175,55,0.12)" },
+  { key: "intel", icon: Shield, label: "Intel", desc: "Know what others don't", color: "#DC2626", bg: "rgba(220,38,38,0.04)", border: "rgba(220,38,38,0.12)" },
   { key: "launchpad", icon: Rocket, label: "Launchpad", desc: "Build in 90 days", color: "#14B8A6", bg: "rgba(20,184,166,0.04)", border: "rgba(20,184,166,0.12)" },
   { key: "globalops", icon: Globe, label: "Global Ops", desc: "Expand anywhere", color: "#22C55E", bg: "rgba(34,197,94,0.04)", border: "rgba(34,197,94,0.12)" },
   { key: "invest", icon: TrendingUp, label: "Invest", desc: "Get the real numbers", color: "#A855F7", bg: "rgba(168,85,247,0.04)", border: "rgba(168,85,247,0.12)" },
@@ -110,7 +110,7 @@ export default function WelcomeScreen({
           fontSize: 14, color: "var(--text-secondary)", maxWidth: 380,
           textAlign: "center", lineHeight: 1.5, marginBottom: 36,
         }}>
-          What are you building, launching, or deciding?
+          What do you want to know before everyone else?
         </p>
 
         {/* Input */}

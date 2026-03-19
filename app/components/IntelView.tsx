@@ -206,7 +206,7 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
         color: "#DC2626", textTransform: "uppercase", marginBottom: 24,
         opacity: 0.7,
       }}>
-        See what others miss
+        Know what others don't
       </p>
 
       {/* Knowledge badge */}
@@ -217,7 +217,7 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
         marginBottom: 28, fontSize: 11, color: "var(--text-tertiary)",
       }}>
         <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#DC2626" }} />
-        7 tools backed by 100+ specialized knowledge domains
+        Specialized intelligence tools powered by proprietary knowledge
       </div>
 
       {/* Tools grid — 3+3 */}
