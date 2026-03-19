@@ -173,11 +173,11 @@ export default function LaunchpadView({ lang }: { lang: string }) {
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
               <span style={{
                 fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 700,
-                letterSpacing: 8, color: "#fff",
+                letterSpacing: 8, color: "var(--text-primary)",
               }}>LAUNCH</span>
               <span style={{
                 fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 300,
-                letterSpacing: 4, color: "#fff", opacity: 0.3, marginLeft: 8,
+                letterSpacing: 4, color: "var(--text-tertiary)", marginLeft: 8,
               }}>PAD</span>
             </div>
 
@@ -212,18 +212,18 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
                   <div style={{
                     width: 28, height: 28, borderRadius: "50%",
-                    border: i === 0 ? `1px solid ${tealAlpha(0.4)}` : "1px solid rgba(255,255,255,0.08)",
+                    border: i === 0 ? `1px solid ${tealAlpha(0.4)}` : "1px solid var(--border-secondary)",
                     background: i === 0 ? tealAlpha(0.15) : "transparent",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600,
-                    color: i === 0 ? TEAL : "rgba(255,255,255,0.2)",
+                    color: i === 0 ? TEAL : "var(--text-tertiary)",
                   }}>
                     {i + 1}
                   </div>
                   <span style={{
                     fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1,
                     textTransform: "uppercase",
-                    color: i === 0 ? tealAlpha(0.7) : "rgba(255,255,255,0.2)",
+                    color: i === 0 ? tealAlpha(0.7) : "var(--text-tertiary)",
                     whiteSpace: "nowrap",
                   }}>
                     {step}
@@ -236,7 +236,7 @@ export default function LaunchpadView({ lang }: { lang: string }) {
           {/* ── CENTRAL TEXT ── */}
           <div style={{
             textAlign: "center", maxWidth: 520, margin: "0 auto 40px",
-            fontSize: 15, color: "rgba(255,255,255,0.5)", lineHeight: 1.6,
+            fontSize: 15, color: "var(--text-secondary)", lineHeight: 1.6,
             animation: "fadeIn 0.55s ease-out",
           }}>
             {t("launchpad.central_text")}
@@ -259,8 +259,8 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                   key={p.tag}
                   onClick={() => startDiscovery(p.persona)}
                   style={{
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    background: "var(--card-bg)",
+                    border: "1px solid var(--card-border)",
                     borderRadius: 10, padding: "16px",
                     cursor: "pointer", transition: "all 200ms",
                     textAlign: "left", borderLeft: "2px solid transparent",
@@ -271,19 +271,19 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                     e.currentTarget.style.background = rgba(0.03);
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+                    e.currentTarget.style.borderColor = "var(--card-border)";
                     e.currentTarget.style.borderLeftColor = "transparent";
-                    e.currentTarget.style.background = "rgba(255,255,255,0.02)";
+                    e.currentTarget.style.background = "var(--card-bg)";
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
                     <div style={{ width: 4, height: 4, borderRadius: "50%", background: p.color }} />
                     <span style={{
                       fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1,
-                      textTransform: "uppercase", color: "rgba(255,255,255,0.4)",
+                      textTransform: "uppercase", color: "var(--text-secondary)",
                     }}>{p.tag}</span>
                   </div>
-                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 13, color: "var(--text-primary)", lineHeight: 1.5 }}>
                     {p.desc}
                   </div>
                 </button>
@@ -297,7 +297,7 @@ export default function LaunchpadView({ lang }: { lang: string }) {
               onClick={() => startDiscovery()}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 10,
-                background: TEAL, color: "#fff", border: "none", borderRadius: 50,
+                background: TEAL, color: "var(--text-primary)", border: "none", borderRadius: 50,
                 padding: "14px 36px",
                 fontFamily: "var(--font-brand)", fontWeight: 600, fontSize: 14,
                 letterSpacing: 2, textTransform: "uppercase",
@@ -315,7 +315,7 @@ export default function LaunchpadView({ lang }: { lang: string }) {
               <Rocket size={16} />
               {t("launchpad.cta")}
             </button>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.18)", marginTop: 16 }}>
+            <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 16 }}>
               {t("launchpad.disclaimer")}
             </div>
           </div>
@@ -345,7 +345,7 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                 autoFocus
                 style={{
                   width: "100%", minHeight: 80, padding: 16,
-                  background: "rgba(255,255,255,0.02)",
+                  background: "var(--card-bg)",
                   border: `1px solid ${tealAlpha(0.12)}`,
                   borderRadius: 12, color: "var(--text-primary)",
                   fontSize: 15, lineHeight: 1.6, resize: "none", outline: "none",
@@ -358,13 +358,13 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                 {SKILL_PILLS.map(s => (
                   <button key={s} onClick={() => setSkills(prev => prev ? `${prev}, ${s}` : s)} style={{
                     padding: "5px 12px", borderRadius: 20,
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "rgba(255,255,255,0.4)", fontSize: 12,
+                    background: "var(--pill-bg)",
+                    border: "1px solid var(--pill-border)",
+                    color: "var(--pill-text)", fontSize: 12,
                     cursor: "pointer", transition: "all 150ms",
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = tealAlpha(0.2); e.currentTarget.style.color = "rgba(255,255,255,0.7)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "rgba(255,255,255,0.4)"; }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = tealAlpha(0.2); e.currentTarget.style.color = "var(--text-primary)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--pill-border)"; e.currentTarget.style.color = "var(--pill-text)"; }}
                   >{s}</button>
                 ))}
               </div>
@@ -381,15 +381,15 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                 {TIME_OPTIONS.map(opt => (
                   <button key={opt.value} onClick={() => setTimeAvailable(opt.value)} style={{
                     padding: "16px 20px", borderRadius: 12, textAlign: "left",
-                    border: timeAvailable === opt.value ? `1px solid ${tealAlpha(0.4)}` : "1px solid rgba(255,255,255,0.06)",
-                    background: timeAvailable === opt.value ? tealAlpha(0.06) : "rgba(255,255,255,0.02)",
-                    color: timeAvailable === opt.value ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.5)",
+                    border: timeAvailable === opt.value ? `1px solid ${tealAlpha(0.4)}` : "1px solid var(--card-border)",
+                    background: timeAvailable === opt.value ? tealAlpha(0.06) : "var(--card-bg)",
+                    color: timeAvailable === opt.value ? "var(--text-primary)" : "var(--text-secondary)",
                     fontSize: 14, cursor: "pointer", transition: "all 200ms",
                     display: "flex", alignItems: "center", gap: 12,
                   }}>
                     <div style={{
                       width: 20, height: 20, borderRadius: "50%",
-                      border: timeAvailable === opt.value ? `2px solid ${TEAL}` : "1px solid rgba(255,255,255,0.15)",
+                      border: timeAvailable === opt.value ? `2px solid ${TEAL}` : "1px solid var(--text-tertiary)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       flexShrink: 0,
                     }}>
@@ -412,9 +412,9 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                 {CAPITAL_OPTIONS.map(opt => (
                   <button key={opt.value} onClick={() => setCapital(opt.value)} style={{
                     padding: "16px 20px", borderRadius: 12, textAlign: "center",
-                    border: capital === opt.value ? `1px solid ${tealAlpha(0.4)}` : "1px solid rgba(255,255,255,0.06)",
-                    background: capital === opt.value ? tealAlpha(0.06) : "rgba(255,255,255,0.02)",
-                    color: capital === opt.value ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.5)",
+                    border: capital === opt.value ? `1px solid ${tealAlpha(0.4)}` : "1px solid var(--card-border)",
+                    background: capital === opt.value ? tealAlpha(0.06) : "var(--card-bg)",
+                    color: capital === opt.value ? "var(--text-primary)" : "var(--text-secondary)",
                     fontSize: 14, fontWeight: 500, cursor: "pointer", transition: "all 200ms",
                   }}>
                     {opt.label}
@@ -437,9 +437,9 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                   style={{ width: "100%", accentColor: TEAL }}
                 />
                 <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>{t("launchpad.conservative")}</span>
+                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{t("launchpad.conservative")}</span>
                   <span style={{ fontSize: 16, fontWeight: 600, color: TEAL }}>{riskTolerance}/10</span>
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>{t("launchpad.aggressive")}</span>
+                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{t("launchpad.aggressive")}</span>
                 </div>
               </div>
             </div>
@@ -455,9 +455,9 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                 {PRIORITY_OPTIONS.map(p => (
                   <button key={p} onClick={() => togglePriority(p)} style={{
                     padding: "10px 18px", borderRadius: 24,
-                    border: priorities.includes(p) ? `1px solid ${tealAlpha(0.4)}` : "1px solid rgba(255,255,255,0.08)",
-                    background: priorities.includes(p) ? tealAlpha(0.08) : "rgba(255,255,255,0.02)",
-                    color: priorities.includes(p) ? TEAL : "rgba(255,255,255,0.5)",
+                    border: priorities.includes(p) ? `1px solid ${tealAlpha(0.4)}` : "1px solid var(--border-secondary)",
+                    background: priorities.includes(p) ? tealAlpha(0.08) : "var(--card-bg)",
+                    color: priorities.includes(p) ? TEAL : "var(--text-secondary)",
                     fontSize: 13, fontWeight: priorities.includes(p) ? 600 : 400,
                     cursor: "pointer", transition: "all 150ms",
                   }}>
@@ -465,7 +465,7 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                   </button>
                 ))}
               </div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 12 }}>
+              <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 12 }}>
                 {t("launchpad.select_multiple")}
               </div>
             </div>
@@ -489,7 +489,7 @@ export default function LaunchpadView({ lang }: { lang: string }) {
             {[0, 1, 2, 3, 4].map(i => (
               <div key={i} style={{
                 flex: 1, height: 3, borderRadius: 2,
-                background: i <= questionIndex ? TEAL : "rgba(255,255,255,0.06)",
+                background: i <= questionIndex ? TEAL : "var(--card-border)",
                 transition: "background 0.3s ease",
               }} />
             ))}
@@ -511,13 +511,13 @@ export default function LaunchpadView({ lang }: { lang: string }) {
               onClick={questionIndex === 0 ? reset : prevQuestion}
               style={{
                 display: "flex", alignItems: "center", gap: 6,
-                background: "none", border: "1px solid rgba(255,255,255,0.08)",
+                background: "none", border: "1px solid var(--border-secondary)",
                 borderRadius: 8, padding: "10px 18px",
-                color: "rgba(255,255,255,0.4)", fontSize: 13,
+                color: "var(--text-secondary)", fontSize: 13,
                 cursor: "pointer", transition: "all 150ms",
               }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"}
-              onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"}
+              onMouseEnter={e => e.currentTarget.style.borderColor = "var(--card-hover-border)"}
+              onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border-secondary)"}
             >
               <ChevronLeft size={14} />
               {questionIndex === 0 ? t("launchpad.back") : t("launchpad.previous")}
@@ -530,7 +530,7 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                 display: "flex", alignItems: "center", gap: 6,
                 background: canProceed() ? TEAL : tealAlpha(0.2),
                 border: "none", borderRadius: 8, padding: "10px 24px",
-                color: canProceed() ? "#fff" : "rgba(255,255,255,0.3)",
+                color: canProceed() ? "var(--text-primary)" : "var(--text-secondary)",
                 fontSize: 13, fontWeight: 600,
                 cursor: canProceed() ? "pointer" : "not-allowed",
                 transition: "all 200ms",
@@ -572,7 +572,7 @@ export default function LaunchpadView({ lang }: { lang: string }) {
           }}>
             {t("launchpad.analyzing")}
           </div>
-          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
+          <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
             {t("launchpad.analyzing_desc")}
           </div>
         </div>
@@ -613,13 +613,13 @@ export default function LaunchpadView({ lang }: { lang: string }) {
           <div style={{
             padding: 20, borderRadius: 12,
             border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.05)",
-            color: "rgba(255,255,255,0.6)", fontSize: 14, marginBottom: 24,
+            color: "var(--text-primary)", fontSize: 14, marginBottom: 24,
           }}>
             {error}
           </div>
         ) : (
           <div style={{
-            fontSize: 14, color: "rgba(255,255,255,0.4)", marginBottom: 28,
+            fontSize: 14, color: "var(--text-secondary)", marginBottom: 28,
           }}>
             {t("launchpad.results_desc")}
           </div>
@@ -632,8 +632,8 @@ export default function LaunchpadView({ lang }: { lang: string }) {
             return (
               <div key={i} style={{
                 padding: 20, borderRadius: 14,
-                border: "1px solid rgba(255,255,255,0.06)",
-                background: "rgba(255,255,255,0.02)",
+                border: "1px solid var(--card-border)",
+                background: "var(--card-bg)",
                 animation: `fadeInUp 0.3s ease-out`,
                 animationDelay: `${i * 0.1}s`,
                 animationFillMode: "both",
@@ -657,23 +657,23 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                     <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>
                       {idea.name}
                     </div>
-                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
+                    <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5 }}>
                       {idea.description}
                     </div>
                   </div>
                 </div>
 
                 {/* Why it matches */}
-                <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid var(--divider)" }}>
                   <div style={{
                     fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1.5,
-                    textTransform: "uppercase", color: "rgba(255,255,255,0.25)", marginBottom: 8,
+                    textTransform: "uppercase", color: "var(--text-tertiary)", marginBottom: 8,
                   }}>
                     Why it matches
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     {idea.whyItMatches?.map((reason, j) => (
-                      <div key={j} style={{ display: "flex", gap: 8, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+                      <div key={j} style={{ display: "flex", gap: 8, fontSize: 12, color: "var(--text-secondary)" }}>
                         <Check size={12} style={{ color: TEAL, flexShrink: 0, marginTop: 2 }} />
                         <span>{reason}</span>
                       </div>
@@ -691,8 +691,8 @@ export default function LaunchpadView({ lang }: { lang: string }) {
                     { label: "Risk", value: idea.riskLevel },
                   ].map(m => (
                     <div key={m.label} style={{ display: "flex", gap: 4 }}>
-                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>{m.label}:</span>
-                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>{m.value}</span>
+                      <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{m.label}:</span>
+                      <span style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 500 }}>{m.value}</span>
                     </div>
                   ))}
                 </div>
@@ -705,9 +705,9 @@ export default function LaunchpadView({ lang }: { lang: string }) {
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button onClick={reset} style={{
             display: "flex", alignItems: "center", gap: 6,
-            background: "none", border: "1px solid rgba(255,255,255,0.08)",
+            background: "none", border: "1px solid var(--border-secondary)",
             borderRadius: 8, padding: "10px 20px",
-            color: "rgba(255,255,255,0.5)", fontSize: 13,
+            color: "var(--text-secondary)", fontSize: 13,
             cursor: "pointer",
           }}>
             <Rocket size={14} /> {t("launchpad.start_over")}

@@ -161,13 +161,13 @@ export default function SimulationEngine(props: SimulationEngineProps) {
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 0 }}>
               <span style={{
                 fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 700,
-                letterSpacing: 8, color: "#fff",
+                letterSpacing: 8, color: "var(--text-primary)",
               }}>
                 SIMULATE
               </span>
               <span style={{
                 fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 300,
-                letterSpacing: 4, color: "#fff", opacity: 0.3, marginLeft: 8,
+                letterSpacing: 4, color: "var(--text-tertiary)", marginLeft: 8,
               }}>
                 ENGINE
               </span>
@@ -204,7 +204,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
                 }} />
                 <span style={{
                   fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 1.5,
-                  textTransform: "uppercase" as const, color: "rgba(255,255,255,0.4)",
+                  textTransform: "uppercase" as const, color: "var(--text-secondary)",
                 }}>
                   {cap}
                 </span>
@@ -217,7 +217,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
             style={{
               border: simScenario.trim() ? "1px solid rgba(212,175,55,0.3)" : "1px solid rgba(212,175,55,0.12)",
               borderRadius: 16,
-              background: simScenario.trim() ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.02)",
+              background: simScenario.trim() ? "var(--card-bg)" : "var(--card-bg)",
               padding: isMobile ? 16 : 20,
               transition: "all 300ms ease",
               boxShadow: simScenario.trim()
@@ -229,13 +229,13 @@ export default function SimulationEngine(props: SimulationEngineProps) {
             onFocus={e => {
               e.currentTarget.style.borderColor = "rgba(212,175,55,0.3)";
               e.currentTarget.style.boxShadow = "0 0 30px rgba(212,175,55,0.06), 0 0 60px rgba(212,175,55,0.03)";
-              e.currentTarget.style.background = "rgba(255,255,255,0.03)";
+              e.currentTarget.style.background = "var(--card-bg)";
             }}
             onBlur={e => {
               if (!simScenario.trim()) {
                 e.currentTarget.style.borderColor = "rgba(212,175,55,0.12)";
                 e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.background = "rgba(255,255,255,0.02)";
+                e.currentTarget.style.background = "var(--card-bg)";
               }
             }}
           >
@@ -275,7 +275,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
           <div style={{ marginBottom: 24, animation: "fadeIn 0.6s ease-out" }}>
             <div style={{
               fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
-              textTransform: "uppercase" as const, color: "rgba(255,255,255,0.25)",
+              textTransform: "uppercase" as const, color: "var(--text-tertiary)",
               marginBottom: 12,
             }}>
               QUICK SCENARIOS
@@ -290,8 +290,8 @@ export default function SimulationEngine(props: SimulationEngineProps) {
                   key={sc.tag}
                   onClick={() => setSimScenario(sc.fill)}
                   style={{
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    background: "var(--card-bg)",
+                    border: "1px solid var(--card-border)",
                     borderRadius: 10, padding: "14px 16px",
                     cursor: "pointer", transition: "all 200ms",
                     textAlign: "left", position: "relative",
@@ -303,9 +303,9 @@ export default function SimulationEngine(props: SimulationEngineProps) {
                     e.currentTarget.style.background = "rgba(212,175,55,0.03)";
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+                    e.currentTarget.style.borderColor = "var(--card-border)";
                     e.currentTarget.style.borderLeftColor = "transparent";
-                    e.currentTarget.style.background = "rgba(255,255,255,0.02)";
+                    e.currentTarget.style.background = "var(--card-bg)";
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
@@ -315,13 +315,13 @@ export default function SimulationEngine(props: SimulationEngineProps) {
                     }} />
                     <span style={{
                       fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1,
-                      textTransform: "uppercase" as const, color: "rgba(255,255,255,0.4)",
+                      textTransform: "uppercase" as const, color: "var(--text-secondary)",
                     }}>
                       {sc.tag}
                     </span>
                   </div>
                   <div style={{
-                    fontSize: 13, color: "rgba(255,255,255,0.7)",
+                    fontSize: 13, color: "var(--text-primary)",
                     lineHeight: 1.4,
                   }}>
                     {sc.title}
@@ -338,9 +338,9 @@ export default function SimulationEngine(props: SimulationEngineProps) {
             alignItems: isMobile ? "flex-start" : "center",
             justifyContent: "space-between",
             padding: "16px 20px",
-            border: "1px solid rgba(255,255,255,0.04)",
+            border: "1px solid var(--divider)",
             borderRadius: 12,
-            background: "rgba(255,255,255,0.015)",
+            background: "var(--card-bg)",
             marginBottom: 32,
             gap: isMobile ? 16 : 12,
             animation: "fadeIn 0.7s ease-out",
@@ -363,17 +363,17 @@ export default function SimulationEngine(props: SimulationEngineProps) {
                 ))}
                 <div style={{
                   width: 28, height: 28, borderRadius: "50%",
-                  background: "rgba(255,255,255,0.06)", display: "flex",
+                  background: "var(--card-border)", display: "flex",
                   alignItems: "center", justifyContent: "center",
-                  fontSize: 9, fontWeight: 500, color: "rgba(255,255,255,0.4)",
+                  fontSize: 9, fontWeight: 500, color: "var(--text-secondary)",
                   border: "2px solid var(--bg-primary)",
                   marginLeft: -6,
                 }}>
                   +10
                 </div>
               </div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
-                <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>15 specialist agents</span> will analyze your scenario
+              <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>15 specialist agents</span> will analyze your scenario
               </div>
             </div>
 
@@ -388,7 +388,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
                 </div>
                 <div style={{
                   fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1,
-                  textTransform: "uppercase" as const, color: "rgba(255,255,255,0.25)",
+                  textTransform: "uppercase" as const, color: "var(--text-tertiary)",
                 }}>
                   ROUNDS
                 </div>
@@ -402,7 +402,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
                 </div>
                 <div style={{
                   fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1,
-                  textTransform: "uppercase" as const, color: "rgba(255,255,255,0.25)",
+                  textTransform: "uppercase" as const, color: "var(--text-tertiary)",
                 }}>
                   RISK AXES
                 </div>
@@ -418,7 +418,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
               style={{
                 display: "inline-flex", alignItems: "center", gap: 10,
                 background: simScenario.trim() && !simStarting ? "var(--accent)" : "rgba(212,175,55,0.3)",
-                color: "#000", border: "none", borderRadius: 50,
+                color: "var(--bg-primary)", border: "none", borderRadius: 50,
                 padding: "14px 36px",
                 fontFamily: "var(--font-brand)", fontWeight: 600, fontSize: 14,
                 letterSpacing: 2, textTransform: "uppercase" as const,
@@ -438,14 +438,14 @@ export default function SimulationEngine(props: SimulationEngineProps) {
               }}
             >
               {simStarting ? (
-                <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2, borderColor: "rgba(0,0,0,0.2)", borderTopColor: "#000" }} />
+                <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2, borderColor: "rgba(0,0,0,0.2)", borderTopColor: "var(--bg-primary)" }} />
               ) : (
                 <Play size={16} />
               )}
               {simStarting ? "INITIALIZING..." : "RUN SIMULATION"}
             </button>
             <div style={{
-              fontSize: 11, color: "rgba(255,255,255,0.2)",
+              fontSize: 11, color: "var(--text-tertiary)",
               marginTop: 16,
             }}>
               Simulations take 60-120s. Always verify with qualified professionals.
@@ -496,7 +496,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
                     background: isDone ? "var(--success)" : isCurrent ? "var(--bg-primary)" : "var(--bg-tertiary)",
                     border: isCurrent ? "2px solid var(--accent)" : isDone ? "none" : "1px solid var(--border-primary)",
                   }}>
-                    {isDone && <Check size={11} style={{ color: "#fff" }} />}
+                    {isDone && <Check size={11} style={{ color: "var(--text-primary)" }} />}
                     {isCurrent && <span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} />}
                   </div>
                   {idx < 5 && (
@@ -815,7 +815,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
             </button>
             <div style={{ position: "relative" }}>
               <button onClick={() => setExportOpen(!exportOpen)} style={{
-                fontSize: 13, color: "#fff", background: "var(--accent)", border: "none",
+                fontSize: 13, color: "var(--text-primary)", background: "var(--accent)", border: "none",
                 padding: "8px 16px", borderRadius: "var(--radius-sm)", cursor: "pointer",
                 fontWeight: 500, display: "flex", alignItems: "center", gap: 6,
               }}>

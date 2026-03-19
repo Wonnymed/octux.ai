@@ -115,7 +115,7 @@ function Divider() {
   return (
     <div style={{
       height: 1, maxWidth: 600, margin: "0 auto",
-      background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent)",
+      background: "linear-gradient(90deg, transparent, var(--divider), transparent)",
     }} />
   );
 }
@@ -131,21 +131,21 @@ function SimulatePreview() {
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {bars.map(b => (
         <div key={b.label}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "rgba(255,255,255,0.3)", marginBottom: 4 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text-tertiary)", marginBottom: 4 }}>
             <span>{b.label}</span><span>{b.pct}%</span>
           </div>
-          <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.04)" }}>
+          <div style={{ height: 4, borderRadius: 2, background: "var(--card-hover-bg)" }}>
             <div style={{ height: "100%", width: `${b.pct}%`, borderRadius: 2, background: b.color, opacity: 0.7 }} />
           </div>
         </div>
       ))}
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, paddingTop: 10, borderTop: "1px solid var(--card-hover-bg)" }}>
         <div>
-          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.2)", textTransform: "uppercase", letterSpacing: 1 }}>Viability</div>
+          <div style={{ fontSize: 9, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: 1 }}>Viability</div>
           <div style={{ fontSize: 22, fontFamily: "var(--font-brand)", fontWeight: 700, color: "#D4AF37" }}>7.3</div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.2)", textTransform: "uppercase", letterSpacing: 1 }}>Est. ROI</div>
+          <div style={{ fontSize: 9, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: 1 }}>Est. ROI</div>
           <div style={{ fontSize: 22, fontFamily: "var(--font-brand)", fontWeight: 700, color: "#22c55e" }}>+23%</div>
         </div>
       </div>
@@ -166,21 +166,21 @@ function ResearchPreview() {
         <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{
             width: 14, height: 14, borderRadius: "50%", flexShrink: 0,
-            border: q.done ? "none" : "1.5px solid rgba(255,255,255,0.1)",
+            border: q.done ? "none" : "1.5px solid var(--card-hover-border)",
             background: q.done ? "rgba(107,138,255,0.3)" : "transparent",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             {q.done && <span style={{ fontSize: 8, color: "#6B8AFF" }}>&#10003;</span>}
-            {q.loading && <span style={{ fontSize: 7, color: "rgba(255,255,255,0.3)" }}>...</span>}
+            {q.loading && <span style={{ fontSize: 7, color: "var(--text-tertiary)" }}>...</span>}
           </div>
-          <span style={{ fontSize: 11, color: q.done ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.18)" }}>{q.text}</span>
+          <span style={{ fontSize: 11, color: q.done ? "var(--text-secondary)" : "var(--text-tertiary)" }}>{q.text}</span>
         </div>
       ))}
       <div style={{ marginTop: 6 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "rgba(255,255,255,0.2)", marginBottom: 4 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "var(--text-tertiary)", marginBottom: 4 }}>
           <span>Progress</span><span>55%</span>
         </div>
-        <div style={{ height: 3, borderRadius: 2, background: "rgba(255,255,255,0.04)" }}>
+        <div style={{ height: 3, borderRadius: 2, background: "var(--card-hover-bg)" }}>
           <div style={{ height: "100%", width: "55%", borderRadius: 2, background: "#6B8AFF", opacity: 0.6 }} />
         </div>
       </div>
@@ -202,23 +202,23 @@ function LaunchpadPreview() {
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div style={{
               width: 10, height: 10, borderRadius: "50%",
-              background: s.active ? "#14B8A6" : "rgba(255,255,255,0.06)",
-              border: s.active ? "none" : "1.5px solid rgba(255,255,255,0.08)",
+              background: s.active ? "#14B8A6" : "var(--card-border)",
+              border: s.active ? "none" : "1.5px solid var(--border-primary)",
               boxShadow: s.active ? "0 0 8px rgba(20,184,166,0.3)" : "none",
             }} />
             {i < steps.length - 1 && (
-              <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.06)" }} />
+              <div style={{ width: 1, height: 28, background: "var(--card-border)" }} />
             )}
           </div>
           <div style={{ paddingTop: 0 }}>
             <span style={{
               fontSize: 11, fontWeight: s.active ? 600 : 400,
-              color: s.active ? "#14B8A6" : "rgba(255,255,255,0.2)",
+              color: s.active ? "#14B8A6" : "var(--text-tertiary)",
             }}>
               {s.label}
             </span>
             {s.active && (
-              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.15)", marginTop: 2 }}>In progress</div>
+              <div style={{ fontSize: 9, color: "var(--text-tertiary)", marginTop: 2 }}>In progress</div>
             )}
           </div>
         </div>
@@ -238,10 +238,10 @@ function GlobalOpsPreview() {
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {jurisdictions.map(j => (
         <div key={j.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{j.name}</span>
+          <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{j.name}</span>
           <span style={{
             fontSize: 12, fontFamily: "var(--font-brand)", fontWeight: 700,
-            color: j.pct >= 80 ? "#22C55E" : j.pct >= 70 ? "#f59e0b" : "rgba(255,255,255,0.3)",
+            color: j.pct >= 80 ? "#22C55E" : j.pct >= 70 ? "#f59e0b" : "var(--text-tertiary)",
           }}>
             {j.pct}%
           </span>
@@ -263,11 +263,11 @@ function InvestPreview() {
       {metrics.map(m => (
         <div key={m.label} style={{
           padding: "10px 8px", borderRadius: 8,
-          background: "rgba(255,255,255,0.02)",
-          border: "1px solid rgba(255,255,255,0.04)",
+          background: "var(--card-bg)",
+          border: "1px solid var(--card-border)",
           textAlign: "center",
         }}>
-          <div style={{ fontSize: 8, color: "rgba(255,255,255,0.2)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{m.label}</div>
+          <div style={{ fontSize: 8, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{m.label}</div>
           <div style={{ fontSize: 16, fontFamily: "var(--font-brand)", fontWeight: 700, color: m.color }}>{m.value}</div>
         </div>
       ))}
@@ -306,12 +306,12 @@ export default function WelcomeScreen({
   const particleCount = isMobile ? 3 : 5;
 
   return (
-    <div style={{ overflowY: "auto", height: "100%", scrollBehavior: "smooth" }}>
+    <div style={{ overflowY: "auto", overflowX: "hidden", height: "100%", scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" as any }}>
 
       {/* ════════════════ HERO ════════════════ */}
       <section style={{
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        minHeight: 520, padding: isMobile ? "48px 16px 32px" : "60px 24px 40px",
+        minHeight: "85vh", padding: isMobile ? "48px 16px 32px" : "60px 24px 40px",
         position: "relative",
       }}>
         {/* Particles */}
@@ -319,7 +319,7 @@ export default function WelcomeScreen({
           <div key={`p-${i}`} style={{
             position: "absolute", top: p.top, left: p.left,
             width: p.size, height: p.size, borderRadius: "50%",
-            background: "rgba(255,255,255,0.12)", pointerEvents: "none",
+            background: "var(--particle-color)", pointerEvents: "none",
             animation: `${p.anim} ${p.dur} ease-in-out infinite`,
             animationDelay: p.delay,
           }} />
@@ -330,7 +330,7 @@ export default function WelcomeScreen({
           position: "absolute", top: "30%", left: "50%",
           transform: "translate(-50%, -50%)",
           width: 700, height: 700,
-          background: "radial-gradient(circle, rgba(212,175,55,0.012) 0%, transparent 70%)",
+          background: "radial-gradient(circle, var(--glow-color) 0%, transparent 70%)",
           pointerEvents: "none",
         }} />
 
@@ -347,10 +347,10 @@ export default function WelcomeScreen({
               <SignuxIcon variant="gold" size={44} />
             </div>
             <div style={{ display: "flex", alignItems: "baseline" }}>
-              <span style={{ fontFamily: "var(--font-brand)", fontSize: isMobile ? 36 : 40, fontWeight: 700, letterSpacing: 5, color: "#fff" }}>
+              <span style={{ fontFamily: "var(--font-brand)", fontSize: isMobile ? 36 : 40, fontWeight: 700, letterSpacing: 5, color: "var(--text-primary)" }}>
                 SIGNUX
               </span>
-              <span style={{ fontFamily: "var(--font-brand)", fontSize: isMobile ? 36 : 40, fontWeight: 300, letterSpacing: 3, color: "#fff", opacity: 0.22, marginLeft: 8 }}>
+              <span style={{ fontFamily: "var(--font-brand)", fontSize: isMobile ? 36 : 40, fontWeight: 300, letterSpacing: 3, color: "var(--text-primary)", opacity: 0.22, marginLeft: 8 }}>
                 AI
               </span>
             </div>
@@ -358,7 +358,7 @@ export default function WelcomeScreen({
 
           {/* Tagline */}
           <p style={{
-            fontSize: 15, color: "rgba(255,255,255,0.35)", maxWidth: 380,
+            fontSize: 15, color: "var(--text-secondary)", maxWidth: 380,
             textAlign: "center", lineHeight: 1.5, marginBottom: 36,
           }}>
             {t("chat.tagline")}
@@ -382,10 +382,10 @@ export default function WelcomeScreen({
           {/* Scroll indicator */}
           {!isMobile && (
             <div style={{ marginTop: 32, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.15)", letterSpacing: 0.5 }}>
+              <span style={{ fontSize: 11, color: "var(--text-tertiary)", letterSpacing: 0.5 }}>
                 {t("chat.explore_modes")}
               </span>
-              <ChevronDown size={16} style={{ color: "rgba(255,255,255,0.12)", animation: "signuxBob 2s ease-in-out infinite" }} />
+              <ChevronDown size={16} style={{ color: "var(--text-tertiary)", opacity: 0.5, animation: "signuxBob 2s ease-in-out infinite" }} />
             </div>
           )}
         </div>
@@ -417,13 +417,13 @@ export default function WelcomeScreen({
                   <h2 style={{
                     fontFamily: "var(--font-brand)", fontWeight: 700,
                     fontSize: isMobile ? 24 : 28, letterSpacing: 2,
-                    color: "#fff", marginBottom: 6, lineHeight: 1.2,
+                    color: "var(--text-primary)", marginBottom: 6, lineHeight: 1.2,
                   }}>
                     {sec.title}
                   </h2>
 
                   {/* Description */}
-                  <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", maxWidth: 500, lineHeight: 1.6, marginBottom: 24 }}>
+                  <p style={{ fontSize: 14, color: "var(--text-secondary)", maxWidth: 500, lineHeight: 1.6, marginBottom: 24 }}>
                     {sec.desc}
                   </p>
 
@@ -432,7 +432,7 @@ export default function WelcomeScreen({
                     {sec.features.map(f => (
                       <span key={f} style={{
                         fontFamily: "var(--font-mono)", fontSize: 10,
-                        color: "rgba(255,255,255,0.25)",
+                        color: "var(--text-tertiary)",
                         display: "flex", alignItems: "center", gap: 5,
                       }}>
                         <span style={{ width: 4, height: 4, borderRadius: "50%", background: hexA(sec.color, 0.4) }} />
@@ -463,8 +463,8 @@ export default function WelcomeScreen({
                 {!isMobile && (
                   <div style={{
                     width: 280, flexShrink: 0, borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,0.05)",
-                    background: "rgba(255,255,255,0.015)", padding: 16, overflow: "hidden",
+                    border: "1px solid var(--card-border)",
+                    background: "var(--card-bg)", padding: 16, overflow: "hidden",
                   }}>
                     {Preview && <Preview />}
                   </div>
@@ -482,7 +482,7 @@ export default function WelcomeScreen({
         <div style={{
           display: "inline-flex", alignItems: "center", gap: 4,
           padding: "3px 8px", borderRadius: 4, marginBottom: 14,
-          background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.4)",
+          background: "var(--card-hover-bg)", color: "var(--text-secondary)",
           fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 2, textTransform: "uppercase",
         }}>
           <Wrench size={10} /> Tools & Agents
@@ -490,37 +490,37 @@ export default function WelcomeScreen({
 
         <h2 style={{
           fontFamily: "var(--font-brand)", fontWeight: 700,
-          fontSize: 24, letterSpacing: 2, color: "#fff", marginBottom: 6,
+          fontSize: 24, letterSpacing: 2, color: "var(--text-primary)", marginBottom: 6,
         }}>
           Specialized business tools
         </h2>
-        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", marginBottom: 24 }}>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 24 }}>
           Purpose-built agents for specific tasks.
         </p>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {TOOLS_ACTIVE.map(tool => (
             <span key={tool} style={{
-              fontSize: 12, color: "rgba(255,255,255,0.3)",
+              fontSize: 12, color: "var(--text-secondary)",
               padding: "6px 14px", borderRadius: 20,
-              border: "1px solid rgba(255,255,255,0.06)",
-              background: "rgba(255,255,255,0.02)",
+              border: "1px solid var(--card-border)",
+              background: "var(--card-bg)",
             }}>
               {tool}
             </span>
           ))}
           {TOOLS_SOON.map(tool => (
             <span key={tool} style={{
-              fontSize: 12, color: "rgba(255,255,255,0.3)",
+              fontSize: 12, color: "var(--text-secondary)",
               padding: "6px 14px", borderRadius: 20,
-              border: "1px solid rgba(255,255,255,0.06)",
-              background: "rgba(255,255,255,0.02)",
+              border: "1px solid var(--card-border)",
+              background: "var(--card-bg)",
               opacity: 0.4, display: "inline-flex", alignItems: "center", gap: 6,
             }}>
               {tool}
               <span style={{
                 fontFamily: "var(--font-mono)", fontSize: 7, letterSpacing: 1,
-                color: "rgba(255,255,255,0.4)", textTransform: "uppercase",
+                color: "var(--text-tertiary)", textTransform: "uppercase",
               }}>
                 SOON
               </span>
@@ -532,7 +532,7 @@ export default function WelcomeScreen({
       {/* ════════════════ FOOTER ════════════════ */}
       <Divider />
       <footer style={{
-        borderTop: "1px solid rgba(255,255,255,0.04)",
+        borderTop: "1px solid var(--divider)",
         padding: isMobile ? "40px 16px 24px" : "48px 24px 32px",
         maxWidth: 880, margin: "0 auto",
       }}>
@@ -545,11 +545,11 @@ export default function WelcomeScreen({
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               <SignuxIcon variant="gold" size={24} />
-              <span style={{ fontFamily: "var(--font-brand)", fontSize: 16, fontWeight: 700, letterSpacing: 3, color: "#fff" }}>
+              <span style={{ fontFamily: "var(--font-brand)", fontSize: 16, fontWeight: 700, letterSpacing: 3, color: "var(--text-primary)" }}>
                 SIGNUX <span style={{ fontWeight: 300, opacity: 0.3 }}>AI</span>
               </span>
             </div>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", maxWidth: 200, lineHeight: 1.5 }}>
+            <p style={{ fontSize: 12, color: "var(--text-tertiary)", maxWidth: 200, lineHeight: 1.5 }}>
               Think through any business decision before you make it.
             </p>
           </div>
@@ -559,7 +559,7 @@ export default function WelcomeScreen({
             <div key={col.header}>
               <div style={{
                 fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
-                textTransform: "uppercase", color: "rgba(255,255,255,0.35)",
+                textTransform: "uppercase", color: "var(--text-secondary)",
                 marginBottom: 12,
               }}>
                 {col.header}
@@ -567,13 +567,13 @@ export default function WelcomeScreen({
               <div style={{ display: "flex", flexDirection: "column" }}>
                 {col.links.map(link => (
                   <span key={link.text} style={{
-                    fontSize: 12, color: "rgba(255,255,255,0.3)",
+                    fontSize: 12, color: "var(--text-tertiary)",
                     padding: "3px 0", cursor: "pointer",
                     transition: "color 0.15s",
                     display: "inline-flex", alignItems: "center",
                   }}
-                    onMouseEnter={e => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.3)"; }}
+                    onMouseEnter={e => { e.currentTarget.style.color = "var(--text-primary)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = "var(--text-tertiary)"; }}
                   >
                     {link.text}
                     {"badge" in link && link.badge && <NewBadge />}
@@ -588,20 +588,20 @@ export default function WelcomeScreen({
         <div style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
           paddingTop: 20, marginTop: 20,
-          borderTop: "1px solid rgba(255,255,255,0.04)",
+          borderTop: "1px solid var(--divider)",
           flexWrap: "wrap", gap: 8,
         }}>
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.15)" }}>
+          <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>
             &copy; 2026 Signux AI. All rights reserved.
           </span>
           <div style={{ display: "flex", gap: 16 }}>
             {["Terms", "Privacy", "Security"].map(link => (
               <span key={link} style={{
-                fontSize: 11, color: "rgba(255,255,255,0.2)", cursor: "pointer",
+                fontSize: 11, color: "var(--text-tertiary)", cursor: "pointer",
                 transition: "color 0.15s",
               }}
-                onMouseEnter={e => { e.currentTarget.style.color = "rgba(255,255,255,0.5)"; }}
-                onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.2)"; }}
+                onMouseEnter={e => { e.currentTarget.style.color = "var(--text-primary)"; }}
+                onMouseLeave={e => { e.currentTarget.style.color = "var(--text-tertiary)"; }}
               >
                 {link}
               </span>

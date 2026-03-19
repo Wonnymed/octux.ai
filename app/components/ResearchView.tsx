@@ -216,13 +216,13 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
               <span style={{
                 fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 700,
-                letterSpacing: 6, color: "#fff",
+                letterSpacing: 6, color: "var(--text-primary)",
               }}>
                 DEEP
               </span>
               <span style={{
                 fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 300,
-                letterSpacing: 3, color: "#fff", opacity: 0.3, marginLeft: 8,
+                letterSpacing: 3, color: "var(--text-secondary)", marginLeft: 8,
               }}>
                 RESEARCH
               </span>
@@ -253,7 +253,7 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
             {processSteps.map((step, i) => (
               <div key={step} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {i > 0 && !isMobile && (
-                  <span style={{ color: "rgba(255,255,255,0.1)", fontSize: 12, marginRight: 4 }}>→</span>
+                  <span style={{ color: "var(--card-hover-border)", fontSize: 12, marginRight: 4 }}>→</span>
                 )}
                 <div style={{
                   width: 20, height: 20, borderRadius: "50%",
@@ -265,7 +265,7 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
                 </div>
                 <span style={{
                   fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 1,
-                  textTransform: "uppercase", color: "rgba(255,255,255,0.3)",
+                  textTransform: "uppercase", color: "var(--text-secondary)",
                 }}>
                   {step}
                 </span>
@@ -328,7 +328,7 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
           <div style={{ marginBottom: 28, animation: "fadeIn 0.6s ease-out" }}>
             <div style={{
               fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
-              textTransform: "uppercase", color: "rgba(255,255,255,0.2)", marginBottom: 12,
+              textTransform: "uppercase", color: "var(--text-tertiary)", marginBottom: 12,
             }}>
               RESEARCH TEMPLATES
             </div>
@@ -344,8 +344,8 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
                     key={tmpl.title}
                     onClick={() => setQuery(tmpl.fill)}
                     style={{
-                      background: "rgba(255,255,255,0.02)",
-                      border: "1px solid rgba(255,255,255,0.05)",
+                      background: "var(--card-bg)",
+                      border: "1px solid var(--card-border)",
                       borderRadius: 10, padding: "14px 16px",
                       cursor: "pointer", transition: "all 200ms",
                       textAlign: "left", display: "flex", gap: 12,
@@ -356,8 +356,8 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
                       e.currentTarget.style.background = "rgba(107,138,255,0.03)";
                     }}
                     onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.05)";
-                      e.currentTarget.style.background = "rgba(255,255,255,0.02)";
+                      e.currentTarget.style.borderColor = "var(--card-border)";
+                      e.currentTarget.style.background = "var(--card-bg)";
                     }}
                   >
                     <div style={{
@@ -368,10 +368,10 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
                       <Icon size={16} style={{ color: tmpl.color }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.7)", marginBottom: 2 }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", marginBottom: 2 }}>
                         {tmpl.title}
                       </div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", lineHeight: 1.4 }}>
+                      <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4 }}>
                         {tmpl.desc}
                       </div>
                     </div>
@@ -388,9 +388,9 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
             alignItems: isMobile ? "flex-start" : "center",
             gap: isMobile ? 12 : 20,
             padding: "16px 20px",
-            border: "1px solid rgba(255,255,255,0.04)",
+            border: "1px solid var(--divider)",
             borderRadius: 12,
-            background: "rgba(255,255,255,0.015)",
+            background: "var(--card-bg)",
             marginBottom: 32,
             animation: "fadeIn 0.7s ease-out",
           }}>
@@ -403,7 +403,7 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
               return (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   {i > 0 && !isMobile && (
-                    <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.06)", marginRight: 8 }} />
+                    <div style={{ width: 1, height: 28, background: "var(--card-border)", marginRight: 8 }} />
                   )}
                   <div style={{
                     width: 28, height: 28, borderRadius: 6,
@@ -413,8 +413,8 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
                     <Icon size={14} style={{ color: item.color }} />
                   </div>
                   <div>
-                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.3 }}>{item.line1}</div>
-                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>{item.line2}</div>
+                    <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.3 }}>{item.line1}</div>
+                    <div style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{item.line2}</div>
                   </div>
                 </div>
               );
@@ -429,7 +429,7 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
               style={{
                 display: "inline-flex", alignItems: "center", gap: 10,
                 background: query.trim() && !loading ? "#6B8AFF" : "rgba(107,138,255,0.3)",
-                color: "#fff", border: "none", borderRadius: 50,
+                color: "var(--text-primary)", border: "none", borderRadius: 50,
                 padding: "14px 36px",
                 fontFamily: "var(--font-brand)", fontWeight: 600, fontSize: 14,
                 letterSpacing: 2, textTransform: "uppercase",
@@ -451,7 +451,7 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
               <Search size={16} />
               START RESEARCH
             </button>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.18)", marginTop: 16 }}>
+            <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 16 }}>
               {t("research.disclaimer")}
             </div>
           </div>
@@ -532,19 +532,19 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
                       ) : isCurrent ? (
                         <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2, borderColor: "rgba(107,138,255,0.2)", borderTopColor: "#6B8AFF" }} />
                       ) : (
-                        <div style={{ width: 8, height: 8, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.15)" }} />
+                        <div style={{ width: 8, height: 8, borderRadius: "50%", border: "1px solid var(--text-tertiary)" }} />
                       )}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{
-                        fontSize: 13, color: isDone ? "rgba(255,255,255,0.5)" : isCurrent ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.3)",
+                        fontSize: 13, color: isDone ? "var(--text-secondary)" : isCurrent ? "var(--text-primary)" : "var(--text-secondary)",
                         lineHeight: 1.5,
                       }}>
                         {q}
                       </div>
                       {isDone && searchResults[i] && (
                         <div style={{
-                          fontSize: 12, color: "rgba(255,255,255,0.25)",
+                          fontSize: 12, color: "var(--text-tertiary)",
                           marginTop: 4, lineHeight: 1.5,
                           maxHeight: 60, overflow: "hidden",
                           maskImage: "linear-gradient(to bottom, black 70%, transparent)",
@@ -571,10 +571,10 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
             }}>
               <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2, borderColor: "rgba(107,138,255,0.2)", borderTopColor: "#6B8AFF" }} />
               <div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>
+                <div style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500 }}>
                   {t("research.synthesizing")}
                 </div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>
+                <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 2 }}>
                   Cross-referencing {searchResults.length} sources
                 </div>
               </div>
@@ -631,7 +631,7 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
             <button
               onClick={() => onContinueInChat(report)}
               style={{
-                fontSize: 13, color: "#fff",
+                fontSize: 13, color: "var(--text-primary)",
                 background: "#6B8AFF", border: "none",
                 padding: "8px 16px", borderRadius: "var(--radius-sm)",
                 cursor: "pointer", display: "flex", alignItems: "center", gap: 6,

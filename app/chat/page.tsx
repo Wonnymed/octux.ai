@@ -784,7 +784,7 @@ export default function ChatPage() {
 
       <main style={{
         flex: 1, display: "flex", flexDirection: "column",
-        background: "var(--bg-primary)", minWidth: 0,
+        background: "var(--bg-primary)", minWidth: 0, minHeight: 0, overflow: "hidden",
       }}>
         <AnimatePresence mode="wait">
           {mode === "research" ? (
