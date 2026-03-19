@@ -6,7 +6,8 @@ import { useIsMobile } from "../lib/useIsMobile";
 import { getProfile } from "../lib/profile";
 import MessageBlock from "./MessageBlock";
 import ChatInput, { type FileAttachment } from "./ChatInput";
-import type { Message } from "../lib/types";
+import type { Message, Mode } from "../lib/types";
+import SignuxFooter from "./SignuxFooter";
 
 /* ═══ Constants ═══ */
 const PURPLE = "#A855F7";
@@ -67,7 +68,7 @@ function CandlestickBG() {
 }
 
 /* ═══ Main Component ═══ */
-export default function InvestView({ lang }: { lang: string }) {
+export default function InvestView({ lang, onSetMode }: { lang: string; onSetMode?: (m: Mode) => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -228,179 +229,229 @@ export default function InvestView({ lang }: { lang: string }) {
   /* ═══ WELCOME STATE ═══ */
   if (messages.length === 0) {
     return (
-      <div style={{
-        flex: 1, display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center",
-        padding: `40px ${pad}`, overflowY: "auto",
-        position: "relative",
-      }}>
-        {/* BG: Candlestick silhouettes */}
-        <CandlestickBG />
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {/* HERO */}
+        <section style={{
+          minHeight: isMobile ? "75vh" : "85vh",
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          padding: isMobile ? "24px 16px 32px" : "40px 24px",
+          position: "relative", overflowX: "hidden",
+        }}>
+          {/* BG: Candlestick silhouettes */}
+          <CandlestickBG />
 
-        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 720, display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
+          <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 720, display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
 
-          {/* Header */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-            {/* Icon box */}
-            <div style={{
-              width: 64, height: 64, borderRadius: 14,
-              border: `1px solid rgba(168,85,247,0.15)`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <TrendingUp size={28} color={PURPLE} />
-            </div>
-
-            {/* Title */}
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: 42, color: "var(--text-primary)", letterSpacing: 2 }}>
-                INVEST
-              </span>
-              <span style={{ fontFamily: "var(--font-brand)", fontWeight: 300, fontSize: 42, color: "var(--text-primary)", opacity: 0.3, letterSpacing: 2 }}>
-                ENGINE
-              </span>
-            </div>
-
-            {/* Subtitle */}
-            <span style={{
-              fontFamily: "var(--font-mono)", fontSize: 11,
-              color: `rgba(168,85,247,0.55)`, letterSpacing: 1,
-              textTransform: "uppercase",
-            }}>
-              {t("invest.subtitle")}
-            </span>
-          </div>
-
-          {/* Capability strip */}
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8 }}>
-            {CAPABILITIES.map(cap => (
-              <span key={cap} style={{
-                fontSize: 10, fontFamily: "var(--font-mono)", letterSpacing: 1.2,
-                textTransform: "uppercase", color: "var(--text-tertiary)",
-                padding: "4px 10px", borderRadius: 4,
-                border: "1px solid var(--border-primary)",
-              }}>
-                {cap}
-              </span>
-            ))}
-          </div>
-
-          {/* Input */}
-          <div style={{ width: "100%", maxWidth: 720 }}>
-            <label style={{
-              display: "flex", alignItems: "center", gap: 6,
-              fontSize: 10, fontFamily: "var(--font-mono)", fontWeight: 600,
-              letterSpacing: 1.5, textTransform: "uppercase",
-              color: "var(--text-tertiary)", marginBottom: 8,
-            }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: PURPLE, display: "inline-block" }} />
-              {t("invest.input_label")}
-            </label>
-            <div style={{
-              border: `1px solid rgba(168,85,247,0.25)`,
-              borderRadius: 12, overflow: "hidden",
-              background: "var(--bg-secondary)",
-            }}>
-              <textarea
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    send();
-                  }
-                }}
-                placeholder={t("invest.placeholder")}
-                rows={3}
-                style={{
-                  width: "100%", padding: "14px 16px", border: "none", outline: "none",
-                  background: "transparent", color: "var(--text-primary)",
-                  fontSize: 14, fontFamily: "var(--font-body)", resize: "none",
-                  lineHeight: 1.6,
-                }}
-              />
+            {/* Header */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+              {/* Icon box */}
               <div style={{
-                display: "flex", justifyContent: "flex-end",
-                padding: "8px 12px", borderTop: "1px solid var(--border-primary)",
+                width: 64, height: 64, borderRadius: 14,
+                border: `1px solid rgba(168,85,247,0.15)`,
+                display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <button
-                  onClick={() => send()}
-                  disabled={!input.trim() || loading}
-                  style={{
-                    background: PURPLE, color: "#fff",
-                    border: "none", borderRadius: 8,
-                    padding: "8px 20px", fontSize: 12, fontWeight: 700,
-                    fontFamily: "var(--font-brand)", letterSpacing: 1.5,
-                    textTransform: "uppercase", cursor: input.trim() ? "pointer" : "default",
-                    opacity: input.trim() ? 1 : 0.4,
-                    transition: "opacity 0.15s",
+                <TrendingUp size={28} color={PURPLE} />
+              </div>
+
+              {/* Title */}
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: 42, color: "var(--text-primary)", letterSpacing: 2 }}>
+                  INVEST
+                </span>
+                <span style={{ fontFamily: "var(--font-brand)", fontWeight: 300, fontSize: 42, color: "var(--text-primary)", opacity: 0.3, letterSpacing: 2 }}>
+                  ENGINE
+                </span>
+              </div>
+
+              {/* Subtitle */}
+              <span style={{
+                fontFamily: "var(--font-mono)", fontSize: 11,
+                color: `rgba(168,85,247,0.55)`, letterSpacing: 1,
+                textTransform: "uppercase",
+              }}>
+                {t("invest.subtitle")}
+              </span>
+            </div>
+
+            {/* Capability strip */}
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8 }}>
+              {CAPABILITIES.map(cap => (
+                <span key={cap} style={{
+                  fontSize: 10, fontFamily: "var(--font-mono)", letterSpacing: 1.2,
+                  textTransform: "uppercase", color: "var(--text-tertiary)",
+                  padding: "4px 10px", borderRadius: 4,
+                  border: "1px solid var(--border-primary)",
+                }}>
+                  {cap}
+                </span>
+              ))}
+            </div>
+
+            {/* Input */}
+            <div style={{ width: "100%", maxWidth: 720 }}>
+              <label style={{
+                display: "flex", alignItems: "center", gap: 6,
+                fontSize: 10, fontFamily: "var(--font-mono)", fontWeight: 600,
+                letterSpacing: 1.5, textTransform: "uppercase",
+                color: "var(--text-tertiary)", marginBottom: 8,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: PURPLE, display: "inline-block" }} />
+                {t("invest.input_label")}
+              </label>
+              <div style={{
+                border: `1px solid rgba(168,85,247,0.25)`,
+                borderRadius: 12, overflow: "hidden",
+                background: "var(--bg-secondary)",
+              }}>
+                <textarea
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      send();
+                    }
                   }}
-                >
-                  {t("invest.cta")}
-                </button>
+                  placeholder={t("invest.placeholder")}
+                  rows={3}
+                  style={{
+                    width: "100%", padding: "14px 16px", border: "none", outline: "none",
+                    background: "transparent", color: "var(--text-primary)",
+                    fontSize: 14, fontFamily: "var(--font-body)", resize: "none",
+                    lineHeight: 1.6,
+                  }}
+                />
+                <div style={{
+                  display: "flex", justifyContent: "flex-end",
+                  padding: "8px 12px", borderTop: "1px solid var(--border-primary)",
+                }}>
+                  <button
+                    onClick={() => send()}
+                    disabled={!input.trim() || loading}
+                    style={{
+                      background: PURPLE, color: "#fff",
+                      border: "none", borderRadius: 8,
+                      padding: "8px 20px", fontSize: 12, fontWeight: 700,
+                      fontFamily: "var(--font-brand)", letterSpacing: 1.5,
+                      textTransform: "uppercase", cursor: input.trim() ? "pointer" : "default",
+                      opacity: input.trim() ? 1 : 0.4,
+                      transition: "opacity 0.15s",
+                    }}
+                  >
+                    {t("invest.cta")}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Template cards — 2x2 grid */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-            gap: 12, width: "100%",
-          }}>
-            {TEMPLATES.map(tpl => (
-              <button
-                key={tpl.tag}
-                onClick={() => { setInput(tpl.fill); }}
-                style={{
-                  background: "var(--bg-secondary)", border: "1px solid var(--border-primary)",
-                  borderRadius: 10, padding: "14px 16px",
-                  textAlign: "left", cursor: "pointer",
-                  transition: "border-color 0.15s, background 0.15s",
-                  display: "flex", flexDirection: "column", gap: 6,
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(168,85,247,0.3)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-primary)"; }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: tpl.dotColor }} />
-                  <span style={{
-                    fontSize: 10, fontFamily: "var(--font-mono)", fontWeight: 700,
-                    letterSpacing: 1.2, textTransform: "uppercase",
-                    color: tpl.dotColor,
-                  }}>
-                    {tpl.tag}
+            {/* Template cards — 2x2 grid */}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+              gap: 12, width: "100%",
+            }}>
+              {TEMPLATES.map(tpl => (
+                <button
+                  key={tpl.tag}
+                  onClick={() => { setInput(tpl.fill); }}
+                  style={{
+                    background: "var(--bg-secondary)", border: "1px solid var(--border-primary)",
+                    borderRadius: 10, padding: "14px 16px",
+                    textAlign: "left", cursor: "pointer",
+                    transition: "border-color 0.15s, background 0.15s",
+                    display: "flex", flexDirection: "column", gap: 6,
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(168,85,247,0.3)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-primary)"; }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: tpl.dotColor }} />
+                    <span style={{
+                      fontSize: 10, fontFamily: "var(--font-mono)", fontWeight: 700,
+                      letterSpacing: 1.2, textTransform: "uppercase",
+                      color: tpl.dotColor,
+                    }}>
+                      {tpl.tag}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 600, lineHeight: 1.3 }}>
+                    {tpl.title}
                   </span>
-                </div>
-                <span style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 600, lineHeight: 1.3 }}>
-                  {tpl.title}
+                  <span style={{ fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.3 }}>
+                    {tpl.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Quant strip */}
+            <div style={{ display: "flex", justifyContent: "center", gap: isMobile ? 16 : 28 }}>
+              {QUANT_LABELS.map(label => (
+                <span key={label} style={{
+                  fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: 14,
+                  letterSpacing: 1.5, color: "var(--text-tertiary)", opacity: 0.5,
+                }}>
+                  {label}
                 </span>
-                <span style={{ fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.3 }}>
-                  {tpl.desc}
-                </span>
-              </button>
+              ))}
+            </div>
+
+            {/* Disclaimer */}
+            <p style={{
+              fontSize: 11, color: "var(--text-tertiary)", textAlign: "center",
+              fontFamily: "var(--font-mono)", letterSpacing: 0.3, maxWidth: 500,
+            }}>
+              {t("invest.disclaimer")}
+            </p>
+          </div>
+        </section>
+
+        {/* HOW IT WORKS */}
+        <section style={{ padding: isMobile ? "48px 16px" : "64px 24px", maxWidth: 880, margin: "0 auto", width: "100%" }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2, color: "rgba(168,85,247,0.7)", textTransform: "uppercase", marginBottom: 14 }}>
+            How Invest works
+          </div>
+          <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 20 : 24, color: "var(--text-primary)", margin: 0, marginBottom: 24 }}>
+            Quantitative analysis for every investment decision
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 48 }}>
+            {[
+              { num: "01", title: "Describe", desc: "Tell us about the deal — terms, metrics, market, and your portfolio context" },
+              { num: "02", title: "Model", desc: "Quantitative models: DCF, expected value, Kelly criterion, and base rate analysis" },
+              { num: "03", title: "Stress test", desc: "Monte Carlo scenarios, sensitivity analysis, and tail risk assessment" },
+              { num: "04", title: "Verdict", desc: "Clear recommendation with confidence interval, position sizing, and kill conditions" },
+            ].map((step, i) => (
+              <div key={i} style={{ padding: 20, borderRadius: 12, border: "1px solid var(--card-border)", background: "var(--card-bg)" }}>
+                <div style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: 28, color: "rgba(168,85,247,0.4)", marginBottom: 8 }}>{step.num}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>{step.title}</div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{step.desc}</div>
+              </div>
             ))}
           </div>
+        </section>
 
-          {/* Quant strip */}
-          <div style={{ display: "flex", justifyContent: "center", gap: isMobile ? 16 : 28 }}>
-            {QUANT_LABELS.map(label => (
-              <span key={label} style={{
-                fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: 14,
-                letterSpacing: 1.5, color: "var(--text-tertiary)", opacity: 0.5,
-              }}>
-                {label}
-              </span>
+        <section style={{ padding: isMobile ? "0 16px 48px" : "0 24px 64px", maxWidth: 880, margin: "0 auto", width: "100%" }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2, color: "var(--text-tertiary)", textTransform: "uppercase", marginBottom: 14 }}>
+            What makes this different
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+            {[
+              { title: "Expected value", desc: "Every deal gets an EV calculation. Know the mathematical edge before you commit." },
+              { title: "Kelly criterion", desc: "Optimal position sizing based on your edge and bankroll. Never over-allocate again." },
+              { title: "Base rate analysis", desc: "How do similar investments typically perform? Ground your optimism in historical data." },
+              { title: "Stress testing", desc: "What happens if rates rise 3%? If churn doubles? If the market drops 40%? We model it." },
+            ].map((item, i) => (
+              <div key={i} style={{ padding: 16, borderRadius: 10, border: "1px solid var(--card-border)", background: "var(--card-bg)" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>{item.title}</div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{item.desc}</div>
+              </div>
             ))}
           </div>
+        </section>
 
-          {/* Disclaimer */}
-          <p style={{
-            fontSize: 11, color: "var(--text-tertiary)", textAlign: "center",
-            fontFamily: "var(--font-mono)", letterSpacing: 0.3, maxWidth: 500,
-          }}>
-            {t("invest.disclaimer")}
-          </p>
-        </div>
+        <div style={{ height: 1, background: "var(--divider)", maxWidth: 600, margin: "0 auto" }} />
+        <SignuxFooter onSetMode={onSetMode} />
       </div>
     );
   }

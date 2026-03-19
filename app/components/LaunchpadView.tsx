@@ -3,6 +3,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Rocket, ChevronRight, ChevronLeft, Check, Shield, AlertTriangle, Target, TrendingUp, Brain, Zap, Copy, RotateCcw, FileText, Calendar, DollarSign, Users, ChevronDown, ChevronUp, X } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
+import type { Mode } from "../lib/types";
+import SignuxFooter from "./SignuxFooter";
 
 /* ═══ Types ═══ */
 type BusinessIdea = {
@@ -103,7 +105,7 @@ const AGENT_ICONS: Record<string, any> = {
 const AGENT_NAMES = ["Market Analyst", "Financial Advisor", "Risk Assessor", "Customer Expert", "Competition Analyst", "Devil's Advocate"];
 
 /* ═══ Component ═══ */
-export default function LaunchpadView({ lang, userId }: { lang: string; userId?: string }) {
+export default function LaunchpadView({ lang, userId, onSetMode }: { lang: string; userId?: string; onSetMode?: (m: Mode) => void }) {
   const isMobile = useIsMobile();
   const [phase, setPhase] = useState<LaunchpadPhase>("welcome");
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -381,176 +383,225 @@ export default function LaunchpadView({ lang, userId }: { lang: string; userId?:
     ];
 
     return (
-      <div style={{
-        flex: 1, display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center",
-        padding: isMobile ? "24px 16px 32px" : "32px 24px 40px",
-        position: "relative", overflow: "hidden",
-        minHeight: "calc(100vh - 60px)",
-      }}>
-        {TRAJECTORY_LINES.map((line, i) => (
-          <div key={`tl-${i}`} style={{
-            position: "absolute", left: line.left, width: 2,
-            height: line.height, pointerEvents: "none",
-            background: `linear-gradient(to top, ${tealAlpha(0.3)}, transparent)`,
-            animation: `moveUp ${line.dur}s linear infinite`,
-            animationDelay: `${line.delay}s`,
-          }} />
-        ))}
-
-        <div style={{ maxWidth: 720, width: "100%", position: "relative", zIndex: 1 }}>
-          <div style={{ textAlign: "center", marginBottom: 48, animation: "fadeIn 0.4s ease-out" }}>
-            <div style={{
-              width: 64, height: 64, borderRadius: 14,
-              border: `1px solid ${tealAlpha(0.15)}`,
-              background: tealAlpha(0.04),
-              display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 20px",
-            }}>
-              <Rocket size={28} style={{ color: TEAL }} />
-            </div>
-
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
-              <span style={{
-                fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 700,
-                letterSpacing: 8, color: "var(--text-primary)",
-              }}>LAUNCH</span>
-              <span style={{
-                fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 300,
-                letterSpacing: 4, color: "var(--text-tertiary)", marginLeft: 8,
-              }}>PAD</span>
-            </div>
-
-            <div style={{
-              fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: 3,
-              textTransform: "uppercase", color: tealAlpha(0.6), marginTop: 12,
-            }}>
-              {t("launchpad.subtitle")}
-            </div>
-
-            <div style={{
-              width: 48, height: 1,
-              background: `linear-gradient(90deg, transparent, ${TEAL}, transparent)`,
-              margin: "20px auto 0",
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {/* HERO */}
+        <section style={{
+          minHeight: isMobile ? "75vh" : "85vh",
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          padding: isMobile ? "24px 16px 32px" : "32px 24px 40px",
+          position: "relative", overflow: "hidden",
+        }}>
+          {TRAJECTORY_LINES.map((line, i) => (
+            <div key={`tl-${i}`} style={{
+              position: "absolute", left: line.left, width: 2,
+              height: line.height, pointerEvents: "none",
+              background: `linear-gradient(to top, ${tealAlpha(0.3)}, transparent)`,
+              animation: `moveUp ${line.dur}s linear infinite`,
+              animationDelay: `${line.delay}s`,
             }} />
-          </div>
+          ))}
 
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            gap: 0, marginBottom: 40, animation: "fadeIn 0.5s ease-out",
-            overflowX: "auto", padding: "0 8px",
-          }}>
-            {JOURNEY_STEPS.map((step, i) => (
-              <div key={step} style={{ display: "flex", alignItems: "center" }}>
-                {i > 0 && <div style={{ width: isMobile ? 12 : 24, height: 1, background: tealAlpha(0.15) }} />}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: "50%",
-                    border: i === 0 ? `1px solid ${tealAlpha(0.4)}` : "1px solid var(--border-secondary)",
-                    background: i === 0 ? tealAlpha(0.15) : "transparent",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600,
-                    color: i === 0 ? TEAL : "var(--text-tertiary)",
-                  }}>
-                    {i + 1}
+          <div style={{ maxWidth: 720, width: "100%", position: "relative", zIndex: 1 }}>
+            <div style={{ textAlign: "center", marginBottom: 48, animation: "fadeIn 0.4s ease-out" }}>
+              <div style={{
+                width: 64, height: 64, borderRadius: 14,
+                border: `1px solid ${tealAlpha(0.15)}`,
+                background: tealAlpha(0.04),
+                display: "flex", alignItems: "center", justifyContent: "center",
+                margin: "0 auto 20px",
+              }}>
+                <Rocket size={28} style={{ color: TEAL }} />
+              </div>
+
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
+                <span style={{
+                  fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 700,
+                  letterSpacing: 8, color: "var(--text-primary)",
+                }}>LAUNCH</span>
+                <span style={{
+                  fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 300,
+                  letterSpacing: 4, color: "var(--text-tertiary)", marginLeft: 8,
+                }}>PAD</span>
+              </div>
+
+              <div style={{
+                fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: 3,
+                textTransform: "uppercase", color: tealAlpha(0.6), marginTop: 12,
+              }}>
+                {t("launchpad.subtitle")}
+              </div>
+
+              <div style={{
+                width: 48, height: 1,
+                background: `linear-gradient(90deg, transparent, ${TEAL}, transparent)`,
+                margin: "20px auto 0",
+              }} />
+            </div>
+
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              gap: 0, marginBottom: 40, animation: "fadeIn 0.5s ease-out",
+              overflowX: "auto", padding: "0 8px",
+            }}>
+              {JOURNEY_STEPS.map((step, i) => (
+                <div key={step} style={{ display: "flex", alignItems: "center" }}>
+                  {i > 0 && <div style={{ width: isMobile ? 12 : 24, height: 1, background: tealAlpha(0.15) }} />}
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                    <div style={{
+                      width: 28, height: 28, borderRadius: "50%",
+                      border: i === 0 ? `1px solid ${tealAlpha(0.4)}` : "1px solid var(--border-secondary)",
+                      background: i === 0 ? tealAlpha(0.15) : "transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600,
+                      color: i === 0 ? TEAL : "var(--text-tertiary)",
+                    }}>
+                      {i + 1}
+                    </div>
+                    <span style={{
+                      fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1,
+                      textTransform: "uppercase",
+                      color: i === 0 ? tealAlpha(0.7) : "var(--text-tertiary)",
+                      whiteSpace: "nowrap",
+                    }}>
+                      {step}
+                    </span>
                   </div>
-                  <span style={{
-                    fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1,
-                    textTransform: "uppercase",
-                    color: i === 0 ? tealAlpha(0.7) : "var(--text-tertiary)",
-                    whiteSpace: "nowrap",
-                  }}>
-                    {step}
-                  </span>
                 </div>
+              ))}
+            </div>
+
+            <div style={{
+              textAlign: "center", maxWidth: 520, margin: "0 auto 40px",
+              fontSize: 15, color: "var(--text-secondary)", lineHeight: 1.6,
+              animation: "fadeIn 0.55s ease-out",
+            }}>
+              {t("launchpad.central_text")}
+            </div>
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
+              gap: 10, marginBottom: 32,
+              animation: "fadeIn 0.6s ease-out",
+            }}>
+              {personas.map(p => {
+                const r = parseInt(p.color.slice(1, 3), 16);
+                const g = parseInt(p.color.slice(3, 5), 16);
+                const b = parseInt(p.color.slice(5, 7), 16);
+                const rgba = (a: number) => `rgba(${r},${g},${b},${a})`;
+                return (
+                  <button
+                    key={p.tag}
+                    onClick={() => startDiscovery(p.persona)}
+                    style={{
+                      background: "var(--card-bg)",
+                      border: "1px solid var(--card-border)",
+                      borderRadius: 10, padding: "16px",
+                      cursor: "pointer", transition: "all 200ms",
+                      textAlign: "left", borderLeft: "2px solid transparent",
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = rgba(0.2);
+                      e.currentTarget.style.borderLeftColor = p.color;
+                      e.currentTarget.style.background = rgba(0.03);
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = "var(--card-border)";
+                      e.currentTarget.style.borderLeftColor = "transparent";
+                      e.currentTarget.style.background = "var(--card-bg)";
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                      <div style={{ width: 4, height: 4, borderRadius: "50%", background: p.color }} />
+                      <span style={{
+                        fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1,
+                        textTransform: "uppercase", color: "var(--text-secondary)",
+                      }}>{p.tag}</span>
+                    </div>
+                    <div style={{ fontSize: 13, color: "var(--text-primary)", lineHeight: 1.5 }}>
+                      {p.desc}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div style={{ textAlign: "center", animation: "fadeIn 0.8s ease-out" }}>
+              <button
+                onClick={() => startDiscovery()}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 10,
+                  background: TEAL, color: "#fff", border: "none", borderRadius: 50,
+                  padding: "14px 36px",
+                  fontFamily: "var(--font-brand)", fontWeight: 600, fontSize: 14,
+                  letterSpacing: 2, textTransform: "uppercase",
+                  cursor: "pointer", transition: "all 200ms",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.filter = "brightness(1.15)";
+                  e.currentTarget.style.boxShadow = `0 0 30px ${tealAlpha(0.25)}`;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.filter = "none";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                <Rocket size={16} />
+                {t("launchpad.cta")}
+              </button>
+              <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 16 }}>
+                {t("launchpad.disclaimer")}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* HOW LAUNCHPAD WORKS */}
+        <section style={{ padding: isMobile ? "48px 16px" : "64px 24px", maxWidth: 880, margin: "0 auto", width: "100%" }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2, color: "rgba(20,184,166,0.7)", textTransform: "uppercase", marginBottom: 14 }}>
+            How Launchpad works
+          </div>
+          <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 20 : 24, color: "var(--text-primary)", margin: 0, marginBottom: 24 }}>
+            From idea to revenue in 90 days
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 48 }}>
+            {[
+              { num: "01", title: "Discovery", desc: "Answer 5 questions about your skills, time, and capital. AI finds ideas that match YOU." },
+              { num: "02", title: "Validation", desc: "6 specialist agents stress-test your idea: market, finance, risk, competition, customers." },
+              { num: "03", title: "Blueprint", desc: "Get a week-by-week 90-day plan with specific tasks, costs, and deliverables." },
+              { num: "04", title: "Track", desc: "Weekly check-ins with honest AI feedback. Pivot recommendations when numbers don't add up." },
+            ].map((step, i) => (
+              <div key={i} style={{ padding: 20, borderRadius: 12, border: "1px solid var(--card-border)", background: "var(--card-bg)" }}>
+                <div style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: 28, color: "rgba(20,184,166,0.4)", marginBottom: 8 }}>{step.num}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>{step.title}</div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{step.desc}</div>
               </div>
             ))}
           </div>
+        </section>
 
-          <div style={{
-            textAlign: "center", maxWidth: 520, margin: "0 auto 40px",
-            fontSize: 15, color: "var(--text-secondary)", lineHeight: 1.6,
-            animation: "fadeIn 0.55s ease-out",
-          }}>
-            {t("launchpad.central_text")}
+        <section style={{ padding: isMobile ? "0 16px 48px" : "0 24px 64px", maxWidth: 880, margin: "0 auto", width: "100%" }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2, color: "var(--text-tertiary)", textTransform: "uppercase", marginBottom: 14 }}>
+            What makes this different
           </div>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+            {[
+              { title: "AI that says no", desc: "If your numbers don't work, Signux tells you. No motivational platitudes — just honest analysis." },
+              { title: "Weekly check-ins", desc: "Report your metrics every week. Get scored, get action items, and get pivoted if needed." },
+              { title: "Ready-made deliverables", desc: "Cold email templates, LinkedIn posts, elevator pitches, and pricing page copy — ready to use." },
+              { title: "Benchmark comparison", desc: "Your performance compared to similar businesses. Know if you're ahead or behind." },
+            ].map((item, i) => (
+              <div key={i} style={{ padding: 16, borderRadius: 10, border: "1px solid var(--card-border)", background: "var(--card-bg)" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>{item.title}</div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{item.desc}</div>
+              </div>
+            ))}
+          </div>
+        </section>
 
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
-            gap: 10, marginBottom: 32,
-            animation: "fadeIn 0.6s ease-out",
-          }}>
-            {personas.map(p => {
-              const r = parseInt(p.color.slice(1, 3), 16);
-              const g = parseInt(p.color.slice(3, 5), 16);
-              const b = parseInt(p.color.slice(5, 7), 16);
-              const rgba = (a: number) => `rgba(${r},${g},${b},${a})`;
-              return (
-                <button
-                  key={p.tag}
-                  onClick={() => startDiscovery(p.persona)}
-                  style={{
-                    background: "var(--card-bg)",
-                    border: "1px solid var(--card-border)",
-                    borderRadius: 10, padding: "16px",
-                    cursor: "pointer", transition: "all 200ms",
-                    textAlign: "left", borderLeft: "2px solid transparent",
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.borderColor = rgba(0.2);
-                    e.currentTarget.style.borderLeftColor = p.color;
-                    e.currentTarget.style.background = rgba(0.03);
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = "var(--card-border)";
-                    e.currentTarget.style.borderLeftColor = "transparent";
-                    e.currentTarget.style.background = "var(--card-bg)";
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                    <div style={{ width: 4, height: 4, borderRadius: "50%", background: p.color }} />
-                    <span style={{
-                      fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1,
-                      textTransform: "uppercase", color: "var(--text-secondary)",
-                    }}>{p.tag}</span>
-                  </div>
-                  <div style={{ fontSize: 13, color: "var(--text-primary)", lineHeight: 1.5 }}>
-                    {p.desc}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          <div style={{ textAlign: "center", animation: "fadeIn 0.8s ease-out" }}>
-            <button
-              onClick={() => startDiscovery()}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 10,
-                background: TEAL, color: "#fff", border: "none", borderRadius: 50,
-                padding: "14px 36px",
-                fontFamily: "var(--font-brand)", fontWeight: 600, fontSize: 14,
-                letterSpacing: 2, textTransform: "uppercase",
-                cursor: "pointer", transition: "all 200ms",
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.filter = "brightness(1.15)";
-                e.currentTarget.style.boxShadow = `0 0 30px ${tealAlpha(0.25)}`;
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.filter = "none";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <Rocket size={16} />
-              {t("launchpad.cta")}
-            </button>
-            <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 16 }}>
-              {t("launchpad.disclaimer")}
-            </div>
-          </div>
-        </div>
+        <div style={{ height: 1, background: "var(--divider)", maxWidth: 600, margin: "0 auto" }} />
+        <SignuxFooter onSetMode={onSetMode} />
       </div>
     );
   }

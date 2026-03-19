@@ -794,11 +794,12 @@ export default function ChatPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
-              style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}
+              style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
               <ResearchView
                 lang={lang}
                 onContinueInChat={continueResearchInChat}
+                onSetMode={setMode}
               />
             </motion.div>
           ) : mode === "simulate" ? (
@@ -808,7 +809,7 @@ export default function ChatPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
-              style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}
+              style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
               <SimulationEngine
                 simulating={simulating}
@@ -823,6 +824,7 @@ export default function ChatPage() {
                 onReset={onReset}
                 simStarting={simStarting}
                 simAgentMessages={simAgentMessages}
+                onSetMode={setMode}
               />
             </motion.div>
           ) : mode === "launchpad" ? (
@@ -832,9 +834,9 @@ export default function ChatPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
-              style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}
+              style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
-              <LaunchpadView lang={lang} userId={authUser?.id} />
+              <LaunchpadView lang={lang} userId={authUser?.id} onSetMode={setMode} />
             </motion.div>
           ) : mode === "globalops" ? (
             <motion.div
@@ -843,9 +845,9 @@ export default function ChatPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
-              style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}
+              style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
-              <GlobalOpsView lang={lang} />
+              <GlobalOpsView lang={lang} onSetMode={setMode} />
             </motion.div>
           ) : mode === "invest" ? (
             <motion.div
@@ -854,9 +856,9 @@ export default function ChatPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
-              style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}
+              style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
-              <InvestView lang={lang} />
+              <InvestView lang={lang} onSetMode={setMode} />
             </motion.div>
           ) : (
             <motion.div

@@ -8,7 +8,8 @@ import {
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
 import MarkdownRenderer from "./MarkdownRenderer";
-import type { SimAgent, SimResult } from "../lib/types";
+import type { SimAgent, SimResult, Mode } from "../lib/types";
+import SignuxFooter from "./SignuxFooter";
 import { AGENT_CATEGORY_COLORS, DEFAULT_CATEGORY_COLOR, ENTITY_COLORS, DEFAULT_ENTITY_COLOR } from "../lib/types";
 
 const SIM_EXAMPLE_KEYS = ["sim.example.1", "sim.example.2", "sim.example.3"];
@@ -37,6 +38,7 @@ type SimulationEngineProps = {
   onReset: () => void;
   simStarting: boolean;
   simAgentMessages: AgentMessage[];
+  onSetMode?: (m: Mode) => void;
 };
 
 function calculateRiskScore(agents: SimAgent[], messages: AgentMessage[]): { score: number; label: string; color: string } {
@@ -61,7 +63,7 @@ function calculateRiskScore(agents: SimAgent[], messages: AgentMessage[]): { sco
 }
 
 export default function SimulationEngine(props: SimulationEngineProps) {
-  const { simulating, simResult, simScenario, setSimScenario, simStage, simLiveAgents, simTotalAgents, simStartTime, onSimulate, onReset, simStarting, simAgentMessages } = props;
+  const { simulating, simResult, simScenario, setSimScenario, simStage, simLiveAgents, simTotalAgents, simStartTime, onSimulate, onReset, simStarting, simAgentMessages, onSetMode } = props;
   const feedRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -116,30 +118,34 @@ export default function SimulationEngine(props: SimulationEngineProps) {
 
     return (
       <div style={{
-        flex: 1, display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center",
-        padding: isMobile ? "24px 16px 32px" : "32px 24px 40px",
-        position: "relative", overflow: "hidden",
-        backgroundImage: "linear-gradient(rgba(212,175,55,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.03) 1px, transparent 1px)",
-        backgroundSize: "40px 40px",
+        display: "flex", flexDirection: "column",
       }}>
-        {/* Scan line */}
-        <div style={{
-          position: "absolute", top: 0, left: 0, right: 0, height: 1,
-          background: "linear-gradient(90deg, transparent, rgba(212,175,55,0.4), transparent)",
-          animation: "scanDown 4s ease-in-out infinite",
-          pointerEvents: "none",
-        }} />
+        {/* HERO */}
+        <section style={{
+          minHeight: isMobile ? "75vh" : "85vh",
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          padding: isMobile ? "24px 16px 32px" : "32px 24px 40px",
+          position: "relative", overflow: "hidden",
+          backgroundImage: "linear-gradient(rgba(212,175,55,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.03) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}>
+          {/* Scan line */}
+          <div style={{
+            position: "absolute", top: 0, left: 0, right: 0, height: 1,
+            background: "linear-gradient(90deg, transparent, rgba(212,175,55,0.4), transparent)",
+            animation: "scanDown 4s ease-in-out infinite",
+            pointerEvents: "none",
+          }} />
+          {/* Ambient glow bottom */}
+          <div style={{
+            position: "absolute", bottom: -100, left: "50%", transform: "translateX(-50%)",
+            width: 400, height: 200,
+            background: "radial-gradient(ellipse, rgba(212,175,55,0.04), transparent 70%)",
+            pointerEvents: "none",
+          }} />
 
-        {/* Ambient glow bottom */}
-        <div style={{
-          position: "absolute", bottom: -100, left: "50%", transform: "translateX(-50%)",
-          width: 400, height: 200,
-          background: "radial-gradient(ellipse, rgba(212,175,55,0.04), transparent 70%)",
-          pointerEvents: "none",
-        }} />
-
-        <div style={{ maxWidth: 720, width: "100%", position: "relative", zIndex: 1 }}>
+          <div style={{ maxWidth: 720, width: "100%", position: "relative", zIndex: 1 }}>
 
           {/* ── HEADER ── */}
           <div style={{ textAlign: "center", marginBottom: 48, animation: "fadeIn 0.4s ease-out" }}>
@@ -453,6 +459,54 @@ export default function SimulationEngine(props: SimulationEngineProps) {
           </div>
 
         </div>
+        </section>
+
+        {/* HOW IT WORKS */}
+        <section style={{ padding: isMobile ? "48px 16px" : "64px 24px", maxWidth: 880, margin: "0 auto", width: "100%" }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2, color: "rgba(212,175,55,0.7)", textTransform: "uppercase", marginBottom: 14 }}>
+            How Simulate works
+          </div>
+          <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 20 : 24, color: "var(--text-primary)", margin: 0, marginBottom: 24 }}>
+            Your plan, stress-tested by 15 specialists
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 48 }}>
+            {[
+              { num: "01", title: "Extract", desc: "We map every entity, relationship, and dependency in your operation" },
+              { num: "02", title: "Deploy agents", desc: "15 AI specialists are generated — regulatory, financial, adversarial, market" },
+              { num: "03", title: "Simulate", desc: "3 rounds of debate: assessment, stress test, adversarial attack" },
+              { num: "04", title: "Report", desc: "Viability score, risk matrix, action items, and recommended structure" },
+            ].map((step, i) => (
+              <div key={i} style={{ padding: 20, borderRadius: 12, border: "1px solid var(--card-border)", background: "var(--card-bg)" }}>
+                <div style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: 28, color: "rgba(212,175,55,0.4)", marginBottom: 8 }}>{step.num}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>{step.title}</div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{step.desc}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* WHAT MAKES THIS DIFFERENT */}
+        <section style={{ padding: isMobile ? "0 16px 48px" : "0 24px 64px", maxWidth: 880, margin: "0 auto", width: "100%" }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2, color: "var(--text-tertiary)", textTransform: "uppercase", marginBottom: 14 }}>
+            What makes this different
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+            {[
+              { title: "Adversarial agents", desc: "A Devil's Advocate agent actively tries to destroy your plan. If it survives, it's strong." },
+              { title: "God's Eye injection", desc: "Mid-simulation, inject variables: 'What if revenue drops 40%?' Agents recalculate in real-time." },
+              { title: "Talk to any agent", desc: "After simulation, interrogate any specialist: 'Why did you flag regulatory risk?'" },
+              { title: "Kill conditions", desc: "Every report includes conditions that should make you stop. Honest, not motivational." },
+            ].map((item, i) => (
+              <div key={i} style={{ padding: 16, borderRadius: 10, border: "1px solid var(--card-border)", background: "var(--card-bg)" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>{item.title}</div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{item.desc}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div style={{ height: 1, background: "var(--divider)", maxWidth: 600, margin: "0 auto" }} />
+        <SignuxFooter onSetMode={onSetMode} />
       </div>
     );
   }

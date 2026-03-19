@@ -2,8 +2,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Search, Check, FileText, Download, Package, Shield, BarChart3, Globe, Play, RotateCcw, MessageSquare } from "lucide-react";
 import { t } from "../lib/i18n";
+import type { Mode } from "../lib/types";
 import { useIsMobile } from "../lib/useIsMobile";
 import MarkdownRenderer from "./MarkdownRenderer";
+import SignuxFooter from "./SignuxFooter";
 
 type SearchResult = {
   query: string;
@@ -13,6 +15,7 @@ type SearchResult = {
 type ResearchViewProps = {
   lang: string;
   onContinueInChat?: (report: string) => void;
+  onSetMode?: (m: Mode) => void;
 };
 
 /* Custom Search+ icon */
@@ -45,7 +48,7 @@ const CONSTELLATION_LINES = [
   { top: "70%", right: "10%", width: "22%", rotate: "8deg", delay: 1.6 },
 ];
 
-export default function ResearchView({ lang, onContinueInChat }: ResearchViewProps) {
+export default function ResearchView({ lang, onContinueInChat, onSetMode }: ResearchViewProps) {
   const [phase, setPhase] = useState<"input" | "running" | "complete">("input");
   const [query, setQuery] = useState("");
   const [searchPlan, setSearchPlan] = useState<string[]>([]);
@@ -165,298 +168,344 @@ export default function ResearchView({ lang, onContinueInChat }: ResearchViewPro
   /* ═══ INPUT STATE ═══ */
   if (phase === "input") {
     return (
-      <div style={{
-        flex: 1, display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center",
-        padding: isMobile ? "24px 16px 32px" : "32px 24px 40px",
-        position: "relative", overflow: "hidden",
-        minHeight: "calc(100vh - 60px)",
-      }}>
-        {/* Constellation dots */}
-        {CONSTELLATION_DOTS.map((dot, i) => (
-          <div key={`dot-${i}`} style={{
-            position: "absolute", width: 2, height: 2, borderRadius: "50%",
-            background: "rgba(107,138,255,0.3)", pointerEvents: "none",
-            animation: `twinkle 3s ease-in-out infinite`,
-            animationDelay: `${dot.delay}s`,
-            top: dot.top, left: dot.left, right: dot.right,
-          } as any} />
-        ))}
-        {CONSTELLATION_LINES.map((line, i) => (
-          <div key={`line-${i}`} style={{
-            position: "absolute", height: 1, pointerEvents: "none",
-            background: "linear-gradient(90deg, transparent, rgba(107,138,255,0.08), transparent)",
-            top: line.top, left: line.left, right: line.right,
-            width: line.width, transform: `rotate(${line.rotate})`,
-            animation: `twinkle 3s ease-in-out infinite`,
-            animationDelay: `${line.delay}s`,
-          } as any} />
-        ))}
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {/* HERO */}
+        <section style={{
+          minHeight: isMobile ? "75vh" : "85vh",
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          padding: isMobile ? "24px 16px 32px" : "32px 24px 40px",
+          position: "relative", overflow: "hidden",
+        }}>
+          {/* Constellation dots */}
+          {CONSTELLATION_DOTS.map((dot, i) => (
+            <div key={`dot-${i}`} style={{
+              position: "absolute", width: 2, height: 2, borderRadius: "50%",
+              background: "rgba(107,138,255,0.3)", pointerEvents: "none",
+              animation: `twinkle 3s ease-in-out infinite`,
+              animationDelay: `${dot.delay}s`,
+              top: dot.top, left: dot.left, right: dot.right,
+            } as any} />
+          ))}
+          {CONSTELLATION_LINES.map((line, i) => (
+            <div key={`line-${i}`} style={{
+              position: "absolute", height: 1, pointerEvents: "none",
+              background: "linear-gradient(90deg, transparent, rgba(107,138,255,0.08), transparent)",
+              top: line.top, left: line.left, right: line.right,
+              width: line.width, transform: `rotate(${line.rotate})`,
+              animation: `twinkle 3s ease-in-out infinite`,
+              animationDelay: `${line.delay}s`,
+            } as any} />
+          ))}
 
-        <div style={{ maxWidth: 720, width: "100%", position: "relative", zIndex: 1 }}>
+          <div style={{ maxWidth: 720, width: "100%", position: "relative", zIndex: 1 }}>
 
-          {/* ── HEADER ── */}
-          <div style={{ textAlign: "center", marginBottom: 44, animation: "fadeIn 0.4s ease-out" }}>
-            {/* Icon box */}
-            <div style={{
-              width: 64, height: 64, borderRadius: 16,
-              border: "1px solid rgba(107,138,255,0.15)",
-              background: "rgba(107,138,255,0.05)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 20px", position: "relative",
-            }}>
+            {/* ── HEADER ── */}
+            <div style={{ textAlign: "center", marginBottom: 44, animation: "fadeIn 0.4s ease-out" }}>
+              {/* Icon box */}
               <div style={{
-                position: "absolute", inset: -6, borderRadius: 20,
-                border: "1px solid rgba(107,138,255,0.06)",
-              }} />
-              <SearchPlusIcon size={28} />
-            </div>
-
-            {/* Title */}
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
-              <span style={{
-                fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 700,
-                letterSpacing: 6, color: "var(--text-primary)",
+                width: 64, height: 64, borderRadius: 16,
+                border: "1px solid rgba(107,138,255,0.15)",
+                background: "rgba(107,138,255,0.05)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                margin: "0 auto 20px", position: "relative",
               }}>
-                DEEP
-              </span>
-              <span style={{
-                fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 300,
-                letterSpacing: 3, color: "var(--text-secondary)", marginLeft: 8,
-              }}>
-                RESEARCH
-              </span>
-            </div>
-
-            {/* Subtitle */}
-            <div style={{
-              fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: 3,
-              textTransform: "uppercase", color: "rgba(107,138,255,0.6)", marginTop: 12,
-            }}>
-              Multi-source intelligence synthesis
-            </div>
-
-            {/* Divider */}
-            <div style={{
-              width: 48, height: 1,
-              background: "linear-gradient(90deg, transparent, #6B8AFF, transparent)",
-              margin: "20px auto 0",
-            }} />
-          </div>
-
-          {/* ── PROCESS STRIP ── */}
-          <div style={{
-            display: "flex", flexWrap: "wrap", justifyContent: "center",
-            gap: isMobile ? 12 : 8, marginBottom: 40,
-            animation: "fadeIn 0.5s ease-out",
-          }}>
-            {processSteps.map((step, i) => (
-              <div key={step} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                {i > 0 && !isMobile && (
-                  <span style={{ color: "var(--card-hover-border)", fontSize: 12, marginRight: 4 }}>→</span>
-                )}
                 <div style={{
-                  width: 20, height: 20, borderRadius: "50%",
-                  border: "1px solid rgba(107,138,255,0.2)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontFamily: "var(--font-mono)", fontSize: 9, color: "rgba(107,138,255,0.5)",
-                }}>
-                  {i + 1}
-                </div>
+                  position: "absolute", inset: -6, borderRadius: 20,
+                  border: "1px solid rgba(107,138,255,0.06)",
+                }} />
+                <SearchPlusIcon size={28} />
+              </div>
+
+              {/* Title */}
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
                 <span style={{
-                  fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 1,
-                  textTransform: "uppercase", color: "var(--text-secondary)",
+                  fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 700,
+                  letterSpacing: 6, color: "var(--text-primary)",
                 }}>
-                  {step}
+                  DEEP
+                </span>
+                <span style={{
+                  fontFamily: "var(--font-brand)", fontSize: isMobile ? 32 : 42, fontWeight: 300,
+                  letterSpacing: 3, color: "var(--text-secondary)", marginLeft: 8,
+                }}>
+                  RESEARCH
                 </span>
               </div>
-            ))}
-          </div>
 
-          {/* ── INPUT ── */}
-          <div
-            style={{
-              border: query.trim() ? "1px solid rgba(107,138,255,0.25)" : "1px solid rgba(107,138,255,0.1)",
-              borderRadius: 16,
-              background: query.trim() ? "rgba(107,138,255,0.03)" : "rgba(107,138,255,0.02)",
-              padding: isMobile ? 16 : 20,
-              transition: "all 300ms ease",
-              boxShadow: query.trim() ? "0 0 30px rgba(107,138,255,0.05)" : "none",
-              marginBottom: 24,
-              animation: "fadeIn 0.5s ease-out",
-            }}
-            onFocus={e => {
-              e.currentTarget.style.borderColor = "rgba(107,138,255,0.25)";
-              e.currentTarget.style.boxShadow = "0 0 30px rgba(107,138,255,0.05)";
-              e.currentTarget.style.background = "rgba(107,138,255,0.03)";
-            }}
-            onBlur={e => {
-              if (!query.trim()) {
-                e.currentTarget.style.borderColor = "rgba(107,138,255,0.1)";
-                e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.background = "rgba(107,138,255,0.02)";
-              }
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+              {/* Subtitle */}
               <div style={{
-                width: 4, height: 4, borderRadius: "50%",
-                background: "#6B8AFF",
-                animation: "pulse 2s ease-in-out infinite",
-              }} />
-              <span style={{
-                fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
-                textTransform: "uppercase", color: "rgba(107,138,255,0.5)",
+                fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: 3,
+                textTransform: "uppercase", color: "rgba(107,138,255,0.6)", marginTop: 12,
               }}>
-                WHAT DO YOU NEED RESEARCHED?
-              </span>
-            </div>
-            <textarea
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder={t("research.placeholder")}
-              style={{
-                width: "100%", minHeight: 80, padding: 0,
-                background: "transparent", border: "none",
-                color: "var(--text-primary)", fontSize: 15, lineHeight: 1.6,
-                resize: "none", outline: "none", fontFamily: "var(--font-sans)",
-              }}
-            />
-          </div>
+                Multi-source intelligence synthesis
+              </div>
 
-          {/* ── RESEARCH TEMPLATES ── */}
-          <div style={{ marginBottom: 28, animation: "fadeIn 0.6s ease-out" }}>
-            <div style={{
-              fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
-              textTransform: "uppercase", color: "var(--text-tertiary)", marginBottom: 12,
-            }}>
-              RESEARCH TEMPLATES
+              {/* Divider */}
+              <div style={{
+                width: 48, height: 1,
+                background: "linear-gradient(90deg, transparent, #6B8AFF, transparent)",
+                margin: "20px auto 0",
+              }} />
             </div>
+
+            {/* ── PROCESS STRIP ── */}
             <div style={{
-              display: "grid",
-              gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)",
-              gap: 8,
+              display: "flex", flexWrap: "wrap", justifyContent: "center",
+              gap: isMobile ? 12 : 8, marginBottom: 40,
+              animation: "fadeIn 0.5s ease-out",
             }}>
-              {templates.map(tmpl => {
-                const Icon = tmpl.icon;
+              {processSteps.map((step, i) => (
+                <div key={step} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {i > 0 && !isMobile && (
+                    <span style={{ color: "var(--card-hover-border)", fontSize: 12, marginRight: 4 }}>→</span>
+                  )}
+                  <div style={{
+                    width: 20, height: 20, borderRadius: "50%",
+                    border: "1px solid rgba(107,138,255,0.2)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontFamily: "var(--font-mono)", fontSize: 9, color: "rgba(107,138,255,0.5)",
+                  }}>
+                    {i + 1}
+                  </div>
+                  <span style={{
+                    fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 1,
+                    textTransform: "uppercase", color: "var(--text-secondary)",
+                  }}>
+                    {step}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* ── INPUT ── */}
+            <div
+              style={{
+                border: query.trim() ? "1px solid rgba(107,138,255,0.25)" : "1px solid rgba(107,138,255,0.1)",
+                borderRadius: 16,
+                background: query.trim() ? "rgba(107,138,255,0.03)" : "rgba(107,138,255,0.02)",
+                padding: isMobile ? 16 : 20,
+                transition: "all 300ms ease",
+                boxShadow: query.trim() ? "0 0 30px rgba(107,138,255,0.05)" : "none",
+                marginBottom: 24,
+                animation: "fadeIn 0.5s ease-out",
+              }}
+              onFocus={e => {
+                e.currentTarget.style.borderColor = "rgba(107,138,255,0.25)";
+                e.currentTarget.style.boxShadow = "0 0 30px rgba(107,138,255,0.05)";
+                e.currentTarget.style.background = "rgba(107,138,255,0.03)";
+              }}
+              onBlur={e => {
+                if (!query.trim()) {
+                  e.currentTarget.style.borderColor = "rgba(107,138,255,0.1)";
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.background = "rgba(107,138,255,0.02)";
+                }
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                <div style={{
+                  width: 4, height: 4, borderRadius: "50%",
+                  background: "#6B8AFF",
+                  animation: "pulse 2s ease-in-out infinite",
+                }} />
+                <span style={{
+                  fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
+                  textTransform: "uppercase", color: "rgba(107,138,255,0.5)",
+                }}>
+                  WHAT DO YOU NEED RESEARCHED?
+                </span>
+              </div>
+              <textarea
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder={t("research.placeholder")}
+                style={{
+                  width: "100%", minHeight: 80, padding: 0,
+                  background: "transparent", border: "none",
+                  color: "var(--text-primary)", fontSize: 15, lineHeight: 1.6,
+                  resize: "none", outline: "none", fontFamily: "var(--font-sans)",
+                }}
+              />
+            </div>
+
+            {/* ── RESEARCH TEMPLATES ── */}
+            <div style={{ marginBottom: 28, animation: "fadeIn 0.6s ease-out" }}>
+              <div style={{
+                fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
+                textTransform: "uppercase", color: "var(--text-tertiary)", marginBottom: 12,
+              }}>
+                RESEARCH TEMPLATES
+              </div>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)",
+                gap: 8,
+              }}>
+                {templates.map(tmpl => {
+                  const Icon = tmpl.icon;
+                  return (
+                    <button
+                      key={tmpl.title}
+                      onClick={() => setQuery(tmpl.fill)}
+                      style={{
+                        background: "var(--card-bg)",
+                        border: "1px solid var(--card-border)",
+                        borderRadius: 10, padding: "14px 16px",
+                        cursor: "pointer", transition: "all 200ms",
+                        textAlign: "left", display: "flex", gap: 12,
+                        alignItems: "flex-start",
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.borderColor = "rgba(107,138,255,0.2)";
+                        e.currentTarget.style.background = "rgba(107,138,255,0.03)";
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.borderColor = "var(--card-border)";
+                        e.currentTarget.style.background = "var(--card-bg)";
+                      }}
+                    >
+                      <div style={{
+                        width: 32, height: 32, borderRadius: 8,
+                        background: tmpl.bg, display: "flex",
+                        alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      }}>
+                        <Icon size={16} style={{ color: tmpl.color }} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", marginBottom: 2 }}>
+                          {tmpl.title}
+                        </div>
+                        <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4 }}>
+                          {tmpl.desc}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ── OUTPUT PREVIEW ── */}
+            <div style={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              alignItems: isMobile ? "flex-start" : "center",
+              gap: isMobile ? 12 : 20,
+              padding: "16px 20px",
+              border: "1px solid var(--divider)",
+              borderRadius: 12,
+              background: "var(--card-bg)",
+              marginBottom: 32,
+              animation: "fadeIn 0.7s ease-out",
+            }}>
+              {[
+                { icon: Search, color: "#6B8AFF", bg: "rgba(107,138,255,0.1)", line1: "8-12 sources", line2: "searched & verified" },
+                { icon: FileText, color: "#8b5cf6", bg: "rgba(139,92,246,0.1)", line1: "Structured report", line2: "with citations" },
+                { icon: Download, color: "#22c55e", bg: "rgba(34,197,94,0.1)", line1: "Export PDF", line2: "branded report" },
+              ].map((item, i) => {
+                const Icon = item.icon;
                 return (
-                  <button
-                    key={tmpl.title}
-                    onClick={() => setQuery(tmpl.fill)}
-                    style={{
-                      background: "var(--card-bg)",
-                      border: "1px solid var(--card-border)",
-                      borderRadius: 10, padding: "14px 16px",
-                      cursor: "pointer", transition: "all 200ms",
-                      textAlign: "left", display: "flex", gap: 12,
-                      alignItems: "flex-start",
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = "rgba(107,138,255,0.2)";
-                      e.currentTarget.style.background = "rgba(107,138,255,0.03)";
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = "var(--card-border)";
-                      e.currentTarget.style.background = "var(--card-bg)";
-                    }}
-                  >
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    {i > 0 && !isMobile && (
+                      <div style={{ width: 1, height: 28, background: "var(--card-border)", marginRight: 8 }} />
+                    )}
                     <div style={{
-                      width: 32, height: 32, borderRadius: 8,
-                      background: tmpl.bg, display: "flex",
+                      width: 28, height: 28, borderRadius: 6,
+                      background: item.bg, display: "flex",
                       alignItems: "center", justifyContent: "center", flexShrink: 0,
                     }}>
-                      <Icon size={16} style={{ color: tmpl.color }} />
+                      <Icon size={14} style={{ color: item.color }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", marginBottom: 2 }}>
-                        {tmpl.title}
-                      </div>
-                      <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4 }}>
-                        {tmpl.desc}
-                      </div>
+                      <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.3 }}>{item.line1}</div>
+                      <div style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{item.line2}</div>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
-          </div>
 
-          {/* ── OUTPUT PREVIEW ── */}
-          <div style={{
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            alignItems: isMobile ? "flex-start" : "center",
-            gap: isMobile ? 12 : 20,
-            padding: "16px 20px",
-            border: "1px solid var(--divider)",
-            borderRadius: 12,
-            background: "var(--card-bg)",
-            marginBottom: 32,
-            animation: "fadeIn 0.7s ease-out",
-          }}>
-            {[
-              { icon: Search, color: "#6B8AFF", bg: "rgba(107,138,255,0.1)", line1: "8-12 sources", line2: "searched & verified" },
-              { icon: FileText, color: "#8b5cf6", bg: "rgba(139,92,246,0.1)", line1: "Structured report", line2: "with citations" },
-              { icon: Download, color: "#22c55e", bg: "rgba(34,197,94,0.1)", line1: "Export PDF", line2: "branded report" },
-            ].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  {i > 0 && !isMobile && (
-                    <div style={{ width: 1, height: 28, background: "var(--card-border)", marginRight: 8 }} />
-                  )}
-                  <div style={{
-                    width: 28, height: 28, borderRadius: 6,
-                    background: item.bg, display: "flex",
-                    alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <Icon size={14} style={{ color: item.color }} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.3 }}>{item.line1}</div>
-                    <div style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{item.line2}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ── CTA ── */}
-          <div style={{ textAlign: "center", animation: "fadeIn 0.8s ease-out" }}>
-            <button
-              onClick={startResearch}
-              disabled={!query.trim() || loading}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 10,
-                background: query.trim() && !loading ? "#6B8AFF" : "rgba(107,138,255,0.3)",
-                color: "var(--text-primary)", border: "none", borderRadius: 50,
-                padding: "14px 36px",
-                fontFamily: "var(--font-brand)", fontWeight: 600, fontSize: 14,
-                letterSpacing: 2, textTransform: "uppercase",
-                cursor: query.trim() && !loading ? "pointer" : "not-allowed",
-                transition: "all 200ms",
-                opacity: query.trim() && !loading ? 1 : 0.5,
-              }}
-              onMouseEnter={e => {
-                if (query.trim() && !loading) {
-                  e.currentTarget.style.filter = "brightness(1.15)";
-                  e.currentTarget.style.boxShadow = "0 0 30px rgba(107,138,255,0.2)";
-                }
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.filter = "none";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <Search size={16} />
-              START RESEARCH
-            </button>
-            <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 16 }}>
-              {t("research.disclaimer")}
+            {/* ── CTA ── */}
+            <div style={{ textAlign: "center", animation: "fadeIn 0.8s ease-out" }}>
+              <button
+                onClick={startResearch}
+                disabled={!query.trim() || loading}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 10,
+                  background: query.trim() && !loading ? "#6B8AFF" : "rgba(107,138,255,0.3)",
+                  color: "var(--text-primary)", border: "none", borderRadius: 50,
+                  padding: "14px 36px",
+                  fontFamily: "var(--font-brand)", fontWeight: 600, fontSize: 14,
+                  letterSpacing: 2, textTransform: "uppercase",
+                  cursor: query.trim() && !loading ? "pointer" : "not-allowed",
+                  transition: "all 200ms",
+                  opacity: query.trim() && !loading ? 1 : 0.5,
+                }}
+                onMouseEnter={e => {
+                  if (query.trim() && !loading) {
+                    e.currentTarget.style.filter = "brightness(1.15)";
+                    e.currentTarget.style.boxShadow = "0 0 30px rgba(107,138,255,0.2)";
+                  }
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.filter = "none";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                <Search size={16} />
+                START RESEARCH
+              </button>
+              <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 16 }}>
+                {t("research.disclaimer")}
+              </div>
             </div>
-          </div>
 
-        </div>
+          </div>
+        </section>
+
+        {/* HOW IT WORKS */}
+        <section style={{ padding: isMobile ? "48px 16px" : "64px 24px", maxWidth: 880, margin: "0 auto", width: "100%" }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2, color: "rgba(107,138,255,0.7)", textTransform: "uppercase", marginBottom: 14 }}>
+            How Deep Research works
+          </div>
+          <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 20 : 24, color: "var(--text-primary)", margin: 0, marginBottom: 24 }}>
+            8-12 sources searched, cross-referenced, compiled
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 48 }}>
+            {[
+              { num: "01", title: "Plan", desc: "AI generates 6-8 strategic search queries tailored to your question" },
+              { num: "02", title: "Search", desc: "Each query is executed across multiple sources with real-time results" },
+              { num: "03", title: "Cross-reference", desc: "Findings are compared and contradictions are flagged" },
+              { num: "04", title: "Report", desc: "Structured report with executive summary, findings, and recommendations" },
+            ].map((step, i) => (
+              <div key={i} style={{ padding: 20, borderRadius: 12, border: "1px solid var(--card-border)", background: "var(--card-bg)" }}>
+                <div style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: 28, color: "rgba(107,138,255,0.4)", marginBottom: 8 }}>{step.num}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>{step.title}</div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{step.desc}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* WHAT YOU GET */}
+        <section style={{ padding: isMobile ? "0 16px 48px" : "0 24px 64px", maxWidth: 880, margin: "0 auto", width: "100%" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 12 }}>
+            {[
+              { title: "Cited sources", desc: "Every claim links back to its source. Verify anything instantly." },
+              { title: "PDF export", desc: "Download a branded report to share with partners or investors." },
+              { title: "Continue in Chat", desc: "Turn any research into a conversation. Ask follow-up questions." },
+            ].map((item, i) => (
+              <div key={i} style={{ padding: 16, borderRadius: 10, border: "1px solid var(--card-border)", background: "var(--card-bg)" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>{item.title}</div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{item.desc}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div style={{ height: 1, background: "var(--divider)", maxWidth: 600, margin: "0 auto" }} />
+        <SignuxFooter onSetMode={onSetMode} />
       </div>
     );
   }
