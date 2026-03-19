@@ -51,7 +51,7 @@ export default function SignuxFooter({ onSetMode }: { onSetMode?: (m: Mode) => v
         {/* Brand */}
         <div style={{ gridColumn: isMobile ? "1 / -1" : undefined }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <SignuxIcon size={24} color="var(--accent)" />
+            <SignuxIcon size={24} variant="gold" />
             <span style={{
               fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: 16,
               letterSpacing: 3, color: "var(--text-primary)",

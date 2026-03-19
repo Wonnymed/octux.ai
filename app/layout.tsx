@@ -9,8 +9,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://signux-ai.vercel.app"),
   icons: {
     icon: [
-      { url: "/icons/signux-icon-gold-32.png", type: "image/png", sizes: "32x32" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png", sizes: "32x32" },
     ],
     apple: "/apple-touch-icon.png",
   },
