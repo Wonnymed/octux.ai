@@ -43,6 +43,7 @@ const LaunchpadView = dynamic(() => import("../components/LaunchpadView"), { ssr
 const GlobalOpsView = dynamic(() => import("../components/GlobalOpsView"), { ssr: false });
 const InvestView = dynamic(() => import("../components/InvestView"), { ssr: false });
 const SettingsModal = dynamic(() => import("../components/SettingsModal"), { ssr: false });
+const Onboarding = dynamic(() => import("../components/Onboarding"), { ssr: false });
 
 /* ═══ File Helpers ═══ */
 async function fileToBase64(file: File): Promise<string> {
@@ -168,6 +169,7 @@ export default function ChatPage() {
   const [lang, setLang] = useState<Language>("en");
   const [profileName, setProfileName] = useState("");
   const [mode, setMode] = useState<Mode>("chat");
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [searching, setSearching] = useState(false);
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
 
@@ -230,6 +232,7 @@ export default function ChatPage() {
     }
 
     setReady(true);
+    if (!localStorage.getItem("signux_onboarded")) setShowOnboarding(true);
     const toastData = sessionStorage.getItem("signux_welcome_toast");
     if (toastData) {
       sessionStorage.removeItem("signux_welcome_toast");
@@ -891,6 +894,12 @@ export default function ChatPage() {
               transition={{ duration: 0.15 }}
               style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}
             >
+              {showOnboarding && messages.length === 0 ? (
+                <Onboarding
+                  onComplete={(m) => { setShowOnboarding(false); setMode(m); }}
+                  onSkip={() => setShowOnboarding(false)}
+                />
+              ) : (
               <ChatArea
                 messages={messages}
                 loading={loading}
@@ -912,6 +921,7 @@ export default function ChatPage() {
                 mode={mode}
                 onDecisionDetected={handleDecisionDetected}
               />
+              )}
             </motion.div>
           )}
         </AnimatePresence>
