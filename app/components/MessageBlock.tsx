@@ -24,6 +24,25 @@ function isCodeFile(name: string): boolean {
   return CODE_EXTENSIONS.some(ext => name.toLowerCase().endsWith(ext));
 }
 
+/* ═══ Parsers ═══ */
+function parseConfidence(content: string): { cleanContent: string; level: string; reason: string } {
+  const match = content.match(/\[CONFIDENCE:(HIGH|MEDIUM|LOW)\|([^\]]+)\]/);
+  if (!match) return { cleanContent: content, level: "", reason: "" };
+  const cleanContent = content.replace(/\[CONFIDENCE:[^\]]+\]/, "").trim();
+  return { cleanContent, level: match[1], reason: match[2].trim() };
+}
+
+function parseFollowups(content: string): { cleanContent: string; followups: string[] } {
+  const match = content.match(/\[FOLLOWUPS\]\n?([\s\S]*?)\[\/FOLLOWUPS\]/);
+  if (!match) return { cleanContent: content, followups: [] };
+  const cleanContent = content.replace(/\[FOLLOWUPS\][\s\S]*?\[\/FOLLOWUPS\]/, "").trim();
+  const followups = match[1]
+    .split("\n")
+    .map(line => line.replace(/^\d+\.\s*/, "").trim())
+    .filter(line => line.length > 10);
+  return { cleanContent, followups };
+}
+
 type MessageBlockProps = {
   message: Message;
   index: number;
@@ -33,9 +52,10 @@ type MessageBlockProps = {
   userInitials: string;
   onRetry?: () => void;
   onCopy: (text: string) => void;
+  onSendFollowup?: (text: string) => void;
 };
 
-export default function MessageBlock({ message, index, isLast, loading, searching, userInitials, onRetry, onCopy }: MessageBlockProps) {
+export default function MessageBlock({ message, index, isLast, loading, searching, userInitials, onRetry, onCopy, onSendFollowup }: MessageBlockProps) {
   const [hovered, setHovered] = useState(false);
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -45,6 +65,11 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
   const isUser = message.role === "user";
   const isStreaming = loading && isLast;
   const isEmpty = !message.content;
+
+  // Parse confidence and followups from AI messages
+  const { cleanContent: c1, level: confidenceLevel, reason: confidenceReason } = !isUser ? parseConfidence(message.content) : { cleanContent: message.content, level: "", reason: "" };
+  const { cleanContent: parsedContent, followups } = !isUser ? parseFollowups(c1) : { cleanContent: c1, followups: [] as string[] };
+  const isLastAI = isLast && !isUser;
 
   const pad = isMobile ? "8px 12px" : "8px 24px";
   const userMaxWidth = isMobile ? "85%" : "70%";
@@ -194,7 +219,7 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                     {t("chat.searching")}
                   </div>
                 )}
-                <MarkdownRenderer content={message.content} isStreaming={isStreaming} />
+                <MarkdownRenderer content={isStreaming ? message.content : parsedContent} isStreaming={isStreaming} />
                 {isStreaming && (
                   <span style={{
                     display: "inline-block", width: 2, height: 18,
@@ -202,6 +227,40 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                     animation: "smoothBlink 1.2s ease-in-out infinite",
                     verticalAlign: "text-bottom", borderRadius: 1, opacity: 0.8,
                   }} />
+                )}
+                {/* Confidence badge */}
+                {!isStreaming && confidenceLevel && (
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      marginTop: 10,
+                      padding: "3px 8px",
+                      borderRadius: 6,
+                      fontSize: 10,
+                      fontFamily: "var(--font-mono)",
+                      letterSpacing: 0.5,
+                      cursor: "default",
+                      background: confidenceLevel === "HIGH" ? "rgba(34,197,94,0.08)" :
+                                  confidenceLevel === "MEDIUM" ? "rgba(245,158,11,0.08)" :
+                                  "rgba(239,68,68,0.08)",
+                      color: confidenceLevel === "HIGH" ? "#22c55e" :
+                             confidenceLevel === "MEDIUM" ? "#f59e0b" :
+                             "#ef4444",
+                      border: `1px solid ${confidenceLevel === "HIGH" ? "rgba(34,197,94,0.15)" :
+                               confidenceLevel === "MEDIUM" ? "rgba(245,158,11,0.15)" :
+                               "rgba(239,68,68,0.15)"}`,
+                    }}
+                    title={confidenceReason}
+                  >
+                    <span style={{
+                      width: 5, height: 5, borderRadius: "50%",
+                      background: confidenceLevel === "HIGH" ? "#22c55e" :
+                                  confidenceLevel === "MEDIUM" ? "#f59e0b" : "#ef4444",
+                    }} />
+                    {confidenceLevel.toLowerCase()} confidence
+                  </div>
                 )}
               </>
             )}
@@ -257,6 +316,63 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
             }}>
               {new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
+          )}
+
+          {/* Follow-up suggestions — only on last AI message */}
+          {followups.length > 0 && isLastAI && !isStreaming && (
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 6,
+              marginTop: 10,
+              maxWidth: "100%",
+            }}>
+              <div style={{
+                fontSize: 10,
+                color: "var(--text-tertiary)",
+                fontFamily: "var(--font-mono)",
+                letterSpacing: 0.5,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                marginBottom: 2,
+              }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547Z"/></svg>
+                You might also want to ask
+              </div>
+              {followups.map((fq, i) => (
+                <button
+                  key={i}
+                  onClick={() => onSendFollowup?.(fq)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 12px",
+                    borderRadius: 10,
+                    border: "1px solid var(--card-border)",
+                    background: "var(--card-bg)",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all 150ms",
+                    fontSize: 12,
+                    color: "var(--text-secondary)",
+                    lineHeight: 1.4,
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)";
+                    (e.currentTarget as HTMLElement).style.background = "var(--card-hover-bg)";
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.borderColor = "var(--card-border)";
+                    (e.currentTarget as HTMLElement).style.background = "var(--card-bg)";
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{fq}</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, opacity: 0.3 }}><path d="m5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+              ))}
+            </div>
           )}
         </div>
       </div>

@@ -111,6 +111,7 @@ export default function ChatArea({
               userInitials={userInitials}
               onRetry={i === messages.length - 1 ? onRetry : undefined}
               onCopy={onCopy}
+              onSendFollowup={(text) => onSend(text)}
             />
           ))}
           <div ref={bottomRef} />
