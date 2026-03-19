@@ -135,7 +135,7 @@ export default function ReverseEngineer({ lang }: { lang: string }) {
               <button onClick={() => run()} disabled={!input.trim()} style={{
                 padding: "6px 16px", borderRadius: 50, border: "none",
                 background: input.trim() ? "#F97316" : "var(--card-border)",
-                color: input.trim() ? "#fff" : "var(--text-tertiary)",
+                color: input.trim() ? "var(--text-inverse)" : "var(--text-tertiary)",
                 fontSize: 12, fontWeight: 600, cursor: input.trim() ? "pointer" : "default",
                 display: "flex", alignItems: "center", gap: 4,
                 fontFamily: "var(--font-brand)", letterSpacing: 1, textTransform: "uppercase",

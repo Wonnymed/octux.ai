@@ -97,7 +97,7 @@ export default function RealityCheck({ lang }: { lang: string }) {
             <button onClick={() => check()} disabled={!query.trim() || loading} style={{
               padding: "6px 16px", borderRadius: 50, border: "none",
               background: query.trim() ? "#ef4444" : "var(--card-border)",
-              color: query.trim() ? "#fff" : "var(--text-tertiary)",
+              color: query.trim() ? "var(--text-inverse)" : "var(--text-tertiary)",
               fontSize: 12, fontWeight: 600, cursor: query.trim() ? "pointer" : "default",
               display: "flex", alignItems: "center", gap: 4,
               fontFamily: "var(--font-brand)", letterSpacing: 1, textTransform: "uppercase",

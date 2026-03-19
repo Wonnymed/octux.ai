@@ -110,7 +110,7 @@ export default function LoginPage() {
               style={{
                 width: "100%", padding: 12, borderRadius: "var(--radius-sm)",
                 background: "var(--accent)", border: "none",
-                color: "#fff", fontSize: 14, fontWeight: 500,
+                color: "var(--text-inverse)", fontSize: 14, fontWeight: 500,
                 cursor: loading || !email.trim() ? "not-allowed" : "pointer",
                 opacity: loading || !email.trim() ? 0.6 : 1,
                 transition: "opacity 0.15s",

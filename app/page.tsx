@@ -249,7 +249,7 @@ export default function LandingPage() {
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "14px 24px",
-        background: "rgba(var(--bg-primary-rgb, 10,10,10), 0.8)",
+        background: "rgba(var(--bg-primary-rgb), 0.8)",
         backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
         borderBottom: "1px solid var(--border-secondary)",
       }}>

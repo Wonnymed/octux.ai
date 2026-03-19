@@ -630,7 +630,7 @@ export default function ChatInput({
               alignItems: "center",
               justifyContent: "center",
               transition: "all 0.15s",
-              color: canSend ? "#fff" : "var(--text-tertiary)",
+              color: canSend ? "var(--text-inverse)" : "var(--text-tertiary)",
               flexShrink: 0,
             }}
           >

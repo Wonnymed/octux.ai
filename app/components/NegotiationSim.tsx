@@ -164,7 +164,7 @@ export default function NegotiationSim({ lang }: { lang: string }) {
             <button onClick={() => startPractice()} disabled={!context.trim() || loading} style={{
               padding: "6px 16px", borderRadius: 50, border: "none",
               background: context.trim() && !loading ? "#F97316" : "var(--card-border)",
-              color: context.trim() && !loading ? "#fff" : "var(--text-tertiary)",
+              color: context.trim() && !loading ? "var(--text-inverse)" : "var(--text-tertiary)",
               fontSize: 12, fontWeight: 600, cursor: context.trim() && !loading ? "pointer" : "default",
               display: "flex", alignItems: "center", gap: 4,
               fontFamily: "var(--font-brand)", letterSpacing: 1, textTransform: "uppercase",
@@ -296,7 +296,7 @@ export default function NegotiationSim({ lang }: { lang: string }) {
             background: input.trim() && !loading ? "#F97316" : "var(--bg-tertiary)",
             border: "none", display: "flex", alignItems: "center", justifyContent: "center",
             cursor: input.trim() && !loading ? "pointer" : "default",
-            color: input.trim() && !loading ? "#fff" : "var(--text-tertiary)",
+            color: input.trim() && !loading ? "var(--text-inverse)" : "var(--text-tertiary)",
           }}>
             <ArrowUp size={14} />
           </button>

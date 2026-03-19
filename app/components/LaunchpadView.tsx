@@ -368,7 +368,7 @@ export default function LaunchpadView({ lang, userId, onSetMode }: { lang: strin
   const tealBtn = (disabled?: boolean): React.CSSProperties => ({
     display: "inline-flex", alignItems: "center", gap: 8,
     background: disabled ? tealAlpha(0.2) : TEAL,
-    color: disabled ? "var(--text-secondary)" : "#fff",
+    color: disabled ? "var(--text-secondary)" : "var(--text-inverse)",
     border: "none", borderRadius: 8, padding: "12px 24px",
     fontSize: 13, fontWeight: 600,
     cursor: disabled ? "not-allowed" : "pointer",
@@ -538,7 +538,7 @@ export default function LaunchpadView({ lang, userId, onSetMode }: { lang: strin
                 onClick={() => startDiscovery()}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 10,
-                  background: TEAL, color: "#fff", border: "none", borderRadius: 50,
+                  background: TEAL, color: "var(--text-inverse)", border: "none", borderRadius: 50,
                   padding: "14px 36px",
                   fontFamily: "var(--font-brand)", fontWeight: 600, fontSize: 14,
                   letterSpacing: 2, textTransform: "uppercase",

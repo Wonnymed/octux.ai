@@ -129,7 +129,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange 
     width: 18,
     height: 18,
     borderRadius: "50%",
-    background: "#fff",
+    background: "var(--bg-primary)",
     transition: "left 0.2s",
     boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
   });
@@ -426,7 +426,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange 
                     </div>
                     <button style={{
                       padding: "6px 16px", borderRadius: "var(--radius-sm)",
-                      background: "var(--accent)", color: "#fff", fontSize: 12,
+                      background: "var(--accent)", color: "var(--text-inverse)", fontSize: 12,
                       fontWeight: 500, border: "none", cursor: "pointer",
                     }}>
                       {t("settings.upgrade")}
@@ -479,7 +479,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange 
                         style={{
                           padding: "8px 16px", borderRadius: "var(--radius-sm)",
                           background: "var(--error)", border: "none",
-                          color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 500,
+                          color: "var(--text-inverse)", fontSize: 12, cursor: "pointer", fontWeight: 500,
                         }}
                       >
                         {t("settings.delete")}

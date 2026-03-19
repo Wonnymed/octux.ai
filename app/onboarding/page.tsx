@@ -210,7 +210,7 @@ function StepProfile({ langCode, onSubmit }: { langCode: string; onSubmit: (data
             width: "100%", padding: "14px 0", borderRadius: "var(--radius-md)",
             border: "none", fontSize: 15, fontWeight: 600,
             background: isValid ? "var(--accent)" : "var(--border-primary)",
-            color: isValid ? "#FFFFFF" : "var(--text-tertiary)",
+            color: isValid ? "var(--text-inverse)" : "var(--text-tertiary)",
             cursor: isValid ? "pointer" : "not-allowed",
             transition: "all 0.2s", marginTop: 4,
           }}

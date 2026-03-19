@@ -350,7 +350,7 @@ export default function InvestView({ lang, onSetMode }: { lang: string; onSetMod
                     onClick={() => send()}
                     disabled={!input.trim() || loading}
                     style={{
-                      background: PURPLE, color: "#fff",
+                      background: PURPLE, color: "var(--text-inverse)",
                       border: "none", borderRadius: 8,
                       padding: "8px 20px", fontSize: 12, fontWeight: 700,
                       fontFamily: "var(--font-brand)", letterSpacing: 1.5,
