@@ -276,6 +276,16 @@ const es: Record<string, string> = {
   "launchpad.results_desc": "Según tu perfil, estas son tus mejores opciones:",
   "launchpad.start_over": "Empezar de nuevo",
 
+  // SIDEBAR (additional)
+  "sidebar.dashboard": "Panel",
+
+  // SHARE
+  "share.share": "Compartir",
+
+  // DASHBOARD
+  "dashboard.title": "Panel de Inteligencia",
+  "dashboard.back": "Volver al chat",
+
   // ERRORS
   "research.error": "Error en la investigacion. Intentalo de nuevo.",
   "common.copy_failed": "Error al copiar",

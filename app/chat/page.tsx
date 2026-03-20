@@ -1058,7 +1058,12 @@ export default function ChatPage() {
             >
               {showOnboarding && messages.length === 0 ? (
                 <Onboarding
-                  onComplete={(m) => { localStorage.setItem("signux_onboarded", "true"); setShowOnboarding(false); setMode(m); }}
+                  onComplete={(m, suggestedPrompt) => {
+                    localStorage.setItem("signux_onboarded", "true");
+                    setShowOnboarding(false);
+                    setMode(m);
+                    if (suggestedPrompt) setInput(suggestedPrompt);
+                  }}
                   onSkip={() => { localStorage.setItem("signux_onboarded", "true"); setShowOnboarding(false); }}
                 />
               ) : activeTool === "threat-radar" ? (

@@ -276,6 +276,35 @@ const ptBR: Record<string, string> = {
   "launchpad.results_desc": "Com base no seu perfil, aqui estão suas melhores combinações:",
   "launchpad.start_over": "Recomeçar",
 
+  // SIDEBAR (additional)
+  "sidebar.dashboard": "Painel",
+
+  // SHARE
+  "share.share_on_x": "Compartilhar no X",
+  "share.share_on_linkedin": "Compartilhar no LinkedIn",
+  "share.copy_link": "Copiar link",
+  "share.copied": "Copiado!",
+  "share.share": "Compartilhar",
+
+  // DASHBOARD
+  "dashboard.title": "Painel de Inteligência",
+  "dashboard.subtitle": "Sua inteligência de decisão em um só lugar",
+  "dashboard.simulations": "Simulações",
+  "dashboard.intel_reports": "Relatórios Intel",
+  "dashboard.active_watches": "Monitoramentos Ativos",
+  "dashboard.decisions": "Decisões",
+  "dashboard.shared": "Compartilhados",
+  "dashboard.recent_activity": "Atividade Recente",
+  "dashboard.no_activity": "Nenhuma atividade ainda",
+  "dashboard.start_first": "Comece sua primeira análise",
+  "dashboard.back": "Voltar ao chat",
+
+  // ONBOARDING (additional)
+  "onboarding.what_describes": "O que melhor descreve você?",
+  "onboarding.your_industry": "Qual é sua indústria?",
+  "onboarding.biggest_challenge": "Qual é seu maior desafio agora?",
+  "onboarding.skip": "Pular por enquanto",
+
   // ERRORS
   "research.error": "Erro na pesquisa. Tente novamente.",
   "common.copy_failed": "Falha ao copiar",

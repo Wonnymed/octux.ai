@@ -1,21 +1,32 @@
 "use client";
 import { useState } from "react";
-import { Rocket, Search, Zap, TrendingUp, Globe, MessageSquare, ChevronRight } from "lucide-react";
+import { Rocket, Search, Zap, TrendingUp, Globe, MessageSquare, ChevronRight, Shield } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
 import type { Mode } from "../lib/types";
+import { updateProfile } from "../lib/profile";
 
 type OnboardingProps = {
-  onComplete: (mode: Mode) => void;
+  onComplete: (mode: Mode, suggestedPrompt?: string) => void;
   onSkip: () => void;
 };
 
 const GOALS = [
-  { label: "I'm starting a business", icon: Rocket, mode: "launchpad" as Mode, color: "#14B8A6" },
-  { label: "I need to make a decision", icon: Zap, mode: "simulate" as Mode, color: "#D4AF37" },
-  { label: "I'm researching a market", icon: Search, mode: "research" as Mode, color: "#6B8AFF" },
-  { label: "I'm evaluating an investment", icon: TrendingUp, mode: "invest" as Mode, color: "#A855F7" },
-  { label: "I operate internationally", icon: Globe, mode: "globalops" as Mode, color: "#22C55E" },
-  { label: "Just exploring", icon: MessageSquare, mode: "chat" as Mode, color: "var(--text-tertiary)" },
+  { label: "I'm starting a business", icon: Rocket, mode: "launchpad" as Mode, color: "#14B8A6", challenge: "validation" },
+  { label: "I need to make a decision", icon: Zap, mode: "simulate" as Mode, color: "#D4AF37", challenge: "decision" },
+  { label: "I'm researching a market", icon: Search, mode: "intel" as Mode, color: "#DC2626", challenge: "research" },
+  { label: "I'm evaluating an investment", icon: TrendingUp, mode: "invest" as Mode, color: "#A855F7", challenge: "evaluation" },
+  { label: "I operate internationally", icon: Globe, mode: "globalops" as Mode, color: "#22C55E", challenge: "expansion" },
+  { label: "Beating competitors", icon: Shield, mode: "intel" as Mode, color: "#DC2626", challenge: "competition" },
+  { label: "Just exploring", icon: MessageSquare, mode: "chat" as Mode, color: "var(--text-tertiary)", challenge: "exploring" },
+];
+
+const INDUSTRIES = [
+  { label: "Tech / SaaS", value: "tech" },
+  { label: "E-commerce / Retail", value: "ecommerce" },
+  { label: "Finance / Investing", value: "finance" },
+  { label: "Services / Consulting", value: "services" },
+  { label: "Food / Hospitality", value: "food" },
+  { label: "Other", value: "other" },
 ];
 
 const LEVELS = [
@@ -28,7 +39,7 @@ const LEVELS = [
 const MODE_DESCRIPTIONS: Record<string, string> = {
   launchpad: "Launchpad will find the right business for your skills, validate it, and build a 90-day blueprint.",
   simulate: "Simulate will stress-test your decision with AI agents debating from every angle.",
-  research: "Research will search multiple sources and compile a structured report with citations.",
+  intel: "Intel will search multiple sources and compile a structured report with citations.",
   invest: "Invest will evaluate your deal with quantitative formulas — expected value, Kelly, Bayesian updates.",
   globalops: "Global Ops will analyze cross-border structures, compliance, and tax optimization across multiple jurisdictions.",
   chat: "Chat is your open canvas — ask anything about business, strategy, or operations.",
@@ -37,22 +48,49 @@ const MODE_DESCRIPTIONS: Record<string, string> = {
 const MODE_LABELS: Record<string, string> = {
   launchpad: "Launchpad",
   simulate: "Simulate",
-  research: "Deep Research",
+  intel: "Intel",
   invest: "Invest",
   globalops: "Global Ops",
   chat: "Chat",
 };
 
+const CHALLENGE_SUGGESTIONS: Record<string, string> = {
+  validation: "I have a business idea I want to test. Can you simulate whether it will work?",
+  decision: "I need to make an important business decision. Help me analyze all angles.",
+  research: "I need deep research on my market. What should I know?",
+  evaluation: "I need to evaluate a deal. Can you help me spot red flags?",
+  competition: "Who are my biggest threats and how should I respond?",
+  expansion: "I want to expand to a new market. What should I know?",
+  exploring: "",
+};
+
 export default function Onboarding({ onComplete, onSkip }: OnboardingProps) {
   const [step, setStep] = useState(0);
   const [selectedGoal, setSelectedGoal] = useState<typeof GOALS[number] | null>(null);
+  const [selectedIndustry, setSelectedIndustry] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
 
   const finish = () => {
     localStorage.setItem("signux_onboarded", "true");
     if (selectedLevel) localStorage.setItem("signux_experience", selectedLevel);
-    onComplete(selectedGoal?.mode || "chat");
+
+    // Merge into existing profile without overwriting
+    const industryLabel = INDUSTRIES.find(i => i.value === selectedIndustry)?.label || selectedIndustry;
+    const challengeLabel = selectedGoal?.label || "";
+    updateProfile({
+      operations: [selectedIndustry].filter(Boolean),
+      aboutYou: [
+        industryLabel ? `Industry: ${industryLabel}` : "",
+        challengeLabel ? `Primary goal: ${challengeLabel}` : "",
+        selectedLevel ? `Experience: ${LEVELS.find(l => l.value === selectedLevel)?.label || selectedLevel}` : "",
+      ].filter(Boolean).join(". "),
+    });
+
+    const suggestion = CHALLENGE_SUGGESTIONS[selectedGoal?.challenge || ""] || "";
+    onComplete(selectedGoal?.mode || "chat", suggestion);
   };
+
+  const totalSteps = 4;
 
   return (
     <div style={{
@@ -87,10 +125,10 @@ export default function Onboarding({ onComplete, onSkip }: OnboardingProps) {
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {GOALS.map(g => {
                 const Icon = g.icon;
-                const selected = selectedGoal?.mode === g.mode;
+                const selected = selectedGoal?.challenge === g.challenge;
                 return (
                   <button
-                    key={g.mode}
+                    key={g.challenge}
                     onClick={() => { setSelectedGoal(g); setStep(1); }}
                     style={{
                       display: "flex", alignItems: "center", gap: 12,
@@ -113,8 +151,50 @@ export default function Onboarding({ onComplete, onSkip }: OnboardingProps) {
           </div>
         )}
 
-        {/* Step 1: Experience */}
+        {/* Step 1: Industry */}
         {step === 1 && (
+          <div style={{ animation: "fadeIn 0.25s ease-out" }}>
+            <div style={{
+              fontSize: 22, fontWeight: 600, color: "var(--text-primary)",
+              textAlign: "center", marginBottom: 8, lineHeight: 1.3,
+            }}>
+              What&apos;s your industry?
+            </div>
+            <div style={{
+              fontSize: 13, color: "var(--text-secondary)",
+              textAlign: "center", marginBottom: 28,
+            }}>
+              We&apos;ll personalize examples and insights for you.
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {INDUSTRIES.map(ind => {
+                const selected = selectedIndustry === ind.value;
+                return (
+                  <button
+                    key={ind.value}
+                    onClick={() => { setSelectedIndustry(ind.value); setStep(2); }}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 12,
+                      padding: "14px 16px", borderRadius: 10,
+                      border: selected ? "1px solid var(--accent)" : "1px solid var(--card-border)",
+                      background: selected ? "var(--accent-bg)" : "var(--card-bg)",
+                      cursor: "pointer", transition: "all 150ms",
+                      textAlign: "left",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; }}
+                    onMouseLeave={e => { if (!selected) e.currentTarget.style.borderColor = "var(--card-border)"; }}
+                  >
+                    <span style={{ fontSize: 14, color: "var(--text-primary)" }}>{ind.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Experience */}
+        {step === 2 && (
           <div style={{ animation: "fadeIn 0.25s ease-out" }}>
             <div style={{
               fontSize: 22, fontWeight: 600, color: "var(--text-primary)",
@@ -135,7 +215,7 @@ export default function Onboarding({ onComplete, onSkip }: OnboardingProps) {
                 return (
                   <button
                     key={l.value}
-                    onClick={() => { setSelectedLevel(l.value); setStep(2); }}
+                    onClick={() => { setSelectedLevel(l.value); setStep(3); }}
                     style={{
                       display: "flex", alignItems: "center", gap: 12,
                       padding: "14px 16px", borderRadius: 10,
@@ -155,8 +235,8 @@ export default function Onboarding({ onComplete, onSkip }: OnboardingProps) {
           </div>
         )}
 
-        {/* Step 2: Recommendation */}
-        {step === 2 && selectedGoal && (
+        {/* Step 3: Recommendation */}
+        {step === 3 && selectedGoal && (
           <div style={{ animation: "fadeIn 0.25s ease-out", textAlign: "center" }}>
             <div style={{
               fontSize: 22, fontWeight: 600, color: "var(--text-primary)",
@@ -214,7 +294,7 @@ export default function Onboarding({ onComplete, onSkip }: OnboardingProps) {
           display: "flex", alignItems: "center", justifyContent: "center",
           gap: 8, marginTop: 32,
         }}>
-          {[0, 1, 2].map(i => (
+          {Array.from({ length: totalSteps }).map((_, i) => (
             <div key={i} style={{
               width: step === i ? 16 : 6, height: 6, borderRadius: 3,
               background: step === i ? "var(--accent)" : "var(--card-border)",

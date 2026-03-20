@@ -276,6 +276,16 @@ const zhHans: Record<string, string> = {
   "launchpad.results_desc": "根据你的档案，以下是你的最佳匹配：",
   "launchpad.start_over": "重新开始",
 
+  // SIDEBAR (additional)
+  "sidebar.dashboard": "仪表盘",
+
+  // SHARE
+  "share.share": "分享",
+
+  // DASHBOARD
+  "dashboard.title": "智能仪表盘",
+  "dashboard.back": "返回聊天",
+
   // ERRORS
   "research.error": "研究失败。请重试。",
   "common.copy_failed": "复制失败",

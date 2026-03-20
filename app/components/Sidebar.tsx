@@ -1,8 +1,8 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
-import { SquarePen, MessageSquare, Zap, Shield, Rocket, Globe, TrendingUp, Settings, LogIn, LogOut, Trash2, Flame, FolderOpen, Plus, ChevronDown, X, Upload, Eye } from "lucide-react";
+import { SquarePen, MessageSquare, Zap, Shield, Rocket, Globe, TrendingUp, Settings, LogIn, LogOut, Trash2, Flame, FolderOpen, Plus, ChevronDown, X, Upload, Eye, LayoutDashboard } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
-import { t } from "../lib/i18n";
+import { t, getLanguage, setLanguage as setLang, ALL_LANGUAGES } from "../lib/i18n";
 import type { Mode } from "../lib/types";
 import type { AuthUser } from "../lib/auth";
 import type { Conversation } from "../lib/database-client";
@@ -599,6 +599,27 @@ export default function Sidebar({
 
         {/* Bottom */}
         <div style={{ borderTop: "1px solid var(--border-secondary)", padding: 8 }}>
+          {/* Language selector */}
+          <div style={{
+            display: "flex", gap: 4, padding: "6px 12px", margin: "4px 0",
+          }}>
+            {ALL_LANGUAGES.slice(0, 2).map(lang => {
+              const currentLang = getLanguage();
+              const isActive = currentLang === lang.code;
+              return (
+                <button key={lang.code} onClick={() => { setLang(lang.code); window.location.reload(); }} style={{
+                  padding: "3px 8px", borderRadius: 4,
+                  background: isActive ? "rgba(212,175,55,0.1)" : "transparent",
+                  border: isActive ? "1px solid rgba(212,175,55,0.2)" : "1px solid transparent",
+                  color: isActive ? "var(--accent)" : "var(--text-tertiary)",
+                  fontSize: 10, fontWeight: 600, cursor: "pointer",
+                }}>
+                  {lang.code === "en" ? "EN" : "PT"}
+                </button>
+              );
+            })}
+          </div>
+
           {/* Streak counter */}
           {streak >= 2 && (
             <div style={{
@@ -647,6 +668,14 @@ export default function Sidebar({
               <Eye size={13} style={{ color: "#22c55e" }} />
               <span>{activeWatches} active watch{activeWatches > 1 ? "es" : ""}</span>
             </div>
+          )}
+
+          {/* Dashboard */}
+          {isLoggedIn && (
+            <a href="/dashboard" style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px", border: "none", background: "none", borderRadius: "var(--radius-xs)", cursor: "pointer", color: "var(--text-secondary)", fontSize: 13, textAlign: "left", textDecoration: "none" }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"} onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}>
+              <LayoutDashboard size={16} strokeWidth={1.5} /> <span>{t("sidebar.dashboard")}</span>
+            </a>
           )}
 
           {/* Settings */}

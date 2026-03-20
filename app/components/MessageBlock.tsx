@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { ClipboardCopy, Check, RotateCcw, ThumbsUp, ThumbsDown, Search, FileText, FileCode, X, Eye, Swords } from "lucide-react";
+import { ClipboardCopy, Check, RotateCcw, ThumbsUp, ThumbsDown, Search, FileText, FileCode, X, Eye, Swords, Share2 } from "lucide-react";
 import { signuxFetch } from "../lib/api-client";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
@@ -110,6 +110,8 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
   const [showSources, setShowSources] = useState(false);
   const [isWatching, setIsWatching] = useState(false);
   const [showGraph, setShowGraph] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const isMobile = useIsMobile();
 
   // Thinking phrase (randomized once per mount)
@@ -204,6 +206,40 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
       });
       if (res.ok) setIsWatching(true);
     } catch { /* ignore */ }
+  };
+
+  const shareToSocial = async (platform: string) => {
+    try {
+      const shareRes = await signuxFetch("/api/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: null,
+          type: "chat",
+          title: previousUserMessage?.slice(0, 200) || "Signux AI Analysis",
+          content: message.content?.slice(0, 5000) || "",
+          metadata: {},
+        }),
+      });
+      const { url: shareUrl } = await shareRes.json();
+
+      const shareText = "I just ran an AI analysis with @SignuxAI.\n\nSee what the AI found:";
+
+      const links: Record<string, string> = {
+        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+        copy: shareUrl,
+      };
+
+      if (platform === "copy") {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 3000);
+      } else {
+        window.open(links[platform], "_blank", "width=600,height=400");
+      }
+    } catch { /* ignore */ }
+    setShowShareMenu(false);
   };
 
   /* ═══ USER MESSAGE ═══ */
@@ -1114,6 +1150,57 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                   <Eye size={12} />
                   {isWatching ? "Watching" : "Watch this"}
                 </button>
+              )}
+              {/* Share button */}
+              {parsedContent.length > 100 && (
+                <div style={{ position: "relative" }}>
+                  <button
+                    onClick={() => setShowShareMenu(s => !s)}
+                    title="Share this analysis"
+                    style={{
+                      display: "flex", alignItems: "center", gap: 4,
+                      padding: "4px 10px", borderRadius: 6,
+                      border: "1px solid var(--border-secondary)",
+                      background: "transparent",
+                      cursor: "pointer",
+                      fontSize: 11, color: "var(--text-tertiary)",
+                      transition: "all 200ms",
+                    }}
+                  >
+                    <Share2 size={12} />
+                    Share
+                  </button>
+                  {showShareMenu && (
+                    <div style={{
+                      position: "absolute", bottom: "100%", left: 0, marginBottom: 4,
+                      padding: 4, borderRadius: 10,
+                      background: "var(--bg-primary)", border: "1px solid var(--border-secondary)",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                      display: "flex", flexDirection: "column", gap: 2,
+                      zIndex: 10,
+                    }}>
+                      {[
+                        { id: "twitter", label: "Share on X", icon: "\uD835\uDD4F" },
+                        { id: "linkedin", label: "Share on LinkedIn", icon: "in" },
+                        { id: "copy", label: shareCopied ? "Copied!" : "Copy link", icon: "\uD83D\uDD17" },
+                      ].map(opt => (
+                        <button key={opt.id} onClick={() => shareToSocial(opt.id)} style={{
+                          display: "flex", alignItems: "center", gap: 8,
+                          padding: "8px 14px", borderRadius: 8,
+                          background: "transparent", border: "none",
+                          cursor: "pointer", fontSize: 12,
+                          color: "var(--text-secondary)", whiteSpace: "nowrap",
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                        >
+                          <span style={{ width: 16, textAlign: "center" }}>{opt.icon}</span>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}

@@ -275,6 +275,35 @@ const en: Record<string, string> = {
   "launchpad.results_desc": "Based on your profile, here are your best matches:",
   "launchpad.start_over": "Start over",
 
+  // SIDEBAR (additional)
+  "sidebar.dashboard": "Dashboard",
+
+  // SHARE
+  "share.share_on_x": "Share on X",
+  "share.share_on_linkedin": "Share on LinkedIn",
+  "share.copy_link": "Copy link",
+  "share.copied": "Copied!",
+  "share.share": "Share",
+
+  // DASHBOARD
+  "dashboard.title": "Intelligence Dashboard",
+  "dashboard.subtitle": "Your decision intelligence at a glance",
+  "dashboard.simulations": "Simulations",
+  "dashboard.intel_reports": "Intel Reports",
+  "dashboard.active_watches": "Active Watches",
+  "dashboard.decisions": "Decisions",
+  "dashboard.shared": "Shared",
+  "dashboard.recent_activity": "Recent Activity",
+  "dashboard.no_activity": "No activity yet",
+  "dashboard.start_first": "Start your first analysis",
+  "dashboard.back": "Back to chat",
+
+  // ONBOARDING (additional)
+  "onboarding.what_describes": "What best describes you?",
+  "onboarding.your_industry": "What's your industry?",
+  "onboarding.biggest_challenge": "What's your biggest challenge right now?",
+  "onboarding.skip": "Skip for now",
+
   // ERRORS
   "research.error": "Research failed. Please try again.",
   "common.copy_failed": "Failed to copy",
