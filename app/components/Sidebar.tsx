@@ -44,13 +44,13 @@ type SidebarProps = {
   limits?: { simulate_monthly: number; research_monthly: number; globalops_monthly: number; invest_monthly: number };
 };
 
-const MODES: { key: Mode; icon: any; label: string; color?: string }[] = [
-  { key: "chat", icon: MessageSquare, label: "sidebar.mode_chat" },
+const MODES: { key: Mode; icon: any; label: string; color: string }[] = [
+  { key: "chat", icon: MessageSquare, label: "sidebar.mode_chat", color: "#A8A29E" },
   { key: "simulate", icon: Zap, label: "sidebar.mode_simulate", color: "#D4AF37" },
-  { key: "intel", icon: Shield, label: "sidebar.mode_intel", color: "#DC2626" },
-  { key: "launchpad", icon: Rocket, label: "sidebar.mode_launchpad", color: "#14B8A6" },
-  { key: "globalops", icon: Globe, label: "sidebar.mode_globalops", color: "#22C55E" },
-  { key: "invest", icon: TrendingUp, label: "sidebar.mode_invest", color: "#A855F7" },
+  { key: "intel", icon: Shield, label: "sidebar.mode_intel", color: "#EF4444" },
+  { key: "launchpad", icon: Rocket, label: "sidebar.mode_launchpad", color: "#3B82F6" },
+  { key: "globalops", icon: Globe, label: "sidebar.mode_globalops", color: "#10B981" },
+  { key: "invest", icon: TrendingUp, label: "sidebar.mode_invest", color: "#8B5CF6" },
 ];
 
 /* ═══ Portal-based Sidebar Tooltip — renders in <body>, outside overflow:hidden ═══ */
@@ -112,11 +112,12 @@ function SidebarTooltip({ show, text, anchorRef }: {
 }
 
 /* ═══ Sidebar Icon Button with Portal Tooltip ═══ */
-function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, isPrimary, suppressTooltip, size = 40 }: {
+function SidebarIconButton({ icon, tooltip, active, activeColor, modeColor, onClick, isPrimary, suppressTooltip, size = 40 }: {
   icon: React.ReactNode;
   tooltip: string;
   active?: boolean;
   activeColor?: string;
+  modeColor?: string;
   onClick: () => void;
   isPrimary?: boolean;
   suppressTooltip?: boolean;
@@ -124,6 +125,25 @@ function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, isPrim
 }) {
   const [hovered, setHovered] = useState(false);
   const btnRef = useRef<HTMLDivElement>(null);
+
+  // Mode-colored icon: idle=50% opacity, hover=full, active=full
+  const iconColor = modeColor
+    ? (active ? modeColor : hovered ? modeColor : `${modeColor}80`)
+    : active
+      ? (activeColor || "var(--accent)")
+      : isPrimary
+        ? (hovered ? "var(--accent)" : "var(--text-primary)")
+        : hovered
+          ? "var(--text-primary)"
+          : "var(--text-tertiary)";
+
+  const bgColor = modeColor
+    ? (active ? `${modeColor}1A` : hovered ? `${modeColor}0F` : "transparent")
+    : active
+      ? "rgba(212,175,55,0.12)"
+      : hovered
+        ? "rgba(255,255,255,0.06)"
+        : "transparent";
 
   return (
     <div
@@ -142,18 +162,8 @@ function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, isPrim
         cursor: "pointer",
         border: "none",
         padding: 0,
-        background: active
-          ? "rgba(212,175,55,0.12)"
-          : hovered
-          ? "rgba(255,255,255,0.06)"
-          : "transparent",
-        color: active
-          ? (activeColor || "var(--accent)")
-          : isPrimary
-          ? (hovered ? "var(--accent)" : "var(--text-primary)")
-          : hovered
-          ? "var(--text-primary)"
-          : "var(--text-tertiary)",
+        background: bgColor,
+        color: iconColor,
         transition: "all 150ms ease",
       }}>
         {icon}
@@ -639,7 +649,7 @@ export default function Sidebar({
                 fontWeight: mode === key ? 500 : 400,
               }} onMouseEnter={e => { if (mode !== key) e.currentTarget.style.background = "var(--bg-hover)"; }}
                  onMouseLeave={e => { if (mode !== key) e.currentTarget.style.background = "transparent"; }}>
-                <Icon size={16} strokeWidth={1.5} style={{ color: mode === key ? (color || "var(--accent)") : undefined }} />
+                <Icon size={16} strokeWidth={1.5} style={{ color: color }} />
                 <span style={{ flex: 1 }}>{t(label)}</span>
               </button>
               {idx === 3 && (
@@ -908,7 +918,7 @@ export default function Sidebar({
                 icon={<Icon size={iconSize} strokeWidth={iconSW} />}
                 tooltip={t(label)}
                 active={mode === key}
-                activeColor={color || "var(--accent)"}
+                modeColor={color}
                 onClick={() => handleMode(key)}
               />
               {idx === 3 && (
@@ -921,12 +931,15 @@ export default function Sidebar({
         {/* Separator */}
         <div style={{ width: 24, height: 1, background: "var(--border-secondary)", margin: "8px 0", opacity: 0.5 }} />
 
-        {/* BUG 4 FIX: Settings button in collapsed sidebar */}
-        <SidebarIconButton
-          icon={<Settings size={iconSize} strokeWidth={iconSW} />}
-          tooltip="Settings"
-          onClick={() => onOpenSettings()}
-        />
+        {/* Upgrade to Pro — replaces Settings (Settings is in profile menu) */}
+        {tier !== "pro" && tier !== "max" && tier !== "founding" && (
+          <SidebarIconButton
+            icon={<Zap size={iconSize} strokeWidth={iconSW} />}
+            tooltip="Upgrade to Pro"
+            modeColor="#D4AF37"
+            onClick={() => router.push("/pricing")}
+          />
+        )}
 
         <div style={{ height: 8 }} />
 
