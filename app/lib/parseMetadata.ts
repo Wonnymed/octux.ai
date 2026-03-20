@@ -59,6 +59,13 @@ export type SignuxTimelineEvent = {
   probability?: number;
 };
 
+export type SignuxCompetitive = {
+  competitor: string;
+  threat_level: string;
+  signals: string[];
+  recommended_actions: string[];
+};
+
 export interface SignuxMetadata {
   domains: string[];
   domainCount: number;
@@ -71,6 +78,8 @@ export interface SignuxMetadata {
   sources: SignuxSource[];
   followups: SignuxFollowup[];
   timeline: SignuxTimelineEvent[];
+  competitive: SignuxCompetitive | null;
+  workflow: string[];
 }
 
 export function parseSignuxMetadata(content: string): { cleanContent: string; metadata: SignuxMetadata } {
@@ -139,8 +148,20 @@ export function parseSignuxMetadata(content: string): { cleanContent: string; me
   try { if (timelineMatch) timeline = JSON.parse(timelineMatch[1]); } catch {}
   clean = clean.replace(/<!--\s*signux_timeline:\s*\[[\s\S]*?\]\s*-->/g, "");
 
+  // Parse competitive intel
+  const competitiveMatch = clean.match(/<!--\s*signux_competitive:\s*(\{[\s\S]*?\})\s*-->/);
+  let competitive: SignuxCompetitive | null = null;
+  try { if (competitiveMatch) competitive = JSON.parse(competitiveMatch[1]); } catch {}
+  clean = clean.replace(/<!--\s*signux_competitive:\s*\{[\s\S]*?\}\s*-->/g, "");
+
+  // Parse workflow
+  const workflowMatch = clean.match(/<!--\s*signux_workflow:\s*(\[[\s\S]*?\])\s*-->/);
+  let workflow: string[] = [];
+  try { if (workflowMatch) workflow = JSON.parse(workflowMatch[1]); } catch {}
+  clean = clean.replace(/<!--\s*signux_workflow:\s*\[[\s\S]*?\]\s*-->/g, "");
+
   return {
     cleanContent: clean.trim(),
-    metadata: { domains, domainCount, blindspots, depth, verification, worklog, vote, sentiment, sources, followups, timeline },
+    metadata: { domains, domainCount, blindspots, depth, verification, worklog, vote, sentiment, sources, followups, timeline, competitive, workflow },
   };
 }

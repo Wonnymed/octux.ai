@@ -2,12 +2,17 @@ export const maxDuration = 300;
 
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { SECURITY_PREFIX, verifyClientToken, applyRateLimit } from "../../lib/security";
 import { getUserFromRequest, checkUsageLimit, incrementUsage, getTierFromRequest } from "../../lib/usage";
 import { getModelsForTier } from "../../lib/models";
 import { getKnowledgeForMode } from "../../lib/knowledge-base";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 const SIMULATE_KNOWLEDGE = getKnowledgeForMode("simulate");
 const BATCH_SIZE = 4;
 
@@ -252,6 +257,10 @@ ${agents.map((a: any) => `${a.name} — ${a.role} [${a.category}]`).join("\n")}
 FULL SIMULATION (${totalInteractions} interactions across ${roundCount} rounds):
 ${simText}
 
+Include a workflow metadata block showing the analysis process:
+<!-- signux_workflow: ["Scenario parsed", "Entity graph mapped", "N agents assembled", "3-round debate", "Consensus vote", "Report synthesis"] -->
+Adapt N to the actual number of agents.
+
 Generate the report with EXACTLY these sections:
 
 ## Executive Summary
@@ -449,6 +458,22 @@ export async function POST(req: NextRequest) {
         const report = await generateReport(scenario, graph, agents, allMessages, simulation_parameters, userLang, worldContext, models.simulate_report);
         sendSSE(controller, encoder, { type: "report", content: report });
         sendSSE(controller, encoder, { type: "stage_done", stage: 4 });
+
+        // Save context for agent memory
+        if (userId) {
+          try {
+            await supabaseAdmin.from("user_context").insert({
+              user_id: userId,
+              context_type: "simulation",
+              summary: `Simulated: ${scenario.slice(0, 200)}. ${agents.length} agents, ${allMessages.length} interactions.`,
+              key_insights: [
+                `Agents: ${agents.length}`,
+                `Rounds: ${rounds}`,
+              ],
+              metadata: { scenario: scenario.slice(0, 100) },
+            });
+          } catch {}
+        }
 
         // Final result
         sendSSE(controller, encoder, {

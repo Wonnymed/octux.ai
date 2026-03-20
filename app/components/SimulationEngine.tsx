@@ -121,6 +121,11 @@ export default function SimulationEngine(props: SimulationEngineProps) {
   // What-If inline state
   const [whatIfInput, setWhatIfInput] = useState("");
 
+  // Compare A vs B state
+  const [compareMode, setCompareMode] = useState(false);
+  const [scenarioA, setScenarioA] = useState("");
+  const [scenarioB, setScenarioB] = useState("");
+
   const isMobile = useIsMobile();
   const pad = isMobile ? "16px" : "24px";
   const { enhance, enhancing, wasEnhanced } = useEnhance("simulate");
@@ -742,7 +747,109 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               )}
               {simStarting ? "INITIALIZING..." : "RUN SIMULATION"}
             </button>
+            {!compareMode && (
+              <button
+                onClick={() => setCompareMode(true)}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "10px 18px", borderRadius: 50,
+                  border: "1px solid var(--border-secondary)",
+                  background: "transparent", color: "var(--text-secondary)",
+                  fontSize: 13, fontWeight: 500, cursor: "pointer",
+                  transition: "all 200ms",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-secondary)"; }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="7" height="18" rx="1"/>
+                  <rect x="14" y="3" width="7" height="18" rx="1"/>
+                </svg>
+                Compare A vs B
+              </button>
+            )}
             </div>
+
+            {/* Compare A vs B inputs */}
+            {compareMode && (
+              <div style={{ width: "100%", marginTop: 16 }}>
+                <div style={{
+                  display: "flex", flexDirection: isMobile ? "column" : "row", gap: 12, width: "100%",
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontSize: 11, fontWeight: 600, color: "#3b82f6",
+                      fontFamily: "var(--font-mono)", marginBottom: 6,
+                    }}>SCENARIO A</div>
+                    <textarea
+                      value={scenarioA}
+                      onChange={(e) => setScenarioA(e.target.value)}
+                      placeholder="First scenario..."
+                      style={{
+                        width: "100%", minHeight: 100, padding: 12, borderRadius: 10,
+                        border: "1px solid rgba(59,130,246,0.2)",
+                        background: "rgba(59,130,246,0.03)",
+                        color: "var(--text-primary)", fontSize: 13, resize: "vertical",
+                        fontFamily: "inherit",
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontSize: 11, fontWeight: 600, color: "#8b5cf6",
+                      fontFamily: "var(--font-mono)", marginBottom: 6,
+                    }}>SCENARIO B</div>
+                    <textarea
+                      value={scenarioB}
+                      onChange={(e) => setScenarioB(e.target.value)}
+                      placeholder="Second scenario..."
+                      style={{
+                        width: "100%", minHeight: 100, padding: 12, borderRadius: 10,
+                        border: "1px solid rgba(139,92,246,0.2)",
+                        background: "rgba(139,92,246,0.03)",
+                        color: "var(--text-primary)", fontSize: 13, resize: "vertical",
+                        fontFamily: "inherit",
+                      }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8, marginTop: 12, justifyContent: "center" }}>
+                  <button
+                    onClick={() => {
+                      if (!scenarioA.trim() || !scenarioB.trim()) return;
+                      if (!isLoggedIn) { window.location.href = "/signup"; return; }
+                      if (tier === "free") { setShowPaywall(true); return; }
+                      const comparisonPrompt = `COMPARE TWO SCENARIOS SIDE BY SIDE:\n\nSCENARIO A: ${scenarioA}\n\nSCENARIO B: ${scenarioB}\n\nAnalyze BOTH scenarios using the same criteria. Then provide a clear comparison:\n\n## Scenario A: [Short name]\n[Brief analysis — viability, risks, potential]\n\n## Scenario B: [Short name]\n[Brief analysis — viability, risks, potential]\n\n## ⚖️ Head-to-Head Comparison\n\n| Criteria | Scenario A | Scenario B | Winner |\n|---|---|---|---|\n| Viability Score | X/10 | X/10 | A/B |\n| Risk Level | Low/Med/High | Low/Med/High | A/B |\n| Expected ROI | X% | X% | A/B |\n| Time to Results | X months | X months | A/B |\n| Capital Required | $X | $X | A/B |\n| Competition | Low/Med/High | Low/Med/High | A/B |\n\n## 🏆 Verdict\n**Winner: Scenario [A/B]** — [1 paragraph explaining why, acknowledging trade-offs]\n\n## 🤔 Consider This\n- If your priority is [X], choose Scenario A because...\n- If your priority is [Y], choose Scenario B because...\n- A hybrid approach might be: [suggestion combining best of both]`;
+                      setSimScenario(comparisonPrompt);
+                      onSimulate(comparisonPrompt);
+                    }}
+                    disabled={!scenarioA.trim() || !scenarioB.trim() || simStarting}
+                    style={{
+                      padding: "10px 24px", borderRadius: 50,
+                      background: scenarioA.trim() && scenarioB.trim() ? "var(--accent)" : "rgba(212,175,55,0.3)",
+                      color: "var(--bg-primary)", fontWeight: 600,
+                      fontSize: 13, border: "none", cursor: scenarioA.trim() && scenarioB.trim() ? "pointer" : "not-allowed",
+                      opacity: scenarioA.trim() && scenarioB.trim() ? 1 : 0.5,
+                      fontFamily: "var(--font-brand)", letterSpacing: 1, textTransform: "uppercase" as const,
+                    }}
+                  >
+                    Compare scenarios
+                  </button>
+                  <button
+                    onClick={() => { setCompareMode(false); setScenarioA(""); setScenarioB(""); }}
+                    style={{
+                      padding: "10px 18px", borderRadius: 50,
+                      border: "1px solid var(--border-secondary)",
+                      background: "transparent", color: "var(--text-tertiary)",
+                      fontSize: 12, cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div style={{
               fontSize: 11, color: "var(--text-tertiary)",
               marginTop: 16,

@@ -108,6 +108,7 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
   const [showVerification, setShowVerification] = useState(false);
   const [showWork, setShowWork] = useState(false);
   const [showSources, setShowSources] = useState(false);
+  const [isWatching, setIsWatching] = useState(false);
   const isMobile = useIsMobile();
 
   // Thinking phrase (randomized once per mount)
@@ -123,8 +124,8 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
   const { cleanContent: c2, followups } = !isUser ? parseFollowups(c1) : { cleanContent: c1, followups: [] as string[] };
 
   // Centralized metadata parser
-  const { cleanContent: c3, metadata } = !isUser ? parseSignuxMetadata(c2) : { cleanContent: c2, metadata: { domains: [], domainCount: 0, blindspots: [], depth: 0, verification: null, worklog: null, vote: null, sentiment: null, sources: [], followups: [], timeline: [] } };
-  const { domains, domainCount, blindspots, depth, verification, worklog, sentiment, sources, followups: smartFollowups } = metadata;
+  const { cleanContent: c3, metadata } = !isUser ? parseSignuxMetadata(c2) : { cleanContent: c2, metadata: { domains: [], domainCount: 0, blindspots: [], depth: 0, verification: null, worklog: null, vote: null, sentiment: null, sources: [], followups: [], timeline: [], competitive: null, workflow: [] } };
+  const { domains, domainCount, blindspots, depth, verification, worklog, sentiment, sources, followups: smartFollowups, competitive, workflow } = metadata;
 
   // Plan detection
   const { hasPlan, planContent, restContent } = !isUser && !isStreaming ? parsePlan(c3) : { hasPlan: false, planContent: "", restContent: c3 };
@@ -186,6 +187,22 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
       if (data.challenge) setChallenge(data.challenge);
     } catch { /* ignore */ }
     setLoadingChallenge(false);
+  };
+
+  const handleWatch = async () => {
+    try {
+      const res = await signuxFetch("/api/watch", {
+        method: "POST",
+        body: JSON.stringify({
+          userId: "current",
+          type: "scenario",
+          query: previousUserMessage || message.content?.slice(0, 200) || "",
+          context: message.content?.slice(0, 500) || "",
+          frequency: "weekly",
+        }),
+      });
+      if (res.ok) setIsWatching(true);
+    } catch { /* ignore */ }
   };
 
   /* ═══ USER MESSAGE ═══ */
@@ -327,6 +344,33 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                   <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-tertiary)", marginBottom: 8 }}>
                     <Search size={14} className="spinner" />
                     {t("chat.searching")}
+                  </div>
+                )}
+
+                {/* Workflow pipeline (Sprint 4 — Dify) */}
+                {!isStreaming && workflow.length > 0 && (
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 0,
+                    padding: "8px 12px", borderRadius: 10, marginBottom: 14,
+                    background: "rgba(212,175,55,0.03)",
+                    border: "1px solid rgba(212,175,55,0.08)",
+                    overflowX: "auto", fontSize: 10,
+                  }}>
+                    {workflow.map((step, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center" }}>
+                        <span style={{
+                          padding: "3px 8px", borderRadius: 4, whiteSpace: "nowrap",
+                          background: i === workflow.length - 1 ? "rgba(212,175,55,0.12)" : "transparent",
+                          color: i === workflow.length - 1 ? "var(--accent)" : "var(--text-tertiary)",
+                          fontWeight: i === workflow.length - 1 ? 600 : 400,
+                        }}>
+                          {step}
+                        </span>
+                        {i < workflow.length - 1 && (
+                          <span style={{ color: "var(--border-secondary)", margin: "0 2px", fontSize: 8 }}>{"\u2192"}</span>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
 
@@ -760,6 +804,37 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
             </div>
           )}
 
+          {/* ═══ COMPETITIVE THREAT BADGE ═══ */}
+          {!isStreaming && competitive && (
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "5px 10px", borderRadius: 8, marginTop: 8,
+              background: competitive.threat_level === "high"
+                ? "rgba(239,68,68,0.06)" : competitive.threat_level === "medium"
+                ? "rgba(245,158,11,0.06)" : "rgba(34,197,94,0.06)",
+              border: `1px solid ${competitive.threat_level === "high"
+                ? "rgba(239,68,68,0.15)" : competitive.threat_level === "medium"
+                ? "rgba(245,158,11,0.15)" : "rgba(34,197,94,0.15)"}`,
+              fontSize: 11,
+            }}>
+              <span style={{ fontSize: 12 }}>{"\uD83C\uDFAF"}</span>
+              <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                {competitive.competitor}
+              </span>
+              <span style={{
+                padding: "1px 6px", borderRadius: 4, fontSize: 9, fontWeight: 600,
+                background: competitive.threat_level === "high" ? "rgba(239,68,68,0.15)"
+                  : competitive.threat_level === "medium" ? "rgba(245,158,11,0.15)"
+                  : "rgba(34,197,94,0.15)",
+                color: competitive.threat_level === "high" ? "#ef4444"
+                  : competitive.threat_level === "medium" ? "#f59e0b"
+                  : "#22c55e",
+              }}>
+                {competitive.threat_level.toUpperCase()} THREAT
+              </span>
+            </div>
+          )}
+
           {/* ═══ SOURCE CARDS ═══ */}
           {!isStreaming && sources.length > 0 && (
             <div style={{ marginTop: 8 }}>
@@ -933,6 +1008,26 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                     {!isMaxTier && <span style={{ fontSize: 8, fontWeight: 700, color: "#A855F7", letterSpacing: 0.5 }}>MAX</span>}
                   </button>
                 </>
+              )}
+              {/* Watch button */}
+              {parsedContent.length > 200 && (
+                <button
+                  onClick={handleWatch}
+                  disabled={isWatching}
+                  title="Monitor this topic for changes"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 4,
+                    padding: "4px 10px", borderRadius: 6,
+                    border: isWatching ? "1px solid rgba(34,197,94,0.3)" : "1px solid var(--border-secondary)",
+                    background: isWatching ? "rgba(34,197,94,0.06)" : "transparent",
+                    cursor: isWatching ? "default" : "pointer",
+                    fontSize: 11, color: isWatching ? "#22c55e" : "var(--text-tertiary)",
+                    transition: "all 200ms",
+                  }}
+                >
+                  <Eye size={12} />
+                  {isWatching ? "Watching" : "Watch this"}
+                </button>
               )}
             </div>
           )}

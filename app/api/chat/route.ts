@@ -77,6 +77,16 @@ PARALLEL RESEARCH INDICATOR (show research breadth):
 When your analysis draws from multiple knowledge domains simultaneously, naturally mention the parallel threads:
 - "Analyzing from 4 domains simultaneously: [game-theory], [pricing-economics], [risk-detection], [competitive-intel]..."
 Use this as a transition, not a separate block. Only when genuinely pulling from 3+ domains.
+
+VISUAL WORKFLOW (for complex analyses only):
+For complex analyses involving multiple domains, include a workflow metadata block:
+<!-- signux_workflow: ["Input analysis", "Knowledge domains: X, Y, Z", "Multi-perspective evaluation", "Risk assessment", "Final synthesis"] -->
+Adapt the steps to match the actual analysis process. Only include on complex multi-domain analyses, not simple responses.
+
+COMPETITIVE INTELLIGENCE (when competitors are mentioned):
+When the user mentions specific competitors or companies by name, include competitive intelligence in your analysis and add:
+<!-- signux_competitive: {"competitor": "Company X", "threat_level": "high|medium|low", "signals": ["signal1", "signal2"], "recommended_actions": ["action1", "action2"]} -->
+Only add when a specific competitor was actually analyzed.
 `;
 
 function buildSystemPrompt(): string {
@@ -567,6 +577,52 @@ A question is 'complex' if it involves: business decisions, investments, market 
 
 ` + INTELLIGENCE_PROTOCOL + `
 
+EQUITY RESEARCH REPORT FORMAT:
+When analyzing an investment opportunity, structure as a professional equity research report:
+
+# 📊 Investment Analysis: [Subject]
+
+## Executive Summary
+[2-3 sentences — verdict upfront]
+
+## Investment Thesis
+[Why this could be a good/bad investment — 1 paragraph]
+
+## Key Metrics
+| Metric | Value | Assessment |
+|---|---|---|
+| Expected ROI | X% | 🟢/🟡/🔴 |
+| Payback Period | X months | 🟢/🟡/🔴 |
+| Risk Score | X/10 | 🟢/🟡/🔴 |
+| Market Size | $XM | 🟢/🟡/🔴 |
+| Competition Level | Low/Med/High | 🟢/🟡/🔴 |
+
+## ✅ Bull Case (Positive Factors)
+1. **[Factor]** — [1 sentence]
+2. **[Factor]** — [1 sentence]
+3. **[Factor]** — [1 sentence]
+
+## ⚠️ Bear Case (Key Risks)
+1. **[Risk]** — [1 sentence]
+2. **[Risk]** — [1 sentence]
+3. **[Risk]** — [1 sentence]
+
+## Comparable Analysis
+[Compare to similar investments/opportunities]
+
+## Verdict
+**Rating: [STRONG BUY / BUY / HOLD / AVOID / STRONG AVOID]**
+**Confidence: [X]%**
+[1 paragraph final assessment]
+
+## Recommended Actions
+1. [Specific next step]
+2. [Specific next step]
+3. [Specific next step]
+
+---
+*This analysis is for informational purposes only. Always verify with qualified professionals before making investment decisions.*
+
 RESPONSE ENRICHMENT (mandatory on every response):
 
 1. CONFIDENCE TAG — At the very end of your main content, add:
@@ -1025,7 +1081,28 @@ End with a section: "## What to do next" with numbered action items.` : "";
     const toolCmd = detectToolCommand(lastUserText);
     const toolInject = toolCmd ? TOOL_COMMANDS[toolCmd] : "";
 
-    const fullSystemPrompt = SECURITY_PREFIX + baseSystemPrompt + contextPrefix + knowledgeContext + SMART_ATTACHMENT_INJECT + (isRC ? RC_SYSTEM_INJECT : "") + toolInject;
+    // Agent memory — inject previous user context
+    let memoryContext = "";
+    if (userId) {
+      try {
+        const { data: contexts } = await supabaseAdmin
+          .from("user_context")
+          .select("context_type, summary, key_insights, created_at")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        if (contexts && contexts.length > 0) {
+          memoryContext = `\n\nPREVIOUS CONTEXT FROM THIS USER (use to personalize your response):\n` +
+            contexts.map((c: any, i: number) =>
+              `${i + 1}. [${c.context_type}] ${c.summary}${c.key_insights?.length ? ` (Key: ${c.key_insights.join(", ")})` : ""}`
+            ).join("\n") +
+            `\nReference previous analyses when genuinely relevant. Don't force it.\n`;
+        }
+      } catch {}
+    }
+
+    const fullSystemPrompt = SECURITY_PREFIX + baseSystemPrompt + contextPrefix + knowledgeContext + memoryContext + SMART_ATTACHMENT_INJECT + (isRC ? RC_SYSTEM_INJECT : "") + toolInject;
     const encoder = new TextEncoder();
 
     const readable = new ReadableStream({

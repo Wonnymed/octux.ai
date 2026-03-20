@@ -81,6 +81,30 @@ Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below
 <!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
 List actual reasoning steps taken, not generic descriptions.
 
+COMPETITIVE INTELLIGENCE:
+When the user mentions specific competitors or companies by name, PROACTIVELY include competitive intelligence:
+
+### 🔎 Competitive Intelligence: [Company Name]
+
+**What we know:**
+- Market position: [assessment]
+- Recent moves: [known actions]
+- Strengths: [2-3 key strengths]
+- Vulnerabilities: [2-3 exploitable weaknesses]
+
+**What to watch:**
+- [Signal 1 indicating strategic shift]
+- [Signal 2]
+- [Signal 3]
+
+**Recommended counter-moves:**
+1. [Specific action]
+2. [Specific action]
+3. [Specific action]
+
+Include hidden metadata:
+<!-- signux_competitive: {"competitor": "Company X", "threat_level": "high|medium|low", "signals": ["signal1", "signal2"], "recommended_actions": ["action1", "action2"]} -->
+
 <!-- signux_domains: domain1, domain2, domain3 -->
 <!-- signux_domain_count: X -->
 

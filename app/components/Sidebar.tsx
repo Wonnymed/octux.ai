@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
-import { SquarePen, MessageSquare, Zap, Shield, Rocket, Globe, TrendingUp, Settings, LogIn, LogOut, Trash2, Flame, FolderOpen, Plus, ChevronDown, X, Upload } from "lucide-react";
+import { SquarePen, MessageSquare, Zap, Shield, Rocket, Globe, TrendingUp, Settings, LogIn, LogOut, Trash2, Flame, FolderOpen, Plus, ChevronDown, X, Upload, Eye } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
 import { t } from "../lib/i18n";
 import type { Mode } from "../lib/types";
@@ -213,6 +213,21 @@ export default function Sidebar({
       } catch {}
     };
     checkDecisions();
+  }, [userId]);
+
+  /* ═══ Active Watches ═══ */
+  const [activeWatches, setActiveWatches] = useState(0);
+
+  useEffect(() => {
+    if (!userId) { setActiveWatches(0); return; }
+    const checkWatches = async () => {
+      try {
+        const res = await fetch(`/api/watch?userId=${userId}`);
+        const data = await res.json();
+        if (data.count) setActiveWatches(data.count);
+      } catch {}
+    };
+    checkWatches();
   }, [userId]);
 
   /* ═══ Streak Counter ═══ */
@@ -618,6 +633,20 @@ export default function Sidebar({
               </div>
               <span>Decisions need follow-up</span>
             </a>
+          )}
+
+          {/* Active watches badge */}
+          {activeWatches > 0 && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "8px 12px", margin: "4px 8px",
+              borderRadius: 8, background: "rgba(34,197,94,0.06)",
+              border: "1px solid rgba(34,197,94,0.12)",
+              fontSize: 12, color: "#22c55e",
+            }}>
+              <Eye size={13} style={{ color: "#22c55e" }} />
+              <span>{activeWatches} active watch{activeWatches > 1 ? "es" : ""}</span>
+            </div>
           )}
 
           {/* Settings */}
