@@ -150,6 +150,110 @@ function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, isPrim
   );
 }
 
+/* ═══ Sidebar Logo Button — crossfade logo ↔ expand icon on hover ═══ */
+function SidebarLogoButton({ onClick }: { onClick: () => void }) {
+  const [hovered, setHovered] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMouseEnter = () => {
+    setHovered(true);
+    tooltipTimer.current = setTimeout(() => setShowTooltip(true), 350);
+  };
+
+  const handleMouseLeave = () => {
+    setHovered(false);
+    setShowTooltip(false);
+    if (tooltipTimer.current) clearTimeout(tooltipTimer.current);
+  };
+
+  useEffect(() => {
+    return () => { if (tooltipTimer.current) clearTimeout(tooltipTimer.current); };
+  }, []);
+
+  return (
+    <div
+      style={{ position: "relative" }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <button
+        onClick={onClick}
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 6,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          border: "none",
+          padding: 0,
+          position: "relative",
+          background: hovered ? "rgba(255,255,255,0.06)" : "transparent",
+          transition: "background 150ms ease",
+        }}
+      >
+        {/* Logo — visible when NOT hovered */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: hovered ? 0 : 1,
+          transform: hovered ? "scale(0.85)" : "scale(1)",
+          transition: "opacity 180ms ease, transform 180ms ease",
+        }}>
+          <SignuxIcon variant="gold" size={24} />
+        </div>
+
+        {/* Expand icon — visible when hovered */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: hovered ? 1 : 0,
+          transform: hovered ? "scale(1)" : "scale(0.85)",
+          transition: "opacity 180ms ease, transform 180ms ease",
+          color: "var(--text-primary)",
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="9" y1="3" x2="9" y2="21" />
+            <polyline points="14 9 17 12 14 15" />
+          </svg>
+        </div>
+      </button>
+
+      {/* Tooltip */}
+      {showTooltip && (
+        <div style={{
+          position: "absolute",
+          left: "calc(100% + 12px)",
+          top: "50%",
+          transform: "translateY(-50%)",
+          padding: "6px 12px",
+          borderRadius: 8,
+          background: "var(--card-bg, #252322)",
+          border: "1px solid var(--border-secondary)",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.35)",
+          whiteSpace: "nowrap",
+          zIndex: 200,
+          animation: "tooltipFadeIn 150ms ease-out forwards",
+          pointerEvents: "none",
+        }}>
+          <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-primary)" }}>
+            Open sidebar
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ═══ Date Grouping ═══ */
 function groupByDate(convs: Conversation[]) {
   const now = new Date();
@@ -830,13 +934,8 @@ export default function Sidebar({
         height: "100%",
         padding: "16px 0",
       }}>
-        {/* Logo — click toggles expanded sidebar */}
-        <SidebarIconButton
-          icon={<SignuxIcon variant="gold" size={24} />}
-          tooltip={open ? "Close sidebar" : "Open sidebar"}
-          onClick={toggleSidebar}
-          suppressTooltip={open}
-        />
+        {/* Logo — hover swaps to expand icon, click opens sidebar */}
+        <SidebarLogoButton onClick={toggleSidebar} />
 
         {/* 16px gap between logo and new chat */}
         <div style={{ height: 16 }} />
