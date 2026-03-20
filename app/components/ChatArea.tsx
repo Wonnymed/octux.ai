@@ -80,7 +80,7 @@ export default function ChatArea({
   /* Welcome state */
   if (messages.length === 0) {
     return (
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, overflowY: "auto" }}>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
         <WelcomeScreen
           profileName={profileName}
           input={input}
