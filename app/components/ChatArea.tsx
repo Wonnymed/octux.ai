@@ -115,25 +115,23 @@ export default function ChatArea({
         onScroll={handleScroll}
         style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", position: "relative", userSelect: "none", WebkitUserSelect: "none" as any, zIndex: 2 }}
       >
-        <div style={{ width: "100%", maxWidth: 768, margin: "0 auto", padding: "20px 24px 120px" }}>
+        <div style={{ width: "100%", maxWidth: 768, margin: "0 auto", padding: isMobile ? "20px 16px 120px" : "20px 24px 120px", display: "flex", flexDirection: "column", gap: 16 }}>
           {messages.map((m, i) => (
-            <div key={i}>
-              <MessageBlock
-                message={m}
-                index={i}
-                isLast={i === messages.length - 1}
-                loading={loading}
-                searching={searching}
-                userInitials={userInitials}
-                onRetry={i === messages.length - 1 ? onRetry : undefined}
-                onCopy={onCopy}
-                onSendFollowup={(text) => onSend(text)}
-                onDecisionDetected={onDecisionDetected}
-                tier={tier}
-                previousUserMessage={i > 0 && messages[i - 1]?.role === "user" ? messages[i - 1].content : undefined}
-              />
-              {i < messages.length - 1 && <div className="timeline-connector" />}
-            </div>
+            <MessageBlock
+              key={i}
+              message={m}
+              index={i}
+              isLast={i === messages.length - 1}
+              loading={loading}
+              searching={searching}
+              userInitials={userInitials}
+              onRetry={i === messages.length - 1 ? onRetry : undefined}
+              onCopy={onCopy}
+              onSendFollowup={(text) => onSend(text)}
+              onDecisionDetected={onDecisionDetected}
+              tier={tier}
+              previousUserMessage={i > 0 && messages[i - 1]?.role === "user" ? messages[i - 1].content : undefined}
+            />
           ))}
           <div ref={bottomRef} />
         </div>

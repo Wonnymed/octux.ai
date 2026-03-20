@@ -145,9 +145,22 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
     }
   }, [decision, isStreaming]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const pad = isMobile ? "8px 12px" : "8px 24px";
-  const userMaxWidth = "90%";
+  const pad = isMobile ? "8px 0" : "8px 0";
+  const userMaxWidth = "85%";
   const aiMaxWidth = "100%";
+
+  // Thinking timer — counts seconds while streaming
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => {
+    if (isStreaming && isEmpty) {
+      setElapsedSeconds(0);
+      timerRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [isStreaming, isEmpty]);
 
   const handleCopy = async () => {
     const ok = await copyToClipboard(message.content);
@@ -329,12 +342,12 @@ Actions must be SPECIFIC (not "research the market" but "survey 20 potential cus
 
             {/* Bubble */}
             <div style={{
-              padding: "10px 16px",
-              borderRadius: "24px 24px 8px 24px",
-              background: "#141414",
-              color: "#fcfcfc",
+              padding: "12px 18px",
+              borderRadius: "22px 22px 6px 22px",
+              background: "var(--bg-tertiary)",
+              color: "var(--text-primary)",
               fontSize: 16,
-              lineHeight: "24px",
+              lineHeight: "26px",
               wordBreak: "break-word",
               whiteSpace: "pre-wrap",
               userSelect: "text",
@@ -390,30 +403,30 @@ Actions must be SPECIFIC (not "research the market" but "survey 20 potential cus
           <div
             className={!isStreaming && confidenceLevel === "HIGH" ? "confidence-glow-high" : !isStreaming && confidenceLevel === "MEDIUM" ? "confidence-glow-medium" : !isStreaming && confidenceLevel === "LOW" ? "confidence-glow-low" : undefined}
             style={{
-            padding: "10px 0",
+            padding: "4px 0",
             borderRadius: 0,
             background: "transparent",
-            color: "#fcfcfc",
+            color: "var(--text-primary)",
             fontSize: 16,
-            lineHeight: "24px",
+            lineHeight: "26px",
             wordBreak: "break-word",
             userSelect: "text",
             WebkitUserSelect: "text" as any,
             transition: "all 0.3s ease",
           }}>
-            {/* Loading state — Oracle Eye */}
+            {/* Loading state — Analyzing · Xs */}
             {isEmpty && isStreaming && (
               <div style={{
-                display: "flex", flexDirection: "column", alignItems: "center",
-                gap: 12, padding: "8px 0",
+                display: "flex", alignItems: "center",
+                gap: 8, padding: "8px 0",
                 animation: "fadeIn 300ms ease",
               }}>
-                <div className="oracle-eye" />
+                <div className="oracle-eye" style={{ width: 20, height: 12 }} />
                 <span style={{
-                  fontSize: 12, color: "var(--text-tertiary)",
-                  fontFamily: "var(--font-mono)", letterSpacing: 1,
+                  fontSize: 13, color: "var(--text-tertiary)",
+                  fontFamily: "var(--font-mono)", letterSpacing: 0.5,
                 }}>
-                  {searching ? t("chat.searching") : thinkingPhrase}
+                  {searching ? t("chat.searching") : `Analyzing · ${elapsedSeconds}s`}
                 </span>
               </div>
             )}
