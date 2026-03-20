@@ -1206,6 +1206,9 @@ export default function ChatPage() {
           onClose={() => setShowSettings(false)}
           onLanguageChange={(newLang) => { setLang(newLang); }}
           onNameChange={(newName) => { setProfileName(newName); }}
+          tier={tier}
+          usage={usage}
+          limits={limits}
         />
       )}
 
