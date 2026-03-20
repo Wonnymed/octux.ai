@@ -1599,18 +1599,106 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
     a.href = url; a.download = `signux-simulation-${Date.now()}.txt`; a.click();
   };
 
+  // Build universe data from simulation results
+  const resultUniA: any[] = [];
+  const resultUniB: any[] = [];
+  const resultUniC: any[] = [];
+  simulation.forEach((msg: any, i: number) => {
+    const role = (msg.role || msg.agentName || "").toLowerCase();
+    const cat = (msg.category || "").toLowerCase();
+    if (role.includes("strategy") || role.includes("market") || role.includes("operation") || cat.includes("opportunity")) {
+      resultUniA.push(msg);
+    } else if (role.includes("financial") || role.includes("customer") || role.includes("tech") || cat.includes("finance")) {
+      resultUniB.push(msg);
+    } else if (role.includes("risk") || role.includes("devil") || role.includes("legal") || cat.includes("risk")) {
+      resultUniC.push(msg);
+    } else {
+      [resultUniA, resultUniB, resultUniC][i % 3].push(msg);
+    }
+  });
+
+  const goVotes = vote?.go || 2;
+  const cautionVotes = vote?.caution || 3;
+  const stopVotes = vote?.stop || 1;
+  const totalVoteCount = goVotes + cautionVotes + stopVotes;
+  const viabilityScore = vote?.confidence_avg ? (vote.confidence_avg / 10).toFixed(1) : "7.0";
+
+  const AGENT_EMOJI: Record<string, string> = {
+    strategy: "\uD83C\uDFAF", market: "\uD83D\uDCC8", financial: "\uD83D\uDCCA", finance: "\uD83D\uDCCA",
+    risk: "\u26A0\uFE0F", devil: "\uD83D\uDC79", operations: "\u2699\uFE0F", operation: "\u2699\uFE0F",
+    legal: "\u2696\uFE0F", lawyer: "\u2696\uFE0F", tech: "\uD83D\uDCBB", customer: "\uD83D\uDC64",
+  };
+  const getEmoji = (name: string, role?: string) => {
+    const lower = (role || name || "").toLowerCase();
+    for (const [key, emoji] of Object.entries(AGENT_EMOJI)) {
+      if (lower.includes(key)) return emoji;
+    }
+    return "\uD83E\uDD16";
+  };
+
+  const sentimentDotColor = (s: string) =>
+    s === "positive" ? "#10B981" : s === "negative" ? "#EF4444" : s === "warning" ? "#F59E0B" : "var(--text-tertiary)";
+
+  const resultUniverses = [
+    {
+      id: "A", label: "Best Case", subtitle: "OPTIMISTIC", color: "#10B981",
+      probability: Math.round((goVotes / totalVoteCount) * 100),
+      riskLabel: "Low", msgs: resultUniA,
+      events: reportTimeline.filter((_: any, i: number) => i % 3 === 0).slice(0, 4).map((e: any) => ({
+        period: e.period, text: e.event,
+        sentiment: (e.probability || 0) >= 0.5 ? "positive" : "neutral",
+      })),
+    },
+    {
+      id: "B", label: "Most Likely", subtitle: "REALISTIC", color: "#3B82F6", featured: true,
+      probability: Math.round((cautionVotes / totalVoteCount) * 100),
+      riskLabel: "Medium", msgs: resultUniB,
+      events: reportTimeline.filter((_: any, i: number) => i % 3 === 1).slice(0, 4).map((e: any) => ({
+        period: e.period, text: e.event, sentiment: "neutral" as const,
+      })),
+    },
+    {
+      id: "C", label: "Worst Case", subtitle: "PESSIMISTIC", color: "#F59E0B",
+      probability: Math.round((stopVotes / totalVoteCount) * 100),
+      riskLabel: "High", msgs: resultUniC,
+      events: reportTimeline.filter((_: any, i: number) => i % 3 === 2).slice(0, 4).map((e: any) => ({
+        period: e.period, text: e.event,
+        sentiment: (e.probability || 0) < 0.3 ? "negative" : "warning",
+      })),
+    },
+  ];
+
+  // If timeline events weren't distributed well, spread evenly
+  if (reportTimeline.length > 0 && resultUniverses.some((u: any) => u.events.length === 0)) {
+    const per = Math.ceil(reportTimeline.length / 3);
+    resultUniverses[0].events = reportTimeline.slice(0, per).map((e: any) => ({ period: e.period, text: e.event, sentiment: "positive" }));
+    resultUniverses[1].events = reportTimeline.slice(per, per * 2).map((e: any) => ({ period: e.period, text: e.event, sentiment: "neutral" }));
+    resultUniverses[2].events = reportTimeline.slice(per * 2).map((e: any) => ({ period: e.period, text: e.event, sentiment: "warning" }));
+  }
+
+  const winResultUni = resultUniverses.reduce((a: any, b: any) => a.probability > b.probability ? a : b);
+  const [showFullReport, setShowFullReport] = useState(false);
+
   return (
-    <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "24px 16px 120px" : "24px 24px 120px", position: "relative" }}>
-      <div style={{ maxWidth: "clamp(600px, 52vw, 820px)", margin: "0 auto" }}>
-        {/* Header */}
+    <>
+    {/* ═══════ WIDE CANVAS — 3 UNIVERSE COLUMNS ═══════ */}
+    <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "24px 12px 120px" : "24px 24px 120px", position: "relative" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+
+        {/* ── Top bar ── */}
         <div style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
-          marginBottom: 28, flexWrap: "wrap", gap: 12,
+          marginBottom: 24, flexWrap: "wrap", gap: 12,
         }}>
-          <div style={{ fontSize: 20, fontWeight: 500, color: "var(--text-primary)" }}>
-            {t("sim.complete")}
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", fontFamily: "var(--font-brand)", letterSpacing: 1 }}>
+              {t("sim.complete")}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
+              {meta.agents_count} agents {"\u00B7"} {meta.rounds} rounds {"\u00B7"} {meta.total_interactions} interactions {"\u00B7"} {duration > 60 ? `${Math.floor(duration / 60)}m ${duration % 60}s` : `${duration}s`}
+            </div>
           </div>
-          <div style={{ display: "flex", gap: 8, position: "relative", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button onClick={() => setGodEyeOpen(true)} style={{
               display: "flex", alignItems: "center", gap: 6,
               padding: "8px 18px", borderRadius: "var(--radius-sm)",
@@ -1667,25 +1755,187 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           </div>
         </div>
 
-        {/* Meta cards — 4 only */}
-        <div className="sim-meta-responsive" style={{
-          display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 32,
+        {/* ── 3 Universe Columns ── */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
+          gap: 16, marginBottom: 28,
         }}>
-          {[
-            { value: `${meta.agents_count || 0}`, label: t("sim.specialists") },
-            { value: `${meta.rounds || 0}`, label: t("sim.rounds") },
-            { value: `${meta.total_interactions || 0}`, label: t("sim.interactions") },
-            { value: duration > 60 ? `${Math.floor(duration / 60)}m ${duration % 60}s` : `${duration}s`, label: t("sim.duration") },
-          ].map((c, ci) => (
-            <div key={ci} style={{
-              padding: 16, borderRadius: "var(--radius-md)",
-              background: "var(--bg-secondary)", border: "1px solid var(--border-secondary)",
-            }}>
-              <div style={{ fontSize: 22, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>{c.value}</div>
-              <div style={{ fontSize: 11, color: "var(--text-tertiary)", letterSpacing: "0.05em", textTransform: "uppercase" }}>{c.label}</div>
-            </div>
-          ))}
+          {resultUniverses.map((uni: any, uIdx: number) => {
+            const lastMsgs = uni.msgs.slice(-3);
+            const metricsMap: Record<string, { revenue: string; roi: string; timeline: string }> = {
+              A: { revenue: "High", roi: "+120%", timeline: `${Math.max(6, (meta.rounds || 3) * 2)} mo` },
+              B: { revenue: "Moderate", roi: "+45%", timeline: `${Math.max(9, (meta.rounds || 3) * 3)} mo` },
+              C: { revenue: "Low", roi: "-15%", timeline: `${Math.max(12, (meta.rounds || 3) * 4)} mo` },
+            };
+            const m = metricsMap[uni.id] || metricsMap.B;
+            const favorCount = uni.id === "A" ? goVotes : uni.id === "C" ? stopVotes : cautionVotes;
+            return (
+              <motion.div
+                key={uni.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: uIdx * 0.12, duration: 0.45 }}
+                style={{
+                  borderRadius: 14, overflow: "hidden",
+                  border: uni.featured ? "2px solid #D4AF3740" : "1px solid var(--border-secondary)",
+                  background: "var(--card-bg)",
+                  boxShadow: uni.featured ? "0 0 24px rgba(212,175,55,0.06)" : "none",
+                  display: "flex", flexDirection: "column",
+                }}
+              >
+                {/* Universe header */}
+                <div style={{
+                  padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center",
+                  borderBottom: `1px solid ${uni.color}20`,
+                  background: `${uni.color}06`,
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: uni.color }} />
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>{uni.label}</div>
+                      <div style={{ fontSize: 9, letterSpacing: "0.15em", color: uni.color, fontFamily: "var(--font-mono)", textTransform: "uppercase" }}>{uni.subtitle}</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: uni.color, fontFamily: "var(--font-mono)" }}>
+                    {uni.probability}%
+                  </div>
+                </div>
+
+                {/* 2x2 metrics */}
+                <div style={{
+                  display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1,
+                  background: "var(--border-secondary)",
+                }}>
+                  {[
+                    { label: "Revenue", value: m.revenue, color: uni.id === "A" ? "#10B981" : uni.id === "C" ? "#EF4444" : "var(--text-primary)" },
+                    { label: "ROI", value: m.roi, color: m.roi.startsWith("+") ? "#10B981" : m.roi.startsWith("-") ? "#EF4444" : "var(--text-primary)" },
+                    { label: "Risk", value: uni.riskLabel, color: uni.riskLabel === "Low" ? "#10B981" : uni.riskLabel === "High" ? "#EF4444" : "#F59E0B" },
+                    { label: "Timeline", value: m.timeline, color: "var(--text-primary)" },
+                  ].map((met, mi) => (
+                    <div key={mi} style={{ padding: "10px 14px", background: "var(--card-bg)" }}>
+                      <div style={{ fontSize: 9, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 2 }}>{met.label}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: met.color, fontFamily: "var(--font-mono)" }}>{met.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Timeline */}
+                {uni.events.length > 0 && (
+                  <div style={{ padding: "14px 16px" }}>
+                    <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)", textTransform: "uppercase", fontFamily: "var(--font-mono)", marginBottom: 10 }}>
+                      TIMELINE
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                      {uni.events.map((ev: any, ei: number) => (
+                        <div key={ei} style={{ display: "flex", gap: 10, minHeight: 36 }}>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 12 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: sentimentDotColor(ev.sentiment), flexShrink: 0, marginTop: 3 }} />
+                            {ei < uni.events.length - 1 && <div style={{ width: 1, flex: 1, background: "var(--border-secondary)", marginTop: 2 }} />}
+                          </div>
+                          <div style={{ paddingBottom: 8 }}>
+                            <div style={{ fontSize: 10, fontWeight: 600, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>{ev.period}</div>
+                            <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4 }}>{typeof ev.text === "string" ? ev.text.slice(0, 80) : ""}{typeof ev.text === "string" && ev.text.length > 80 ? "..." : ""}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Agent Debate */}
+                {lastMsgs.length > 0 && (
+                  <div style={{ padding: "0 16px 14px" }}>
+                    <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)", textTransform: "uppercase", fontFamily: "var(--font-mono)", marginBottom: 8 }}>
+                      AGENT DEBATE
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {lastMsgs.map((msg: any, mi: number) => (
+                        <div key={mi} style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4, display: "flex", gap: 6 }}>
+                          <span style={{ flexShrink: 0 }}>{getEmoji(msg.agentName, msg.role)}</span>
+                          <span><strong style={{ color: "var(--text-primary)" }}>{msg.agentName}:</strong> {"\u201C"}{typeof msg.content === "string" ? msg.content.slice(0, 90) : ""}{typeof msg.content === "string" && msg.content.length > 90 ? "..." : ""}{"\u201D"}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Vote count + mini bar */}
+                <div style={{
+                  padding: "10px 16px", borderTop: "1px solid var(--border-secondary)",
+                  display: "flex", alignItems: "center", gap: 10, marginTop: "auto",
+                }}>
+                  <div style={{ fontSize: 11, color: "var(--text-tertiary)", whiteSpace: "nowrap" }}>
+                    {favorCount}/{totalVoteCount} agents
+                  </div>
+                  <div style={{ flex: 1, height: 4, borderRadius: 2, background: "var(--bg-tertiary)" }}>
+                    <div style={{
+                      height: "100%", borderRadius: 2, background: uni.color,
+                      width: `${Math.round((favorCount / totalVoteCount) * 100)}%`, transition: "width 600ms ease",
+                    }} />
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
+
+        {/* ── Verdict Bar ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.45 }}
+          style={{
+            padding: "18px 24px", borderRadius: 14, marginBottom: 28,
+            background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
+            display: "flex", flexWrap: "wrap", alignItems: "center", gap: 20,
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)", textTransform: "uppercase", fontFamily: "var(--font-mono)", marginBottom: 4 }}>
+              AGENT CONSENSUS
+            </div>
+            <div style={{
+              fontSize: 22, fontWeight: 800, fontFamily: "var(--font-brand)", letterSpacing: 2,
+              color: vote?.result === "GO" ? "#22c55e" : vote?.result === "CAUTION" ? "#f59e0b" : vote?.result === "STOP" ? "#ef4444" : "var(--text-primary)",
+            }}>
+              {vote?.result || "CAUTION"}
+            </div>
+          </div>
+
+          <div style={{ width: 1, height: 36, background: "var(--border-secondary)" }} />
+
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-mono)" }}>{viabilityScore}</div>
+            <div style={{ fontSize: 9, letterSpacing: "0.12em", color: "var(--text-tertiary)", textTransform: "uppercase", fontFamily: "var(--font-mono)" }}>VIAB.</div>
+          </div>
+
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#10B981", fontFamily: "var(--font-mono)" }}>+{Math.round((goVotes / totalVoteCount) * 100)}%</div>
+            <div style={{ fontSize: 9, letterSpacing: "0.12em", color: "var(--text-tertiary)", textTransform: "uppercase", fontFamily: "var(--font-mono)" }}>EST. ROI</div>
+          </div>
+
+          <div style={{ flex: 1, minWidth: 140 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>Agent votes</span>
+              <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{winResultUni.probability}% favor {"\u201C"}{winResultUni.label}{"\u201D"}</span>
+            </div>
+            <div style={{ height: 6, borderRadius: 3, background: "var(--bg-tertiary)", display: "flex", overflow: "hidden" }}>
+              <div style={{ height: "100%", background: "#10B981", width: `${resultUniverses[0].probability}%`, transition: "width 600ms" }} />
+              <div style={{ height: "100%", background: "#3B82F6", width: `${resultUniverses[1].probability}%`, transition: "width 600ms" }} />
+              <div style={{ height: "100%", background: "#F59E0B", width: `${resultUniverses[2].probability}%`, transition: "width 600ms" }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 3 }}>
+              <span style={{ fontSize: 9, color: "#10B981" }}>{goVotes} GO</span>
+              <span style={{ fontSize: 9, color: "#3B82F6" }}>{cautionVotes} CAUTION</span>
+              <span style={{ fontSize: 9, color: "#F59E0B" }}>{stopVotes} STOP</span>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* ═══════ NORMAL WIDTH CONTAINER ═══════ */}
+      <div style={{ maxWidth: "clamp(600px, 52vw, 820px)", margin: "0 auto" }}>
 
         {/* Talk to Agents */}
         {simAgents.length > 0 && (
@@ -1844,6 +2094,26 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           </div>
         )}
 
+        {/* Collapsible Full Report */}
+        <div style={{ marginTop: 24, marginBottom: 24 }}>
+          <button
+            onClick={() => setShowFullReport(!showFullReport)}
+            style={{
+              display: "flex", alignItems: "center", gap: 8, width: "100%",
+              padding: "14px 20px", borderRadius: "var(--radius-md)",
+              border: "1px solid var(--border-secondary)", background: "var(--bg-secondary)",
+              cursor: "pointer", fontSize: 13, fontWeight: 600,
+              color: "var(--text-primary)", transition: "all 150ms",
+            }}
+          >
+            {showFullReport ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            <span>{showFullReport ? "Hide" : "Show"} Full Report</span>
+            <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+              Report {"\u00B7"} Simulation {"\u00B7"} Graph
+            </span>
+          </button>
+          {showFullReport && (
+            <div style={{ marginTop: 12 }}>
         {/* Tab selector — pill style */}
         <div style={{
           display: "flex", gap: 4, marginBottom: 28, padding: 4,
@@ -2282,43 +2552,9 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             </>)}
           </div>
         )}
-
-        {/* Injection History */}
-        {injectionHistory.length > 0 && (
-          <div style={{ marginTop: 32 }}>
-            <div style={{
-              display: "flex", alignItems: "center", gap: 8, marginBottom: 14,
-            }}>
-              <Eye size={14} style={{ color: "var(--mode-sim)" }} />
-              <span style={{
-                fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
-                textTransform: "uppercase", color: "var(--mode-sim)",
-              }}>
-                God&apos;s Eye — Injection History
-              </span>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {injectionHistory.map((entry, i) => (
-                <div key={i} style={{
-                  padding: 18, borderRadius: "var(--radius-md)",
-                  background: "var(--bg-secondary)", border: "1px solid var(--mode-sim-border)",
-                  borderLeft: "3px solid var(--mode-sim)",
-                }}>
-                  <div style={{
-                    fontSize: 13, fontWeight: 600, color: "var(--mode-sim)", marginBottom: 8,
-                    display: "flex", alignItems: "center", gap: 6,
-                  }}>
-                    <Zap size={12} /> &quot;{entry.variable}&quot;
-                  </div>
-                  <div style={{ fontSize: 14, lineHeight: 1.7, color: "var(--text-secondary)" }}>
-                    <MarkdownRenderer content={entry.impact} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
       {/* What-If Engine */}
       <div style={{ marginTop: 32 }}>
@@ -2393,6 +2629,42 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
         </div>
       </div>
 
+        {/* Injection History */}
+        {injectionHistory.length > 0 && (
+          <div style={{ marginTop: 32 }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: 8, marginBottom: 14,
+            }}>
+              <Eye size={14} style={{ color: "var(--mode-sim)" }} />
+              <span style={{
+                fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
+                textTransform: "uppercase", color: "var(--mode-sim)",
+              }}>
+                God&apos;s Eye — Injection History
+              </span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {injectionHistory.map((entry, i) => (
+                <div key={i} style={{
+                  padding: 18, borderRadius: "var(--radius-md)",
+                  background: "var(--bg-secondary)", border: "1px solid var(--mode-sim-border)",
+                  borderLeft: "3px solid var(--mode-sim)",
+                }}>
+                  <div style={{
+                    fontSize: 13, fontWeight: 600, color: "var(--mode-sim)", marginBottom: 8,
+                    display: "flex", alignItems: "center", gap: 6,
+                  }}>
+                    <Zap size={12} /> &quot;{entry.variable}&quot;
+                  </div>
+                  <div style={{ fontSize: 14, lineHeight: 1.7, color: "var(--text-secondary)" }}>
+                    <MarkdownRenderer content={entry.impact} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       {/* Demo CTA */}
       {isDemo && !isLoggedIn && (
         <div style={{
@@ -2420,6 +2692,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           </button>
         </div>
       )}
+      </div>
 
       {/* God's Eye Modal */}
       {godEyeOpen && (
@@ -2618,5 +2891,6 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
         </div>
       )}
     </div>
+    </>
   );
 }
