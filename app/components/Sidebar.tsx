@@ -241,6 +241,7 @@ export default function Sidebar({
   }, [open, onClose, isMobile]);
 
   const iconSize = 18;
+  const iconSW = 1.5;
   const iconBtnSize = 36;
 
   // Mobile overlay style
@@ -322,7 +323,7 @@ export default function Sidebar({
           }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(212,175,55,0.05)"; e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "var(--border-secondary)"; }}>
-            <SquarePen size={16} />
+            <SquarePen size={16} strokeWidth={1.5} />
             <span>{t("sidebar.new_chat")}</span>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--text-tertiary)", marginLeft: "auto" }}>⌘K</span>
           </button>
@@ -468,7 +469,7 @@ export default function Sidebar({
                 fontWeight: mode === key ? 500 : 400,
               }} onMouseEnter={e => { if (mode !== key) e.currentTarget.style.background = "var(--bg-hover)"; }}
                  onMouseLeave={e => { if (mode !== key) e.currentTarget.style.background = "transparent"; }}>
-                <Icon size={16} style={{ color: mode === key ? (color || "var(--accent)") : undefined }} />
+                <Icon size={16} strokeWidth={1.5} style={{ color: mode === key ? (color || "var(--accent)") : undefined }} />
                 <span style={{ flex: 1 }}>{t(label)}</span>
               </button>
               {/* Divider after launchpad (index 3) */}
@@ -622,7 +623,7 @@ export default function Sidebar({
           {/* Settings */}
           <button onClick={handleSettings} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px", border: "none", background: "none", borderRadius: "var(--radius-xs)", cursor: "pointer", color: "var(--text-secondary)", fontSize: 13, textAlign: "left" }}
             onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-            <Settings size={16} /> <span>{t("sidebar.settings")}</span>
+            <Settings size={16} strokeWidth={1.5} /> <span>{t("sidebar.settings")}</span>
           </button>
 
           {/* User profile when logged in */}
@@ -662,14 +663,14 @@ export default function Sidebar({
               {onSignOut && (
                 <button onClick={() => { onSignOut(); if (isMobile) onClose(); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px", border: "none", background: "none", borderRadius: "var(--radius-xs)", cursor: "pointer", color: "var(--text-secondary)", fontSize: 13, textAlign: "left", marginTop: 2 }}
                   onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  <LogOut size={16} /> <span>{t("auth.sign_out")}</span>
+                  <LogOut size={16} strokeWidth={1.5} /> <span>{t("auth.sign_out")}</span>
                 </button>
               )}
             </div>
           ) : !isLoggedIn ? (
             <button onClick={() => { window.location.href = "/login"; }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px", border: "none", background: "none", borderRadius: "var(--radius-xs)", cursor: "pointer", color: "var(--text-secondary)", fontSize: 13, textAlign: "left", marginTop: 2 }}
               onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-              <LogIn size={16} /> <span>{t("auth.sign_in")}</span>
+              <LogIn size={16} strokeWidth={1.5} /> <span>{t("auth.sign_in")}</span>
             </button>
           ) : null}
         </div>
@@ -695,7 +696,7 @@ export default function Sidebar({
         {/* New conversation */}
         <button onClick={handleNew} title={t("sidebar.new_chat")} style={{ width: iconBtnSize, height: iconBtnSize, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", cursor: "pointer", borderRadius: "var(--radius-sm)", color: "var(--text-secondary)", marginBottom: 4 }}
           onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-          <SquarePen size={iconSize} />
+          <SquarePen size={iconSize} strokeWidth={iconSW} />
         </button>
 
         <div style={{ height: 1, width: 24, background: "var(--border-secondary)", margin: "4px 0" }} />
@@ -709,9 +710,9 @@ export default function Sidebar({
               background: mode === key ? "var(--bg-hover)" : "none",
               color: mode === key ? (color || "var(--accent)") : "var(--text-tertiary)",
               position: "relative",
-            }} onMouseEnter={e => { if (mode !== key) e.currentTarget.style.background = "var(--bg-hover)"; }}
-               onMouseLeave={e => { if (mode !== key) e.currentTarget.style.background = "transparent"; }}>
-              <Icon size={iconSize} />
+            }} onMouseEnter={e => { if (mode !== key) { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text-primary)"; } }}
+               onMouseLeave={e => { if (mode !== key) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-tertiary)"; } }}>
+              <Icon size={iconSize} strokeWidth={iconSW} />
             </button>
             {/* Divider after launchpad (index 3) */}
             {idx === 3 && (
@@ -726,7 +727,7 @@ export default function Sidebar({
         {/* Bottom icons */}
         <button onClick={handleSettings} title={t("sidebar.settings")} style={{ width: iconBtnSize, height: iconBtnSize, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", cursor: "pointer", borderRadius: "var(--radius-sm)", color: "var(--text-tertiary)", marginBottom: 4 }}
           onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-          <Settings size={iconSize} />
+          <Settings size={iconSize} strokeWidth={iconSW} />
         </button>
 
         {/* User avatar or login icon */}
@@ -743,7 +744,7 @@ export default function Sidebar({
         ) : (
           <button onClick={() => { window.location.href = "/login"; }} title={t("auth.sign_in")} style={{ width: iconBtnSize, height: iconBtnSize, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", cursor: "pointer", borderRadius: "var(--radius-sm)", color: "var(--text-tertiary)", marginBottom: 10 }}
             onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-            <LogIn size={iconSize} />
+            <LogIn size={iconSize} strokeWidth={iconSW} />
           </button>
         )}
       </div>
