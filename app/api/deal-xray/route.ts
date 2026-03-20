@@ -75,13 +75,26 @@ RULES:
 - NEVER inflate trust_score. A 6 is generous. Most deals are 5-7
 - If the deal is bad, say WALK_AWAY. Don't hedge
 
+CITATION FORMAT:
+In red flags, verified claims, and analysis, cite the source of each finding:
+- [KB: deception-detection] for deception analysis
+- [KB: game-theory] for game theory insights
+- [KB: negotiation-warfare] for negotiation leverage
+- [KB: risk-detection] for risk identification
+- [KB: causal-reasoning] for causal analysis
+- [framework: BATNA analysis] for negotiation frameworks
+- [web: source] for web-verified data
+
 At the end of your response, include these hidden metadata blocks:
 
 <!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
 
 <!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
-List actual reasoning steps taken, not generic descriptions.`,
+List actual reasoning steps taken, not generic descriptions.
+
+<!-- signux_domains: domain1, domain2, domain3 -->
+<!-- signux_domain_count: X -->`,
       messages: [{ role: "user", content: `X-Ray this deal:\n\n${dealContent}\n\nVerify all claims via web search. Respond in ${lang || "en"}.` }],
     });
 

@@ -72,7 +72,10 @@ Return JSON:
     "month3_revenue": "$X based on current trajectory",
     "confidence": "low|medium|high"
   }
-}`,
+}
+
+<!-- signux_domains: performance-analysis, business-metrics, growth-strategy, pivot-assessment -->
+<!-- signux_domain_count: 4 -->`,
       messages: [{
         role: "user",
         content: `PROJECT: ${project.business_name} (Week ${checkin.week_number})

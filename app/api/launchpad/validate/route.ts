@@ -86,7 +86,10 @@ Return ONLY valid JSON:
   "honest_assessment": "2-3 paragraph BRUTALLY HONEST assessment",
   "if_you_proceed": "What they must do in the first 2 weeks",
   "kill_conditions": ["If X happens, stop immediately", "If Y by week 4, pivot"]
-}`,
+}
+
+<!-- signux_domains: market-validation, risk-assessment, financial-analysis, competitive-intelligence, customer-research -->
+<!-- signux_domain_count: 5 -->`,
           messages: [{
             role: "user",
             content: `BUSINESS: ${business.name} - ${business.description}\nPROFILE: Skills: ${profile.skills}, Capital: ${profile.capital}, Time: ${profile.time}\n\nAGENT ANALYSES:\n${results.map(r => `[${r.agent}]:\n${r.analysis}`).join("\n\n")}\n\nDeliver honest verdict. Respond in ${lang || "en"}.`,

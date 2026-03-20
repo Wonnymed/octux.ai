@@ -67,13 +67,25 @@ RULES:
 - Search the web for base rates and industry data to calibrate confidence
 - BE HONEST. Most business causal claims are overconfident. Say so.
 
+CITATION FORMAT:
+In causal chain links, confounders, and verdicts, cite the reasoning framework:
+- [KB: causal-reasoning] for causal analysis methodology
+- [KB: behavioral-economics] for cognitive bias identification
+- [KB: market-microstructure] for market-related confounders
+- [framework: counterfactual analysis] for alternative explanations
+- [framework: DAG] for directed acyclic graph methodology
+- [web: source] for base rate data from web search
+
 At the end of your response, include these hidden metadata blocks:
 
 <!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
 
 <!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
-List actual reasoning steps taken, not generic descriptions.`,
+List actual reasoning steps taken, not generic descriptions.
+
+<!-- signux_domains: domain1, domain2, domain3 -->
+<!-- signux_domain_count: X -->`,
       messages: [{
         role: "user",
         content: `Analyze this causal claim:\n\n${situation}\n\nSearch for relevant industry data and base rates. Respond in ${lang || "en"}.`,

@@ -81,7 +81,14 @@ export async function POST(req: NextRequest) {
         const reportResponse = await client.messages.create({
           model: models.research_synthesis,
           max_tokens: 4000,
-          system: SECURITY_PREFIX + `You are Signux ResearchAgent. Synthesize multiple search results into a comprehensive, well-structured research report. Use markdown formatting. Include: executive summary, key findings organized by theme, comparative analysis where relevant, risks and considerations, and actionable recommendations. Cite sources where possible. Respond in ${lang || "en"}.
+          system: SECURITY_PREFIX + `You are Signux ResearchAgent. Synthesize multiple search results into a comprehensive, well-structured research report. Use markdown formatting. Include: executive summary, key findings organized by theme, comparative analysis where relevant, risks and considerations, and actionable recommendations. Respond in ${lang || "en"}.
+
+CITATION FORMAT:
+For every significant finding, cite the source inline:
+- [web: source description] for web search findings
+- [KB: domain-name] when applying specialized knowledge
+- [framework: framework-name] when applying analytical frameworks
+Citations should be inline at the end of the relevant sentence, in brackets.
 
 At the end of your response, include these hidden metadata blocks:
 
@@ -89,7 +96,10 @@ At the end of your response, include these hidden metadata blocks:
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
 
 <!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
-List actual reasoning steps taken, not generic descriptions.`,
+List actual reasoning steps taken, not generic descriptions.
+
+<!-- signux_domains: domain1, domain2, domain3 -->
+<!-- signux_domain_count: X -->`,
           messages: [{
             role: "user",
             content: `RESEARCH TOPIC: ${query}\n\nSEARCH RESULTS:\n${results.map((r, i) => `--- Source ${i + 1}: ${r.query} ---\n${r.summary}`).join("\n\n")}\n\nSynthesize into a comprehensive report.`,

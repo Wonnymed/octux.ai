@@ -59,7 +59,13 @@ Return ONLY valid JSON:
   ],
   "recommended_approach": "2-3 sentence tactical recommendation",
   "opening_anchor": "The specific number or term you should open with and why"
-}`,
+}
+
+CITATION FORMAT:
+For every significant finding or claim, cite the source inline:
+- [KB: negotiation-strategy] for knowledge base insights
+- [framework: BATNA/ZOPA/game-theory] for analytical frameworks
+- [web: source] for web-verified data`,
         messages: [{ role: "user", content: `Negotiation context: ${context}\n\nResearch the other party and prepare intel. Respond in ${lang || "en"}.` }],
       });
       const text = response.content.filter((c: any) => c.type === "text").map((c: any) => c.text).join("");
@@ -108,7 +114,13 @@ Return ONLY valid JSON:
   "questions_to_ask": ["question that reveals information", "question that creates pressure"],
   "phrases_to_use": ["exact phrase for key moments"],
   "things_to_avoid": ["common mistake in this situation"]
-}`,
+}
+
+CITATION FORMAT:
+For every significant finding or claim, cite the source inline:
+- [KB: negotiation-strategy] for knowledge base insights
+- [framework: game-theory/mechanism-design/behavioral-psychology] for analytical frameworks
+- [web: source] for web-verified data`,
         messages: [{ role: "user", content: `Negotiation context: ${context}\n\nBuild complete strategy. Respond in ${lang || "en"}.` }],
       });
       const text = (response.content[0] as any).text || "{}";
@@ -235,7 +247,13 @@ RULES:
 - performance_score 1-10 (most negotiations are 5-7, don't inflate)
 - Be BRUTALLY specific — quote their words when possible
 - Identify counterparty tactics even if the user didn't notice them
-- Focus on actionable lessons, not generic advice`,
+- Focus on actionable lessons, not generic advice
+
+CITATION FORMAT:
+For every significant finding or claim, cite the source inline:
+- [KB: negotiation-analysis] for knowledge base insights
+- [framework: BATNA/game-theory/behavioral-psychology] for analytical frameworks
+- [web: source] for web-verified data`,
         messages: [{ role: "user", content: `ORIGINAL CONTEXT: ${context}\n\nWHAT HAPPENED:\n${debrief_notes}\n\nAnalyze my negotiation. Respond in ${lang || "en"}.` }],
       });
       const text = (response.content[0] as any).text || "{}";

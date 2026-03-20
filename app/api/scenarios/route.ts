@@ -75,13 +75,25 @@ RULES:
 - Pessimistic scenarios should be HONEST, not softened
 - "Black Swan" should be genuinely scary but plausible
 
+CITATION FORMAT:
+In scenario narratives and strategies, cite the analytical source:
+- [KB: scenario-planning] for scenario methodology
+- [KB: geopolitics] for geopolitical factors
+- [KB: competitive-intelligence] for competitive dynamics
+- [KB: market-microstructure] for market structure analysis
+- [framework: 2x2 scenario matrix] for the scenario framework
+- [web: source] for web-verified data and trends
+
 At the end of your response, include these hidden metadata blocks:
 
 <!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
 
 <!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
-List actual reasoning steps taken, not generic descriptions.`,
+List actual reasoning steps taken, not generic descriptions.
+
+<!-- signux_domains: domain1, domain2, domain3 -->
+<!-- signux_domain_count: X -->`,
       messages: [{ role: "user", content: `Context: ${context}\n\nSearch for current market data and trends. Generate 4 scenarios for the next 12 months. Respond in ${lang || "en"}.` }],
     });
 

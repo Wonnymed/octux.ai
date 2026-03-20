@@ -78,7 +78,10 @@ Return JSON:
   }
 }
 
-Search the web for current tool pricing and market data.`,
+Search the web for current tool pricing and market data.
+
+<!-- signux_domains: business-planning, financial-modeling, go-to-market, operations, pricing-strategy -->
+<!-- signux_domain_count: 5 -->`,
       messages: [{
         role: "user",
         content: `BUSINESS: ${business.name} - ${business.description}\nCategory: ${business.category}\nPROFILE: Skills: ${profile.skills}, Capital: ${profile.capital}, Time: ${profile.time}\nVALIDATION SCORE: ${validationReport?.viability_score || "N/A"}\n\nGenerate the 90-day blueprint. Respond in ${lang || "en"}.`,

@@ -46,7 +46,16 @@ Respond in this exact JSON format:
   "next_time_checklist": ["Check X before deciding", "Run Y analysis", "Consult Z"]
 }
 
-Score 1-10 based on PROCESS QUALITY not outcome. A good process with bad outcome gets a high score. A bad process with lucky outcome gets a low score.`,
+Score 1-10 based on PROCESS QUALITY not outcome. A good process with bad outcome gets a high score. A bad process with lucky outcome gets a low score.
+
+CITATION FORMAT:
+For every significant finding or claim, cite the source inline:
+- [KB: decision-analysis] for knowledge base insights
+- [framework: decision-science/risk-assessment] for analytical frameworks
+- [web: source] for web-verified data
+
+<!-- signux_domains: decision-analysis, risk-assessment, behavioral-economics, process-evaluation -->
+<!-- signux_domain_count: 4 -->`,
       messages: [
         {
           role: "user",

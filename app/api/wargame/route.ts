@@ -131,7 +131,21 @@ RULES:
 - vulnerability_map: 3-5 items, each tied to a specific agent's moves
 - preemptive_moves: 3-5 actions the user should take NOW before competitors
 - scenarios: exactly 3, with specific triggers
-- key_insight: the single most important game theory takeaway`,
+- key_insight: the single most important game theory takeaway
+
+CITATION FORMAT:
+In all analysis, cite the reasoning framework:
+- [KB: game-theory] for game theory analysis
+- [KB: competitive-intelligence] for competitor behavior
+- [KB: mechanism-design] for market mechanism insights
+- [framework: Nash equilibrium] for equilibrium analysis
+- [framework: dominant strategy] for strategy identification
+
+At the end, include hidden metadata:
+<!-- signux_verification: {"confidence": 0.XX, "checked": ["list verified"], "caveats": ["limitations"]} -->
+<!-- signux_worklog: {"steps": [{"action": "type", "detail": "detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+<!-- signux_domains: domain1, domain2 -->
+<!-- signux_domain_count: X -->`,
           messages: [{
             role: "user",
             content: `MARKET:\n${market}\n\nALL MOVES:\n${allMoves.map(m => `[${m.agent} - Round ${m.round}]: ${m.content}`).join("\n\n")}\n\nAnalyze and deliver the war game report. Respond in ${lang || "en"}.`,

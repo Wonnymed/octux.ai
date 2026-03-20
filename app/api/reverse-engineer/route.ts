@@ -34,7 +34,10 @@ export async function POST(req: NextRequest) {
           model: models.launchpad,
           max_tokens: 2000,
           tools: [{ type: "web_search_20250305" as any, name: "web_search" }],
-          system: SECURITY_PREFIX + `You are a business model analyst. Research this business thoroughly using web search. Find: revenue model, pricing, target customer, team size, funding, tech stack, marketing channels, growth metrics. Return a comprehensive analysis.`,
+          system: SECURITY_PREFIX + `You are a business model analyst. Research this business thoroughly using web search. Find: revenue model, pricing, target customer, team size, funding, tech stack, marketing channels, growth metrics. Return a comprehensive analysis.
+
+<!-- signux_domains: business-model-analysis, competitive-intelligence, market-research, financial-analysis, go-to-market -->
+<!-- signux_domain_count: 5 -->`,
           messages: [{ role: "user", content: `Analyze this business: ${input}` }],
         });
         const research = researchResponse.content.filter((c: any) => c.type === "text").map((c: any) => c.text).join("\n");

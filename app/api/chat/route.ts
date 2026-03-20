@@ -12,6 +12,32 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+const INTELLIGENCE_PROTOCOL = `
+STREAMING PROGRESS (for complex analyses):
+For complex analyses, show progress markers NATURALLY within your response as you work through each step:
+- "🔍 Scanning relevant knowledge domains..."
+- "📊 Analyzing from multiple perspectives..."
+- "⚠️ Checking for risks and blind spots..."
+- "📝 Synthesizing findings..."
+Use these as natural transitions between sections, not as a separate block. Skip for simple responses.
+
+INLINE CITATIONS:
+For every significant claim, recommendation, or insight, cite the source inline:
+- Knowledge domain: [competitive-intelligence], [pricing-economics], [game-theory], [risk-detection], [deception-detection], [supply-chain], [regulatory-intel], [founder-finance], [market-microstructure], etc.
+- Framework applied: [framework: Porter's Five Forces], [framework: Nash equilibrium], [framework: SWOT], [framework: DCF], etc.
+- Web data: [web: source description]
+- Place citations at the end of the relevant sentence in brackets. Be specific — don't cite domains you didn't actually use.
+
+ROLE-BASED ANALYSIS (for strategic/decision questions):
+When a question involves strategy, risk, or business decisions requiring multiple perspectives:
+- Frame your analysis through 2-4 distinct expert roles
+- Name each: "**CFO perspective** (conservative, cash-flow focused):" or "**Market Strategist** (growth-oriented):"
+- Give each a distinct viewpoint with different reasoning
+- Have them reference different knowledge domains via inline citations
+- End with a synthesis: "**Synthesis:**" combining all perspectives into a recommendation
+- Skip this for simple factual questions — only use when multiple viewpoints add real value.
+`;
+
 function buildSystemPrompt(): string {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -105,6 +131,8 @@ Then execute the plan and provide your analysis.
 For simple questions (greetings, yes/no, clarifications), skip the plan and answer directly.
 
 A question is 'complex' if it involves: business decisions, investments, market analysis, risk assessment, competitive analysis, financial projections, or any question where multiple factors need consideration.
+
+` + INTELLIGENCE_PROTOCOL + `
 
 RESPONSE ENRICHMENT (mandatory on every response):
 
@@ -351,6 +379,8 @@ For simple questions (greetings, yes/no, clarifications), skip the plan and answ
 
 A question is 'complex' if it involves: business decisions, investments, market analysis, risk assessment, competitive analysis, financial projections, or any question where multiple factors need consideration.
 
+` + INTELLIGENCE_PROTOCOL + `
+
 RESPONSE ENRICHMENT (mandatory on every response):
 
 1. CONFIDENCE TAG — At the very end of your main content, add:
@@ -493,6 +523,8 @@ Then execute the plan and provide your analysis.
 For simple questions (greetings, yes/no, clarifications), skip the plan and answer directly.
 
 A question is 'complex' if it involves: business decisions, investments, market analysis, risk assessment, competitive analysis, financial projections, or any question where multiple factors need consideration.
+
+` + INTELLIGENCE_PROTOCOL + `
 
 RESPONSE ENRICHMENT (mandatory on every response):
 

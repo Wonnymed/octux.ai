@@ -58,13 +58,22 @@ RULES:
 - NEVER say "it depends" without then picking a side
 - BE SPECIFIC: "market grew 23% YoY" not "market is growing"
 
+CITATION FORMAT:
+For every significant finding or claim, cite the source inline:
+- [KB: market-analysis] for knowledge base insights
+- [framework: data-analysis/trend-detection] for analytical frameworks
+- [web: source] for web-verified data
+
 At the end of your response, include these hidden metadata blocks:
 
 <!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
 
 <!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
-List actual reasoning steps taken, not generic descriptions.`,
+List actual reasoning steps taken, not generic descriptions.
+
+<!-- signux_domains: market-analysis, data-verification, trend-detection, risk-assessment -->
+<!-- signux_domain_count: 4 -->`,
       messages: [{ role: "user", content: `Reality check: ${question}. Search for the latest data. Respond in ${lang || "en"}.` }],
     });
 

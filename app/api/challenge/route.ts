@@ -40,7 +40,16 @@ Find EVERY weakness, assumption, blind spot, and potential failure mode. Be brut
 ⚠️ FAILURE MODES (how this could go wrong)
 🛡️ WHAT TO DO (how to protect against these risks)
 
-Be specific. Don't be vague. Name exact risks and exact mitigations.`,
+Be specific. Don't be vague. Name exact risks and exact mitigations.
+
+CITATION FORMAT:
+For every significant finding or claim, cite the source inline:
+- [KB: risk-intelligence] for knowledge base insights
+- [framework: game-theory/deception-detection] for analytical frameworks
+- [web: source] for web-verified data
+
+<!-- signux_domains: risk-intelligence, deception-detection, game-theory, critical-analysis -->
+<!-- signux_domain_count: 4 -->`,
       messages: [
         {
           role: "user",

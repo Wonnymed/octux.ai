@@ -258,7 +258,26 @@ Numbered action items, specific and time-bound. What to do in the next 7 days, 3
 3-5 conditions that should make them STOP and abandon the plan.
 
 ## What the Devil's Advocate Said
-Summary of the strongest attacks on the plan from Round 3. Which attacks were valid and which were defended successfully.`
+Summary of the strongest attacks on the plan from Round 3. Which attacks were valid and which were defended successfully.
+
+## 🔄 What If You Change a Variable?
+Suggest 3-5 specific what-if scenarios the user should explore. Format each as a clickable question:
+- "What if the budget is cut by 50%?"
+- "What if a competitor launches first?"
+- "What if the market grows 2x faster?"
+- "What if [specific variable from this scenario] changes?"
+Make them SPECIFIC to this simulation, not generic.
+
+At the end of your report, include these hidden metadata blocks:
+
+<!-- signux_verification: {"confidence": 0.XX, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
+Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
+
+<!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+List actual reasoning steps taken. Include how many agents contributed and key frameworks applied.
+
+<!-- signux_domains: domain1, domain2, domain3 -->
+<!-- signux_domain_count: X -->`
     }],
   });
 

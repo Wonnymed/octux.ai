@@ -64,13 +64,25 @@ RULES:
 - Be HONEST — if threats are high, say so. Don't downplay risks
 - Threat descriptions must reference current events, regulations, or market data
 
+CITATION FORMAT:
+In threat descriptions, cite the source of each finding:
+- [KB: threat-modeling] for threats identified via knowledge base
+- [KB: competitive-intelligence] for market-based threats
+- [KB: regulatory-intel] for regulatory threats
+- [KB: geopolitics] for geopolitical analysis
+- [framework: risk-matrix] for risk scoring methodology
+- [web: source] for web-verified data
+
 At the end of your response, include these hidden metadata blocks:
 
 <!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
 
 <!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
-List actual reasoning steps taken, not generic descriptions.`,
+List actual reasoning steps taken, not generic descriptions.
+
+<!-- signux_domains: domain1, domain2, domain3 -->
+<!-- signux_domain_count: X -->`,
       messages: [{ role: "user", content: `Threat assessment for: ${description}. Search for the latest threats, risks, and regulatory changes. Respond in ${lang || "en"}.` }],
     });
 
