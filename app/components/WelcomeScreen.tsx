@@ -1,5 +1,5 @@
 "use client";
-import { Zap, Shield, Rocket, Globe, TrendingUp } from "lucide-react";
+import { Zap, Shield, Rocket, Globe, TrendingUp, ChevronDown } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
 import ChatInput, { type FileAttachment } from "./ChatInput";
@@ -26,15 +26,6 @@ type WelcomeScreenProps = {
   lang?: string;
 };
 
-/* ═══ Particles ═══ */
-const PARTICLES = [
-  { top: "15%", left: "20%", size: 1.5, anim: "float1", dur: "8s", delay: "0s" },
-  { top: "30%", left: "78%", size: 1, anim: "float2", dur: "10s", delay: "1s" },
-  { top: "60%", left: "12%", size: 1.5, anim: "float1", dur: "12s", delay: "2s" },
-  { top: "55%", left: "88%", size: 1, anim: "float2", dur: "9s", delay: "3s" },
-  { top: "82%", left: "42%", size: 1, anim: "float1", dur: "11s", delay: "1.5s" },
-];
-
 const MODE_BANNERS: {
   key: Mode; icon: any; label: string; desc: string;
   color: string; bg: string; border: string;
@@ -48,72 +39,62 @@ const MODE_BANNERS: {
 
 export default function WelcomeScreen({
   input, setInput, onSend, loading, attachments, onAttachmentsChange,
-  onToast, onSwitchMode, onOpenThreatRadar, onOpenDealXRay, onOpenWarGame, onOpenCausalMap, onOpenScenarios, lang,
+  onToast, onSwitchMode, lang,
 }: WelcomeScreenProps) {
   const isMobile = useIsMobile();
-  const particleCount = isMobile ? 3 : 5;
 
   return (
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "center",
-      justifyContent: "center", flex: 1, minHeight: 0,
-      padding: isMobile ? "24px 16px" : "40px 24px",
-      position: "relative", overflow: "hidden",
+      justifyContent: "center",
+      minHeight: isMobile ? "calc(100vh - 52px)" : "calc(100vh - 20px)",
+      padding: isMobile ? "24px 16px 16px" : "40px 24px 24px",
+      position: "relative",
     }}>
-      {/* Particles */}
-      {PARTICLES.slice(0, particleCount).map((p, i) => (
-        <div key={`p-${i}`} style={{
-          position: "absolute", top: p.top, left: p.left,
-          width: p.size, height: p.size, borderRadius: "50%",
-          background: "var(--particle-color)", pointerEvents: "none",
-          animation: `${p.anim} ${p.dur} ease-in-out infinite`,
-          animationDelay: p.delay,
-        }} />
-      ))}
-
       {/* Radial glow */}
       <div style={{
         position: "absolute", top: "30%", left: "50%",
         transform: "translate(-50%, -50%)",
-        width: 700, height: 700,
+        width: 600, height: 600,
         background: "radial-gradient(circle, var(--glow-color) 0%, transparent 70%)",
         pointerEvents: "none",
       }} />
 
       <div style={{
-        maxWidth: 680, width: "100%", position: "relative", zIndex: 1,
+        maxWidth: 640, width: "100%", position: "relative", zIndex: 1,
         display: "flex", flexDirection: "column", alignItems: "center",
       }}>
 
         {/* Logo row */}
-        {!isMobile && (
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              <div style={{
-                position: "absolute", inset: -6, borderRadius: "50%",
-                border: "1px solid rgba(212,175,55,0.06)",
-                animation: "ringPulse 4s ease-in-out infinite",
-              }} />
-              <SignuxIcon variant="gold" size={44} />
-            </div>
-            <div style={{ display: "flex", alignItems: "baseline" }}>
-              <span style={{ fontFamily: "var(--font-brand)", fontSize: 40, fontWeight: 700, letterSpacing: 5, color: "var(--text-primary)" }}>
-                SIGNUX
-              </span>
-              <span style={{ fontFamily: "var(--font-brand)", fontSize: 40, fontWeight: 300, letterSpacing: 3, color: "var(--text-primary)", opacity: 0.22, marginLeft: 8 }}>
-                AI
-              </span>
-            </div>
+        <div style={{
+          display: "flex", alignItems: "center", gap: isMobile ? 10 : 14,
+          marginBottom: isMobile ? 8 : 14,
+        }}>
+          <SignuxIcon variant="gold" size={isMobile ? 28 : 40} />
+          <div style={{ display: "flex", alignItems: "baseline" }}>
+            <span style={{
+              fontFamily: "var(--font-brand)", fontSize: isMobile ? 24 : 36,
+              fontWeight: 700, letterSpacing: isMobile ? 3 : 5, color: "var(--text-primary)",
+            }}>
+              SIGNUX
+            </span>
+            <span style={{
+              fontFamily: "var(--font-brand)", fontSize: isMobile ? 24 : 36,
+              fontWeight: 300, letterSpacing: isMobile ? 2 : 3,
+              color: "var(--text-primary)", opacity: 0.22, marginLeft: 6,
+            }}>
+              AI
+            </span>
           </div>
-        )}
+        </div>
 
         {/* Tagline */}
         <p style={{
-          fontSize: isMobile ? 15 : 14, color: "var(--text-secondary)",
-          maxWidth: isMobile ? 280 : 380,
-          textAlign: "center", lineHeight: 1.5, marginBottom: isMobile ? 20 : 36,
+          fontSize: isMobile ? 14 : 16, color: "var(--text-secondary)",
+          maxWidth: isMobile ? 260 : 420,
+          textAlign: "center", lineHeight: 1.5, marginBottom: isMobile ? 16 : 28,
         }}>
-          {isMobile ? "What do you want to know?" : "What do you want to know before everyone else?"}
+          What do you want to know before everyone else?
         </p>
 
         {/* Input */}
@@ -131,21 +112,30 @@ export default function WelcomeScreen({
           />
         </div>
 
-        {/* Mode banners — grid */}
+        {/* Mode banners */}
         <div style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(5, 1fr)",
-          gap: 6, width: "100%", marginTop: isMobile ? 12 : 20,
+          display: "flex", gap: 6, width: "100%",
+          marginTop: isMobile ? 10 : 16,
+          overflowX: isMobile ? "auto" : undefined,
+          WebkitOverflowScrolling: isMobile ? "touch" : undefined,
+          scrollbarWidth: "none",
+          paddingBottom: isMobile ? 4 : 0,
+          ...(isMobile ? {} : {
+            display: "grid",
+            gridTemplateColumns: "repeat(5, 1fr)",
+          }),
         }}>
           {MODE_BANNERS.map(m => {
             const Icon = m.icon;
             return (
               <button key={m.key} onClick={() => onSwitchMode?.(m.key)} style={{
-                display: "flex", alignItems: "center", gap: 8,
-                padding: isMobile ? "8px 8px" : "10px 10px", borderRadius: 10, cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 6,
+                padding: isMobile ? "8px 12px" : "10px 10px",
+                borderRadius: 10, cursor: "pointer",
                 border: `1px solid ${m.border}`, background: m.bg,
                 transition: "all 200ms", textAlign: "left",
-                minHeight: 44,
+                minHeight: 44, whiteSpace: "nowrap",
+                flex: isMobile ? "0 0 auto" : undefined,
               }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = m.color; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = m.border; }}
@@ -160,60 +150,31 @@ export default function WelcomeScreen({
           })}
         </div>
 
-        {/* Domain-powered templates */}
-        <div style={{ width: "100%", marginTop: isMobile ? 10 : 12 }}>
-          <div style={{
-            fontSize: isMobile ? 9 : 10, fontFamily: "var(--font-mono)", letterSpacing: 1.5,
-            textTransform: "uppercase", color: "var(--text-tertiary)",
-            marginBottom: 8, opacity: 0.5,
-          }}>
-            Try these
-          </div>
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-            gap: isMobile ? 6 : 6,
-          }}>
-            {([
-              { q: "Is this deal legit? I need to evaluate a partnership offer", domains: "spot lies · assess risk", color: "#F59E0B" },
-              { q: "How will my competitors react if I launch this?", domains: "predict moves · find advantages", color: "#8B5CF6" },
-              { q: "What's the biggest threat to my business right now?", domains: "map threats · stay protected", color: "#DC2626" },
-              { q: "My revenue dropped — was it the price change or something else?", domains: "find real causes · check the math", color: "#06B6D4" },
-              { q: "I have a funding meeting tomorrow. Help me prepare.", domains: "prepare strategy · know your leverage", color: "#F97316" },
-              { q: "What could happen to my market in the next 12 months?", domains: "plan ahead · prepare for anything", color: "#22C55E" },
-            ] as const).slice(0, isMobile ? 4 : 6).map((tmpl, i) => (
-              <button
-                key={i}
-                onClick={() => onSend(tmpl.q)}
-                style={{
-                  display: "flex", flexDirection: "column", gap: 3,
-                  padding: isMobile ? "8px 10px" : "10px 12px", borderRadius: 8,
-                  border: "1px solid var(--card-border)", background: "var(--card-bg)",
-                  cursor: "pointer", textAlign: "left",
-                  transition: "border-color 200ms",
-                  minHeight: 44,
-                }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = `${tmpl.color}40`)}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--card-border)")}
-              >
-                <span style={{ fontSize: isMobile ? 11 : 12, color: "var(--text-primary)", lineHeight: 1.4 }}>
-                  {tmpl.q}
-                </span>
-                <span style={{
-                  fontSize: 9, color: tmpl.color, fontFamily: "var(--font-mono)",
-                  letterSpacing: 0.5, opacity: 0.7,
-                }}>
-                  {tmpl.domains}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Disclaimer */}
-        <p style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: isMobile ? 12 : 20, opacity: 0.5, textAlign: "center" }}>
-          Always verify critical decisions with qualified professionals.
+        {/* Trust line */}
+        <p style={{
+          fontSize: 11, color: "var(--text-tertiary)", marginTop: isMobile ? 14 : 24,
+          opacity: 0.5, textAlign: "center",
+        }}>
+          Free to start · No credit card required
         </p>
+
+        {/* Scroll down arrow */}
+        <button
+          onClick={() => {
+            document.getElementById("landing-start")?.scrollIntoView({ behavior: "smooth" });
+          }}
+          style={{
+            marginTop: isMobile ? 12 : 20,
+            width: 36, height: 36, borderRadius: "50%",
+            border: "1px solid var(--border-secondary)",
+            background: "transparent", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "var(--text-tertiary)",
+            animation: "bounce 2s ease-in-out infinite",
+          }}
+        >
+          <ChevronDown size={16} />
+        </button>
       </div>
     </div>
   );

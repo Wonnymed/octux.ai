@@ -6,6 +6,7 @@ import { useIsMobile } from "../lib/useIsMobile";
 import MessageBlock from "./MessageBlock";
 import WelcomeScreen from "./WelcomeScreen";
 import ChatInput, { type FileAttachment } from "./ChatInput";
+import LandingSections from "./LandingSections";
 
 type ChatAreaProps = {
   messages: Message[];
@@ -79,7 +80,7 @@ export default function ChatArea({
   /* Welcome state */
   if (messages.length === 0) {
     return (
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, overflowY: "auto" }}>
         <WelcomeScreen
           profileName={profileName}
           input={input}
@@ -99,6 +100,7 @@ export default function ChatArea({
           onOpenScenarios={onOpenScenarios}
           lang={lang}
         />
+        <LandingSections />
       </div>
     );
   }
