@@ -112,7 +112,7 @@ export default function WelcomeScreen({
         />
       </div>
 
-      {/* ===== 3. MODE ICONS — gold idle ===== */}
+      {/* ===== 3. MODE ICONS — each mode's designated color ===== */}
       <div style={{
         display: "flex",
         gap: isMobile ? 8 : 10,
@@ -128,8 +128,8 @@ export default function WelcomeScreen({
               width: isMobile ? 44 : 42,
               height: isMobile ? 44 : 42,
               borderRadius: 12,
-              border: "1px solid rgba(212,175,55,0.2)",
-              background: "rgba(212,175,55,0.04)",
+              border: `1px solid ${color}30`,
+              background: `${color}08`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -138,26 +138,26 @@ export default function WelcomeScreen({
               position: "relative",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = `${color}66`;
-              e.currentTarget.style.background = `${color}14`;
+              e.currentTarget.style.borderColor = `${color}60`;
+              e.currentTarget.style.background = `${color}12`;
               e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = `0 4px 12px ${color}1A`;
+              e.currentTarget.style.boxShadow = `0 4px 14px ${color}18`;
               const icon = e.currentTarget.querySelector("svg");
               if (icon) (icon as HTMLElement).style.color = color;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)";
-              e.currentTarget.style.background = "rgba(212,175,55,0.04)";
+              e.currentTarget.style.borderColor = `${color}30`;
+              e.currentTarget.style.background = `${color}08`;
               e.currentTarget.style.transform = "translateY(0)";
               e.currentTarget.style.boxShadow = "none";
               const icon = e.currentTarget.querySelector("svg");
-              if (icon) (icon as HTMLElement).style.color = "rgba(212,175,55,0.5)";
+              if (icon) (icon as HTMLElement).style.color = `${color}80`;
             }}
           >
             <Icon
               size={isMobile ? 16 : 18}
               strokeWidth={1.5}
-              style={{ color: "rgba(212,175,55,0.5)", transition: "color 200ms" }}
+              style={{ color: `${color}80`, transition: "color 200ms" }}
             />
           </button>
         ))}
