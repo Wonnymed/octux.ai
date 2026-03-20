@@ -1,11 +1,10 @@
 "use client";
-import { Zap, Shield, Rocket, Globe, TrendingUp, ChevronDown } from "lucide-react";
+import { Search, Swords, Zap, Shield, ChevronDown } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useIsMobile } from "../lib/useIsMobile";
 import ChatInput, { type FileAttachment } from "./ChatInput";
 import { SignuxIcon } from "./SignuxIcon";
 import type { Mode } from "../lib/types";
-import TemplateLibrary from "./TemplateLibrary";
 
 type WelcomeScreenProps = {
   profileName: string;
@@ -27,20 +26,32 @@ type WelcomeScreenProps = {
   lang?: string;
 };
 
-const MODE_BANNERS: {
-  key: Mode; icon: any; label: string; desc: string;
-  color: string; bg: string; border: string;
-}[] = [
-  { key: "simulate", icon: Zap, label: "Simulate", desc: "See what happens before it happens", color: "#D4AF37", bg: "rgba(212,175,55,0.04)", border: "rgba(212,175,55,0.12)" },
-  { key: "intel", icon: Shield, label: "Intel", desc: "Know what others don't", color: "#DC2626", bg: "rgba(220,38,38,0.04)", border: "rgba(220,38,38,0.12)" },
-  { key: "launchpad", icon: Rocket, label: "Launchpad", desc: "Build in 90 days", color: "#14B8A6", bg: "rgba(20,184,166,0.04)", border: "rgba(20,184,166,0.12)" },
-  { key: "globalops", icon: Globe, label: "Global Ops", desc: "Expand anywhere", color: "#22C55E", bg: "rgba(34,197,94,0.04)", border: "rgba(34,197,94,0.12)" },
-  { key: "invest", icon: TrendingUp, label: "Invest", desc: "Get the real numbers", color: "#A855F7", bg: "rgba(168,85,247,0.04)", border: "rgba(168,85,247,0.12)" },
+const PROMPTS = [
+  {
+    text: "Is this deal legit? Evaluate a partnership offer",
+    tags: "deal · red flags · due diligence",
+    icon: <Search size={13} />,
+  },
+  {
+    text: "How will competitors react if I launch this?",
+    tags: "war game · predictions · strategy",
+    icon: <Swords size={13} />,
+  },
+  {
+    text: "Test my business idea — will it work?",
+    tags: "simulation · viability · risks",
+    icon: <Zap size={13} />,
+  },
+  {
+    text: "What's the biggest threat to my business right now?",
+    tags: "threats · radar · protection",
+    icon: <Shield size={13} />,
+  },
 ];
 
 export default function WelcomeScreen({
   input, setInput, onSend, loading, attachments, onAttachmentsChange,
-  onToast, onSwitchMode, lang,
+  onToast, lang,
 }: WelcomeScreenProps) {
   const isMobile = useIsMobile();
 
@@ -48,148 +59,142 @@ export default function WelcomeScreen({
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "center",
       justifyContent: "center",
-      minHeight: isMobile ? "calc(100vh - 52px)" : "calc(100vh - 20px)",
-      padding: isMobile ? "24px 16px 16px" : "40px 24px 24px",
-      position: "relative",
+      minHeight: isMobile ? "calc(100vh - 52px)" : "calc(100vh - 60px)",
+      padding: isMobile ? "0 16px" : "0 24px",
+      maxWidth: 680,
+      margin: "0 auto",
+      width: "100%",
     }}>
-      <div className="temporal-grid" />
-      <div className="prediction-horizon" />
-      {/* Radial glow */}
-      <div style={{
-        position: "absolute", top: "30%", left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: 600, height: 600,
-        background: "radial-gradient(circle, var(--glow-color) 0%, transparent 70%)",
-        pointerEvents: "none",
-      }} />
 
-      <div style={{
-        maxWidth: 640, width: "100%", position: "relative", zIndex: 1,
-        display: "flex", flexDirection: "column", alignItems: "center",
+      {/* ===== LOGO — minimal, subtle ===== */}
+      {!isMobile && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 6,
+          marginBottom: 32,
+          opacity: 0.4,
+        }}>
+          <SignuxIcon size={18} />
+          <span style={{
+            fontFamily: "var(--font-brand)",
+            fontSize: 11, fontWeight: 700,
+            letterSpacing: 4,
+            color: "var(--text-tertiary)",
+          }}>
+            SIGNUX AI
+          </span>
+        </div>
+      )}
+
+      {/* ===== QUESTION — actionable h1 ===== */}
+      <h1 style={{
+        fontSize: isMobile ? 22 : 26, fontWeight: 600,
+        color: "var(--text-primary)",
+        textAlign: "center",
+        marginBottom: isMobile ? 18 : 24,
+        lineHeight: 1.3,
+        fontFamily: "var(--font-brand)",
+        marginTop: isMobile ? 0 : undefined,
       }}>
+        What decision are you facing?
+      </h1>
 
-        {/* Logo row */}
+      {/* ===== INPUT — the HERO ===== */}
+      <div style={{ width: "100%", marginBottom: isMobile ? 16 : 20 }}>
+        <ChatInput
+          value={input}
+          onChange={setInput}
+          onSend={() => onSend()}
+          loading={loading}
+          showDisclaimer={false}
+          showVoice={false}
+          attachments={attachments}
+          onAttachmentsChange={onAttachmentsChange}
+          onToast={onToast}
+          placeholder="I'm thinking about launching a coffee franchise in 3 cities with $200K..."
+        />
+      </div>
+
+      {/* ===== PROMPT SUGGESTIONS ===== */}
+      <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style={{
+          fontSize: 10, color: "var(--text-tertiary)",
+          fontFamily: "var(--font-mono)",
+          letterSpacing: 0.5, textTransform: "uppercase",
+          textAlign: "center", marginBottom: 2,
+        }}>
+          Or try one of these
+        </span>
+
         <div style={{
-          display: "flex", alignItems: "center", gap: isMobile ? 10 : 14,
-          marginBottom: isMobile ? 8 : 14,
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+          gap: 8,
         }}>
-          <SignuxIcon variant="gold" size={isMobile ? 22 : 28} />
-          <div style={{ display: "flex", alignItems: "baseline" }}>
-            <span style={{
-              fontFamily: "var(--font-brand)", fontSize: isMobile ? 16 : 22,
-              fontWeight: 700, letterSpacing: isMobile ? 3 : 5, color: "var(--text-primary)",
-            }}>
-              SIGNUX
-            </span>
-            <span style={{
-              fontFamily: "var(--font-brand)", fontSize: isMobile ? 16 : 22,
-              fontWeight: 300, letterSpacing: isMobile ? 2 : 3,
-              color: "var(--text-primary)", opacity: 0.22, marginLeft: 6,
-            }}>
-              AI
-            </span>
-          </div>
-        </div>
-
-        {/* Tagline — hero element */}
-        <p style={{
-          fontSize: isMobile ? 22 : 32, color: "var(--text-primary)",
-          maxWidth: isMobile ? 300 : 500,
-          textAlign: "center", lineHeight: 1.3, marginBottom: isMobile ? 16 : 28,
-          fontFamily: "var(--font-accent)", fontStyle: "italic",
-          fontWeight: 400,
-        }}>
-          See what happens before it happens
-        </p>
-
-        {/* Input */}
-        <div style={{ width: "100%", marginBottom: 8 }}>
-          <ChatInput
-            value={input}
-            onChange={setInput}
-            onSend={() => onSend()}
-            loading={loading}
-            showDisclaimer={false}
-            attachments={attachments}
-            onAttachmentsChange={onAttachmentsChange}
-            onToast={onToast}
-            placeholder={t("chat.placeholder")}
-          />
-        </div>
-
-        {/* Mode banners */}
-        <div style={{
-          display: "flex", gap: 6, width: "100%",
-          marginTop: isMobile ? 10 : 16,
-          overflowX: isMobile ? "auto" : undefined,
-          WebkitOverflowScrolling: isMobile ? "touch" : undefined,
-          scrollbarWidth: "none",
-          paddingBottom: isMobile ? 4 : 0,
-          ...(isMobile ? {} : {
-            display: "grid",
-            gridTemplateColumns: "repeat(5, 1fr)",
-          }),
-        }}>
-          {MODE_BANNERS.map(m => {
-            const Icon = m.icon;
-            return (
-              <button key={m.key} onClick={() => onSwitchMode?.(m.key)} className="predict-button" style={{
-                display: "flex", alignItems: "center", gap: 6,
-                padding: isMobile ? "8px 12px" : "10px 10px",
-                borderRadius: 10, cursor: "pointer",
-                border: `1px solid ${m.border}`, background: m.bg,
-                textAlign: "left",
-                minHeight: 44, whiteSpace: "nowrap",
-                flex: isMobile ? "0 0 auto" : undefined,
-                overflow: "hidden",
+          {PROMPTS.map((prompt, i) => (
+            <button
+              key={i}
+              onClick={() => setInput(prompt.text)}
+              className="interactive-card"
+              style={{
+                display: "flex", flexDirection: "column",
+                padding: "12px 14px", borderRadius: 10,
+                border: "1px solid var(--border-secondary)",
+                background: "var(--card-bg)",
+                textAlign: "left", cursor: "pointer",
+                gap: 6,
               }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = m.color; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = m.border; }}
-                onMouseMove={e => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  e.currentTarget.style.setProperty("--mouse-x", `${((e.clientX - rect.left) / rect.width) * 100}%`);
-                  e.currentTarget.style.setProperty("--mouse-y", `${((e.clientY - rect.top) / rect.height) * 100}%`);
-                }}
-              >
-                <Icon size={14} style={{ color: m.color, flexShrink: 0 }} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)" }}>{m.label}</span>
-              </button>
-            );
-          })}
+            >
+              <div style={{
+                display: "flex", alignItems: "flex-start", gap: 8,
+              }}>
+                <div style={{
+                  color: "var(--text-tertiary)",
+                  marginTop: 1,
+                  flexShrink: 0,
+                }}>
+                  {prompt.icon}
+                </div>
+                <span style={{
+                  fontSize: 13, color: "var(--text-primary)",
+                  lineHeight: 1.4,
+                }}>
+                  {prompt.text}
+                </span>
+              </div>
+              <span style={{
+                fontSize: 10, color: "var(--text-tertiary)",
+                fontFamily: "var(--font-mono)",
+                letterSpacing: 0.3, opacity: 0.6,
+              }}>
+                {prompt.tags}
+              </span>
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* Template Library */}
-        <div style={{ width: "100%" }}>
-          <TemplateLibrary onSelectTemplate={(template) => {
-            setInput(template.prompt);
-            if (template.mode && onSwitchMode) onSwitchMode(template.mode as Mode);
-          }} />
-        </div>
-
-        {/* Trust line */}
-        <p style={{
-          fontSize: 11, color: "var(--text-tertiary)", marginTop: isMobile ? 14 : 24,
-          opacity: 0.5, textAlign: "center",
+      {/* ===== TRUST + SCROLL ===== */}
+      <div style={{
+        display: "flex", flexDirection: "column", alignItems: "center",
+        gap: 12, marginTop: 20,
+      }}>
+        <span style={{
+          fontSize: 11, color: "var(--text-tertiary)", opacity: 0.5,
         }}>
           Free to start · No credit card required
-        </p>
+        </span>
 
-        {/* Scroll down arrow */}
-        <button
-          onClick={() => {
-            document.getElementById("landing-start")?.scrollIntoView({ behavior: "smooth" });
-          }}
-          style={{
-            marginTop: isMobile ? 12 : 20,
-            width: 36, height: 36, borderRadius: "50%",
-            border: "1px solid var(--border-secondary)",
-            background: "transparent", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "var(--text-tertiary)",
-            animation: "bounce 2s ease-in-out infinite",
-          }}
-        >
-          <ChevronDown size={16} />
+        <button onClick={() => {
+          document.getElementById("landing-start")?.scrollIntoView({ behavior: "smooth" });
+        }} style={{
+          width: 32, height: 32, borderRadius: "50%",
+          border: "1px solid var(--border-secondary)",
+          background: "transparent",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", color: "var(--text-tertiary)",
+          animation: "bounce 2.5s ease-in-out infinite",
+        }}>
+          <ChevronDown size={14} />
         </button>
       </div>
     </div>

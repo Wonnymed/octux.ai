@@ -98,12 +98,13 @@ type ChatInputProps = {
   onAttachmentsChange: (atts: FileAttachment[]) => void;
   onToast?: (msg: string, type: "success" | "error" | "info") => void;
   mode?: string;
+  showVoice?: boolean;
 };
 
 export default function ChatInput({
   value, onChange, onSend, loading, placeholder,
   searchActive, onToggleSearch, showDisclaimer = true,
-  attachments, onAttachmentsChange, onToast, mode,
+  attachments, onAttachmentsChange, onToast, mode, showVoice = true,
 }: ChatInputProps) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -612,6 +613,7 @@ export default function ChatInput({
               </button>
             )}
             {/* Mic button */}
+            {showVoice && (
             <button
               onClick={toggleVoice}
               style={{
@@ -628,6 +630,7 @@ export default function ChatInput({
             >
               {isListening ? <MicOff size={iconSize} /> : <Mic size={iconSize} />}
             </button>
+            )}
             {/* Enhance button */}
             {value.trim().length >= 10 && (
               <button
