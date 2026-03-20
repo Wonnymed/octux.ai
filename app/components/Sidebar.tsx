@@ -51,13 +51,14 @@ const MODES: { key: Mode; icon: any; label: string; color?: string }[] = [
 ];
 
 /* ═══ Sidebar Icon Button with React Tooltip ═══ */
-function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, isPrimary, size = 40 }: {
+function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, isPrimary, suppressTooltip, size = 40 }: {
   icon: React.ReactNode;
   tooltip: string;
   active?: boolean;
   activeColor?: string;
   onClick: () => void;
   isPrimary?: boolean;
+  suppressTooltip?: boolean;
   size?: number;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -66,7 +67,9 @@ function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, isPrim
 
   const handleMouseEnter = () => {
     setHovered(true);
-    tooltipTimer.current = setTimeout(() => setShowTooltip(true), 350);
+    if (!suppressTooltip) {
+      tooltipTimer.current = setTimeout(() => setShowTooltip(true), 350);
+    }
   };
 
   const handleMouseLeave = () => {
@@ -74,6 +77,13 @@ function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, isPrim
     setShowTooltip(false);
     if (tooltipTimer.current) clearTimeout(tooltipTimer.current);
   };
+
+  useEffect(() => {
+    if (suppressTooltip) {
+      setShowTooltip(false);
+      if (tooltipTimer.current) clearTimeout(tooltipTimer.current);
+    }
+  }, [suppressTooltip]);
 
   useEffect(() => {
     return () => { if (tooltipTimer.current) clearTimeout(tooltipTimer.current); };
@@ -251,9 +261,10 @@ export default function Sidebar({
   const userInitials = profileName ? profileName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : (authUser?.initials || "?");
   const displayName = profileName || authUser?.name || "";
 
-  const handleMode = (m: Mode) => { setMode(m); if (isMobile) onClose(); };
-  const handleNew = () => { onNewConversation(); if (isMobile) onClose(); };
-  const handleSettings = () => { onOpenSettings(); if (isMobile) onClose(); };
+  const handleMode = (m: Mode) => { setMode(m); if (isMobile || open) onClose(); };
+  const handleNew = () => { onNewConversation(); if (isMobile || open) onClose(); };
+  const handleSettings = () => { onOpenSettings(); if (isMobile || open) onClose(); };
+  const toggleSidebar = () => { if (open) onClose(); else onOpen(); };
 
   /* ═══ Project Selector State ═══ */
   const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
@@ -328,12 +339,13 @@ export default function Sidebar({
     return () => document.removeEventListener("mousedown", handler);
   }, [isMobile, open, onClose]);
 
-  // Escape to close on mobile
+  // Escape to close sidebar (both mobile and desktop)
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape" && open && isMobile) onClose(); };
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [open, onClose, isMobile]);
+  }, [open, onClose]);
 
   const iconSize = 18;
   const iconSW = 1.5;
@@ -825,11 +837,12 @@ export default function Sidebar({
         height: "100%",
         padding: "16px 0",
       }}>
-        {/* Logo — click to expand sidebar */}
+        {/* Logo — click toggles expanded sidebar */}
         <SidebarIconButton
           icon={<SignuxIcon variant="gold" size={24} />}
-          tooltip="Open sidebar"
-          onClick={onOpen}
+          tooltip={open ? "Close sidebar" : "Open sidebar"}
+          onClick={toggleSidebar}
+          suppressTooltip={open}
         />
 
         {/* 16px gap between logo and new chat */}
@@ -841,6 +854,7 @@ export default function Sidebar({
           tooltip={t("sidebar.new_chat")}
           onClick={handleNew}
           isPrimary
+          suppressTooltip={open}
         />
 
         {/* Separator */}
@@ -863,6 +877,7 @@ export default function Sidebar({
                 active={mode === key}
                 activeColor={color || "var(--accent)"}
                 onClick={() => handleMode(key)}
+                suppressTooltip={open}
               />
               {/* Separator after launchpad (index 3) */}
               {idx === 3 && (
@@ -886,6 +901,7 @@ export default function Sidebar({
             icon={<Settings size={iconSize} strokeWidth={iconSW} />}
             tooltip={t("sidebar.settings")}
             onClick={handleSettings}
+            suppressTooltip={open}
           />
 
           {/* User avatar or login icon */}
@@ -901,13 +917,15 @@ export default function Sidebar({
                 )
               }
               tooltip={displayName || "Profile"}
-              onClick={onOpen}
+              onClick={toggleSidebar}
+              suppressTooltip={open}
             />
           ) : (
             <SidebarIconButton
               icon={<LogIn size={iconSize} strokeWidth={iconSW} />}
               tooltip={t("auth.sign_in")}
               onClick={() => { window.location.href = "/login"; }}
+              suppressTooltip={open}
             />
           )}
         </div>
