@@ -432,11 +432,11 @@ export default function ChatInput({
       <div
         style={{
           borderRadius: radius,
-          border: `1px solid ${focused ? "rgba(212,175,55,0.4)" : "var(--border-secondary)"}`,
+          border: `1px solid ${focused ? "rgba(212,175,55,0.4)" : "rgba(212,175,55,0.2)"}`,
           background: "var(--card-bg)",
           boxShadow: focused
             ? "0 0 0 1px rgba(212,175,55,0.12), 0 2px 24px rgba(212,175,55,0.06)"
-            : "0 1px 3px rgba(0,0,0,0.06)",
+            : "0 0 0 1px rgba(212,175,55,0.06), 0 2px 12px rgba(0,0,0,0.06)",
           transition: "border-color 200ms ease, box-shadow 200ms ease",
           ...(isListening ? { borderColor: "var(--error)", boxShadow: "none" } : {}),
         }}

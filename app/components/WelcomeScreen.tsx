@@ -26,12 +26,13 @@ type WelcomeScreenProps = {
   lang?: string;
 };
 
+const GOLD = "#D4AF37";
 const MODE_ICONS: { mode: Mode; icon: typeof Zap; color: string; tooltip: string }[] = [
-  { mode: "simulate", icon: Zap, color: "#D4AF37", tooltip: "Simulate" },
-  { mode: "intel", icon: Shield, color: "#EF4444", tooltip: "Intel" },
-  { mode: "launchpad", icon: Rocket, color: "#14B8A6", tooltip: "Launchpad" },
-  { mode: "globalops", icon: Globe, color: "#8B5CF6", tooltip: "Global Ops" },
-  { mode: "invest", icon: TrendingUp, color: "#3B82F6", tooltip: "Invest" },
+  { mode: "simulate", icon: Zap, color: GOLD, tooltip: "Simulate" },
+  { mode: "intel", icon: Shield, color: GOLD, tooltip: "Intel" },
+  { mode: "launchpad", icon: Rocket, color: GOLD, tooltip: "Launchpad" },
+  { mode: "globalops", icon: Globe, color: GOLD, tooltip: "Global Ops" },
+  { mode: "invest", icon: TrendingUp, color: GOLD, tooltip: "Invest" },
 ];
 
 export default function WelcomeScreen({

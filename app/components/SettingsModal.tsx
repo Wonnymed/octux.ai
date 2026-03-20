@@ -102,12 +102,14 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
     if (theme === "light") {
       root.style.colorScheme = "light";
       root.setAttribute("data-theme", "light");
-    } else if (theme === "dark") {
+    } else if (theme === "auto") {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const resolved = prefersDark ? "dark" : "light";
+      root.style.colorScheme = resolved;
+      root.setAttribute("data-theme", resolved);
+    } else {
       root.style.colorScheme = "dark";
       root.setAttribute("data-theme", "dark");
-    } else {
-      root.style.colorScheme = "";
-      root.removeAttribute("data-theme");
     }
   }, [theme]);
 

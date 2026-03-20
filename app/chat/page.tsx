@@ -291,12 +291,16 @@ export default function ChatPage() {
     if (savedTheme === "light") {
       root.style.colorScheme = "light";
       root.setAttribute("data-theme", "light");
-    } else if (savedTheme === "dark") {
+    } else if (savedTheme === "auto") {
+      // Auto: check system preference, default to dark
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const resolved = prefersDark ? "dark" : "light";
+      root.style.colorScheme = resolved;
+      root.setAttribute("data-theme", resolved);
+    } else {
+      // Default: dark
       root.style.colorScheme = "dark";
       root.setAttribute("data-theme", "dark");
-    } else {
-      root.style.colorScheme = "";
-      root.removeAttribute("data-theme");
     }
 
     setReady(true);
@@ -858,7 +862,7 @@ export default function ChatPage() {
   if (!ready) return null;
 
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
       <OfflineBanner />
       <ModeTransition mode={mode} isTransitioning={modeTransitioning} onComplete={handleTransitionComplete} />
 
@@ -1001,7 +1005,7 @@ export default function ChatPage() {
       <main style={{
         flex: 1, display: "flex", flexDirection: "column",
         background: "var(--bg-primary)", minWidth: 0, minHeight: 0,
-        overflow: "hidden",
+        overflowY: "auto", overflowX: "hidden",
         paddingTop: isMobile ? 52 : 0,
       }}>
         {/* Launchpad check-in reminder */}

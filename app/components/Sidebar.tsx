@@ -53,47 +53,65 @@ const MODES: { key: Mode; icon: any; label: string; color?: string }[] = [
   { key: "invest", icon: TrendingUp, label: "sidebar.mode_invest", color: "#A855F7" },
 ];
 
-/* ═══ Reusable Sidebar Tooltip ═══ */
-function SidebarTooltip({ show, text }: { show: boolean; text: string }) {
+/* ═══ Portal-based Sidebar Tooltip — renders in <body>, outside overflow:hidden ═══ */
+function SidebarTooltip({ show, text, anchorRef }: {
+  show: boolean;
+  text: string;
+  anchorRef: React.RefObject<HTMLElement | null>;
+}) {
   const [visible, setVisible] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const [mounted, setMounted] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (show) {
-      timer.current = setTimeout(() => setVisible(true), 350);
+      timer.current = setTimeout(() => {
+        if (anchorRef.current) {
+          const rect = anchorRef.current.getBoundingClientRect();
+          setPos({
+            top: rect.top + rect.height / 2,
+            left: rect.right + 12,
+          });
+        }
+        setVisible(true);
+      }, 350);
     } else {
       setVisible(false);
       if (timer.current) clearTimeout(timer.current);
     }
     return () => { if (timer.current) clearTimeout(timer.current); };
-  }, [show]);
+  }, [show, anchorRef]);
 
-  if (!visible) return null;
+  if (!visible || !mounted) return null;
 
-  return (
+  return createPortal(
     <div style={{
-      position: "absolute",
-      left: "calc(100% + 12px)",
-      top: "50%",
+      position: "fixed",
+      top: pos.top,
+      left: pos.left,
       transform: "translateY(-50%)",
       padding: "6px 12px",
       borderRadius: 8,
-      background: "var(--card-bg, #252322)",
-      border: "1px solid var(--border-secondary)",
-      boxShadow: "0 4px 16px rgba(0,0,0,0.35)",
+      background: "#252322",
+      border: "1px solid #2E2A27",
+      boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
       whiteSpace: "nowrap",
-      zIndex: 200,
-      animation: "tooltipFadeIn 150ms ease-out forwards",
+      zIndex: 10000,
       pointerEvents: "none",
+      animation: "tooltipFadeIn 150ms ease-out forwards",
     }}>
-      <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-primary)" }}>
+      <span style={{ fontSize: 12, fontWeight: 500, color: "#F3F0EC" }}>
         {text}
       </span>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
-/* ═══ Sidebar Icon Button with React Tooltip ═══ */
+/* ═══ Sidebar Icon Button with Portal Tooltip ═══ */
 function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, isPrimary, suppressTooltip, size = 40 }: {
   icon: React.ReactNode;
   tooltip: string;
@@ -105,9 +123,12 @@ function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, isPrim
   size?: number;
 }) {
   const [hovered, setHovered] = useState(false);
+  const btnRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div style={{ position: "relative" }}
+    <div
+      ref={btnRef}
+      style={{ position: "relative" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -138,7 +159,7 @@ function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, isPrim
         {icon}
       </button>
 
-      {!suppressTooltip && <SidebarTooltip show={hovered} text={tooltip} />}
+      {!suppressTooltip && <SidebarTooltip show={hovered} text={tooltip} anchorRef={btnRef} />}
     </div>
   );
 }
@@ -394,24 +415,6 @@ export default function Sidebar({
   const handleMode = (m: Mode) => { setMode(m); if (open) onClose(); };
   const handleNew = () => { onNewConversation(); if (open) onClose(); };
 
-  /* ═══ Project Selector State ═══ */
-  const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
-  const [newProjectName, setNewProjectName] = useState("");
-  const [showNewProjectInput, setShowNewProjectInput] = useState(false);
-  const projectDropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!projectDropdownOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (projectDropdownRef.current && !projectDropdownRef.current.contains(e.target as Node)) {
-        setProjectDropdownOpen(false);
-        setShowNewProjectInput(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [projectDropdownOpen]);
-
   /* ═══ Profile Popover State ═══ */
   const [profilePopoverOpen, setProfilePopoverOpen] = useState(false);
 
@@ -438,16 +441,6 @@ export default function Sidebar({
     };
     checkDecisions();
   }, [userId]);
-
-  // Click outside to close (mobile + desktop expanded)
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) onClose();
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open, onClose]);
 
   // Escape to close sidebar
   useEffect(() => {
@@ -499,6 +492,19 @@ export default function Sidebar({
   // Desktop: single sidebar, collapsed 56px / expanded 260px
   return (
     <>
+      {/* BUG 10 FIX: Backdrop when sidebar is expanded — clicking outside closes it */}
+      {open && (
+        <div
+          onClick={onClose}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 44,
+            background: "rgba(0,0,0,0.15)",
+          }}
+        />
+      )}
+
       <aside ref={sidebarRef} style={{
         width: sidebarWidth,
         minWidth: sidebarWidth,
@@ -509,6 +515,8 @@ export default function Sidebar({
         flexDirection: "column",
         overflow: "hidden",
         transition: "width 200ms ease, min-width 200ms ease",
+        position: "relative",
+        zIndex: 45,
       }}>
         {open ? renderExpandedContent() : renderCollapsedContent()}
       </aside>
@@ -531,9 +539,9 @@ export default function Sidebar({
 
   // ═══ EXPANDED ═══
   function renderExpandedContent() {
-    // Conversations: null = not yet loaded, [] = loaded but empty
     const convList = conversations;
     const isLoading = loadingHistory || convList === undefined;
+    const showUpgrade = tier !== "pro" && tier !== "max" && tier !== "founding";
 
     return (
       <>
@@ -561,27 +569,7 @@ export default function Sidebar({
           </div>
 
           {/* Close button — PanelLeft icon */}
-          <div style={{ position: "relative" }}
-            onMouseEnter={() => setCloseHovered(true)}
-            onMouseLeave={() => setCloseHovered(false)}
-          >
-            <button
-              onClick={onClose}
-              style={{
-                width: 32, height: 32, borderRadius: 6,
-                border: "none", padding: 0,
-                background: closeHovered ? "rgba(255,255,255,0.06)" : "transparent",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer",
-                color: closeHovered ? "var(--text-primary)" : "var(--text-tertiary)",
-                transition: "all 150ms ease",
-              }}
-            >
-              <PanelLeft size={16} strokeWidth={1.5} />
-            </button>
-
-            <SidebarTooltip show={closeHovered} text="Close Sidebar" />
-          </div>
+          <CloseButtonWithTooltip hovered={closeHovered} setHovered={setCloseHovered} onClick={onClose} />
         </div>
 
         {/* New chat */}
@@ -643,6 +631,25 @@ export default function Sidebar({
               )}
             </div>
           ))}
+        </div>
+
+        {/* BUG 4 FIX: Settings button in expanded sidebar */}
+        <div style={{ padding: "0 8px 8px" }}>
+          <button
+            onClick={() => { onOpenSettings(); onClose(); }}
+            style={{
+              display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px", border: "none",
+              borderRadius: "var(--radius-xs)", cursor: "pointer", fontSize: 13, transition: "all 0.15s", textAlign: "left",
+              background: "transparent",
+              color: "var(--text-secondary)",
+              fontWeight: 400,
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+          >
+            <Settings size={16} strokeWidth={1.5} />
+            <span style={{ flex: 1 }}>Settings</span>
+          </button>
         </div>
 
         {/* Usage counters for Pro users */}
@@ -736,7 +743,7 @@ export default function Sidebar({
           ) : null}
         </div>
 
-        {/* Bottom — profile */}
+        {/* Bottom */}
         <div style={{ borderTop: "1px solid var(--border-secondary)", padding: 8 }}>
           {/* Decision follow-up badge */}
           {pendingDecisions > 0 && (
@@ -758,6 +765,27 @@ export default function Sidebar({
               </div>
               <span>Decisions need follow-up</span>
             </a>
+          )}
+
+          {/* BUG 5 FIX: Upgrade to Pro card — shown for free users */}
+          {showUpgrade && (
+            <div
+              onClick={() => router.push("/pricing")}
+              style={{
+                margin: "0 0 4px",
+                padding: "10px 12px",
+                borderRadius: 8,
+                background: "rgba(212,175,55,0.04)",
+                border: "1px solid rgba(212,175,55,0.1)",
+                cursor: "pointer",
+                transition: "background 150ms",
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(212,175,55,0.08)"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "rgba(212,175,55,0.04)"}
+            >
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#D4AF37" }}>Upgrade to Pro</div>
+              <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>Unlock all modes & tools</div>
+            </div>
           )}
 
           {/* Profile row — click opens popover */}
@@ -863,32 +891,36 @@ export default function Sidebar({
         {/* Separator */}
         <div style={{ width: 24, height: 1, background: "var(--border-secondary)", margin: "8px 0", opacity: 0.5 }} />
 
+        {/* BUG 4 FIX: Settings button in collapsed sidebar */}
+        <SidebarIconButton
+          icon={<Settings size={iconSize} strokeWidth={iconSW} />}
+          tooltip="Settings"
+          onClick={() => onOpenSettings()}
+        />
+
+        <div style={{ height: 8 }} />
+
         {/* Bottom — avatar */}
         {isLoggedIn ? (
-          <div style={{ position: "relative" }}
-            onMouseEnter={() => {}}
-            onMouseLeave={() => {}}
-          >
-            <SidebarIconButton
-              icon={
-                authUser?.avatar ? (
-                  <img src={authUser.avatar} alt={displayName} width={28} height={28} style={{ borderRadius: "50%", objectFit: "cover", display: "block" }} referrerPolicy="no-referrer" />
-                ) : (
-                  <div style={{
-                    width: 28, height: 28, borderRadius: "50%",
-                    background: "rgba(212,175,55,0.08)",
-                    border: "1px solid rgba(212,175,55,0.15)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 11, fontWeight: 600, color: "var(--accent)",
-                  }}>
-                    {userInitials}
-                  </div>
-                )
-              }
-              tooltip={displayName || "Profile"}
-              onClick={() => setProfilePopoverOpen(!profilePopoverOpen)}
-            />
-          </div>
+          <SidebarIconButton
+            icon={
+              authUser?.avatar ? (
+                <img src={authUser.avatar} alt={displayName} width={28} height={28} style={{ borderRadius: "50%", objectFit: "cover", display: "block" }} referrerPolicy="no-referrer" />
+              ) : (
+                <div style={{
+                  width: 28, height: 28, borderRadius: "50%",
+                  background: "rgba(212,175,55,0.08)",
+                  border: "1px solid rgba(212,175,55,0.15)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 11, fontWeight: 600, color: "var(--accent)",
+                }}>
+                  {userInitials}
+                </div>
+              )
+            }
+            tooltip={displayName || "Profile"}
+            onClick={() => setProfilePopoverOpen(!profilePopoverOpen)}
+          />
         ) : (
           <SidebarIconButton
             icon={<LogIn size={iconSize} strokeWidth={iconSW} />}
@@ -901,12 +933,49 @@ export default function Sidebar({
   }
 }
 
-/* ═══ Collapsed Logo Button — logo substitutes to PanelLeft on hover ═══ */
-function CollapsedLogoButton({ onClick }: { onClick: () => void }) {
-  const [hovered, setHovered] = useState(false);
+/* ═══ Close Button with Portal Tooltip ═══ */
+function CloseButtonWithTooltip({ hovered, setHovered, onClick }: {
+  hovered: boolean;
+  setHovered: (v: boolean) => void;
+  onClick: () => void;
+}) {
+  const btnRef = useRef<HTMLDivElement>(null);
 
   return (
     <div
+      ref={btnRef}
+      style={{ position: "relative" }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <button
+        onClick={onClick}
+        style={{
+          width: 32, height: 32, borderRadius: 6,
+          border: "none", padding: 0,
+          background: hovered ? "rgba(255,255,255,0.06)" : "transparent",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer",
+          color: hovered ? "var(--text-primary)" : "var(--text-tertiary)",
+          transition: "all 150ms ease",
+        }}
+      >
+        <PanelLeft size={16} strokeWidth={1.5} />
+      </button>
+
+      <SidebarTooltip show={hovered} text="Close Sidebar" anchorRef={btnRef} />
+    </div>
+  );
+}
+
+/* ═══ Collapsed Logo Button — logo substitutes to PanelLeft on hover ═══ */
+function CollapsedLogoButton({ onClick }: { onClick: () => void }) {
+  const [hovered, setHovered] = useState(false);
+  const btnRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <div
+      ref={btnRef}
       style={{ position: "relative" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -958,8 +1027,8 @@ function CollapsedLogoButton({ onClick }: { onClick: () => void }) {
         </div>
       </button>
 
-      {/* Tooltip "Open Sidebar" */}
-      <SidebarTooltip show={hovered} text="Open Sidebar" />
+      {/* Tooltip "Open Sidebar" — portal-based */}
+      <SidebarTooltip show={hovered} text="Open Sidebar" anchorRef={btnRef} />
     </div>
   );
 }
