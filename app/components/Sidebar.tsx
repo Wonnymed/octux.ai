@@ -61,7 +61,7 @@ function SidebarToggleIcon({ size = 20 }: { size?: number }) {
 }
 
 /* ═══ Sidebar Icon Button with React Tooltip ═══ */
-function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, size = 40 }: {
+function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, size = 44 }: {
   icon: React.ReactNode;
   tooltip: string;
   active?: boolean;
@@ -229,7 +229,7 @@ function ConversationItem({ conv, isActive, onLoad, onDelete }: {
           onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
           style={{
             display: "flex", alignItems: "center", justifyContent: "center",
-            width: 22, height: 22, borderRadius: "var(--radius-xs)",
+            width: 44, height: 44, borderRadius: "var(--radius-xs)",
             color: "var(--text-tertiary)", flexShrink: 0,
             transition: "color 0.15s",
           }}
@@ -399,7 +399,7 @@ export default function Sidebar({
           </div>
           <button onClick={onClose} title="Close sidebar" style={{
             display: "flex", alignItems: "center", justifyContent: "center",
-            width: 28, height: 28, border: "none", background: "none",
+            width: 44, height: 44, border: "none", background: "none",
             cursor: "pointer", borderRadius: 6,
             color: "var(--text-tertiary)", transition: "color 0.15s",
           }}
@@ -896,8 +896,8 @@ export default function Sidebar({
               title={displayName}
             >
               <div style={{
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 borderRadius: 6,
                 display: "flex",
                 alignItems: "center",

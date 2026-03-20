@@ -125,8 +125,8 @@ export default function WelcomeScreen({
             data-tooltip={tooltip}
             className="tooltip-bottom"
             style={{
-              width: isMobile ? 38 : 42,
-              height: isMobile ? 38 : 42,
+              width: isMobile ? 44 : 42,
+              height: isMobile ? 44 : 42,
               borderRadius: 12,
               border: "1px solid var(--border-secondary)",
               background: "transparent",

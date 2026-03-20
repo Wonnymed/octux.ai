@@ -278,7 +278,7 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
 
         <div style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr 1fr",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
           gap: 10,
         }}>
           <ToolCard
@@ -372,7 +372,7 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
 
         <div style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr 1fr",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
           gap: 10,
         }}>
           <ToolCard

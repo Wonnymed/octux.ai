@@ -874,7 +874,7 @@ export default function ChatPage() {
           <button
             onClick={() => setSidebarOpen(true)}
             style={{
-              width: 40, height: 40, borderRadius: 10,
+              width: 44, height: 44, borderRadius: 10,
               background: "transparent", border: "none",
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer", color: "var(--text-secondary)",
@@ -887,7 +887,7 @@ export default function ChatPage() {
               <button
                 onClick={() => { window.location.href = "/login"; }}
                 style={{
-                  padding: "5px 12px", borderRadius: 50,
+                  padding: "8px 14px", borderRadius: 50, minHeight: 44,
                   background: "transparent",
                   border: "1px solid var(--border-secondary)",
                   color: "var(--text-secondary)",
@@ -899,7 +899,7 @@ export default function ChatPage() {
               <button
                 onClick={() => { window.location.href = "/signup"; }}
                 style={{
-                  padding: "5px 14px", borderRadius: 50,
+                  padding: "8px 14px", borderRadius: 50, minHeight: 44,
                   background: "var(--accent)",
                   border: "none",
                   color: "#000",
@@ -910,7 +910,7 @@ export default function ChatPage() {
               </button>
             </div>
           ) : (
-            <div style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", cursor: "pointer" }}
+            <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
               onClick={() => setSidebarOpen(true)}>
               {authUser.avatar ? (
                 <img src={authUser.avatar} alt={authUser.name} width={32} height={32} style={{ borderRadius: "50%", objectFit: "cover" }} referrerPolicy="no-referrer" />
@@ -1021,8 +1021,8 @@ export default function ChatPage() {
             <span style={{ flex: 1 }}>Your weekly check-in is due</span>
             <span style={{ fontSize: 11, opacity: 0.6 }}>Open Launchpad &rarr;</span>
             <button onClick={(e) => { e.stopPropagation(); setShowCheckinReminder(false); }} style={{
-              background: "none", border: "none", cursor: "pointer", color: "var(--text-tertiary)", padding: 2,
-              fontSize: 14, lineHeight: 1,
+              background: "none", border: "none", cursor: "pointer", color: "var(--text-tertiary)", padding: 8,
+              fontSize: 14, lineHeight: 1, minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               &#x2715;
             </button>
