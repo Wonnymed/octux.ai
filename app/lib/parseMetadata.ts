@@ -76,6 +76,10 @@ export type SignuxFinancials = {
   recommended_sources: string[];
 };
 
+export type SignuxParallel = {
+  universes: Array<{ id: string; name: string; probability: number; revenue: string; outcome: string }>;
+};
+
 export interface SignuxMetadata {
   domains: string[];
   domainCount: number;
@@ -92,6 +96,7 @@ export interface SignuxMetadata {
   workflow: string[];
   knowledgeGraph: SignuxKnowledgeGraph | null;
   financials: SignuxFinancials | null;
+  parallel: SignuxParallel | null;
 }
 
 export function parseSignuxMetadata(content: string): { cleanContent: string; metadata: SignuxMetadata } {
@@ -184,8 +189,14 @@ export function parseSignuxMetadata(content: string): { cleanContent: string; me
   try { if (financialsMatch) financials = JSON.parse(financialsMatch[1]); } catch {}
   clean = clean.replace(/<!--\s*signux_financials:\s*\{[\s\S]*?\}\s*-->/g, "");
 
+  // Parse parallel futures
+  const parallelMatch = clean.match(/<!--\s*signux_parallel:\s*(\{[\s\S]*?\})\s*-->/);
+  let parallel: SignuxParallel | null = null;
+  try { if (parallelMatch) parallel = JSON.parse(parallelMatch[1]); } catch {}
+  clean = clean.replace(/<!--\s*signux_parallel:\s*\{[\s\S]*?\}\s*-->/g, "");
+
   return {
     cleanContent: clean.trim(),
-    metadata: { domains, domainCount, blindspots, depth, verification, worklog, vote, sentiment, sources, followups, timeline, competitive, workflow, knowledgeGraph, financials },
+    metadata: { domains, domainCount, blindspots, depth, verification, worklog, vote, sentiment, sources, followups, timeline, competitive, workflow, knowledgeGraph, financials, parallel },
   };
 }

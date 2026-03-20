@@ -1131,7 +1131,25 @@ End with a section: "## What to do next" with numbered action items.` : "";
       } catch {}
     }
 
-    const fullSystemPrompt = SECURITY_PREFIX + baseSystemPrompt + contextPrefix + knowledgeContext + memoryContext + SMART_ATTACHMENT_INJECT + (isRC ? RC_SYSTEM_INJECT : "") + toolInject;
+    // Confidence calibration injection
+    let calibrationContext = "";
+    if (userId) {
+      try {
+        const { data: scores } = await supabaseAdmin
+          .from("decision_journal")
+          .select("score")
+          .eq("user_id", userId)
+          .not("score", "is", null)
+          .limit(50);
+        if (scores && scores.length >= 3) {
+          const accurate = scores.filter((d: any) => d.score >= 6).length;
+          const acc = Math.round(accurate / scores.length * 100);
+          calibrationContext = `\nCALIBRATION: Based on ${scores.length} tracked outcomes, your predictions have been ${acc}% accurate for this user. ${acc < 70 ? "Be more conservative with confidence scores — you tend to be overconfident." : "Your calibration is good — maintain current confidence levels."}\n`;
+        }
+      } catch {}
+    }
+
+    const fullSystemPrompt = SECURITY_PREFIX + baseSystemPrompt + contextPrefix + knowledgeContext + memoryContext + calibrationContext + SMART_ATTACHMENT_INJECT + (isRC ? RC_SYSTEM_INJECT : "") + toolInject;
     const encoder = new TextEncoder();
 
     const readable = new ReadableStream({

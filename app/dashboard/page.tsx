@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { LayoutDashboard, Zap, Shield, Eye, FileText, Link2, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, Zap, Shield, Eye, FileText, Link2, ArrowLeft, Target } from "lucide-react";
 import { useIsMobile } from "../lib/useIsMobile";
 
 const supabase = createClient(
@@ -28,6 +28,9 @@ export default function DashboardPage() {
   });
   const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [patterns, setPatterns] = useState<any>(null);
+  const [accuracy, setAccuracy] = useState<string | null>(null);
+  const [trackedCount, setTrackedCount] = useState(0);
 
   useEffect(() => {
     loadDashboard();
@@ -38,11 +41,12 @@ export default function DashboardPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
-      const [contextRes, watchRes, sharedRes, decisionRes] = await Promise.all([
+      const [contextRes, watchRes, sharedRes, decisionRes, decisionScoresRes] = await Promise.all([
         supabase.from("user_context").select("id, context_type, summary, created_at, key_insights").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
         supabase.from("intelligence_watches").select("id").eq("user_id", user.id).eq("status", "active"),
         supabase.from("shared_results").select("id").eq("user_id", user.id),
         supabase.from("decision_journal").select("id").eq("user_id", user.id),
+        supabase.from("decision_journal").select("score").eq("user_id", user.id).not("score", "is", null),
       ]);
 
       const contexts = contextRes.data || [];
@@ -54,6 +58,19 @@ export default function DashboardPage() {
         decisions: decisionRes.data?.length || 0,
         sharedResults: sharedRes.data?.length || 0,
       });
+      // Calibration: compute accuracy from decision scores
+      const scores = decisionScoresRes.data || [];
+      if (scores.length > 0) {
+        const accurate = scores.filter((d: any) => d.score >= 6).length;
+        setAccuracy((accurate / scores.length * 100).toFixed(0));
+        setTrackedCount(scores.length);
+      }
+
+      // Load patterns (background, don't block)
+      fetch(`/api/patterns?userId=${user.id}`)
+        .then(r => r.json())
+        .then(d => { if (d.patterns) setPatterns(d.patterns); })
+        .catch(() => {});
     } catch {}
     setLoading(false);
   };
@@ -122,6 +139,76 @@ export default function DashboardPage() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* Calibration + Patterns row */}
+            <div style={{ display: "grid", gridTemplateColumns: accuracy ? (isMobile ? "1fr" : "200px 1fr") : "1fr", gap: 16, marginBottom: 32 }}>
+              {/* Accuracy card */}
+              {accuracy && (
+                <div style={{
+                  padding: "20px 14px", borderRadius: 12,
+                  border: "1px solid var(--border-secondary)",
+                  background: "var(--card-bg)", textAlign: "center",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 8 }}>
+                    <Target size={14} style={{ color: parseInt(accuracy) >= 70 ? "#22c55e" : "#f59e0b" }} />
+                    <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>Prediction Accuracy</span>
+                  </div>
+                  <div style={{
+                    fontSize: 36, fontWeight: 800,
+                    color: parseInt(accuracy) >= 70 ? "#22c55e" : parseInt(accuracy) >= 50 ? "#f59e0b" : "#ef4444",
+                  }}>
+                    {accuracy}%
+                  </div>
+                  <div style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 4 }}>
+                    Based on {trackedCount} tracked outcomes
+                  </div>
+                </div>
+              )}
+
+              {/* Patterns */}
+              {patterns && patterns.patterns && patterns.patterns.length > 0 && (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                    <span style={{ fontSize: 14 }}>🧠</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Patterns from your analyses</span>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {patterns.patterns.map((p: any, i: number) => {
+                      const tc: Record<string, { color: string; bg: string; icon: string }> = {
+                        strength: { color: "#22c55e", bg: "rgba(34,197,94,0.06)", icon: "💪" },
+                        weakness: { color: "#f59e0b", bg: "rgba(245,158,11,0.06)", icon: "⚠️" },
+                        blind_spot: { color: "#ef4444", bg: "rgba(239,68,68,0.06)", icon: "👁" },
+                      };
+                      const cfg = tc[p.type] || tc.strength;
+                      return (
+                        <div key={i} style={{
+                          padding: "10px 12px", borderRadius: 8,
+                          background: cfg.bg, border: `1px solid ${cfg.color}15`,
+                        }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
+                            <span style={{ fontSize: 12 }}>{cfg.icon}</span>
+                            <span style={{ fontSize: 9, fontWeight: 700, color: cfg.color, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                              {p.type.replace("_", " ")}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: 12, color: "var(--text-primary)", fontWeight: 500 }}>{p.insight}</div>
+                          <div style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 2 }}>{p.evidence}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {patterns.recommendation && (
+                    <div style={{
+                      marginTop: 8, padding: "8px 12px", borderRadius: 8,
+                      background: "rgba(212,175,55,0.04)", border: "1px solid rgba(212,175,55,0.12)",
+                      fontSize: 11, color: "var(--text-secondary)",
+                    }}>
+                      <span style={{ color: "var(--accent)", fontWeight: 600 }}>Tip:</span> {patterns.recommendation}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Recent activity */}

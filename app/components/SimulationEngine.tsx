@@ -121,6 +121,10 @@ export default function SimulationEngine(props: SimulationEngineProps) {
   // What-If inline state
   const [whatIfInput, setWhatIfInput] = useState("");
 
+  // Parallel Futures state
+  const [parallelFutures, setParallelFutures] = useState<string | null>(null);
+  const [loadingFutures, setLoadingFutures] = useState(false);
+
   // Compare A vs B state
   const [compareMode, setCompareMode] = useState(false);
   const [scenarioA, setScenarioA] = useState("");
@@ -196,6 +200,99 @@ export default function SimulationEngine(props: SimulationEngineProps) {
     setWhatIfInput("");
     setSimScenario(whatIfScenario);
     onSimulate(whatIfScenario);
+  };
+
+  // Parallel Futures handler
+  const generateParallelFutures = async () => {
+    if (!simResult) return;
+    setLoadingFutures(true);
+    const rawReport = simResult.report || "";
+    const { metadata: rMeta } = parseSignuxMetadata(rawReport);
+    const prompt = `Based on this COMPLETED simulation:
+
+ORIGINAL SCENARIO: ${simScenario}
+ORIGINAL RESULT: Verdict: ${rMeta?.vote?.result || "N/A"}. Confidence: ${rMeta?.vote?.confidence_avg || "N/A"}%.
+KEY RISKS: ${rawReport.slice(0, 800)}
+
+Generate 3 PARALLEL FUTURES — divergent timelines showing how this plays out under different conditions.
+
+## 🟢 UNIVERSE A — Best Case
+**Probability: X%**
+**12-month outcome:** [1 sentence]
+**How it unfolds:**
+- Month 1-2: [what happens]
+- Month 3-6: [what happens]
+- Month 6-12: [what happens]
+**What triggers this future:** [key condition]
+**Revenue projection:** [estimate]
+
+---
+
+## 🟡 UNIVERSE B — Most Likely
+**Probability: X%**
+**12-month outcome:** [1 sentence]
+**How it unfolds:**
+- Month 1-2: [what happens]
+- Month 3-6: [what happens]
+- Month 6-12: [what happens]
+**What triggers this future:** [default conditions]
+**Revenue projection:** [estimate]
+
+---
+
+## 🔴 UNIVERSE C — Worst Case
+**Probability: X%**
+**12-month outcome:** [1 sentence]
+**How it unfolds:**
+- Month 1-2: [what happens]
+- Month 3-6: [what happens]
+- Month 6-12: [what happens]
+**What triggers this future:** [what goes wrong]
+**Revenue projection:** [estimate]
+
+---
+
+## 🎯 HOW TO STEER TOWARD UNIVERSE A
+1. [Specific action]
+2. [Specific action]
+3. [Specific action]
+
+## 🛡️ HOW TO AVOID UNIVERSE C
+1. [Specific safeguard]
+2. [Specific safeguard]
+3. [Specific safeguard]
+
+Include: <!-- signux_parallel: {"universes": [{"id": "A", "name": "Best Case", "probability": 25, "revenue": "$X", "outcome": "summary"}, {"id": "B", "name": "Most Likely", "probability": 55, "revenue": "$X", "outcome": "summary"}, {"id": "C", "name": "Worst Case", "probability": 20, "revenue": "$X", "outcome": "summary"}]} -->`;
+
+    try {
+      const res = await signuxFetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], profile: null }),
+      });
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullText = "";
+      let buffer = "";
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.type === "text") fullText += data.text;
+            } catch {}
+          }
+        }
+      }
+      setParallelFutures(fullText);
+    } catch {}
+    setLoadingFutures(false);
   };
 
   // Talk to agent handler
@@ -1794,6 +1891,83 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                 </div>
               </div>
             )}
+
+            {/* ═══ PARALLEL FUTURES ═══ */}
+            {!parallelFutures && !loadingFutures && (
+              <button onClick={generateParallelFutures} style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                width: "100%", padding: "14px 20px", borderRadius: 12, marginTop: 16,
+                border: "1px solid rgba(212,175,55,0.2)",
+                background: "linear-gradient(135deg, rgba(212,175,55,0.04) 0%, rgba(139,92,246,0.04) 100%)",
+                color: "var(--accent)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                transition: "all 200ms",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(212,175,55,0.4)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)"; }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 2 C 7 8, 7 16, 12 22"/><path d="M12 2 C 17 8, 17 16, 12 22"/><line x1="2" y1="12" x2="22" y2="12"/>
+                </svg>
+                Explore parallel futures — see 3 possible outcomes
+              </button>
+            )}
+
+            {loadingFutures && (
+              <div style={{
+                display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 10,
+                marginTop: 16,
+              }}>
+                {[
+                  { color: "#22c55e", label: "Best Case", emoji: "\uD83D\uDFE2" },
+                  { color: "#f59e0b", label: "Most Likely", emoji: "\uD83D\uDFE1" },
+                  { color: "#ef4444", label: "Worst Case", emoji: "\uD83D\uDD34" },
+                ].map((u, i) => (
+                  <div key={i} style={{
+                    padding: "16px 14px", borderRadius: 12, textAlign: "center",
+                    border: `1px solid ${u.color}22`,
+                    background: `${u.color}06`,
+                    animation: `pulse 1.5s ease-in-out ${i * 0.3}s infinite`,
+                  }}>
+                    <div style={{ fontSize: 24, marginBottom: 6 }}>{u.emoji}</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: u.color }}>{u.label}</div>
+                    <div style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 4 }}>Simulating...</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {parallelFutures && (() => {
+              const { cleanContent: futuresText, metadata: futuresMeta } = parseSignuxMetadata(parallelFutures);
+              return (
+                <div style={{ marginTop: 16 }}>
+                  {futuresMeta.parallel && (
+                    <div style={{
+                      display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 8,
+                      marginBottom: 16, padding: "12px 14px", borderRadius: 12,
+                      background: "var(--bg-tertiary)", border: "1px solid var(--border-secondary)",
+                    }}>
+                      {futuresMeta.parallel.universes.map((u: any) => {
+                        const colors: Record<string, string> = { A: "#22c55e", B: "#f59e0b", C: "#ef4444" };
+                        const color = colors[u.id] || "#888";
+                        return (
+                          <div key={u.id} style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: 10, fontWeight: 600, color, marginBottom: 4 }}>{u.name}</div>
+                            <div style={{ fontSize: 22, fontWeight: 800, color, fontFamily: "var(--font-mono)" }}>{u.probability}%</div>
+                            <div style={{ height: 4, borderRadius: 2, marginTop: 6, background: `${color}15` }}>
+                              <div style={{ height: "100%", borderRadius: 2, background: color, width: `${u.probability}%`, transition: "width 800ms ease" }} />
+                            </div>
+                            <div style={{ fontSize: 9, color: "var(--text-tertiary)", marginTop: 4 }}>{u.revenue}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div style={{ padding: "16px", borderRadius: 12, border: "1px solid var(--border-secondary)", background: "var(--card-bg)" }}>
+                    <MarkdownRenderer content={futuresText} />
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* ═══ FOLLOW-UP SUGGESTIONS ═══ */}
             {reportFollowups.length > 0 && (

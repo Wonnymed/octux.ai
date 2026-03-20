@@ -406,10 +406,40 @@ export async function POST(req: NextRequest) {
         sendSSE(controller, encoder, { type: "stage_done", stage: 0, data: { graph } });
         sendSSE(controller, encoder, { type: "graph", data: graph });
 
+        // Fetch user history for agent personality evolution
+        let personalityAdaptation = "";
+        if (userId) {
+          try {
+            const { data: contexts } = await supabaseAdmin
+              .from("user_context")
+              .select("context_type, summary, key_insights")
+              .eq("user_id", userId)
+              .order("created_at", { ascending: false })
+              .limit(15);
+            if (contexts && contexts.length >= 3) {
+              const contextSummary = contexts.map(c => c.summary).join(". ");
+              const allInsights = contexts.flatMap(c => c.key_insights || []);
+              const industries = contextSummary.match(/food|restaurant|cafe|saas|tech|software|ecommerce|retail|finance|crypto|real estate|health/gi) || [];
+              const topIndustry = industries.length > 0
+                ? [...new Set(industries.map(i => i.toLowerCase()))].sort((a, b) =>
+                    industries.filter(v => v.toLowerCase() === b).length - industries.filter(v => v.toLowerCase() === a).length
+                  )[0]
+                : null;
+              const riskPatterns = allInsights.filter(i => /risk|caution|stop|concern|threat/i.test(i));
+              const riskTolerance = riskPatterns.length > contexts.length * 0.6 ? "low" : "moderate";
+              personalityAdaptation = `\n\nAGENT PERSONALITY ADAPTATIONS (based on user's ${contexts.length} previous analyses):
+- ${topIndustry ? `They primarily work in ${topIndustry} — agents should have ${topIndustry} expertise.` : "Diverse industry focus."}
+- Risk tolerance appears ${riskTolerance} (${riskPatterns.length} cautions in ${contexts.length} analyses).
+- The Risk Assessor should be ${riskTolerance === "low" ? "EXTRA cautious — this user has seen many risks materialize" : "balanced — flag risks but don't overweight them"}.
+- ${allInsights.length > 0 ? `Recurring themes: ${[...new Set(allInsights)].slice(0, 5).join(", ")}` : ""}`;
+            }
+          } catch {}
+        }
+
         // Stage 1: Agents
         sendSSE(controller, encoder, { type: "status", message: "Setting up agents..." });
         sendSSE(controller, encoder, { type: "stage", stage: 1 });
-        const { agents, simulation_parameters } = await setupAgents(graph, scenario, userLang, worldContext, models.simulate_agents);
+        const { agents, simulation_parameters } = await setupAgents(graph, scenario + personalityAdaptation, userLang, worldContext, models.simulate_agents);
         sendSSE(controller, encoder, { type: "agents", agents });
         sendSSE(controller, encoder, { type: "stage_done", stage: 1, data: { agents, simulation_parameters }, totalAgents: agents.length });
 

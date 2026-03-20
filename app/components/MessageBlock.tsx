@@ -242,6 +242,49 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
     setShowShareMenu(false);
   };
 
+  const generateActionPlan = () => {
+    if (!onSendFollowup) return;
+    const planPrompt = `Based on this analysis, generate a CONCRETE ACTION PLAN that I can execute immediately.
+
+ANALYSIS SUMMARY:
+${parsedContent.slice(0, 2000)}
+
+${metadata?.vote?.result ? `Verdict: ${metadata.vote.result}. Confidence: ${metadata.vote.confidence_avg}%.` : ""}
+
+Generate the plan in this EXACT format:
+
+# Action Plan
+
+## Week 1 — Immediate Actions
+| # | Action | Owner | Est. Time | Dependencies |
+|---|---|---|---|---|
+| 1 | [Specific action verb + what] | Founder | 2 hours | None |
+| 2 | [Specific action] | Founder | 4 hours | #1 |
+| 3 | [Specific action] | Founder/Team | 1 day | None |
+
+## Week 2-4 — Foundation Building
+| # | Action | Owner | Est. Time | Dependencies |
+|---|---|---|---|---|
+| 4-6 rows |
+
+## Month 2-3 — Execution
+| # | Action | Owner | Est. Time | Dependencies |
+|---|---|---|---|---|
+| 7-9 rows |
+
+## Critical Milestones
+- **Day 7:** [checkpoint]
+- **Day 30:** [checkpoint]
+- **Day 90:** [expected state]
+
+## If Things Go Wrong
+- If [risk 1]: pivot to [contingency]
+- If [risk 2]: pivot to [contingency]
+
+Actions must be SPECIFIC (not "research the market" but "survey 20 potential customers using Google Forms").`;
+    onSendFollowup(planPrompt);
+  };
+
   /* ═══ USER MESSAGE ═══ */
   if (isUser) {
     return (
@@ -1149,6 +1192,25 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                 >
                   <Eye size={12} />
                   {isWatching ? "Watching" : "Watch this"}
+                </button>
+              )}
+              {/* Action plan button */}
+              {parsedContent.length > 300 && onSendFollowup && (
+                <button
+                  onClick={generateActionPlan}
+                  title="Generate an executable action plan"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 4,
+                    padding: "4px 10px", borderRadius: 6,
+                    border: "1px solid rgba(212,175,55,0.2)",
+                    background: "rgba(212,175,55,0.04)",
+                    cursor: "pointer",
+                    fontSize: 11, color: "var(--accent)",
+                    transition: "all 200ms",
+                  }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  Action plan
                 </button>
               )}
               {/* Share button */}
