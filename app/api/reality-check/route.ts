@@ -56,7 +56,15 @@ RULES:
 - verdict CAUTION: worth it with caveats, mixed signals
 - verdict STOP: not worth it, data says no. Don't sugarcoat.
 - NEVER say "it depends" without then picking a side
-- BE SPECIFIC: "market grew 23% YoY" not "market is growing"`,
+- BE SPECIFIC: "market grew 23% YoY" not "market is growing"
+
+At the end of your response, include these hidden metadata blocks:
+
+<!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
+Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
+
+<!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+List actual reasoning steps taken, not generic descriptions.`,
       messages: [{ role: "user", content: `Reality check: ${question}. Search for the latest data. Respond in ${lang || "en"}.` }],
     });
 

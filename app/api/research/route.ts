@@ -81,7 +81,15 @@ export async function POST(req: NextRequest) {
         const reportResponse = await client.messages.create({
           model: models.research_synthesis,
           max_tokens: 4000,
-          system: SECURITY_PREFIX + `You are Signux ResearchAgent. Synthesize multiple search results into a comprehensive, well-structured research report. Use markdown formatting. Include: executive summary, key findings organized by theme, comparative analysis where relevant, risks and considerations, and actionable recommendations. Cite sources where possible. Respond in ${lang || "en"}.`,
+          system: SECURITY_PREFIX + `You are Signux ResearchAgent. Synthesize multiple search results into a comprehensive, well-structured research report. Use markdown formatting. Include: executive summary, key findings organized by theme, comparative analysis where relevant, risks and considerations, and actionable recommendations. Cite sources where possible. Respond in ${lang || "en"}.
+
+At the end of your response, include these hidden metadata blocks:
+
+<!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
+Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
+
+<!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+List actual reasoning steps taken, not generic descriptions.`,
           messages: [{
             role: "user",
             content: `RESEARCH TOPIC: ${query}\n\nSEARCH RESULTS:\n${results.map((r, i) => `--- Source ${i + 1}: ${r.query} ---\n${r.summary}`).join("\n\n")}\n\nSynthesize into a comprehensive report.`,

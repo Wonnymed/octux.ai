@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Check, ArrowRight, Zap, Crown, Loader2 } from "lucide-react";
+import { Check, ArrowRight, Zap, Crown, Loader2, Infinity as InfinityIcon } from "lucide-react";
 import { SignuxIcon } from "../components/SignuxIcon";
 
 const PLANS = [
@@ -21,6 +21,8 @@ const PLANS = [
       "Launchpad",
       "Global Ops",
       "Invest mode",
+      "Second Opinion",
+      "Challenge This",
     ],
     cta: "Start free",
     color: "var(--text-secondary)",
@@ -32,19 +34,22 @@ const PLANS = [
     name: "Pro",
     price: "$29",
     period: "/month",
-    description: "Everything you need to build and grow.",
+    description: "Access every mode. See the future before it happens.",
     features: [
       "Unlimited chat",
-      "Proprietary intelligence domains",
       "20 simulations/month",
-      "Full Intel suite",
+      "10 deep researches/month",
+      "5 Global Ops analyses/month",
+      "5 investment analyses/month",
       "Launchpad project tracker",
+      "Full Intel suite",
       "Decision journal",
       "Priority support",
     ],
     excluded: [
-      "Global Ops",
-      "Invest mode",
+      "Second Opinion",
+      "Challenge This",
+      "Opus model",
     ],
     cta: "Upgrade to Pro",
     color: "#D4AF37",
@@ -56,13 +61,17 @@ const PLANS = [
     name: "Max",
     price: "$99",
     period: "/month",
-    description: "For serious founders making big decisions.",
+    description: "Unlimited everything. No limits, no blind spots.",
     features: [
-      "Everything in Pro",
+      "Everything in Pro — unlimited",
       "Unlimited simulations",
-      "Priority access to new domains (added weekly)",
-      "Global Ops intelligence",
-      "Invest mode",
+      "Unlimited research",
+      "Unlimited Global Ops",
+      "Unlimited Invest analyses",
+      "Second Opinion — 3 perspectives on every answer",
+      "Challenge This — stress-test any analysis",
+      "Opus model — most powerful AI available",
+      "Priority access to new domains",
       "Founding member badge",
       "Early access to new features",
     ],
@@ -131,7 +140,7 @@ export default function PricingPage() {
       </div>
 
       {/* Header */}
-      <div style={{ textAlign: "center", padding: "60px 24px 40px" }}>
+      <div style={{ textAlign: "center", padding: "60px 24px 20px" }}>
         <h1 style={{
           fontSize: 36, fontWeight: 700, marginBottom: 12,
           fontFamily: "var(--font-brand)", letterSpacing: 2,
@@ -139,16 +148,31 @@ export default function PricingPage() {
           Choose how you want to grow
         </h1>
         <p style={{ fontSize: 16, color: "var(--text-secondary)", maxWidth: 500, margin: "0 auto" }}>
-          From first idea to confident decisions — pick the plan that fits.
+          Pro gives you access to everything. Max removes all limits.
         </p>
+      </div>
+
+      {/* Pro vs Max comparison highlight */}
+      <div style={{
+        display: "flex", justifyContent: "center", gap: 24, padding: "0 24px 40px",
+        flexWrap: "wrap",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-secondary)" }}>
+          <Zap size={14} style={{ color: "#D4AF37" }} />
+          <span><strong style={{ color: "#D4AF37" }}>Pro</strong> — all modes, monthly limits</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-secondary)" }}>
+          <Crown size={14} style={{ color: "#A855F7" }} />
+          <span><strong style={{ color: "#A855F7" }}>Max</strong> — unlimited + exclusive features</span>
+        </div>
       </div>
 
       {/* Plans grid */}
       <div style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-        gap: 20, maxWidth: 880, margin: "0 auto",
-        padding: "0 24px 80px",
+        gap: 20, maxWidth: 920, margin: "0 auto",
+        padding: "0 24px 40px",
       }}>
         {PLANS.map(plan => {
           const Icon = plan.icon;
@@ -156,7 +180,7 @@ export default function PricingPage() {
             <div key={plan.id} style={{
               position: "relative",
               background: "var(--bg-secondary)",
-              border: plan.popular ? `2px solid ${plan.color}` : "1px solid var(--border-primary)",
+              border: plan.popular ? `2px solid ${plan.color}` : plan.id === "max" ? "1px solid rgba(168,85,247,0.3)" : "1px solid var(--border-primary)",
               borderRadius: 16, padding: 28,
               display: "flex", flexDirection: "column",
             }}>
@@ -169,6 +193,18 @@ export default function PricingPage() {
                   fontFamily: "var(--font-brand)",
                 }}>
                   MOST POPULAR
+                </div>
+              )}
+
+              {plan.id === "max" && (
+                <div style={{
+                  position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
+                  padding: "4px 16px", borderRadius: 50,
+                  background: plan.color, color: "#fff",
+                  fontSize: 11, fontWeight: 700, letterSpacing: 1,
+                  fontFamily: "var(--font-brand)",
+                }}>
+                  NO LIMITS
                 </div>
               )}
 
@@ -218,9 +254,9 @@ export default function PricingPage() {
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                   width: "100%", padding: "12px 24px", borderRadius: 10,
-                  background: plan.popular ? plan.color : "transparent",
-                  color: plan.popular ? "#000" : "var(--text-primary)",
-                  border: plan.popular ? "none" : "1px solid var(--border-primary)",
+                  background: plan.popular ? plan.color : plan.id === "max" ? plan.color : "transparent",
+                  color: plan.popular ? "#000" : plan.id === "max" ? "#fff" : "var(--text-primary)",
+                  border: (plan.popular || plan.id === "max") ? "none" : "1px solid var(--border-primary)",
                   fontSize: 14, fontWeight: 600, cursor: loading === plan.id ? "wait" : "pointer",
                   fontFamily: "var(--font-brand)", letterSpacing: 1,
                   opacity: loading === plan.id ? 0.7 : 1,
@@ -239,6 +275,46 @@ export default function PricingPage() {
             </div>
           );
         })}
+      </div>
+
+      {/* Feature comparison table */}
+      <div style={{ maxWidth: 920, margin: "0 auto", padding: "0 24px 80px" }}>
+        <h3 style={{
+          textAlign: "center", fontSize: 18, fontWeight: 600,
+          fontFamily: "var(--font-brand)", letterSpacing: 1, marginBottom: 24,
+          color: "var(--text-secondary)",
+        }}>
+          Compare plans
+        </h3>
+        <div style={{
+          background: "var(--bg-secondary)", borderRadius: 12,
+          border: "1px solid var(--border-primary)", overflow: "hidden",
+        }}>
+          {[
+            { feature: "Chat messages", free: "5/day", pro: "Unlimited", max: "Unlimited" },
+            { feature: "Simulations", free: "1/month", pro: "20/month", max: "Unlimited" },
+            { feature: "Deep Research", free: "—", pro: "10/month", max: "Unlimited" },
+            { feature: "Global Ops", free: "—", pro: "5/month", max: "Unlimited" },
+            { feature: "Invest Mode", free: "—", pro: "5/month", max: "Unlimited" },
+            { feature: "Launchpad", free: "—", pro: "Full access", max: "Full access" },
+            { feature: "Intel Suite", free: "—", pro: "Full access", max: "Full access" },
+            { feature: "Second Opinion", free: "—", pro: "—", max: "Included" },
+            { feature: "Challenge This", free: "—", pro: "—", max: "Included" },
+            { feature: "AI Model", free: "Sonnet", pro: "Sonnet", max: "Opus" },
+          ].map((row, i) => (
+            <div key={row.feature} style={{
+              display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr",
+              padding: "10px 16px", fontSize: 13,
+              borderBottom: i < 9 ? "1px solid var(--border-primary)" : "none",
+              background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.02)",
+            }}>
+              <span style={{ color: "var(--text-secondary)", fontWeight: 500 }}>{row.feature}</span>
+              <span style={{ color: "var(--text-tertiary)", textAlign: "center" }}>{row.free}</span>
+              <span style={{ color: "#D4AF37", textAlign: "center", fontWeight: 500 }}>{row.pro}</span>
+              <span style={{ color: "#A855F7", textAlign: "center", fontWeight: 500 }}>{row.max}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

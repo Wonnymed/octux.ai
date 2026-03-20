@@ -53,12 +53,14 @@ export async function getUserTier(userId: string): Promise<Tier> {
 }
 
 /**
- * Get usage for today (chat) or this month (simulate/research).
+ * Get usage for today (chat) or this month (simulate/research/globalops/invest).
  */
 export async function getUsage(userId: string): Promise<{
   chat_today: number;
   simulations_month: number;
   researches_month: number;
+  globalops_month: number;
+  invest_month: number;
 }> {
   const { createServerClient: createSC } = await import("../lib/supabase");
   const supabase = createSC();
@@ -67,7 +69,7 @@ export async function getUsage(userId: string): Promise<{
   // Today's usage
   const { data: todayData } = await supabase
     .from("usage_tracking")
-    .select("chat_messages, simulations, researches")
+    .select("chat_messages, simulations, researches, globalops, invest")
     .eq("user_id", userId)
     .eq("date", today)
     .single();
@@ -79,24 +81,28 @@ export async function getUsage(userId: string): Promise<{
 
   const { data: monthData } = await supabase
     .from("usage_tracking")
-    .select("simulations, researches")
+    .select("simulations, researches, globalops, invest")
     .eq("user_id", userId)
     .gte("date", monthStartStr);
 
   const simMonth = monthData?.reduce((s, d) => s + (d.simulations || 0), 0) || 0;
   const resMonth = monthData?.reduce((s, d) => s + (d.researches || 0), 0) || 0;
+  const globalopsMonth = monthData?.reduce((s, d) => s + (d.globalops || 0), 0) || 0;
+  const investMonth = monthData?.reduce((s, d) => s + (d.invest || 0), 0) || 0;
 
   return {
     chat_today: todayData?.chat_messages || 0,
     simulations_month: simMonth,
     researches_month: resMonth,
+    globalops_month: globalopsMonth,
+    invest_month: investMonth,
   };
 }
 
 /**
  * Increment usage counter.
  */
-export async function incrementUsage(userId: string, field: "chat_messages" | "simulations" | "researches") {
+export async function incrementUsage(userId: string, field: "chat_messages" | "simulations" | "researches" | "globalops" | "invest") {
   const { createServerClient: createSC } = await import("../lib/supabase");
   const supabase = createSC();
   const today = new Date().toISOString().split("T")[0];
@@ -139,7 +145,7 @@ export async function getTierFromRequest(req: NextRequest): Promise<Tier> {
  */
 export async function checkUsageLimit(
   userId: string | null,
-  action: "chat" | "simulate" | "research"
+  action: "chat" | "simulate" | "research" | "globalops" | "invest"
 ): Promise<NextResponse | null> {
   // No user = treat as free with no tracking
   if (!userId) {
@@ -167,8 +173,8 @@ export async function checkUsageLimit(
     return NextResponse.json(
       { error: tier === "free"
         ? "You've used your free simulation this month. Unlock more to keep predicting."
-        : "Monthly simulation limit reached. Unlock unlimited simulations.",
-        upgrade: true, tier },
+        : `You've used ${usage.simulations_month}/${limits.simulate_monthly} simulations this month. Upgrade to Max for unlimited.`,
+        upgrade: true, tier, usage: usage.simulations_month, limit: limits.simulate_monthly },
       { status: 403 }
     );
   }
@@ -177,8 +183,28 @@ export async function checkUsageLimit(
     return NextResponse.json(
       { error: tier === "free"
         ? "Deep research is available for Pro users. See what you're missing."
-        : "Research limit reached. Unlock more research.",
-        upgrade: true, tier },
+        : `You've used ${usage.researches_month}/${limits.research_monthly} researches this month. Upgrade to Max for unlimited.`,
+        upgrade: true, tier, usage: usage.researches_month, limit: limits.research_monthly },
+      { status: 403 }
+    );
+  }
+
+  if (action === "globalops" && usage.globalops_month >= limits.globalops_monthly) {
+    return NextResponse.json(
+      { error: tier === "pro"
+        ? `You've used ${usage.globalops_month}/${limits.globalops_monthly} Global Ops analyses this month. Upgrade to Max for unlimited.`
+        : "Global Ops is available for Pro users. See what you're missing.",
+        upgrade: true, tier, usage: usage.globalops_month, limit: limits.globalops_monthly },
+      { status: 403 }
+    );
+  }
+
+  if (action === "invest" && usage.invest_month >= limits.invest_monthly) {
+    return NextResponse.json(
+      { error: tier === "pro"
+        ? `You've used ${usage.invest_month}/${limits.invest_monthly} investment analyses this month. Upgrade to Max for unlimited.`
+        : "Invest mode is available for Pro users. See what you're missing.",
+        upgrade: true, tier, usage: usage.invest_month, limit: limits.invest_monthly },
       { status: 403 }
     );
   }

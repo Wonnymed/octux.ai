@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Zap, Search, Rocket, Globe, TrendingUp, Wrench, CircleSlash, Copy, Users, Shield, Scan, Swords, GitBranch, Map, Target } from "lucide-react";
+import { Zap, Search, Rocket, Globe, TrendingUp, Wrench, CircleSlash, Copy, Users, Shield, Scan, Swords, GitBranch, Map, Target, Crown, Check, ArrowRight } from "lucide-react";
 import { SignuxIcon } from "./components/SignuxIcon";
 import SignuxFooter from "./components/SignuxFooter";
 
@@ -783,6 +783,82 @@ export default function LandingPage() {
                 {tool} <span style={{ fontSize: 8, fontFamily: "var(--font-mono)", letterSpacing: 1 }}>SOON</span>
               </span>
             ))}
+          </div>
+        </FadeSection>
+      </section>
+
+      {/* ═══ MINI PRICING ═══ */}
+      <Divider />
+      <section style={{ padding: isMobile ? "48px 16px" : "48px 24px" }}>
+        <FadeSection>
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 32, color: "var(--text-primary)", marginBottom: 8 }}>
+              Simple pricing. Powerful intelligence.
+            </h2>
+            <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+              Pro gives you everything. Max removes all limits.
+            </p>
+          </div>
+          <div style={{
+            display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: 16, maxWidth: 640, margin: "0 auto",
+          }}>
+            {/* Pro card */}
+            <div style={{
+              padding: 24, borderRadius: 14, border: "2px solid #D4AF37",
+              background: "var(--bg-secondary, rgba(20,20,20,0.6))",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                <Zap size={16} style={{ color: "#D4AF37" }} />
+                <span style={{ fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 600, color: "#D4AF37", letterSpacing: 1 }}>PRO</span>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <span style={{ fontSize: 32, fontWeight: 700 }}>$29</span>
+                <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>/month</span>
+              </div>
+              {["All 6 modes", "20 simulations/month", "10 deep researches", "5 Global Ops & Invest"].map(f => (
+                <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                  <Check size={12} style={{ color: "#D4AF37" }} />
+                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{f}</span>
+                </div>
+              ))}
+              <Link href="/pricing" style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                marginTop: 16, padding: "10px 20px", borderRadius: 8,
+                background: "#D4AF37", color: "#000", fontWeight: 600,
+                fontSize: 13, textDecoration: "none", fontFamily: "var(--font-brand)", letterSpacing: 0.5,
+              }}>
+                Get Pro <ArrowRight size={12} />
+              </Link>
+            </div>
+            {/* Max card */}
+            <div style={{
+              padding: 24, borderRadius: 14, border: "1px solid rgba(168,85,247,0.3)",
+              background: "var(--bg-secondary, rgba(20,20,20,0.6))",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                <Crown size={16} style={{ color: "#A855F7" }} />
+                <span style={{ fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 600, color: "#A855F7", letterSpacing: 1 }}>MAX</span>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <span style={{ fontSize: 32, fontWeight: 700 }}>$99</span>
+                <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>/month</span>
+              </div>
+              {["Everything unlimited", "Second Opinion & Challenge", "Opus model — best AI", "New features first"].map(f => (
+                <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                  <Check size={12} style={{ color: "#A855F7" }} />
+                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{f}</span>
+                </div>
+              ))}
+              <Link href="/pricing" style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                marginTop: 16, padding: "10px 20px", borderRadius: 8,
+                background: "#A855F7", color: "#fff", fontWeight: 600,
+                fontSize: 13, textDecoration: "none", fontFamily: "var(--font-brand)", letterSpacing: 0.5,
+              }}>
+                Get Max <ArrowRight size={12} />
+              </Link>
+            </div>
           </div>
         </FadeSection>
       </section>

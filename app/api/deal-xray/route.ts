@@ -73,7 +73,15 @@ RULES:
 - hidden_incentives: apply game theory — what does the counterparty really want?
 - missing_information: what would a smart investor/partner ask that isn't answered?
 - NEVER inflate trust_score. A 6 is generous. Most deals are 5-7
-- If the deal is bad, say WALK_AWAY. Don't hedge`,
+- If the deal is bad, say WALK_AWAY. Don't hedge
+
+At the end of your response, include these hidden metadata blocks:
+
+<!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
+Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
+
+<!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+List actual reasoning steps taken, not generic descriptions.`,
       messages: [{ role: "user", content: `X-Ray this deal:\n\n${dealContent}\n\nVerify all claims via web search. Respond in ${lang || "en"}.` }],
     });
 

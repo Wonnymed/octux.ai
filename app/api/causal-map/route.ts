@@ -65,7 +65,15 @@ RULES:
 - alternative_explanations: 2-3 items that could fully or partially explain the outcome
 - how_to_verify: 3-5 SPECIFIC, actionable tests (not vague "gather more data")
 - Search the web for base rates and industry data to calibrate confidence
-- BE HONEST. Most business causal claims are overconfident. Say so.`,
+- BE HONEST. Most business causal claims are overconfident. Say so.
+
+At the end of your response, include these hidden metadata blocks:
+
+<!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
+Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
+
+<!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+List actual reasoning steps taken, not generic descriptions.`,
       messages: [{
         role: "user",
         content: `Analyze this causal claim:\n\n${situation}\n\nSearch for relevant industry data and base rates. Respond in ${lang || "en"}.`,

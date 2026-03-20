@@ -367,6 +367,11 @@ textarea, input, button {
   40% { transform: scale(1); opacity: 1; }
 }
 
+@keyframes signuxPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
 @keyframes twinkle {
   0%, 100% { opacity: 0.2; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.5); }

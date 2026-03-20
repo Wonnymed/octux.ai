@@ -8,6 +8,7 @@ import type { Attachment, Message } from "../lib/types";
 import MarkdownRenderer from "./MarkdownRenderer";
 import { SignuxIcon } from "./SignuxIcon";
 import { copyToClipboard } from "../lib/clipboard";
+import { parseSignuxMetadata } from "../lib/parseMetadata";
 
 const CODE_EXTENSIONS = [
   ".py", ".js", ".ts", ".tsx", ".jsx", ".html", ".css", ".json",
@@ -57,37 +58,15 @@ function parseFollowups(content: string): { cleanContent: string; followups: str
   return { cleanContent, followups };
 }
 
-function parseDomains(content: string): { cleanContent: string; domains: string[]; domainCount: number } {
-  const domainsMatch = content.match(/<!--\s*signux_domains:\s*(.+?)\s*-->/);
-  const countMatch = content.match(/<!--\s*signux_domain_count:\s*(\d+)\s*-->/);
-  let cleanContent = content
-    .replace(/<!--\s*signux_domains:\s*.+?\s*-->/g, "")
-    .replace(/<!--\s*signux_domain_count:\s*\d+\s*-->/g, "")
-    .trim();
-  if (!domainsMatch) return { cleanContent, domains: [], domainCount: 0 };
-  const domains = domainsMatch[1].split(",").map(d => d.trim()).filter(Boolean);
-  const domainCount = countMatch ? parseInt(countMatch[1], 10) : domains.length;
-  return { cleanContent, domains, domainCount };
-}
-
-type BlindSpot = { domain: string; question: string; why: string };
-
-function parseBlindspots(content: string): { cleanContent: string; blindspots: BlindSpot[] } {
-  const match = content.match(/<!--\s*signux_blindspots:\s*(\[[\s\S]*?\])\s*-->/);
-  const cleanContent = content.replace(/<!--\s*signux_blindspots:\s*\[[\s\S]*?\]\s*-->/g, "").trim();
-  if (!match) return { cleanContent, blindspots: [] };
-  try {
-    const parsed = JSON.parse(match[1]);
-    return { cleanContent, blindspots: Array.isArray(parsed) ? parsed : [] };
-  } catch {
-    return { cleanContent, blindspots: [] };
-  }
-}
-
-function parseDepth(content: string): { cleanContent: string; depth: number } {
-  const match = content.match(/<!--\s*signux_depth:\s*(\d+)\s*-->/);
-  const cleanContent = content.replace(/<!--\s*signux_depth:\s*\d+\s*-->/g, "").trim();
-  return { cleanContent, depth: match ? parseInt(match[1], 10) : 0 };
+/* ═══ Plan detector ═══ */
+function parsePlan(content: string): { hasPlan: boolean; planContent: string; restContent: string } {
+  // Match "📋 **Analysis plan:**" followed by numbered list, ending at double newline before non-numbered content or ---
+  const planRegex = /📋\s*\*?\*?Analysis plan:?\*?\*?\s*\n((?:\d+\.\s+.+\n?)+)/;
+  const match = content.match(planRegex);
+  if (!match) return { hasPlan: false, planContent: "", restContent: content };
+  const planContent = match[1].trim();
+  const restContent = content.replace(match[0], "").trim();
+  return { hasPlan: true, planContent, restContent };
 }
 
 type SecondOpinion = { domain: string; color: string; analysis: string; confidence: string };
@@ -107,6 +86,14 @@ type MessageBlockProps = {
   previousUserMessage?: string;
 };
 
+const THINKING_PHRASES = [
+  "Analyzing your scenario...",
+  "Consulting intelligence domains...",
+  "Building analysis plan...",
+  "Cross-referencing data...",
+  "Running verification...",
+];
+
 export default function MessageBlock({ message, index, isLast, loading, searching, userInitials, onRetry, onCopy, onSendFollowup, onDecisionDetected, tier, previousUserMessage }: MessageBlockProps) {
   const [hovered, setHovered] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -118,19 +105,30 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
   const [challenge, setChallenge] = useState<string | null>(null);
   const [loadingChallenge, setLoadingChallenge] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState<string | null>(null);
+  const [showVerification, setShowVerification] = useState(false);
+  const [showWork, setShowWork] = useState(false);
   const isMobile = useIsMobile();
+
+  // Thinking phrase (randomized once per mount)
+  const [thinkingPhrase] = useState(() => THINKING_PHRASES[Math.floor(Math.random() * THINKING_PHRASES.length)]);
 
   const isUser = message.role === "user";
   const isStreaming = loading && isLast;
   const isEmpty = !message.content;
 
-  // Parse chain: decision → confidence → followups → domains → blindspots
+  // Parse chain: decision → confidence → followups → signux metadata
   const { cleanContent: c0, decision } = !isUser ? parseDecision(message.content) : { cleanContent: message.content, decision: null };
   const { cleanContent: c1, level: confidenceLevel, reason: confidenceReason } = !isUser ? parseConfidence(c0) : { cleanContent: c0, level: "", reason: "" };
   const { cleanContent: c2, followups } = !isUser ? parseFollowups(c1) : { cleanContent: c1, followups: [] as string[] };
-  const { cleanContent: c3, domains, domainCount } = !isUser ? parseDomains(c2) : { cleanContent: c2, domains: [] as string[], domainCount: 0 };
-  const { cleanContent: c4, blindspots } = !isUser ? parseBlindspots(c3) : { cleanContent: c3, blindspots: [] as BlindSpot[] };
-  const { cleanContent: parsedContent, depth } = !isUser ? parseDepth(c4) : { cleanContent: c4, depth: 0 };
+
+  // Centralized metadata parser
+  const { cleanContent: c3, metadata } = !isUser ? parseSignuxMetadata(c2) : { cleanContent: c2, metadata: { domains: [], domainCount: 0, blindspots: [], depth: 0, verification: null, worklog: null } };
+  const { domains, domainCount, blindspots, depth, verification, worklog } = metadata;
+
+  // Plan detection
+  const { hasPlan, planContent, restContent } = !isUser && !isStreaming ? parsePlan(c3) : { hasPlan: false, planContent: "", restContent: c3 };
+  const parsedContent = hasPlan ? restContent : c3;
+
   const isLastAI = isLast && !isUser;
 
   // Notify parent about detected decisions (only once when message completes)
@@ -299,20 +297,24 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
             WebkitUserSelect: "text" as any,
             transition: "all 0.3s ease",
           }}>
-            {/* Loading state — empty AI message */}
+            {/* Loading state — thinking indicator */}
             {isEmpty && isStreaming && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ display: "flex", gap: 4 }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "2px 0",
+                animation: "fadeIn 300ms ease",
+              }}>
+                <div style={{ display: "flex", gap: 3 }}>
                   {[0, 1, 2].map(i => (
                     <div key={i} style={{
-                      width: 6, height: 6, borderRadius: "50%",
+                      width: 5, height: 5, borderRadius: "50%",
                       background: "var(--accent)",
-                      animation: `signuxBounce 1.4s ease-in-out infinite ${i * 0.16}s`,
+                      animation: `signuxPulse 1.2s ease-in-out ${i * 0.2}s infinite`,
                     }} />
                   ))}
                 </div>
                 <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-                  {searching ? t("chat.searching") : "Thinking..."}
+                  {searching ? t("chat.searching") : thinkingPhrase}
                 </span>
               </div>
             )}
@@ -326,6 +328,35 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                     {t("chat.searching")}
                   </div>
                 )}
+
+                {/* Plan box (only when not streaming) */}
+                {hasPlan && !isStreaming && (
+                  <div style={{
+                    padding: "12px 16px", borderRadius: 10, marginBottom: 16,
+                    background: "rgba(212,175,55,0.04)",
+                    border: "1px solid rgba(212,175,55,0.12)",
+                  }}>
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 6, marginBottom: 8,
+                      fontSize: 11, fontWeight: 600, color: "var(--accent)",
+                      fontFamily: "var(--font-mono)", letterSpacing: 1,
+                      textTransform: "uppercase",
+                    }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 11l3 3L22 4"/>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                      </svg>
+                      Analysis plan
+                    </div>
+                    <div style={{
+                      fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6,
+                      whiteSpace: "pre-wrap",
+                    }}>
+                      {planContent}
+                    </div>
+                  </div>
+                )}
+
                 <MarkdownRenderer content={isStreaming ? message.content : parsedContent} isStreaming={isStreaming} />
                 {isStreaming && (
                   <span style={{
@@ -470,6 +501,166 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
             )}
           </div>
 
+          {/* ═══ VERIFICATION — Confidence bar ═══ */}
+          {!isStreaming && verification && (
+            <div style={{ marginTop: 10 }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 8,
+                fontSize: 11, color: "var(--text-tertiary)",
+              }}>
+                <span style={{ fontFamily: "var(--font-mono)" }}>Confidence:</span>
+                <div style={{
+                  flex: 1, maxWidth: 100, height: 4, borderRadius: 2,
+                  background: "var(--border-secondary)",
+                }}>
+                  <div style={{
+                    height: "100%", borderRadius: 2,
+                    width: `${Math.min(verification.confidence * 100, 100)}%`,
+                    background: verification.confidence >= 0.8 ? "#22c55e"
+                      : verification.confidence >= 0.6 ? "#f59e0b"
+                      : "#ef4444",
+                    transition: "width 500ms ease",
+                  }} />
+                </div>
+                <span style={{
+                  fontFamily: "var(--font-mono)", fontWeight: 600,
+                  color: verification.confidence >= 0.8 ? "#22c55e"
+                    : verification.confidence >= 0.6 ? "#f59e0b"
+                    : "#ef4444",
+                }}>
+                  {Math.round(verification.confidence * 100)}%
+                </span>
+              </div>
+
+              <button
+                onClick={() => setShowVerification(!showVerification)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 4,
+                  marginTop: 4, background: "none", border: "none",
+                  cursor: "pointer", fontSize: 10, color: "var(--text-tertiary)",
+                  padding: 0,
+                }}
+              >
+                {showVerification ? "Hide" : "Show"} verification details
+                <span style={{ fontSize: 8, transition: "transform 200ms", transform: showVerification ? "rotate(180deg)" : "none" }}>&#9660;</span>
+              </button>
+
+              {showVerification && (
+                <div style={{
+                  marginTop: 6, padding: "8px 12px", borderRadius: 8,
+                  background: "var(--bg-tertiary)", fontSize: 11,
+                  animation: "fadeIn 0.15s ease",
+                }}>
+                  {verification.checked && verification.checked.length > 0 && (
+                    <div style={{ marginBottom: 6 }}>
+                      <span style={{ color: "#22c55e", fontWeight: 600 }}>Verified:</span>
+                      <div style={{ color: "var(--text-secondary)", marginTop: 2 }}>
+                        {verification.checked.map((c, i) => (
+                          <div key={i} style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                            <span style={{ color: "#22c55e", fontSize: 10 }}>&#10003;</span> {c}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {verification.caveats && verification.caveats.length > 0 && (
+                    <div>
+                      <span style={{ color: "#f59e0b", fontWeight: 600 }}>Caveats:</span>
+                      <div style={{ color: "var(--text-secondary)", marginTop: 2 }}>
+                        {verification.caveats.map((c, i) => (
+                          <div key={i} style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                            <span style={{ color: "#f59e0b", fontSize: 10 }}>&#9888;</span> {c}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ═══ WORKLOG — Show my work ═══ */}
+          {!isStreaming && worklog && worklog.steps && worklog.steps.length > 0 && (
+            <div style={{ marginTop: 8 }}>
+              <button
+                onClick={() => setShowWork(!showWork)}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "4px 10px", borderRadius: 50,
+                  background: "var(--bg-tertiary)", border: "1px solid var(--border-secondary)",
+                  cursor: "pointer", fontSize: 11, color: "var(--text-tertiary)",
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                Show my work ({worklog.reasoning_steps || worklog.steps.length} steps)
+                <span style={{ fontSize: 8, transition: "transform 200ms", transform: showWork ? "rotate(180deg)" : "none" }}>&#9660;</span>
+              </button>
+
+              {showWork && (
+                <div style={{
+                  marginTop: 8, padding: "12px 14px", borderRadius: 10,
+                  border: "1px solid var(--border-secondary)",
+                  background: "var(--bg-tertiary)",
+                  animation: "fadeIn 0.15s ease",
+                }}>
+                  <div style={{
+                    fontSize: 10, fontFamily: "var(--font-mono)", letterSpacing: 1,
+                    textTransform: "uppercase", color: "var(--text-tertiary)",
+                    marginBottom: 8, opacity: 0.5,
+                  }}>
+                    Reasoning trace
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {worklog.steps.map((step, i) => (
+                      <div key={i} style={{
+                        display: "flex", gap: 8, alignItems: "flex-start",
+                        fontSize: 12,
+                      }}>
+                        <span style={{
+                          width: 18, height: 18, borderRadius: "50%",
+                          background: "rgba(212,175,55,0.1)",
+                          color: "var(--accent)", fontSize: 9, fontWeight: 600,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          flexShrink: 0, marginTop: 1,
+                        }}>
+                          {i + 1}
+                        </span>
+                        <div>
+                          <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                            {step.action}
+                          </span>
+                          {step.detail && (
+                            <span style={{ color: "var(--text-tertiary)", marginLeft: 4 }}>
+                              — {step.detail}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Summary stats */}
+                  <div style={{
+                    display: "flex", gap: 12, marginTop: 10, paddingTop: 8,
+                    borderTop: "1px solid var(--border-secondary)",
+                    fontSize: 10, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)",
+                  }}>
+                    {worklog.domains_used > 0 && <span>{worklog.domains_used} domains</span>}
+                    {worklog.sources_count > 0 && <span>{worklog.sources_count} sources</span>}
+                    {worklog.reasoning_steps > 0 && <span>{worklog.reasoning_steps} steps</span>}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Blind spot detector */}
           {!isStreaming && blindspots.length > 0 && isLastAI && (
             <div style={{
@@ -572,15 +763,16 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                     style={{
                       display: "flex", alignItems: "center", gap: 4,
                       padding: "4px 10px", borderRadius: 6,
-                      border: "1px solid var(--border-secondary)",
+                      border: isMaxTier ? "1px solid rgba(168,85,247,0.3)" : "1px solid var(--border-secondary)",
                       background: loadingOpinion ? "var(--bg-tertiary)" : "transparent",
                       cursor: loadingOpinion ? "wait" : "pointer",
-                      fontSize: 11, color: "var(--text-tertiary)",
+                      fontSize: 11, color: isMaxTier ? "#A855F7" : "var(--text-tertiary)",
                       transition: "all 200ms",
                     }}
                   >
                     <Eye size={12} />
                     {loadingOpinion ? "Analyzing..." : "Second opinion"}
+                    {!isMaxTier && <span style={{ fontSize: 8, fontWeight: 700, color: "#A855F7", letterSpacing: 0.5 }}>MAX</span>}
                   </button>
                   <button
                     onClick={fetchChallenge}
@@ -589,15 +781,16 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                     style={{
                       display: "flex", alignItems: "center", gap: 4,
                       padding: "4px 10px", borderRadius: 6,
-                      border: "1px solid var(--border-secondary)",
+                      border: isMaxTier ? "1px solid rgba(168,85,247,0.3)" : "1px solid var(--border-secondary)",
                       background: loadingChallenge ? "var(--bg-tertiary)" : "transparent",
                       cursor: loadingChallenge ? "wait" : "pointer",
-                      fontSize: 11, color: "var(--text-tertiary)",
+                      fontSize: 11, color: isMaxTier ? "#A855F7" : "var(--text-tertiary)",
                       transition: "all 200ms",
                     }}
                   >
                     <Swords size={12} />
                     {loadingChallenge ? "Challenging..." : "Challenge this"}
+                    {!isMaxTier && <span style={{ fontSize: 8, fontWeight: 700, color: "#A855F7", letterSpacing: 0.5 }}>MAX</span>}
                   </button>
                 </>
               )}
@@ -613,8 +806,8 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
             }}>
               <span style={{ color: "var(--text-secondary)" }}>
                 {showUpgradePrompt === "second-opinion"
-                  ? "Second Opinion requires Max plan"
-                  : "Devil's Advocate requires Max plan"}
+                  ? "Second Opinion is exclusive to Max — 3 perspectives on every answer"
+                  : "Challenge This is exclusive to Max — stress-test any analysis"}
               </span>
               <a href="/pricing" style={{
                 padding: "4px 12px", borderRadius: 50, background: "var(--accent)",
@@ -626,7 +819,7 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
               <button onClick={() => setShowUpgradePrompt(null)} style={{
                 background: "none", border: "none", cursor: "pointer",
                 color: "var(--text-tertiary)", fontSize: 12, padding: 0,
-              }}>✕</button>
+              }}>&#10005;</button>
             </div>
           )}
 
@@ -646,7 +839,7 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                 <button onClick={() => setSecondOpinion(null)} style={{
                   background: "none", border: "none", cursor: "pointer",
                   color: "var(--text-tertiary)", fontSize: 14, padding: 0,
-                }}>✕</button>
+                }}>&#10005;</button>
               </div>
               <div style={{
                 display: "grid",
@@ -697,7 +890,7 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
                 <button onClick={() => setChallenge(null)} style={{
                   background: "none", border: "none", cursor: "pointer",
                   color: "var(--text-tertiary)", fontSize: 14, padding: 0,
-                }}>✕</button>
+                }}>&#10005;</button>
               </div>
               <div style={{
                 fontSize: 13, color: "var(--text-primary)", lineHeight: 1.6,

@@ -73,7 +73,15 @@ RULES:
 - hedging_strategy: actions robust across ALL scenarios, not just one
 - Use current data from web search to ground scenarios in reality
 - Pessimistic scenarios should be HONEST, not softened
-- "Black Swan" should be genuinely scary but plausible`,
+- "Black Swan" should be genuinely scary but plausible
+
+At the end of your response, include these hidden metadata blocks:
+
+<!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
+Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
+
+<!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+List actual reasoning steps taken, not generic descriptions.`,
       messages: [{ role: "user", content: `Context: ${context}\n\nSearch for current market data and trends. Generate 4 scenarios for the next 12 months. Respond in ${lang || "en"}.` }],
     });
 

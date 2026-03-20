@@ -35,15 +35,19 @@ type SidebarProps = {
   onSelectProject?: (id: string | null) => void;
   onCreateProject?: (name: string) => void;
   onOpenKnowledge?: () => void;
+  /* Tier & Usage */
+  tier?: string;
+  usage?: { simulations_month: number; researches_month: number; globalops_month: number; invest_month: number };
+  limits?: { simulate_monthly: number; research_monthly: number; globalops_monthly: number; invest_monthly: number };
 };
 
-const MODES: { key: Mode; icon: any; label: string; color?: string; tier?: "max" }[] = [
+const MODES: { key: Mode; icon: any; label: string; color?: string }[] = [
   { key: "chat", icon: MessageSquare, label: "sidebar.mode_chat" },
   { key: "simulate", icon: Zap, label: "sidebar.mode_simulate", color: "#D4AF37" },
   { key: "intel", icon: Shield, label: "sidebar.mode_intel", color: "#DC2626" },
   { key: "launchpad", icon: Rocket, label: "sidebar.mode_launchpad", color: "#14B8A6" },
-  { key: "globalops", icon: Globe, label: "sidebar.mode_globalops", color: "#22C55E", tier: "max" },
-  { key: "invest", icon: TrendingUp, label: "sidebar.mode_invest", color: "#A855F7", tier: "max" },
+  { key: "globalops", icon: Globe, label: "sidebar.mode_globalops", color: "#22C55E" },
+  { key: "invest", icon: TrendingUp, label: "sidebar.mode_invest", color: "#A855F7" },
 ];
 
 /* Sidebar panel toggle icon — two rectangles like Okara */
@@ -161,6 +165,7 @@ export default function Sidebar({
   open, onClose, onOpen, isLoggedIn, onSignOut, isMobile, authUser,
   conversations = [], loadingHistory = false, activeConversationId, onLoadConversation, onDeleteConversation,
   projects = [], activeProject, onSelectProject, onCreateProject, onOpenKnowledge,
+  tier, usage, limits,
 }: SidebarProps) {
   const sidebarRef = useRef<HTMLElement>(null);
   const userInitials = profileName ? profileName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : (authUser?.initials || "?");
@@ -439,7 +444,7 @@ export default function Sidebar({
 
         {/* Mode buttons */}
         <div style={{ padding: "0 8px 8px" }}>
-          {MODES.map(({ key, icon: Icon, label, color, tier }, idx) => (
+          {MODES.map(({ key, icon: Icon, label, color }, idx) => (
             <div key={key}>
               <button onClick={() => handleMode(key)} style={{
                 display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px", border: "none",
@@ -451,13 +456,6 @@ export default function Sidebar({
                  onMouseLeave={e => { if (mode !== key) e.currentTarget.style.background = "transparent"; }}>
                 <Icon size={16} style={{ color: mode === key ? (color || "var(--accent)") : undefined }} />
                 <span style={{ flex: 1 }}>{t(label)}</span>
-                {tier === "max" && (
-                  <span style={{
-                    fontSize: 9, fontWeight: 700, letterSpacing: 0.5,
-                    color: color || "var(--text-tertiary)",
-                    opacity: 0.6, textTransform: "uppercase",
-                  }}>MAX</span>
-                )}
               </button>
               {/* Divider after launchpad (index 3) */}
               {idx === 3 && (
@@ -466,6 +464,43 @@ export default function Sidebar({
             </div>
           ))}
         </div>
+
+        {/* Usage counters for Pro users */}
+        {tier === "pro" && usage && limits && (
+          <div style={{ padding: "0 8px 8px" }}>
+            <div style={{ padding: "8px 12px", fontSize: 10, fontWeight: 600, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 4 }}>
+              Usage this month
+            </div>
+            {[
+              { label: "Simulations", used: usage.simulations_month, total: limits.simulate_monthly, color: "#D4AF37" },
+              { label: "Research", used: usage.researches_month, total: limits.research_monthly, color: "#DC2626" },
+              { label: "Global Ops", used: usage.globalops_month, total: limits.globalops_monthly, color: "#22C55E" },
+              { label: "Invest", used: usage.invest_month, total: limits.invest_monthly, color: "#A855F7" },
+            ].filter(u => u.total > 0 && u.total < Infinity).map(u => (
+              <div key={u.label} style={{ padding: "3px 12px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 3 }}>
+                  <span style={{ color: "var(--text-secondary)" }}>{u.label}</span>
+                  <span style={{ color: u.used >= u.total ? "#ef4444" : "var(--text-tertiary)" }}>{u.used}/{u.total}</span>
+                </div>
+                <div style={{ height: 3, borderRadius: 2, background: "var(--border-secondary)" }}>
+                  <div style={{
+                    height: "100%", borderRadius: 2,
+                    width: `${Math.min((u.used / u.total) * 100, 100)}%`,
+                    background: u.used >= u.total ? "#ef4444" : u.color,
+                    transition: "width 300ms ease",
+                  }} />
+                </div>
+              </div>
+            ))}
+            <a href="/pricing" style={{
+              display: "block", padding: "6px 12px", marginTop: 4,
+              fontSize: 10, color: "#A855F7", textDecoration: "none",
+              fontWeight: 600, letterSpacing: 0.5,
+            }}>
+              Remove all limits →
+            </a>
+          </div>
+        )}
 
         <div style={{ height: 1, background: "var(--border-secondary)", margin: "0 8px 8px" }} />
 
@@ -600,7 +635,13 @@ export default function Sidebar({
                     {displayName}
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-                    Free plan
+                    {tier === "max" || tier === "founding" ? (
+                      <span style={{ color: "#A855F7" }}>Max plan</span>
+                    ) : tier === "pro" ? (
+                      <span style={{ color: "#D4AF37" }}>Pro plan</span>
+                    ) : (
+                      "Free plan"
+                    )}
                   </div>
                 </div>
               </div>
@@ -646,14 +687,13 @@ export default function Sidebar({
         <div style={{ height: 1, width: 24, background: "var(--border-secondary)", margin: "4px 0" }} />
 
         {/* Mode icons */}
-        {MODES.map(({ key, icon: Icon, label, color, tier }, idx) => (
+        {MODES.map(({ key, icon: Icon, label, color }, idx) => (
           <div key={key} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <button onClick={() => handleMode(key)} title={tier === "max" ? `${t(label)} (MAX)` : t(label)} style={{
+            <button onClick={() => handleMode(key)} title={t(label)} style={{
               width: iconBtnSize, height: iconBtnSize, display: "flex", alignItems: "center", justifyContent: "center",
               border: "none", cursor: "pointer", borderRadius: "var(--radius-sm)", marginBottom: 2,
               background: mode === key ? "var(--bg-hover)" : "none",
               color: mode === key ? (color || "var(--accent)") : "var(--text-tertiary)",
-              opacity: tier === "max" && mode !== key ? 0.5 : 1,
               position: "relative",
             }} onMouseEnter={e => { if (mode !== key) e.currentTarget.style.background = "var(--bg-hover)"; }}
                onMouseLeave={e => { if (mode !== key) e.currentTarget.style.background = "transparent"; }}>

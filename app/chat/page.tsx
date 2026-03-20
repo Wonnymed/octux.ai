@@ -875,6 +875,9 @@ export default function ChatPage() {
         onSelectProject={selectProject}
         onCreateProject={(name) => createProject(name)}
         onOpenKnowledge={() => setShowKnowledge(true)}
+        tier={tier}
+        usage={usage}
+        limits={limits}
       />
 
       <main style={{

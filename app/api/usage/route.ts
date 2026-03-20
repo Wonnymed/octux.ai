@@ -5,7 +5,7 @@ import { TIER_LIMITS } from "../../lib/plans";
 export async function GET(req: NextRequest) {
   const userId = await getUserFromRequest(req);
   if (!userId) {
-    return NextResponse.json({ tier: "free", usage: { chat_today: 0, simulations_month: 0, researches_month: 0 }, limits: TIER_LIMITS.free });
+    return NextResponse.json({ tier: "free", usage: { chat_today: 0, simulations_month: 0, researches_month: 0, globalops_month: 0, invest_month: 0 }, limits: TIER_LIMITS.free });
   }
 
   const tier = await getUserTier(userId);
