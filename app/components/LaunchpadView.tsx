@@ -416,13 +416,13 @@ export default function LaunchpadView({ lang, userId, onSetMode, isLoggedIn, tie
           <div style={{ maxWidth: 720, width: "100%", position: "relative", zIndex: 1 }}>
             <div style={{ textAlign: "center", marginBottom: 24, animation: "fadeIn 0.4s ease-out" }}>
               <div style={{
-                width: 48, height: 48, borderRadius: 12,
+                width: isMobile ? 36 : 48, height: isMobile ? 36 : 48, borderRadius: isMobile ? 10 : 12,
                 border: `1px solid ${tealAlpha(0.15)}`,
                 background: tealAlpha(0.04),
                 display: "flex", alignItems: "center", justifyContent: "center",
                 margin: "0 auto 16px",
               }}>
-                <Rocket size={22} style={{ color: TEAL }} />
+                <Rocket size={isMobile ? 18 : 22} style={{ color: TEAL }} />
               </div>
 
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
@@ -437,8 +437,8 @@ export default function LaunchpadView({ lang, userId, onSetMode, isLoggedIn, tie
               </div>
 
               <div style={{
-                fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: 3,
-                textTransform: "uppercase", color: tealAlpha(0.6), marginTop: 12,
+                fontFamily: "var(--font-mono)", fontSize: isMobile ? 9 : 11, letterSpacing: isMobile ? 1 : 3,
+                textTransform: "uppercase", color: tealAlpha(0.6), marginTop: isMobile ? 8 : 12,
               }}>
                 {t("launchpad.subtitle")}
               </div>
@@ -451,26 +451,34 @@ export default function LaunchpadView({ lang, userId, onSetMode, isLoggedIn, tie
             </div>
 
             <div style={{
-              display: "flex", alignItems: "center", justifyContent: "center",
+              display: "flex", alignItems: "center",
+              justifyContent: isMobile ? "flex-start" : "center",
               gap: 0, marginBottom: 20, animation: "fadeIn 0.5s ease-out",
-              overflowX: "auto", padding: "0 8px",
+              overflowX: "auto", WebkitOverflowScrolling: "touch",
+              padding: isMobile ? "0 4px 6px" : "0 8px",
+              scrollSnapType: isMobile ? "x mandatory" : undefined,
+              scrollbarWidth: "none",
             }}>
               {JOURNEY_STEPS.map((step, i) => (
-                <div key={step} style={{ display: "flex", alignItems: "center" }}>
-                  {i > 0 && <div style={{ width: isMobile ? 12 : 24, height: 1, background: tealAlpha(0.15) }} />}
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                <div key={step} style={{
+                  display: "flex", alignItems: "center",
+                  flex: isMobile ? "0 0 auto" : undefined,
+                  scrollSnapAlign: isMobile ? "center" : undefined,
+                }}>
+                  {i > 0 && <div style={{ width: isMobile ? 10 : 24, height: 1, background: tealAlpha(0.15), flexShrink: 0 }} />}
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: isMobile ? 4 : 6 }}>
                     <div style={{
-                      width: 28, height: 28, borderRadius: "50%",
+                      width: isMobile ? 24 : 28, height: isMobile ? 24 : 28, borderRadius: "50%",
                       border: i === 0 ? `1px solid ${tealAlpha(0.4)}` : "1px solid var(--border-secondary)",
                       background: i === 0 ? tealAlpha(0.15) : "transparent",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600,
+                      fontFamily: "var(--font-mono)", fontSize: isMobile ? 9 : 10, fontWeight: 600,
                       color: i === 0 ? TEAL : "var(--text-tertiary)",
                     }}>
                       {i + 1}
                     </div>
                     <span style={{
-                      fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1,
+                      fontFamily: "var(--font-mono)", fontSize: isMobile ? 7 : 9, letterSpacing: 1,
                       textTransform: "uppercase",
                       color: i === 0 ? tealAlpha(0.7) : "var(--text-tertiary)",
                       whiteSpace: "nowrap",

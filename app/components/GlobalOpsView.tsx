@@ -264,29 +264,29 @@ export default function GlobalOpsView({ lang, onSetMode, isLoggedIn, tier }: { l
           <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 720, display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
 
             {/* Header */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: isMobile ? 10 : 16 }}>
               {/* Icon ring */}
               <div style={{
-                width: 64, height: 64, borderRadius: "50%",
+                width: isMobile ? 44 : 64, height: isMobile ? 44 : 64, borderRadius: "50%",
                 border: `1px solid rgba(34,197,94,0.15)`,
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <Globe size={28} color={GREEN} />
+                <Globe size={isMobile ? 20 : 28} color={GREEN} />
               </div>
 
               {/* Title */}
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                <span style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: 42, color: "var(--text-primary)", letterSpacing: 2 }}>
+                <span style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 42, color: "var(--text-primary)", letterSpacing: 2 }}>
                   GLOBAL
                 </span>
-                <span style={{ fontFamily: "var(--font-brand)", fontWeight: 300, fontSize: 42, color: "var(--text-primary)", opacity: 0.3, letterSpacing: 2 }}>
+                <span style={{ fontFamily: "var(--font-brand)", fontWeight: 300, fontSize: isMobile ? 24 : 42, color: "var(--text-primary)", opacity: 0.3, letterSpacing: 2 }}>
                   OPS
                 </span>
               </div>
 
               {/* Subtitle */}
               <span style={{
-                fontFamily: "var(--font-mono)", fontSize: 11,
+                fontFamily: "var(--font-mono)", fontSize: isMobile ? 9 : 11,
                 color: `rgba(34,197,94,0.55)`, letterSpacing: 1,
                 textTransform: "uppercase",
               }}>

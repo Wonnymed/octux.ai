@@ -251,29 +251,29 @@ export default function InvestView({ lang, onSetMode, isLoggedIn, tier }: { lang
           <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 720, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
 
             {/* Header */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: isMobile ? 8 : 12 }}>
               {/* Icon box */}
               <div style={{
-                width: 48, height: 48, borderRadius: 14,
+                width: isMobile ? 36 : 48, height: isMobile ? 36 : 48, borderRadius: isMobile ? 10 : 14,
                 border: `1px solid rgba(168,85,247,0.15)`,
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <TrendingUp size={28} color={PURPLE} />
+                <TrendingUp size={isMobile ? 20 : 28} color={PURPLE} />
               </div>
 
               {/* Title */}
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                <span style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: 36, color: "var(--text-primary)", letterSpacing: 2 }}>
+                <span style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 22 : 36, color: "var(--text-primary)", letterSpacing: 2 }}>
                   INVEST
                 </span>
-                <span style={{ fontFamily: "var(--font-brand)", fontWeight: 300, fontSize: 36, color: "var(--text-primary)", opacity: 0.3, letterSpacing: 2 }}>
+                <span style={{ fontFamily: "var(--font-brand)", fontWeight: 300, fontSize: isMobile ? 22 : 36, color: "var(--text-primary)", opacity: 0.3, letterSpacing: 2 }}>
                   ENGINE
                 </span>
               </div>
 
               {/* Subtitle */}
               <span style={{
-                fontFamily: "var(--font-mono)", fontSize: 11,
+                fontFamily: "var(--font-mono)", fontSize: isMobile ? 9 : 11,
                 color: `rgba(168,85,247,0.55)`, letterSpacing: 1,
                 textTransform: "uppercase",
               }}>

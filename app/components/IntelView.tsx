@@ -2,6 +2,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Shield, Search, Crosshair, Swords, GitBranch, Users, Map, ChevronLeft, Microscope } from "lucide-react";
+import { useIsMobile } from "../lib/useIsMobile";
 
 const ThreatRadar = dynamic(() => import("./ThreatRadar"), { ssr: false });
 const DealXRay = dynamic(() => import("./DealXRay"), { ssr: false });
@@ -83,6 +84,7 @@ const TOOLS = [
 
 export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedIn, tier }: IntelViewProps) {
   const [activeTool, setActiveTool] = useState<IntelTool>("menu");
+  const isMobile = useIsMobile();
 
   /* ═══ TOOL VIEWS ═══ */
   if (activeTool !== "menu") {
@@ -185,16 +187,16 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
     }}>
       {/* Header */}
       <div style={{
-        width: 48, height: 48, borderRadius: 14,
+        width: isMobile ? 36 : 48, height: isMobile ? 36 : 48, borderRadius: isMobile ? 10 : 14,
         background: "rgba(220,38,38,0.08)", display: "flex",
         alignItems: "center", justifyContent: "center", marginBottom: 12,
       }}>
-        <Shield size={24} style={{ color: "#DC2626" }} />
+        <Shield size={isMobile ? 18 : 24} style={{ color: "#DC2626" }} />
       </div>
 
       <h1 style={{
         fontFamily: "var(--font-brand)", fontWeight: 700,
-        fontSize: 36, letterSpacing: 6, color: "var(--text-primary)",
+        fontSize: isMobile ? 22 : 36, letterSpacing: isMobile ? 3 : 6, color: "var(--text-primary)",
         marginBottom: 4, textAlign: "center",
       }}>
         <span style={{ color: "#DC2626" }}>INTEL</span>
@@ -202,11 +204,11 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
       </h1>
 
       <p style={{
-        fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
-        color: "#DC2626", textTransform: "uppercase", marginBottom: 24,
+        fontFamily: "var(--font-mono)", fontSize: isMobile ? 9 : 10, letterSpacing: isMobile ? 1 : 2,
+        color: "#DC2626", textTransform: "uppercase", marginBottom: isMobile ? 16 : 24,
         opacity: 0.7,
       }}>
-        Know what others don't
+        Know what others don&apos;t
       </p>
 
       {/* Knowledge badge */}
@@ -220,22 +222,22 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
         Specialized intelligence tools powered by proprietary knowledge
       </div>
 
-      {/* Tools grid — 3+3 */}
+      {/* Tools grid — responsive */}
       <div style={{
-        display: "grid", gridTemplateColumns: "1fr 1fr 1fr",
-        gap: 10, width: "100%", maxWidth: 680, marginBottom: 12,
+        display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr 1fr",
+        gap: isMobile ? 8 : 10, width: "100%", maxWidth: 680, marginBottom: 12,
       }}>
         {TOOLS.map(tool => (
           <button
             key={tool.id}
             onClick={() => setActiveTool(tool.id)}
             style={{
-              display: "flex", flexDirection: "column", gap: 8,
-              padding: "16px 14px", borderRadius: 12,
+              display: "flex", flexDirection: "column", gap: isMobile ? 6 : 8,
+              padding: isMobile ? "12px 10px" : "16px 14px", borderRadius: isMobile ? 10 : 12,
               border: `1px solid ${tool.color}18`,
               background: `${tool.color}06`,
               cursor: "pointer", textAlign: "left",
-              transition: "all 200ms",
+              transition: "all 200ms", minHeight: 44,
             }}
             onMouseEnter={e => {
               (e.currentTarget as HTMLElement).style.borderColor = `${tool.color}40`;
@@ -246,11 +248,11 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
               (e.currentTarget as HTMLElement).style.background = `${tool.color}06`;
             }}
           >
-            <tool.icon size={18} style={{ color: tool.color }} />
-            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
+            <tool.icon size={isMobile ? 16 : 18} style={{ color: tool.color }} />
+            <div style={{ fontSize: isMobile ? 11 : 13, fontWeight: 600, color: "var(--text-primary)" }}>
               {tool.name}
             </div>
-            <div style={{ fontSize: 11, color: "var(--text-tertiary)", lineHeight: 1.4 }}>
+            <div style={{ fontSize: isMobile ? 9 : 11, color: "var(--text-tertiary)", lineHeight: 1.4 }}>
               {tool.description}
             </div>
           </button>
