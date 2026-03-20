@@ -60,6 +60,89 @@ function SidebarToggleIcon({ size = 20 }: { size?: number }) {
   );
 }
 
+/* ═══ Sidebar Icon Button with React Tooltip ═══ */
+function SidebarIconButton({ icon, tooltip, active, activeColor, onClick, size = 40 }: {
+  icon: React.ReactNode;
+  tooltip: string;
+  active?: boolean;
+  activeColor?: string;
+  onClick: () => void;
+  size?: number;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMouseEnter = () => {
+    setHovered(true);
+    tooltipTimer.current = setTimeout(() => setShowTooltip(true), 400);
+  };
+
+  const handleMouseLeave = () => {
+    setHovered(false);
+    setShowTooltip(false);
+    if (tooltipTimer.current) clearTimeout(tooltipTimer.current);
+  };
+
+  return (
+    <div style={{ position: "relative" }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <button onClick={onClick} style={{
+        width: size,
+        height: size,
+        borderRadius: 6,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
+        border: "none",
+        padding: 0,
+        background: active
+          ? "rgba(212,175,55,0.12)"
+          : hovered
+          ? "rgba(255,255,255,0.06)"
+          : "transparent",
+        color: active
+          ? (activeColor || "var(--accent)")
+          : hovered
+          ? "var(--text-primary)"
+          : "var(--text-tertiary)",
+        transition: "all 150ms ease",
+      }}>
+        {icon}
+      </button>
+
+      {showTooltip && (
+        <div style={{
+          position: "absolute",
+          left: "calc(100% + 12px)",
+          top: "50%",
+          transform: "translateY(-50%)",
+          padding: "6px 12px",
+          borderRadius: 8,
+          background: "var(--bg-tertiary)",
+          border: "1px solid var(--border-secondary)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+          whiteSpace: "nowrap",
+          zIndex: 200,
+          animation: "tooltipFadeIn 150ms ease-out forwards",
+          pointerEvents: "none",
+        }}>
+          <span style={{
+            fontSize: 12,
+            fontWeight: 500,
+            color: "var(--text-primary)",
+          }}>
+            {tooltip}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ═══ Date Grouping ═══ */
 function groupByDate(convs: Conversation[]) {
   const now = new Date();
@@ -257,7 +340,6 @@ export default function Sidebar({
 
   const iconSize = 18;
   const iconSW = 1.5;
-  const iconBtnSize = 36;
 
   // Mobile overlay style
   if (isMobile) {
@@ -268,7 +350,7 @@ export default function Sidebar({
           position: "fixed", top: 0, left: 0, bottom: 0, width: 280, zIndex: 200,
           transform: open ? "translateX(0)" : "translateX(-100%)",
           transition: "transform 250ms ease",
-          background: "var(--bg-primary)", borderRight: "1px solid var(--border-secondary)",
+          background: "var(--bg-sidebar)", borderRight: "1px solid var(--border-secondary)",
           display: "flex", flexDirection: "column",
         }}>
           {renderExpandedContent()}
@@ -282,17 +364,17 @@ export default function Sidebar({
     <>
       <aside style={{
         width: 56, minWidth: 56, flexShrink: 0,
-        background: "var(--bg-primary)", borderRight: "1px solid var(--border-secondary)",
+        background: "var(--bg-sidebar)", borderRight: "1px solid var(--border-secondary)",
         display: "flex", flexDirection: "column", overflow: "hidden",
       }}>
         {renderCollapsedContent()}
       </aside>
       {open && (
         <>
-          <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", zIndex: 199 }} />
+          <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(10,9,8,0.3)", zIndex: 199 }} />
           <aside ref={sidebarRef} style={{
-            position: "fixed", top: 0, left: 56, bottom: 0, width: 280, zIndex: 200,
-            background: "var(--bg-primary)", borderRight: "1px solid var(--border-secondary)",
+            position: "fixed", top: 0, left: 56, bottom: 0, width: 260, zIndex: 200,
+            background: "var(--bg-sidebar)", borderRight: "1px solid var(--border-secondary)",
             display: "flex", flexDirection: "column",
             animation: "slideInLeft 0.15s ease-out",
           }}>
@@ -318,7 +400,7 @@ export default function Sidebar({
           <button onClick={onClose} title="Close sidebar" style={{
             display: "flex", alignItems: "center", justifyContent: "center",
             width: 28, height: 28, border: "none", background: "none",
-            cursor: "pointer", borderRadius: "var(--radius-xs)",
+            cursor: "pointer", borderRadius: 6,
             color: "var(--text-tertiary)", transition: "color 0.15s",
           }}
           onMouseEnter={e => e.currentTarget.style.color = "var(--text-primary)"}
@@ -736,75 +818,108 @@ export default function Sidebar({
     );
   }
 
-  // ═══ COLLAPSED (icons only) ═══
+  // ═══ COLLAPSED (icons only — Okara pixel-perfect) ═══
   function renderCollapsedContent() {
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%", paddingTop: 12 }}>
-        {/* S logo — click to expand */}
-        <button onClick={onOpen} title="Open sidebar" style={{
-          width: iconBtnSize, height: iconBtnSize, display: "flex", alignItems: "center", justifyContent: "center",
-          border: "none", background: "none", cursor: "pointer", borderRadius: "var(--radius-sm)",
-          marginBottom: 8,
-        }}
-          onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
-          onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-          <SignuxIcon variant="gold" size={28} />
-        </button>
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        height: "100%",
+        padding: "16px 0",
+      }}>
+        {/* Logo — click to expand sidebar */}
+        <SidebarIconButton
+          icon={<SignuxIcon variant="gold" size={24} />}
+          tooltip="Open sidebar"
+          onClick={onOpen}
+          size={40}
+        />
 
-        {/* New conversation */}
-        <button onClick={handleNew} data-tooltip={t("sidebar.new_chat")} style={{ width: iconBtnSize, height: iconBtnSize, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", cursor: "pointer", borderRadius: "var(--radius-sm)", color: "var(--text-secondary)", marginBottom: 4 }}
-          onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-          <SquarePen size={iconSize} strokeWidth={iconSW} />
-        </button>
+        {/* 16px gap between logo and menu */}
+        <div style={{ height: 16 }} />
 
-        <div style={{ height: 1, width: 24, background: "var(--border-secondary)", margin: "4px 0" }} />
+        {/* Menu buttons — gap 4px */}
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+          flex: 1,
+        }}>
+          {/* New conversation */}
+          <SidebarIconButton
+            icon={<SquarePen size={iconSize} strokeWidth={iconSW} />}
+            tooltip={t("sidebar.new_chat")}
+            onClick={handleNew}
+          />
 
-        {/* Mode icons */}
-        {MODES.map(({ key, icon: Icon, label, color }, idx) => (
-          <div key={key} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <button onClick={() => handleMode(key)} data-tooltip={t(label)} style={{
-              width: iconBtnSize, height: iconBtnSize, display: "flex", alignItems: "center", justifyContent: "center",
-              border: "none", cursor: "pointer", borderRadius: "var(--radius-sm)", marginBottom: 2,
-              background: mode === key ? "var(--bg-hover)" : "none",
-              color: mode === key ? (color || "var(--accent)") : "var(--text-tertiary)",
-              position: "relative",
-            }} onMouseEnter={e => { if (mode !== key) { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text-primary)"; } }}
-               onMouseLeave={e => { if (mode !== key) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-tertiary)"; } }}>
-              <Icon size={iconSize} strokeWidth={iconSW} />
-            </button>
-            {/* Divider after launchpad (index 3) */}
-            {idx === 3 && (
-              <div style={{ height: 1, width: 24, background: "var(--border-secondary)", margin: "4px auto" }} />
-            )}
-          </div>
-        ))}
+          {/* Separator */}
+          <div style={{ width: 24, height: 1, background: "var(--border-secondary)", margin: "6px 0", opacity: 0.5 }} />
 
-        {/* Spacer */}
-        <div style={{ flex: 1 }} />
+          {/* Mode buttons */}
+          {MODES.map(({ key, icon: Icon, label, color }, idx) => (
+            <div key={key} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <SidebarIconButton
+                icon={<Icon size={iconSize} strokeWidth={iconSW} />}
+                tooltip={t(label)}
+                active={mode === key}
+                activeColor={color || "var(--accent)"}
+                onClick={() => handleMode(key)}
+              />
+              {/* Separator after launchpad (index 3) */}
+              {idx === 3 && (
+                <div style={{ width: 24, height: 1, background: "var(--border-secondary)", margin: "6px 0", opacity: 0.5 }} />
+              )}
+            </div>
+          ))}
+        </div>
 
-        {/* Bottom icons */}
-        <button onClick={handleSettings} data-tooltip={t("sidebar.settings")} style={{ width: iconBtnSize, height: iconBtnSize, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", cursor: "pointer", borderRadius: "var(--radius-sm)", color: "var(--text-tertiary)", marginBottom: 4 }}
-          onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-          <Settings size={iconSize} strokeWidth={iconSW} />
-        </button>
+        {/* Bottom buttons — gap 4px */}
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+        }}>
+          <SidebarIconButton
+            icon={<Settings size={iconSize} strokeWidth={iconSW} />}
+            tooltip={t("sidebar.settings")}
+            onClick={handleSettings}
+          />
 
-        {/* User avatar or login icon */}
-        {isLoggedIn ? (
-          <div style={{ marginBottom: 10, cursor: "pointer" }} onClick={onOpen} title={displayName}>
-            {authUser?.avatar ? (
-              <img src={authUser.avatar} alt={displayName} width={32} height={32} style={{ borderRadius: "50%", objectFit: "cover", display: "block" }} referrerPolicy="no-referrer" />
-            ) : (
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--bg-tertiary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600, color: "var(--text-primary)" }}>
-                {userInitials}
+          {/* User avatar or login icon */}
+          {isLoggedIn ? (
+            <div
+              style={{ cursor: "pointer", position: "relative" }}
+              onClick={onOpen}
+              title={displayName}
+            >
+              <div style={{
+                width: 40,
+                height: 40,
+                borderRadius: 6,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                {authUser?.avatar ? (
+                  <img src={authUser.avatar} alt={displayName} width={28} height={28} style={{ borderRadius: "50%", objectFit: "cover", display: "block" }} referrerPolicy="no-referrer" />
+                ) : (
+                  <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--bg-tertiary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600, color: "var(--text-primary)" }}>
+                    {userInitials}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ) : (
-          <button onClick={() => { window.location.href = "/login"; }} title={t("auth.sign_in")} style={{ width: iconBtnSize, height: iconBtnSize, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", cursor: "pointer", borderRadius: "var(--radius-sm)", color: "var(--text-tertiary)", marginBottom: 10 }}
-            onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-            <LogIn size={iconSize} strokeWidth={iconSW} />
-          </button>
-        )}
+            </div>
+          ) : (
+            <SidebarIconButton
+              icon={<LogIn size={iconSize} strokeWidth={iconSW} />}
+              tooltip={t("auth.sign_in")}
+              onClick={() => { window.location.href = "/login"; }}
+            />
+          )}
+        </div>
       </div>
     );
   }
