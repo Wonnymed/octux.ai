@@ -887,9 +887,11 @@ export default function ChatPage() {
               <button
                 onClick={() => { window.location.href = "/login"; }}
                 style={{
-                  background: "none", border: "none", cursor: "pointer",
-                  fontSize: 12, fontWeight: 500, color: "var(--text-secondary)",
-                  fontFamily: "var(--font-brand)", letterSpacing: 1,
+                  padding: "5px 12px", borderRadius: 50,
+                  background: "transparent",
+                  border: "1px solid var(--border-secondary)",
+                  color: "var(--text-secondary)",
+                  fontSize: 12, fontWeight: 500, cursor: "pointer",
                 }}
               >
                 Log in
@@ -897,10 +899,11 @@ export default function ChatPage() {
               <button
                 onClick={() => { window.location.href = "/signup"; }}
                 style={{
-                  background: "var(--text-primary)", color: "var(--bg-primary)",
-                  border: "none", borderRadius: 20, padding: "6px 14px",
-                  cursor: "pointer", fontSize: 12, fontWeight: 600,
-                  fontFamily: "var(--font-brand)", letterSpacing: 1,
+                  padding: "5px 14px", borderRadius: 50,
+                  background: "var(--accent)",
+                  border: "none",
+                  color: "#000",
+                  fontSize: 12, fontWeight: 700, cursor: "pointer",
                 }}
               >
                 Start free
@@ -930,27 +933,31 @@ export default function ChatPage() {
           <button
             onClick={() => { window.location.href = "/login"; }}
             style={{
-              background: "none", border: "none", cursor: "pointer",
-              fontSize: 14, fontWeight: 500, color: "var(--text-secondary)",
-              fontFamily: "var(--font-brand)", letterSpacing: 1,
-              transition: "color 0.15s",
+              padding: "7px 16px", borderRadius: 50,
+              background: "transparent",
+              border: "1px solid var(--border-secondary)",
+              color: "var(--text-secondary)",
+              fontSize: 13, fontWeight: 500, cursor: "pointer",
+              transition: "all 150ms",
             }}
-            onMouseEnter={e => e.currentTarget.style.color = "var(--text-primary)"}
-            onMouseLeave={e => e.currentTarget.style.color = "var(--text-secondary)"}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--border-primary)"; e.currentTarget.style.color = "var(--text-primary)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-secondary)"; e.currentTarget.style.color = "var(--text-secondary)"; }}
           >
             Log in
           </button>
           <button
             onClick={() => { window.location.href = "/signup"; }}
             style={{
-              background: "var(--text-primary)", color: "var(--bg-primary)",
-              border: "none", borderRadius: 20, padding: "8px 20px",
-              cursor: "pointer", fontSize: 14, fontWeight: 600,
-              fontFamily: "var(--font-brand)", letterSpacing: 1,
-              transition: "opacity 0.15s",
+              padding: "7px 18px", borderRadius: 50,
+              background: "var(--accent)",
+              border: "none",
+              color: "#000",
+              fontSize: 13, fontWeight: 700, cursor: "pointer",
+              transition: "all 150ms",
+              boxShadow: "none",
             }}
-            onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
-            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 0 16px rgba(212,175,55,0.2)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; }}
           >
             Start free
           </button>

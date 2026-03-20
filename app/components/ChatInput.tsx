@@ -431,7 +431,7 @@ export default function ChatInput({
       {dragging && (
         <div style={{
           position: "absolute", inset: 0, zIndex: 10,
-          background: "var(--bg-primary)", borderRadius: 20,
+          background: "var(--bg-primary)", borderRadius: 50,
           border: "2px dashed var(--accent)", display: "flex",
           alignItems: "center", justifyContent: "center",
           color: "var(--accent)", fontSize: 14, fontWeight: 500,
