@@ -372,65 +372,112 @@ export default function LandingPage() {
 
       {/* ═══ COMPARISON TABLE ═══ */}
       <Divider />
-      <section id="compare" style={{ padding: isMobile ? "48px 16px" : "48px 24px", maxWidth: 900, margin: "0 auto" }}>
+      <section id="compare" style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 900, margin: "0 auto" }}>
         <FadeSection>
           <h2 style={{
-            fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 28,
-            color: "var(--text-primary)", textAlign: "center", marginBottom: 8,
+            fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 22 : 28,
+            color: "var(--text-primary)", textAlign: "center", marginBottom: 6,
           }}>
             What makes Signux different
           </h2>
-          <p style={{ fontSize: 14, color: "var(--text-tertiary)", textAlign: "center", marginBottom: 32 }}>
+          <p style={{ fontSize: isMobile ? 12 : 14, color: "var(--text-tertiary)", textAlign: "center", marginBottom: isMobile ? 20 : 32 }}>
             Not another chatbot. A decision intelligence platform.
           </p>
 
-          {/* Live indicator */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 20 }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", animation: "pulse 2s ease-in-out infinite" }} />
-            <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>
-              Live — analyzing decisions right now
-            </span>
-          </div>
-
-          <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--border-secondary)", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, fontFamily: "var(--font-sans)", minWidth: 700 }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--border-secondary)" }}>
-                  <th style={{ padding: "14px 20px", textAlign: "left", fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 1.5, textTransform: "uppercase", color: "var(--text-tertiary)", fontWeight: 400, width: "30%" }}>Capability</th>
-                  <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 700, color: "var(--accent)", fontSize: 14, background: "rgba(212,175,55,0.04)" }}>Signux AI</th>
-                  <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--text-tertiary)", fontSize: 13 }}>ChatGPT</th>
-                  <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--text-tertiary)", fontSize: 13 }}>Claude</th>
-                  <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--text-tertiary)", fontSize: 13 }}>Hiring a consultant</th>
-                </tr>
-              </thead>
-              <tbody>
-                {([
-                  { feature: "Predict if your idea will work", signux: "AI simulation", chatgpt: "Generic opinion", claude: "Generic opinion", consultant: "$5,000+" },
-                  { feature: "Detect lies and red flags in deals", signux: "Deal X-Ray", chatgpt: "✕", claude: "✕", consultant: "$25,000+" },
-                  { feature: "See how competitors will react", signux: "War Game", chatgpt: "✕", claude: "✕", consultant: "$10,000+" },
-                  { feature: "Map every threat to your business", signux: "Threat Radar", chatgpt: "✕", claude: "✕", consultant: "$500/hr" },
-                  { feature: "Prepare to win a negotiation", signux: "War Room", chatgpt: "Generic tips", claude: "Generic tips", consultant: "$500/hr" },
-                  { feature: "Go from idea to revenue in 90 days", signux: "Launchpad", chatgpt: "✕", claude: "✕", consultant: "$50,000+" },
-                  { feature: "Specialized business intelligence", signux: "Proprietary domains", chatgpt: "General knowledge", claude: "General knowledge", consultant: "1-2 specialties" },
-                  { feature: "Price", signux: "Free to start", chatgpt: "$20/mo", claude: "$20/mo", consultant: "$5,000+/mo" },
-                ] as const).map((row, i, arr) => (
-                  <tr key={i} style={{ borderBottom: i < arr.length - 1 ? "1px solid var(--border-secondary)" : "none" }}>
-                    <td style={{ padding: "14px 20px", color: "var(--text-primary)", fontSize: 13, fontWeight: 500 }}>{row.feature}</td>
-                    <td style={{ padding: "14px 16px", textAlign: "center", background: "rgba(212,175,55,0.04)" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 6, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.15)", fontSize: 12, fontWeight: 600, color: "#22c55e" }}>
+          {isMobile ? (
+            /* ── MOBILE: STACKED CARDS ── */
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {([
+                { feature: "Predict if your idea works", signux: "AI simulation", chatgpt: "Generic opinion", consultant: "$5,000+" },
+                { feature: "Detect lies in deals", signux: "Deal X-Ray", chatgpt: "✕", consultant: "$25,000+" },
+                { feature: "See how competitors react", signux: "War Game", chatgpt: "✕", consultant: "$10,000+" },
+                { feature: "Map threats to your business", signux: "Threat Radar", chatgpt: "✕", consultant: "$500/hr" },
+                { feature: "Win a negotiation", signux: "War Room", chatgpt: "Generic tips", consultant: "$500/hr" },
+                { feature: "Idea to revenue in 90 days", signux: "Launchpad", chatgpt: "✕", consultant: "$50,000+" },
+                { feature: "Specialized intelligence", signux: "Proprietary", chatgpt: "General", consultant: "1-2 areas" },
+                { feature: "Price", signux: "Free to start", chatgpt: "$20/mo", consultant: "$5,000+/mo" },
+              ]).map((row, i) => (
+                <div key={i} style={{
+                  padding: "12px 14px", borderRadius: 10,
+                  border: "1px solid var(--border-secondary)",
+                  background: "var(--bg-secondary)",
+                }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
+                    {row.feature}
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 11, color: "var(--accent)", fontWeight: 600 }}>Signux AI</span>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: "#22c55e", padding: "2px 8px", borderRadius: 4, background: "rgba(34,197,94,0.08)" }}>
                         ✓ {row.signux}
                       </span>
-                    </td>
-                    <td style={{ padding: "14px 16px", textAlign: "center", color: row.chatgpt === "✕" ? "var(--text-tertiary)" : "var(--text-secondary)", fontSize: 12, opacity: row.chatgpt === "✕" ? 0.4 : 0.7 }}>{row.chatgpt}</td>
-                    <td style={{ padding: "14px 16px", textAlign: "center", color: row.claude === "✕" ? "var(--text-tertiary)" : "var(--text-secondary)", fontSize: 12, opacity: row.claude === "✕" ? 0.4 : 0.7 }}>{row.claude}</td>
-                    <td style={{ padding: "14px 16px", textAlign: "center", color: "var(--text-secondary)", fontSize: 12, opacity: 0.7 }}>{row.consultant}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>ChatGPT</span>
+                      <span style={{ fontSize: 11, color: "var(--text-tertiary)", opacity: row.chatgpt === "✕" ? 0.4 : 0.7 }}>
+                        {row.chatgpt}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>Consultant</span>
+                      <span style={{ fontSize: 11, color: "var(--text-tertiary)", opacity: 0.7 }}>
+                        {row.consultant}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* ── DESKTOP: TABLE ── */
+            <>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 20 }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", animation: "pulse 2s ease-in-out infinite" }} />
+                <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>
+                  Live — analyzing decisions right now
+                </span>
+              </div>
+              <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--border-secondary)" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, fontFamily: "var(--font-sans)" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid var(--border-secondary)" }}>
+                      <th style={{ padding: "14px 20px", textAlign: "left", fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 1.5, textTransform: "uppercase", color: "var(--text-tertiary)", fontWeight: 400, width: "30%" }}>Capability</th>
+                      <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 700, color: "var(--accent)", fontSize: 14, background: "rgba(212,175,55,0.04)" }}>Signux AI</th>
+                      <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--text-tertiary)", fontSize: 13 }}>ChatGPT</th>
+                      <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--text-tertiary)", fontSize: 13 }}>Claude</th>
+                      <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--text-tertiary)", fontSize: 13 }}>Consultant</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {([
+                      { feature: "Predict if your idea will work", signux: "AI simulation", chatgpt: "Generic opinion", claude: "Generic opinion", consultant: "$5,000+" },
+                      { feature: "Detect lies and red flags in deals", signux: "Deal X-Ray", chatgpt: "✕", claude: "✕", consultant: "$25,000+" },
+                      { feature: "See how competitors will react", signux: "War Game", chatgpt: "✕", claude: "✕", consultant: "$10,000+" },
+                      { feature: "Map every threat to your business", signux: "Threat Radar", chatgpt: "✕", claude: "✕", consultant: "$500/hr" },
+                      { feature: "Prepare to win a negotiation", signux: "War Room", chatgpt: "Generic tips", claude: "Generic tips", consultant: "$500/hr" },
+                      { feature: "Go from idea to revenue in 90 days", signux: "Launchpad", chatgpt: "✕", claude: "✕", consultant: "$50,000+" },
+                      { feature: "Specialized business intelligence", signux: "Proprietary domains", chatgpt: "General knowledge", claude: "General knowledge", consultant: "1-2 specialties" },
+                      { feature: "Price", signux: "Free to start", chatgpt: "$20/mo", claude: "$20/mo", consultant: "$5,000+/mo" },
+                    ] as const).map((row, i, arr) => (
+                      <tr key={i} style={{ borderBottom: i < arr.length - 1 ? "1px solid var(--border-secondary)" : "none" }}>
+                        <td style={{ padding: "14px 20px", color: "var(--text-primary)", fontSize: 13, fontWeight: 500 }}>{row.feature}</td>
+                        <td style={{ padding: "14px 16px", textAlign: "center", background: "rgba(212,175,55,0.04)" }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 6, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.15)", fontSize: 12, fontWeight: 600, color: "#22c55e" }}>
+                            ✓ {row.signux}
+                          </span>
+                        </td>
+                        <td style={{ padding: "14px 16px", textAlign: "center", color: row.chatgpt === "✕" ? "var(--text-tertiary)" : "var(--text-secondary)", fontSize: 12, opacity: row.chatgpt === "✕" ? 0.4 : 0.7 }}>{row.chatgpt}</td>
+                        <td style={{ padding: "14px 16px", textAlign: "center", color: row.claude === "✕" ? "var(--text-tertiary)" : "var(--text-secondary)", fontSize: 12, opacity: row.claude === "✕" ? 0.4 : 0.7 }}>{row.claude}</td>
+                        <td style={{ padding: "14px 16px", textAlign: "center", color: "var(--text-secondary)", fontSize: 12, opacity: 0.7 }}>{row.consultant}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
           <p style={{ fontSize: 11, color: "var(--text-tertiary)", textAlign: "center", marginTop: 12, opacity: 0.4 }}>
-            Comparison based on publicly available features as of 2026
+            Based on publicly available features, 2026
           </p>
         </FadeSection>
       </section>
@@ -444,7 +491,7 @@ export default function LandingPage() {
           return (
             <div key={sec.name}>
               <Divider />
-              <section style={{ padding: isMobile ? "48px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
+              <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
                 <FadeSection>
                   <div style={{
                     display: "flex", gap: isMobile ? 24 : 40, alignItems: "flex-start",
@@ -501,7 +548,7 @@ export default function LandingPage() {
 
       {/* ═══ INTELLIGENCE TOOLS ═══ */}
       <Divider />
-      <section style={{ padding: isMobile ? "48px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
+      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
         <FadeSection>
           <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 28, color: "var(--text-primary)", marginBottom: 8, textAlign: "center" }}>
             See around corners
@@ -538,7 +585,7 @@ export default function LandingPage() {
 
       {/* ═══ INTELLIGENCE BEHIND THE AI ═══ */}
       <Divider />
-      <section style={{ padding: isMobile ? "48px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto", textAlign: "center" }}>
+      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto", textAlign: "center" }}>
         <FadeSection>
           <div style={{
             fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
@@ -607,7 +654,7 @@ export default function LandingPage() {
         return (
           <div key={sec.name}>
             <Divider />
-            <section style={{ padding: isMobile ? "48px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
+            <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
               <FadeSection>
                 <div style={{
                   display: "flex", gap: isMobile ? 24 : 40, alignItems: "flex-start",
@@ -663,7 +710,7 @@ export default function LandingPage() {
 
       {/* ═══ REALITY CHECK ═══ */}
       <Divider />
-      <section style={{ padding: isMobile ? "48px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
+      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
         <FadeSection>
           <div style={{
             display: "flex", gap: isMobile ? 24 : 40, alignItems: "flex-start",
@@ -738,7 +785,7 @@ export default function LandingPage() {
 
       {/* ═══ BUILT FOR BETTER CONVERSATIONS ═══ */}
       <Divider />
-      <section style={{ padding: isMobile ? "48px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
+      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
         <FadeSection>
           <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 28, color: "var(--text-primary)", marginBottom: 32, textAlign: "center" }}>
             Built for better conversations
@@ -761,7 +808,7 @@ export default function LandingPage() {
 
       {/* ═══ TOOLS ═══ */}
       <Divider />
-      <section style={{ padding: isMobile ? "48px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto", textAlign: "center" }}>
+      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto", textAlign: "center" }}>
         <FadeSection>
           <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 28, color: "var(--text-primary)", marginBottom: 32 }}>
             Specialized tools
@@ -789,7 +836,7 @@ export default function LandingPage() {
 
       {/* ═══ MINI PRICING ═══ */}
       <Divider />
-      <section style={{ padding: isMobile ? "48px 16px" : "48px 24px" }}>
+      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px" }}>
         <FadeSection>
           <div style={{ textAlign: "center", marginBottom: 32 }}>
             <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 32, color: "var(--text-primary)", marginBottom: 8 }}>
@@ -865,7 +912,7 @@ export default function LandingPage() {
 
       {/* ═══ CTA FINAL ═══ */}
       <Divider />
-      <section style={{ padding: isMobile ? "48px 16px" : "48px 24px", textAlign: "center" }}>
+      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", textAlign: "center" }}>
         <FadeSection>
           <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 28 : 36, color: "var(--text-primary)", marginBottom: 16 }}>
             Stop guessing. Start knowing.
