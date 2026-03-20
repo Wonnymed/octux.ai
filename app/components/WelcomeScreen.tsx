@@ -55,15 +55,13 @@ export default function WelcomeScreen({
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      justifyContent: "center",
+      justifyContent: "flex-start",
       minHeight: isMobile ? "calc(100vh - 52px)" : "calc(100vh - 60px)",
       padding: isMobile ? "0 20px" : "0 32px",
+      paddingTop: isMobile ? "12vh" : "clamp(80px, 18vh, 200px)",
       width: "100%",
       position: "relative",
     }}>
-
-      {/* Spacer top — pushes content slightly above center */}
-      <div style={{ flex: 0.42 }} />
 
       {/* Logo block */}
       <div style={{
@@ -71,24 +69,24 @@ export default function WelcomeScreen({
         flexDirection: "column",
         alignItems: "center",
         gap: isMobile ? 8 : 12,
-        marginBottom: isMobile ? 40 : 52,
+        marginBottom: isMobile ? "clamp(40px, 8vh, 80px)" : "clamp(60px, 12vh, 160px)",
       }}>
-        <SignuxIcon size={isMobile ? 40 : 56} />
+        <SignuxIcon size={isMobile ? 44 : 72} />
         <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
           <span style={{
             fontFamily: "var(--font-brand)",
-            fontSize: isMobile ? 26 : 36,
+            fontSize: isMobile ? 28 : "clamp(32px, 3vw, 48px)",
             fontWeight: 800,
-            letterSpacing: 6,
+            letterSpacing: "clamp(6px, 0.6vw, 10px)",
             color: "var(--text-primary)",
           }}>
             SIGNUX
           </span>
           <span style={{
             fontFamily: "var(--font-brand)",
-            fontSize: isMobile ? 26 : 36,
+            fontSize: isMobile ? 28 : "clamp(32px, 3vw, 48px)",
             fontWeight: 300,
-            letterSpacing: 6,
+            letterSpacing: "clamp(6px, 0.6vw, 10px)",
             color: "var(--text-tertiary)",
             opacity: 0.3,
           }}>
@@ -97,11 +95,11 @@ export default function WelcomeScreen({
         </div>
       </div>
 
-      {/* Composer — same max-width as conversation input */}
+      {/* Composer — viewport-proportional width */}
       <div style={{
         width: "100%",
-        maxWidth: 680,
-        marginBottom: 24,
+        maxWidth: isMobile ? 680 : "clamp(600px, 52vw, 820px)",
+        marginBottom: "clamp(16px, 3vh, 36px)",
       }}>
         <ChatInput
           value={input}
@@ -120,7 +118,7 @@ export default function WelcomeScreen({
       {/* Mode icons */}
       <div style={{
         display: "flex",
-        gap: isMobile ? 10 : 12,
+        gap: isMobile ? 10 : "clamp(8px, 0.8vw, 14px)",
         marginBottom: 32,
       }}>
         {MODE_ICONS.map(({ mode, icon: Icon, color, tooltip }) => (
@@ -167,9 +165,6 @@ export default function WelcomeScreen({
           </button>
         ))}
       </div>
-
-      {/* Spacer bottom */}
-      <div style={{ flex: 0.58 }} />
 
       {/* Scroll Hint — apenas visual, não é botão */}
       <div

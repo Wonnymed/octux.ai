@@ -504,19 +504,19 @@ export default function ChatInput({
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder={isListening ? t("voice.listening") : (placeholder || t("chat.placeholder"))}
-          rows={1}
+          rows={2}
           style={{
             width: "100%",
             resize: "none",
-            padding: isMobile ? "14px 16px 6px" : "16px 20px 6px",
+            padding: isMobile ? "14px 16px 6px" : "clamp(14px, 2.5vh, 24px) clamp(16px, 2vw, 24px) clamp(6px, 1vh, 12px)",
             background: "transparent",
             border: "none",
             color: "var(--text-primary)",
-            fontSize: 16,
+            fontSize: "clamp(15px, 1.1vw, 17px)",
             outline: "none",
-            lineHeight: "24px",
-            minHeight: 24,
-            maxHeight: 140,
+            lineHeight: "clamp(22px, 1.6vw, 26px)",
+            minHeight: "clamp(48px, 8vh, 80px)",
+            maxHeight: 160,
             opacity: enhancing ? 0.5 : 1,
             transition: "opacity 150ms ease",
             caretColor: "var(--accent)",
