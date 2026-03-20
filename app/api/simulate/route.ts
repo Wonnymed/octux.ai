@@ -205,9 +205,31 @@ async function generateReport(scenario: string, graph: any, agents: any[], simul
   const response = await client.messages.create({
     model,
     max_tokens: 6000,
-    system: SECURITY_PREFIX + SIMULATE_KNOWLEDGE + `\n\nYou are Signux ReportAgent. Generate a comprehensive simulation report.
+    system: SECURITY_PREFIX + SIMULATE_KNOWLEDGE + `\n\nYou are Signux ReportAgent. Generate a comprehensive simulation report structured as a DEBATE between specialists.
 
 You have data from ${agentCount} specialist agents across ${roundCount} rounds (${totalInteractions} total interactions).
+
+DEBATE FORMAT:
+Structure the report as a professional debate. When presenting agent analyses, use this format:
+
+For the FIRST time each agent speaks, introduce them with a backstory:
+**Agent Name** (emoji) — *Brief 1-line backstory relevant to this scenario*: [their analysis]
+
+Example backstories (ADAPT to scenario):
+- **Financial Analyst** (📊) — *Ex-Goldman Sachs VP, 12 years in unit economics*: [analysis]
+- **Risk Assessor** (🛡️) — *Insurance actuary turned startup advisor*: [analysis]
+- **Market Expert** (📈) — *Built and sold 3 companies in this sector*: [analysis]
+- **Devil's Advocate** (😈) — *Professional contrarian, finds fatal flaws*: [analysis]
+
+After first introduction, use just: **Agent Name** (emoji): [analysis]
+
+The backstories should INFORM their perspective and create natural tension between agents.
+
+INLINE CITATIONS:
+When referencing specific knowledge, cite inline:
+- [KB:domain-name] for Signux knowledge base
+- [WEB:source] for web-sourced data
+- [DATA:type] for data-driven claims
 
 RULES:
 - Be specific with ALL numbers — never say "varies" without giving a range
@@ -235,18 +257,47 @@ Generate the report with EXACTLY these sections:
 ## Executive Summary
 3-4 sentences. What was simulated, key finding, recommendation.
 
-## Viability Score: X/10
-(With assessment: 8-10 strong GO, 5-7 proceed with caution, 1-4 NO-GO)
+## 🔵 ROUND 1 — Initial Analysis
+Present each specialist's initial assessment with their backstory intro. Include 4-6 key agents. Each gives 2-3 sentences with specific numbers.
 
-## Key Findings
-Top 5 findings from all agents, ranked by impact.
+## 🟡 ROUND 2 — Challenges & Rebuttals
+Show specialists challenging each other's assumptions. Format as:
+**Risk Assessor** (🛡️) challenges **Market Expert** (📈): [specific challenge]
+**Financial Analyst** (📊) responds: [defense or concession]
+Include 3-5 exchanges that reveal blind spots.
+
+## 🟢 ROUND 3 — Consensus & Verdict
+
+### 📊 VOTE
+
+| Specialist | Vote | Confidence |
+|---|---|---|
+| [Agent] emoji | ✅ GO or ⚠️ CAUTION or 🛑 STOP | XX% |
+
+Include ALL key agents (5-7 rows). Then:
+**Result: X GO / Y CAUTION / Z STOP → [Majority verdict]**
+
+### ⚠️ DISSENT ANALYSIS
+For each non-GO vote, explain WHY they dissented. These represent real risks.
+
+## Viability Score: X/10
+(8-10 strong GO, 5-7 proceed with caution, 1-4 NO-GO)
+
+## ✅ Positive Factors
+1. **[Factor]** — [1 sentence with specific data]
+2. **[Factor]** — [1 sentence]
+3. **[Factor]** — [1 sentence]
+(2-4 items, specific to this scenario, ordered by importance)
+
+## ⚠️ Key Concerns
+1. **[Concern]** — [1 sentence with specific risk]
+2. **[Concern]** — [1 sentence]
+3. **[Concern]** — [1 sentence]
+(2-4 items, actionable things the user can address)
 
 ## Risk Matrix
 | Risk | Probability | Impact | Severity | Mitigation |
 Top 8-10 risks identified across all rounds.
-
-## Agent Consensus & Disagreements
-Where agents agreed and where they conflicted. Reference specific agents.
 
 ## Financial Projections
 Revenue, costs, break-even, ROI — with specific numbers. Include optimistic, realistic, and pessimistic scenarios.
@@ -257,18 +308,17 @@ Numbered action items, specific and time-bound. What to do in the next 7 days, 3
 ## Kill Conditions
 3-5 conditions that should make them STOP and abandon the plan.
 
-## What the Devil's Advocate Said
-Summary of the strongest attacks on the plan from Round 3. Which attacks were valid and which were defended successfully.
-
 ## 🔄 What If You Change a Variable?
-Suggest 3-5 specific what-if scenarios the user should explore. Format each as a clickable question:
+Suggest 3-5 specific what-if scenarios the user should explore:
 - "What if the budget is cut by 50%?"
 - "What if a competitor launches first?"
-- "What if the market grows 2x faster?"
 - "What if [specific variable from this scenario] changes?"
 Make them SPECIFIC to this simulation, not generic.
 
 At the end of your report, include these hidden metadata blocks:
+
+<!-- signux_vote: {"go": N, "caution": N, "stop": N, "total": N, "result": "GO|CAUTION|STOP", "confidence_avg": NN, "dissenters": [{"role": "Agent Name", "vote": "CAUTION|STOP", "reason": "specific reason"}]} -->
+The vote metadata must match the vote table in the report. result = majority verdict.
 
 <!-- signux_verification: {"confidence": 0.XX, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.

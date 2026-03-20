@@ -18,6 +18,22 @@ export interface SignuxWorklog {
 
 export type BlindSpot = { domain: string; question: string; why: string };
 
+export interface SignuxVoteDisenter {
+  role: string;
+  vote: string;
+  reason: string;
+}
+
+export interface SignuxVote {
+  go: number;
+  caution: number;
+  stop: number;
+  total: number;
+  result: string;
+  confidence_avg: number;
+  dissenters: SignuxVoteDisenter[];
+}
+
 export interface SignuxMetadata {
   domains: string[];
   domainCount: number;
@@ -25,6 +41,7 @@ export interface SignuxMetadata {
   depth: number;
   verification: SignuxVerification | null;
   worklog: SignuxWorklog | null;
+  vote: SignuxVote | null;
 }
 
 export function parseSignuxMetadata(content: string): { cleanContent: string; metadata: SignuxMetadata } {
@@ -63,8 +80,14 @@ export function parseSignuxMetadata(content: string): { cleanContent: string; me
   try { if (worklogMatch) worklog = JSON.parse(worklogMatch[1]); } catch {}
   clean = clean.replace(/<!--\s*signux_worklog:\s*\{[\s\S]*?\}\s*-->/g, "");
 
+  // Parse vote
+  const voteMatch = clean.match(/<!--\s*signux_vote:\s*(\{[\s\S]*?\})\s*-->/);
+  let vote: SignuxVote | null = null;
+  try { if (voteMatch) vote = JSON.parse(voteMatch[1]); } catch {}
+  clean = clean.replace(/<!--\s*signux_vote:\s*\{[\s\S]*?\}\s*-->/g, "");
+
   return {
     cleanContent: clean.trim(),
-    metadata: { domains, domainCount, blindspots, depth, verification, worklog },
+    metadata: { domains, domainCount, blindspots, depth, verification, worklog, vote },
   };
 }

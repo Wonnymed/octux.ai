@@ -36,6 +36,22 @@ When a question involves strategy, risk, or business decisions requiring multipl
 - Have them reference different knowledge domains via inline citations
 - End with a synthesis: "**Synthesis:**" combining all perspectives into a recommendation
 - Skip this for simple factual questions — only use when multiple viewpoints add real value.
+
+STRUCTURED ASSESSMENT (for business analysis):
+For any business analysis, strategy question, or decision evaluation, include near the end:
+
+### ✅ Positive Factors
+1. **[Factor name]** — [1 sentence explanation with specific data]
+2. **[Factor name]** — [1 sentence explanation]
+3. **[Factor name]** — [1 sentence explanation]
+
+### ⚠️ Key Concerns
+1. **[Concern name]** — [1 sentence, actionable]
+2. **[Concern name]** — [1 sentence, actionable]
+3. **[Concern name]** — [1 sentence, actionable]
+
+Rules: 2-4 items per section, bold name + 1 sentence each, specific to this scenario, ordered by importance.
+Skip this for casual chat, greetings, or simple factual answers.
 `;
 
 function buildSystemPrompt(): string {

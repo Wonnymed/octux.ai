@@ -12,6 +12,7 @@ import { useEnhance } from "../lib/useEnhance";
 import MarkdownRenderer from "./MarkdownRenderer";
 import { signuxFetch } from "../lib/api-client";
 import type { SimAgent, SimResult, Mode } from "../lib/types";
+import { parseSignuxMetadata, type SignuxVote } from "../lib/parseMetadata";
 import { AGENT_CATEGORY_COLORS, DEFAULT_CATEGORY_COLOR, ENTITY_COLORS, DEFAULT_ENTITY_COLOR } from "../lib/types";
 
 const SIM_EXAMPLE_KEYS = ["sim.example.1", "sim.example.2", "sim.example.3"];
@@ -1054,7 +1055,9 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
   const graph = stagesData.graph || {};
   const simulation = simResult.simulation || [];
   const duration = simStartTime ? Math.floor((Date.now() - simStartTime) / 1000) : 0;
-  const reportText = simResult.report || "";
+  const rawReport = simResult.report || "";
+  const { cleanContent: reportText, metadata: reportMeta } = parseSignuxMetadata(rawReport);
+  const vote = reportMeta.vote;
   const uniqueRounds = [...new Set(simulation.map((m: any) => m.round))].sort();
   const uniqueCategories = [...new Set(simAgents.map((a: any) => a.category).filter(Boolean))] as string[];
   const uniqueAgentNames = [...new Set(simulation.map((m: any) => m.agentName))] as string[];
@@ -1390,6 +1393,47 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
         {/* Report tab */}
         {resultTab === "report" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {/* Vote Badge */}
+            {vote && (
+              <div style={{
+                display: "flex", alignItems: "center", gap: 14,
+                padding: "14px 20px", borderRadius: "var(--radius-md)",
+                background: vote.result === "GO" ? "rgba(34,197,94,0.06)"
+                  : vote.result === "CAUTION" ? "rgba(245,158,11,0.06)"
+                  : "rgba(239,68,68,0.06)",
+                border: `1px solid ${vote.result === "GO" ? "rgba(34,197,94,0.15)"
+                  : vote.result === "CAUTION" ? "rgba(245,158,11,0.15)"
+                  : "rgba(239,68,68,0.15)"}`,
+              }}>
+                <div style={{
+                  fontSize: 26, fontWeight: 700,
+                  color: vote.result === "GO" ? "#22c55e" : vote.result === "CAUTION" ? "#f59e0b" : "#ef4444",
+                  fontFamily: "var(--font-brand)", letterSpacing: 2,
+                }}>
+                  {vote.result}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <span style={{ color: "#22c55e", fontWeight: 600 }}>{vote.go} GO</span>
+                  {" · "}
+                  <span style={{ color: "#f59e0b", fontWeight: 600 }}>{vote.caution} CAUTION</span>
+                  {" · "}
+                  <span style={{ color: "#ef4444", fontWeight: 600 }}>{vote.stop} STOP</span>
+                  {vote.dissenters && vote.dissenters.length > 0 && (
+                    <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
+                      {vote.dissenters.map((d, i) => (
+                        <span key={i}>{d.role}: {d.reason}{i < vote.dissenters.length - 1 ? " · " : ""}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div style={{
+                  marginLeft: "auto", fontSize: 11,
+                  fontFamily: "var(--font-mono)", color: "var(--text-tertiary)",
+                }}>
+                  Avg {vote.confidence_avg}%
+                </div>
+              </div>
+            )}
             {reportSections.length > 0 ? reportSections.map((section, si) => {
               const sKey = `s-${si}`;
               const isCollapsed = collapsedSections[sKey];

@@ -122,7 +122,7 @@ export default function MessageBlock({ message, index, isLast, loading, searchin
   const { cleanContent: c2, followups } = !isUser ? parseFollowups(c1) : { cleanContent: c1, followups: [] as string[] };
 
   // Centralized metadata parser
-  const { cleanContent: c3, metadata } = !isUser ? parseSignuxMetadata(c2) : { cleanContent: c2, metadata: { domains: [], domainCount: 0, blindspots: [], depth: 0, verification: null, worklog: null } };
+  const { cleanContent: c3, metadata } = !isUser ? parseSignuxMetadata(c2) : { cleanContent: c2, metadata: { domains: [], domainCount: 0, blindspots: [], depth: 0, verification: null, worklog: null, vote: null } };
   const { domains, domainCount, blindspots, depth, verification, worklog } = metadata;
 
   // Plan detection
