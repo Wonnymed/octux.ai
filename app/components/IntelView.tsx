@@ -176,7 +176,7 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
     <div style={{
       display: "flex", flexDirection: "column",
       padding: isMobile ? "24px 16px 120px" : "24px 24px 120px",
-      maxWidth: 768, margin: "0 auto", width: "100%",
+      maxWidth: "clamp(600px, 52vw, 820px)", margin: "0 auto", width: "100%",
     }}>
 
       {/* ═══ COMPACT HEADER ═══ */}
@@ -207,7 +207,7 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
       </p>
 
       {/* ═══ UNIVERSAL INPUT ═══ */}
-      <div style={{ maxWidth: 600, margin: `0 auto ${isMobile ? 20 : 28}px`, width: "100%" }}>
+      <div style={{ margin: `0 auto ${isMobile ? 20 : 28}px`, width: "100%" }}>
         <div style={{
           display: "flex", alignItems: "center",
           padding: "12px 16px", borderRadius: 12,

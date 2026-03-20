@@ -524,7 +524,7 @@ How to make your first $1,000:
         <section style={{
           display: "flex", flexDirection: "column",
           padding: isMobile ? "24px 16px 120px" : "24px 24px 120px",
-          maxWidth: 768, margin: "0 auto", width: "100%",
+          maxWidth: "clamp(600px, 52vw, 820px)", margin: "0 auto", width: "100%",
         }}>
           {/* Compact header */}
           <div style={{
@@ -543,7 +543,7 @@ How to make your first $1,000:
           {validating && !validationResult && <LoadingOracle mode="launchpad" />}
 
           {validationResult && (
-            <div style={{ maxWidth: 700, margin: "0 auto", width: "100%" }}>
+            <div style={{ width: "100%" }}>
               <MarkdownRenderer content={validationResult} />
             </div>
           )}
@@ -580,7 +580,7 @@ How to make your first $1,000:
       <section style={{
         display: "flex", flexDirection: "column",
         padding: isMobile ? "24px 16px 120px" : "24px 24px 120px",
-        maxWidth: 768, margin: "0 auto", width: "100%",
+        maxWidth: "clamp(600px, 52vw, 820px)", margin: "0 auto", width: "100%",
       }}>
 
         {/* ── COMPACT HEADER ── */}
@@ -641,7 +641,7 @@ How to make your first $1,000:
         </div>
 
         {/* ── MAIN INPUT ── */}
-        <div style={{ maxWidth: 640, margin: "0 auto", width: "100%" }}>
+        <div style={{ width: "100%" }}>
           <div style={{
             borderRadius: 14,
             border: ideaDescription.trim()
@@ -756,7 +756,7 @@ How to make your first $1,000:
 
         {/* ── QUICK IDEAS ── */}
         <div style={{
-          maxWidth: 640, margin: "10px auto 0", width: "100%",
+          margin: "10px auto 0", width: "100%",
           display: "flex", alignItems: "center", gap: 6,
           flexWrap: isMobile ? "nowrap" : "wrap",
           justifyContent: "center",
@@ -786,7 +786,7 @@ How to make your first $1,000:
 
         {/* ── FULL DISCOVERY LINK ── */}
         <div style={{
-          maxWidth: 640, margin: "12px auto 0", width: "100%",
+          margin: "12px auto 0", width: "100%",
           textAlign: "center",
         }}>
           <button onClick={() => startDiscovery()} style={{
@@ -1010,7 +1010,7 @@ How to make your first $1,000:
         flex: 1, display: "flex", flexDirection: "column",
         alignItems: "center",
         padding: isMobile ? "24px 16px 120px" : "40px 24px 120px",
-        maxWidth: 768, margin: "0 auto", width: "100%",
+        maxWidth: "clamp(600px, 52vw, 820px)", margin: "0 auto", width: "100%",
       }}>
         <div style={{ maxWidth: 560, width: "100%" }}>
           <div style={{ display: "flex", gap: 4, marginBottom: 40 }}>

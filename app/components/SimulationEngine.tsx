@@ -447,7 +447,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
       <section style={{
         display: "flex", flexDirection: "column",
         padding: isMobile ? "24px 16px 120px" : "24px 24px 120px",
-        maxWidth: 768, margin: "0 auto", width: "100%",
+        maxWidth: "clamp(600px, 52vw, 820px)", margin: "0 auto", width: "100%",
       }}>
 
         {/* ── COMPACT HEADER ── */}
@@ -479,7 +479,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
 
         {/* ── MAIN INPUT CONTAINER ── */}
         {!compareMode && (
-          <div style={{ maxWidth: 680, margin: "0 auto", width: "100%" }}>
+          <div style={{ width: "100%" }}>
             <div style={{
               borderRadius: 14,
               border: simScenario.trim()
@@ -653,7 +653,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
 
         {/* ── COMPARE A vs B (replaces main textarea when active) ── */}
         {compareMode && (
-          <div style={{ maxWidth: 680, margin: "0 auto", width: "100%" }}>
+          <div style={{ width: "100%" }}>
             <div style={{
               display: "flex", flexDirection: isMobile ? "column" : "row", gap: 10,
             }}>
@@ -729,7 +729,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
 
         {/* ── QUICK SCENARIOS — chips ── */}
         <div style={{
-          maxWidth: 680, margin: "8px auto 0", padding: "0",
+          margin: "8px auto 0", padding: "0",
           display: "flex", alignItems: "center", gap: 6,
           flexWrap: isMobile ? "nowrap" : "wrap",
           overflowX: isMobile ? "auto" : undefined,
@@ -767,7 +767,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
 
         {/* ── TEAM INFO + CONTROLS ── */}
         <div style={{
-          maxWidth: 680, margin: "12px auto 0", width: "100%",
+          margin: "12px auto 0", width: "100%",
           display: "flex", alignItems: "center", justifyContent: "center",
           gap: 12, flexWrap: "wrap",
         }}>
@@ -806,7 +806,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
 
         {/* ── CUSTOMIZE TEAM (expandable) ── */}
         {showAgentCustomizer && (
-          <div style={{ maxWidth: 680, margin: "10px auto 0", width: "100%" }}>
+          <div style={{ margin: "10px auto 0", width: "100%" }}>
             <div style={{
               padding: "12px 14px", borderRadius: 10,
               border: "1px solid var(--border-secondary)", background: "var(--card-bg)",
@@ -869,7 +869,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
         {/* ── DEMO — subtle chip ── */}
         {!isLoggedIn && !demoUsed && (
           <div style={{
-            maxWidth: 680, margin: "8px auto 0", width: "100%",
+            margin: "8px auto 0", width: "100%",
             textAlign: "center",
           }}>
             <button onClick={runDemoSimulation} style={{
@@ -1317,7 +1317,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
 
   return (
     <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "24px 16px 120px" : "24px 24px 120px", position: "relative" }}>
-      <div style={{ maxWidth: 768, margin: "0 auto" }}>
+      <div style={{ maxWidth: "clamp(600px, 52vw, 820px)", margin: "0 auto" }}>
         {/* Header */}
         <div style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",

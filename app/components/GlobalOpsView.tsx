@@ -226,7 +226,7 @@ export default function GlobalOpsView({ lang, onSetMode, isLoggedIn, tier }: { l
       <div style={{
         display: "flex", flexDirection: "column",
         padding: isMobile ? "24px 16px 120px" : "24px 24px 120px",
-        maxWidth: 768, margin: "0 auto", width: "100%",
+        maxWidth: "clamp(600px, 52vw, 820px)", margin: "0 auto", width: "100%",
       }}>
 
         {/* ===== HEADER COMPACTO ===== */}
@@ -445,7 +445,7 @@ export default function GlobalOpsView({ lang, onSetMode, isLoggedIn, tier }: { l
           GLOBAL OPS
         </div>
 
-        <div style={{ width: "100%", maxWidth: 768, margin: "0 auto", padding: "4px 24px 120px" }}>
+        <div style={{ width: "100%", maxWidth: "clamp(600px, 52vw, 820px)", margin: "0 auto", padding: "4px 24px 120px" }}>
           {messages.map((m, i) => (
             <MessageBlock
               key={i}
