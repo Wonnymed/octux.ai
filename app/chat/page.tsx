@@ -53,6 +53,7 @@ const CausalMap = dynamic(() => import("../components/CausalMap"), { ssr: false 
 const ScenarioPlanner = dynamic(() => import("../components/ScenarioPlanner"), { ssr: false });
 const SettingsModal = dynamic(() => import("../components/SettingsModal"), { ssr: false });
 const Onboarding = dynamic(() => import("../components/Onboarding"), { ssr: false });
+const ModeTransition = dynamic(() => import("../components/ModeTransition"), { ssr: false });
 
 /* ═══ File Helpers ═══ */
 async function fileToBase64(file: File): Promise<string> {
@@ -178,6 +179,16 @@ export default function ChatPage() {
   const [lang, setLang] = useState<Language>("en");
   const [profileName, setProfileName] = useState("");
   const [mode, setMode] = useState<Mode>("chat");
+  const [modeTransitioning, setModeTransitioning] = useState(false);
+  const [seenModes, setSeenModes] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = sessionStorage.getItem("signux_seen_modes");
+        if (saved) return new Set(JSON.parse(saved));
+      } catch {}
+    }
+    return new Set(["chat"]);
+  });
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [searching, setSearching] = useState(false);
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
@@ -235,6 +246,28 @@ export default function ChatPage() {
     setToasts(prev => prev.map(tt => tt.id === id ? { ...tt, dismissing: true } : tt));
     setTimeout(() => setToasts(prev => prev.filter(tt => tt.id !== id)), 300);
   }, []);
+
+  /* ═══ Mode Change with Animation ═══ */
+  const handleModeChange = useCallback((newMode: Mode) => {
+    const prefersReducedMotion = typeof window !== "undefined"
+      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (seenModes.has(newMode) || prefersReducedMotion) {
+      setMode(newMode);
+      if (!seenModes.has(newMode)) {
+        setSeenModes(prev => new Set([...prev, newMode]));
+      }
+      return;
+    }
+    setModeTransitioning(true);
+    setMode(newMode);
+    setSeenModes(prev => new Set([...prev, newMode]));
+  }, [seenModes]);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("signux_seen_modes", JSON.stringify([...seenModes]));
+    } catch {}
+  }, [seenModes]);
 
   /* ═══ Profile Loading Effect ═══ */
   const isLoggedIn = !!authUser;
@@ -809,6 +842,7 @@ export default function ChatPage() {
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       <OfflineBanner />
+      <ModeTransition mode={mode} isTransitioning={modeTransitioning} onComplete={() => setModeTransitioning(false)} />
 
       {/* ═══ Mobile header: hamburger + auth ═══ */}
       {isMobile && (
@@ -910,7 +944,7 @@ export default function ChatPage() {
 
       <Sidebar
         mode={mode}
-        setMode={setMode}
+        setMode={handleModeChange}
         profileName={profileName}
         lang={lang}
         onNewConversation={onNewConversation}
