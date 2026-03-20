@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { getProfile } from "../lib/profile";
 import { t, Language, setLanguage } from "../lib/i18n";
 import type { Message, Toast, Attachment, SimAgent, SimResult, Mode } from "../lib/types";
-import { Check, AlertTriangle, Info, WifiOff, Square } from "lucide-react";
+import { Check, AlertTriangle, Info, WifiOff, Square, Menu } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
 import UserMenu from "../components/UserMenu";
@@ -810,18 +810,39 @@ export default function ChatPage() {
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       <OfflineBanner />
 
+      {/* Mobile hamburger button */}
+      {isMobile && !sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          style={{
+            position: "fixed", top: 10, left: 10, zIndex: 60,
+            width: 40, height: 40, borderRadius: 10,
+            background: "var(--bg-primary)", border: "1px solid var(--border-secondary)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", color: "var(--text-secondary)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          }}
+        >
+          <Menu size={18} />
+        </button>
+      )}
+
       {/* Auth header — top-right, always visible */}
       {!authUser ? (
         <div style={{
           position: "fixed", top: 0, right: 0,
-          height: 56, display: "flex", alignItems: "center",
-          padding: "0 20px", gap: 12, zIndex: 50,
+          height: 52, display: "flex", alignItems: "center",
+          padding: isMobile ? "0 12px" : "0 20px", gap: isMobile ? 8 : 12, zIndex: 50,
+          background: isMobile ? "var(--bg-primary)" : "transparent",
+          borderBottom: isMobile ? "1px solid var(--border-secondary)" : "none",
+          left: isMobile ? 52 : "auto",
         }}>
+          {isMobile && <div style={{ flex: 1 }} />}
           <button
             onClick={() => { window.location.href = "/login"; }}
             style={{
               background: "none", border: "none", cursor: "pointer",
-              fontSize: 14, fontWeight: 500, color: "var(--text-secondary)",
+              fontSize: isMobile ? 12 : 14, fontWeight: 500, color: "var(--text-secondary)",
               fontFamily: "var(--font-brand)", letterSpacing: 1,
               transition: "color 0.15s",
             }}
@@ -834,8 +855,8 @@ export default function ChatPage() {
             onClick={() => { window.location.href = "/signup"; }}
             style={{
               background: "var(--text-primary)", color: "var(--bg-primary)",
-              border: "none", borderRadius: 20, padding: "8px 20px",
-              cursor: "pointer", fontSize: 14, fontWeight: 600,
+              border: "none", borderRadius: 20, padding: isMobile ? "6px 14px" : "8px 20px",
+              cursor: "pointer", fontSize: isMobile ? 12 : 14, fontWeight: 600,
               fontFamily: "var(--font-brand)", letterSpacing: 1,
               transition: "opacity 0.15s",
             }}
@@ -883,6 +904,7 @@ export default function ChatPage() {
       <main style={{
         flex: 1, display: "flex", flexDirection: "column",
         background: "var(--bg-primary)", minWidth: 0, minHeight: 0, overflow: "hidden",
+        paddingTop: isMobile && !authUser ? 52 : 0,
       }}>
         {/* Launchpad check-in reminder */}
         {showCheckinReminder && (

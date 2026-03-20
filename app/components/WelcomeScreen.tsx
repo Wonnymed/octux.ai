@@ -86,31 +86,34 @@ export default function WelcomeScreen({
       }}>
 
         {/* Logo row */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
-          <div style={{ position: "relative", flexShrink: 0 }}>
-            <div style={{
-              position: "absolute", inset: -6, borderRadius: "50%",
-              border: "1px solid rgba(212,175,55,0.06)",
-              animation: "ringPulse 4s ease-in-out infinite",
-            }} />
-            <SignuxIcon variant="gold" size={44} />
+        {!isMobile && (
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <div style={{
+                position: "absolute", inset: -6, borderRadius: "50%",
+                border: "1px solid rgba(212,175,55,0.06)",
+                animation: "ringPulse 4s ease-in-out infinite",
+              }} />
+              <SignuxIcon variant="gold" size={44} />
+            </div>
+            <div style={{ display: "flex", alignItems: "baseline" }}>
+              <span style={{ fontFamily: "var(--font-brand)", fontSize: 40, fontWeight: 700, letterSpacing: 5, color: "var(--text-primary)" }}>
+                SIGNUX
+              </span>
+              <span style={{ fontFamily: "var(--font-brand)", fontSize: 40, fontWeight: 300, letterSpacing: 3, color: "var(--text-primary)", opacity: 0.22, marginLeft: 8 }}>
+                AI
+              </span>
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "baseline" }}>
-            <span style={{ fontFamily: "var(--font-brand)", fontSize: isMobile ? 36 : 40, fontWeight: 700, letterSpacing: 5, color: "var(--text-primary)" }}>
-              SIGNUX
-            </span>
-            <span style={{ fontFamily: "var(--font-brand)", fontSize: isMobile ? 36 : 40, fontWeight: 300, letterSpacing: 3, color: "var(--text-primary)", opacity: 0.22, marginLeft: 8 }}>
-              AI
-            </span>
-          </div>
-        </div>
+        )}
 
         {/* Tagline */}
         <p style={{
-          fontSize: 14, color: "var(--text-secondary)", maxWidth: 380,
-          textAlign: "center", lineHeight: 1.5, marginBottom: 36,
+          fontSize: isMobile ? 15 : 14, color: "var(--text-secondary)",
+          maxWidth: isMobile ? 280 : 380,
+          textAlign: "center", lineHeight: 1.5, marginBottom: isMobile ? 20 : 36,
         }}>
-          What do you want to know before everyone else?
+          {isMobile ? "What do you want to know?" : "What do you want to know before everyone else?"}
         </p>
 
         {/* Input */}
@@ -132,16 +135,17 @@ export default function WelcomeScreen({
         <div style={{
           display: "grid",
           gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(5, 1fr)",
-          gap: 6, width: "100%", marginTop: 20,
+          gap: 6, width: "100%", marginTop: isMobile ? 12 : 20,
         }}>
           {MODE_BANNERS.map(m => {
             const Icon = m.icon;
             return (
               <button key={m.key} onClick={() => onSwitchMode?.(m.key)} style={{
                 display: "flex", alignItems: "center", gap: 8,
-                padding: "10px 10px", borderRadius: 10, cursor: "pointer",
+                padding: isMobile ? "8px 8px" : "10px 10px", borderRadius: 10, cursor: "pointer",
                 border: `1px solid ${m.border}`, background: m.bg,
                 transition: "all 200ms", textAlign: "left",
+                minHeight: 44,
               }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = m.color; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = m.border; }}
@@ -149,7 +153,7 @@ export default function WelcomeScreen({
                 <Icon size={14} style={{ color: m.color, flexShrink: 0 }} />
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)" }}>{m.label}</div>
-                  <div style={{ fontSize: 9, color: "var(--text-tertiary)", marginTop: 1 }}>{m.desc}</div>
+                  {!isMobile && <div style={{ fontSize: 9, color: "var(--text-tertiary)", marginTop: 1 }}>{m.desc}</div>}
                 </div>
               </button>
             );
@@ -157,18 +161,18 @@ export default function WelcomeScreen({
         </div>
 
         {/* Domain-powered templates */}
-        <div style={{ width: "100%", marginTop: 12 }}>
+        <div style={{ width: "100%", marginTop: isMobile ? 10 : 12 }}>
           <div style={{
-            fontSize: 10, fontFamily: "var(--font-mono)", letterSpacing: 1.5,
+            fontSize: isMobile ? 9 : 10, fontFamily: "var(--font-mono)", letterSpacing: 1.5,
             textTransform: "uppercase", color: "var(--text-tertiary)",
             marginBottom: 8, opacity: 0.5,
           }}>
-            Start here
+            Try these
           </div>
           <div style={{
             display: "grid",
             gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-            gap: 6,
+            gap: isMobile ? 6 : 6,
           }}>
             {([
               { q: "Is this deal legit? I need to evaluate a partnership offer", domains: "spot lies · assess risk", color: "#F59E0B" },
@@ -177,21 +181,22 @@ export default function WelcomeScreen({
               { q: "My revenue dropped — was it the price change or something else?", domains: "find real causes · check the math", color: "#06B6D4" },
               { q: "I have a funding meeting tomorrow. Help me prepare.", domains: "prepare strategy · know your leverage", color: "#F97316" },
               { q: "What could happen to my market in the next 12 months?", domains: "plan ahead · prepare for anything", color: "#22C55E" },
-            ] as const).map((tmpl, i) => (
+            ] as const).slice(0, isMobile ? 4 : 6).map((tmpl, i) => (
               <button
                 key={i}
                 onClick={() => onSend(tmpl.q)}
                 style={{
-                  display: "flex", flexDirection: "column", gap: 4,
-                  padding: "10px 12px", borderRadius: 8,
+                  display: "flex", flexDirection: "column", gap: 3,
+                  padding: isMobile ? "8px 10px" : "10px 12px", borderRadius: 8,
                   border: "1px solid var(--card-border)", background: "var(--card-bg)",
                   cursor: "pointer", textAlign: "left",
                   transition: "border-color 200ms",
+                  minHeight: 44,
                 }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = `${tmpl.color}40`)}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--card-border)")}
               >
-                <span style={{ fontSize: 12, color: "var(--text-primary)", lineHeight: 1.4 }}>
+                <span style={{ fontSize: isMobile ? 11 : 12, color: "var(--text-primary)", lineHeight: 1.4 }}>
                   {tmpl.q}
                 </span>
                 <span style={{
@@ -206,7 +211,7 @@ export default function WelcomeScreen({
         </div>
 
         {/* Disclaimer */}
-        <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 20, opacity: 0.5, textAlign: "center" }}>
+        <p style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: isMobile ? 12 : 20, opacity: 0.5, textAlign: "center" }}>
           Always verify critical decisions with qualified professionals.
         </p>
       </div>

@@ -36,7 +36,7 @@ export default function InstallPrompt() {
 
   return (
     <div style={{
-      position: "fixed", bottom: 16, left: "50%", transform: "translateX(-50%)",
+      position: "fixed", bottom: "max(16px, env(safe-area-inset-bottom, 16px))", left: "50%", transform: "translateX(-50%)",
       zIndex: 50,
       display: "flex", alignItems: "center", gap: 8,
       padding: "8px 14px", borderRadius: 50,
