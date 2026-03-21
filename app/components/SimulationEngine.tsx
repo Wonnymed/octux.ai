@@ -61,6 +61,8 @@ type SimulationEngineProps = {
   lang?: string;
   isLoggedIn?: boolean;
   tier?: string;
+  streamingUniverses?: (any | null)[];
+  streamingVerdict?: any | null;
 };
 
 function calculateRiskScore(agents: SimAgent[], messages: AgentMessage[]): { score: number; label: string; color: string } {
@@ -85,7 +87,7 @@ function calculateRiskScore(agents: SimAgent[], messages: AgentMessage[]): { sco
 }
 
 export default function SimulationEngine(props: SimulationEngineProps) {
-  const { simulating, simResult, simScenario, setSimScenario, simStage, simLiveAgents, simTotalAgents, simStartTime, onSimulate, onReset, simStarting, simAgentMessages, onSetMode, lang, isLoggedIn, tier } = props;
+  const { simulating, simResult, simScenario, setSimScenario, simStage, simLiveAgents, simTotalAgents, simStartTime, onSimulate, onReset, simStarting, simAgentMessages, onSetMode, lang, isLoggedIn, tier, streamingUniverses, streamingVerdict } = props;
   const feedRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -964,6 +966,12 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
     const elapsed = simStartTime ? Math.floor((Date.now() - simStartTime) / 1000) : 0;
     const risk = calculateRiskScore(simLiveAgents, simAgentMessages);
 
+    // Check if streaming universes have arrived
+    const hasStreamingUniverses = streamingUniverses && streamingUniverses.some(u => u !== null);
+
+    const sentimentDotColor = (s: string) =>
+      s === "positive" ? "#10B981" : s === "negative" ? "#EF4444" : s === "warning" ? "#F59E0B" : "var(--text-tertiary)";
+
     // Classify agent messages into 3 universes based on role/category
     const universeA: AgentMessage[] = [];
     const universeB: AgentMessage[] = [];
@@ -1366,7 +1374,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           <span style={{
             fontSize: 10, fontFamily: "var(--font-mono)", color: "var(--text-tertiary)",
           }}>
-            Stage {simStage + 1}/6
+            Stage {simStage + 1}/8
           </span>
           {/* Animated progress bar */}
           <div style={{
@@ -1396,8 +1404,249 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           </div>
         </motion.div>
 
-        {/* 3-Universe Canvas */}
-        {isMobile ? (
+        {/* 3-Universe Canvas — show streaming data when available */}
+        {hasStreamingUniverses ? (
+          /* Streaming Universe Cards — real data arriving live */
+          <div style={{
+            flex: 1, overflowY: "auto",
+            padding: isMobile ? "12px 12px 90px" : "16px 20px 90px",
+          }}>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
+              gap: 14, maxWidth: 1200, margin: "0 auto",
+            }}>
+              {[0, 1, 2].map(idx => {
+                const su = streamingUniverses?.[idx];
+                const skeletonColors = ["#10B981", "#3B82F6", "#F59E0B"];
+                const skeletonLabels = ["Best Case", "Most Likely", "Worst Case"];
+                const skeletonSubtitles = ["OPTIMISTIC", "REALISTIC", "PESSIMISTIC"];
+
+                if (!su) {
+                  /* Skeleton placeholder */
+                  return (
+                    <motion.div
+                      key={`skeleton-${idx}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.1, duration: 0.4 }}
+                      style={{
+                        borderRadius: 14, overflow: "hidden",
+                        border: `1px solid ${skeletonColors[idx]}15`,
+                        background: `linear-gradient(180deg, ${skeletonColors[idx]}04 0%, transparent 60%)`,
+                        display: "flex", flexDirection: "column",
+                        minHeight: 320,
+                      }}
+                    >
+                      <div style={{
+                        padding: "14px 16px",
+                        borderBottom: `1px solid ${skeletonColors[idx]}10`,
+                        display: "flex", justifyContent: "space-between", alignItems: "center",
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <motion.div
+                            animate={{ opacity: [0.3, 0.7, 0.3] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                            style={{ width: 10, height: 10, borderRadius: "50%", background: skeletonColors[idx] }}
+                          />
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-tertiary)" }}>{skeletonLabels[idx]}</div>
+                            <div style={{ fontSize: 9, letterSpacing: "0.15em", color: skeletonColors[idx], fontFamily: "var(--font-mono)" }}>{skeletonSubtitles[idx]}</div>
+                          </div>
+                        </div>
+                        <motion.div
+                          animate={{ opacity: [0.2, 0.5, 0.2] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                          style={{ width: 40, height: 20, borderRadius: 6, background: `${skeletonColors[idx]}15` }}
+                        />
+                      </div>
+                      {/* Skeleton metrics */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--border-secondary)" }}>
+                        {[0, 1, 2, 3].map(mi => (
+                          <div key={mi} style={{ padding: "10px 14px", background: "var(--card-bg)" }}>
+                            <motion.div
+                              animate={{ opacity: [0.15, 0.3, 0.15] }}
+                              transition={{ duration: 1.5, repeat: Infinity, delay: mi * 0.15 }}
+                              style={{ width: "60%", height: 8, borderRadius: 4, background: "var(--text-tertiary)", marginBottom: 6 }}
+                            />
+                            <motion.div
+                              animate={{ opacity: [0.1, 0.25, 0.1] }}
+                              transition={{ duration: 1.5, repeat: Infinity, delay: mi * 0.15 + 0.1 }}
+                              style={{ width: "40%", height: 14, borderRadius: 4, background: "var(--text-tertiary)" }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      {/* Skeleton timeline */}
+                      <div style={{ padding: "14px 16px", flex: 1 }}>
+                        {[0, 1, 2].map(ti => (
+                          <motion.div
+                            key={ti}
+                            animate={{ opacity: [0.1, 0.2, 0.1] }}
+                            transition={{ duration: 1.5, repeat: Infinity, delay: ti * 0.2 }}
+                            style={{ width: `${80 - ti * 15}%`, height: 10, borderRadius: 4, background: "var(--text-tertiary)", marginBottom: 10 }}
+                          />
+                        ))}
+                      </div>
+                      {/* Generating indicator */}
+                      <div style={{
+                        padding: "10px 16px", borderTop: "1px solid var(--border-secondary)",
+                        display: "flex", alignItems: "center", gap: 8,
+                      }}>
+                        <Loader2 size={12} style={{ color: skeletonColors[idx], animation: "spin 1s linear infinite" }} />
+                        <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>
+                          {idx === 0 ? "Spawning optimistic agents..." : idx === 1 ? "Analyzing realistic scenario..." : "Stress-testing worst case..."}
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                }
+
+                /* Real universe data — slide in */
+                return (
+                  <motion.div
+                    key={`universe-${idx}`}
+                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                    style={{
+                      borderRadius: 14, overflow: "hidden",
+                      border: su.id === "B" ? "2px solid #D4AF3740" : `1px solid ${su.color}20`,
+                      background: "var(--card-bg)",
+                      boxShadow: su.id === "B" ? "0 0 24px rgba(212,175,55,0.06)" : "none",
+                      display: "flex", flexDirection: "column",
+                    }}
+                  >
+                    {/* Header */}
+                    <div style={{
+                      padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center",
+                      borderBottom: `1px solid ${su.color}20`, background: `${su.color}06`,
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 10, height: 10, borderRadius: "50%", background: su.color }} />
+                        <div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>{su.label}</div>
+                          <div style={{ fontSize: 9, letterSpacing: "0.15em", color: su.color, fontFamily: "var(--font-mono)", textTransform: "uppercase" }}>{su.subtitle}</div>
+                        </div>
+                      </div>
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        style={{ fontSize: 22, fontWeight: 800, color: su.color, fontFamily: "var(--font-mono)" }}
+                      >
+                        {su.probability}%
+                      </motion.div>
+                    </div>
+                    {/* Metrics */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--border-secondary)" }}>
+                      {[
+                        { label: "Revenue", value: su.revenue, color: su.id === "A" ? "#10B981" : su.id === "C" ? "#EF4444" : "var(--text-primary)" },
+                        { label: "ROI", value: su.roi, color: su.roi?.startsWith("+") ? "#10B981" : su.roi?.startsWith("-") ? "#EF4444" : "var(--text-primary)" },
+                        { label: "Risk", value: su.riskLabel, color: su.riskLabel === "Low" ? "#10B981" : su.riskLabel === "High" ? "#EF4444" : "#F59E0B" },
+                        { label: "Timeline", value: su.timeline, color: "var(--text-primary)" },
+                      ].map((met, mi) => (
+                        <motion.div
+                          key={mi}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: mi * 0.08, duration: 0.3 }}
+                          style={{ padding: "10px 14px", background: "var(--card-bg)" }}
+                        >
+                          <div style={{ fontSize: 9, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 2 }}>{met.label}</div>
+                          <div style={{ fontSize: 15, fontWeight: 700, color: met.color, fontFamily: "var(--font-mono)" }}>{met.value}</div>
+                        </motion.div>
+                      ))}
+                    </div>
+                    {/* Outcome */}
+                    {su.outcome && (
+                      <div style={{ padding: "12px 16px", borderTop: `1px solid var(--border-secondary)` }}>
+                        <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{su.outcome}</div>
+                      </div>
+                    )}
+                    {/* Timeline events */}
+                    {su.events && su.events.length > 0 && (
+                      <div style={{ padding: "10px 16px 14px" }}>
+                        <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)", textTransform: "uppercase", fontFamily: "var(--font-mono)", marginBottom: 8 }}>
+                          TIMELINE
+                        </div>
+                        {su.events.slice(0, 4).map((ev: any, ei: number) => (
+                          <motion.div
+                            key={ei}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: ei * 0.1, duration: 0.3 }}
+                            style={{ display: "flex", gap: 10, minHeight: 28 }}
+                          >
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 12 }}>
+                              <div style={{
+                                width: 8, height: 8, borderRadius: "50%", flexShrink: 0, marginTop: 3,
+                                background: sentimentDotColor(ev.sentiment),
+                              }} />
+                              {ei < Math.min(su.events.length, 4) - 1 && <div style={{ width: 1, flex: 1, background: "var(--border-secondary)", marginTop: 2 }} />}
+                            </div>
+                            <div style={{ paddingBottom: 6 }}>
+                              <div style={{ fontSize: 10, fontWeight: 600, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>{ev.period}</div>
+                              <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4 }}>{typeof ev.text === "string" ? ev.text.slice(0, 80) : ""}</div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Streaming Verdict */}
+            <AnimatePresence>
+              {streamingVerdict && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  style={{
+                    maxWidth: 1200, margin: "16px auto 0",
+                    padding: "18px 24px", borderRadius: 14,
+                    background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
+                    display: "flex", flexWrap: "wrap", alignItems: "center", gap: 20,
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)", textTransform: "uppercase", fontFamily: "var(--font-mono)", marginBottom: 4 }}>
+                      CROSS-UNIVERSE VERDICT
+                    </div>
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                      style={{
+                        fontSize: 22, fontWeight: 800, fontFamily: "var(--font-brand)", letterSpacing: 2,
+                        color: streamingVerdict.result === "GO" ? "#22c55e" : streamingVerdict.result === "CAUTION" ? "#f59e0b" : "#ef4444",
+                      }}
+                    >
+                      {streamingVerdict.result}
+                    </motion.div>
+                  </div>
+                  <div style={{ width: 1, height: 36, background: "var(--border-secondary)" }} />
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-mono)" }}>{streamingVerdict.viabilityScore?.toFixed(1)}</div>
+                    <div style={{ fontSize: 9, letterSpacing: "0.12em", color: "var(--text-tertiary)", textTransform: "uppercase", fontFamily: "var(--font-mono)" }}>VIAB.</div>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: streamingVerdict.estimatedROI?.startsWith("-") ? "#EF4444" : "#10B981", fontFamily: "var(--font-mono)" }}>{streamingVerdict.estimatedROI}</div>
+                    <div style={{ fontSize: 9, letterSpacing: "0.12em", color: "var(--text-tertiary)", textTransform: "uppercase", fontFamily: "var(--font-mono)" }}>EST. ROI</div>
+                  </div>
+                  {streamingVerdict.reasoning && (
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                      <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{streamingVerdict.reasoning}</div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ) : isMobile ? (
           <div style={{
             flex: 1, overflowY: "auto",
             padding: "12px 12px 90px",
@@ -1996,6 +2245,84 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           </motion.div>
         </div>
       )}
+
+      {/* ── Variable Editor — Re-simulate with changes ── */}
+      <div style={{ maxWidth: 1200, margin: "0 auto 24px" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55, duration: 0.4 }}
+          style={{
+            padding: "20px 24px", borderRadius: 14,
+            background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <Zap size={14} style={{ color: "#D4AF37" }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>Change a variable</span>
+            <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>
+              — Modify any variable and see how all 3 universes react
+            </span>
+          </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <input
+              placeholder='e.g. "What if the budget was $500K instead?"'
+              value={whatIfInput}
+              onChange={e => setWhatIfInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && whatIfInput.trim()) handleWhatIf(whatIfInput); }}
+              style={{
+                flex: 1, minWidth: 200, padding: "11px 16px", borderRadius: 10,
+                border: "1px solid var(--border-secondary)", background: "var(--bg-secondary)",
+                color: "var(--text-primary)", fontSize: 13, outline: "none",
+                fontFamily: "var(--font-sans)",
+                transition: "border-color 200ms, box-shadow 200ms",
+              }}
+              onFocus={e => { e.currentTarget.style.borderColor = "rgba(212,175,55,0.35)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(212,175,55,0.06)"; }}
+              onBlur={e => { e.currentTarget.style.borderColor = "var(--border-secondary)"; e.currentTarget.style.boxShadow = "none"; }}
+            />
+            <button
+              onClick={() => { if (whatIfInput.trim()) handleWhatIf(whatIfInput); }}
+              disabled={!whatIfInput.trim()}
+              style={{
+                padding: "11px 22px", borderRadius: 10,
+                background: whatIfInput.trim() ? "#D4AF37" : "var(--bg-tertiary)",
+                color: whatIfInput.trim() ? "#000" : "var(--text-tertiary)",
+                border: "none", fontSize: 13, fontWeight: 700, cursor: whatIfInput.trim() ? "pointer" : "default",
+                fontFamily: "var(--font-brand)", letterSpacing: 0.5,
+                transition: "all 200ms",
+                display: "flex", alignItems: "center", gap: 6,
+              }}
+            >
+              <Zap size={13} /> Re-simulate
+            </button>
+          </div>
+          {/* Quick variable suggestions from the scenario */}
+          <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
+            {[
+              "Budget doubled",
+              "Timeline cut in half",
+              "Competitor launches first",
+              "Market downturn 20%",
+            ].map((suggestion, si) => (
+              <button
+                key={si}
+                onClick={() => setWhatIfInput(suggestion)}
+                style={{
+                  padding: "4px 12px", borderRadius: 50,
+                  border: "1px solid var(--border-secondary)",
+                  background: "transparent", color: "var(--text-tertiary)",
+                  fontSize: 10, cursor: "pointer", transition: "all 150ms",
+                  whiteSpace: "nowrap",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(212,175,55,0.3)"; e.currentTarget.style.color = "#D4AF37"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-secondary)"; e.currentTarget.style.color = "var(--text-tertiary)"; }}
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+      </div>
 
       {/* ═══════ NORMAL WIDTH CONTAINER ═══════ */}
       <div style={{ maxWidth: "clamp(600px, 52vw, 820px)", margin: "0 auto" }}>

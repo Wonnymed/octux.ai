@@ -216,6 +216,8 @@ function ChatPage() {
   const [simTotalAgents, setSimTotalAgents] = useState(0);
   const [simStarting, setSimStarting] = useState(false);
   const [simStartTime, setSimStartTime] = useState<number | null>(null);
+  const [simStreamingUniverses, setSimStreamingUniverses] = useState<(any | null)[]>([null, null, null]);
+  const [simStreamingVerdict, setSimStreamingVerdict] = useState<any | null>(null);
 
   /* Auth */
   const { user: authUser, loading: authLoading, signOut: authSignOut } = useAuth();
@@ -757,6 +759,8 @@ function ChatPage() {
     setSimStage(0);
     setSimAgentMessages([]);
     setSimStartTime(Date.now());
+    setSimStreamingUniverses([null, null, null]);
+    setSimStreamingVerdict(null);
     try {
       const res = await signuxFetch("/api/simulate", {
         method: "POST",
@@ -784,6 +788,14 @@ function ChatPage() {
                 setSimLiveAgents(prev => prev.map(a => a.name === data.agentName && !a.done ? { ...a, done: true } : a));
                 setSimAgentMessages(prev => [...prev, data]);
               }
+            else if (data.type === "universe_ready") {
+                setSimStreamingUniverses(prev => {
+                  const updated = [...prev];
+                  updated[data.index] = data.data;
+                  return updated;
+                });
+              }
+            else if (data.type === "verdict_ready") setSimStreamingVerdict(data.data);
             else if (data.type === "complete") setSimResult(data.result);
             else if (data.type === "error") setSimResult({ error: data.error || "Simulation error." });
           } catch {}
@@ -1101,6 +1113,8 @@ function ChatPage() {
                 lang={lang}
                 isLoggedIn={isLoggedIn}
                 tier={tier}
+                streamingUniverses={simStreamingUniverses}
+                streamingVerdict={simStreamingVerdict}
               />
             </motion.div>
           ) : mode === "launchpad" ? (
