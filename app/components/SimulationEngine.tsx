@@ -76,6 +76,7 @@ type SimulationEngineProps = {
   engineDone?: boolean;
   onSaveSimulation?: () => Promise<void>;
   simulationSaved?: boolean;
+  simulationUsage?: { used: number; limit: number };
 };
 
 function calculateRiskScore(agents: SimAgent[], messages: AgentMessage[]): { score: number; label: string; color: string } {
@@ -100,7 +101,7 @@ function calculateRiskScore(agents: SimAgent[], messages: AgentMessage[]): { sco
 }
 
 export default function SimulationEngine(props: SimulationEngineProps) {
-  const { simulating, simResult, simScenario, setSimScenario, simStage, simLiveAgents, simTotalAgents, simStartTime, onSimulate, onReset, simStarting, simAgentMessages, onSetMode, lang, isLoggedIn, tier, streamingUniverses, streamingVerdict, engineAgents, engineRounds, engineCurrentRound, engineVerdict, engineEvolution, engineDone, onSaveSimulation, simulationSaved } = props;
+  const { simulating, simResult, simScenario, setSimScenario, simStage, simLiveAgents, simTotalAgents, simStartTime, onSimulate, onReset, simStarting, simAgentMessages, onSetMode, lang, isLoggedIn, tier, streamingUniverses, streamingVerdict, engineAgents, engineRounds, engineCurrentRound, engineVerdict, engineEvolution, engineDone, onSaveSimulation, simulationSaved, simulationUsage } = props;
   const feedRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -700,6 +701,28 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Usage counter */}
+        {simulationUsage && !compareMode && (
+          <div style={{
+            display: "flex", justifyContent: "center", marginTop: 8,
+          }}>
+            <span style={{
+              fontSize: 10, color: simulationUsage.used >= simulationUsage.limit ? "#EF4444" : "var(--text-tertiary)",
+              fontFamily: "var(--font-mono)",
+            }}>
+              {simulationUsage.used}/{simulationUsage.limit === Infinity ? "∞" : simulationUsage.limit} simulations this month
+              {simulationUsage.used >= simulationUsage.limit && (
+                <span
+                  onClick={() => window.location.href = "/pricing"}
+                  style={{ color: "#D4AF37", cursor: "pointer", marginLeft: 6 }}
+                >
+                  Upgrade →
+                </span>
+              )}
+            </span>
           </div>
         )}
 

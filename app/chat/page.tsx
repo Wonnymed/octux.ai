@@ -786,6 +786,12 @@ function ChatPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scenario: sc, lang: lang || "en" }),
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        setSimResult({ error: errData.error || `Simulation failed (${res.status})` });
+        setSimulating(false);
+        return;
+      }
       if (!res.body) throw new Error("No stream");
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -835,6 +841,7 @@ function ChatPage() {
               setEngineEvolution(data.agents);
             } else if (data.type === "done") {
               setEngineDone(true);
+              refreshUsage();
               // Build a simResult for the result view
               setSimResult({
                 report: "",
@@ -1230,6 +1237,7 @@ function ChatPage() {
                 engineDone={engineDone}
                 onSaveSimulation={saveSimulation}
                 simulationSaved={simulationSaved}
+                simulationUsage={{ used: usage.simulations_month, limit: limits.simulate_monthly }}
               />
             </motion.div>
           ) : mode === "launchpad" ? (
