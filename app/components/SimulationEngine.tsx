@@ -5,7 +5,7 @@ import {
   FileText, RotateCcw, MessageSquare, BarChart3, Network,
   Globe, Users, Clock, Zap, Search, Shield, Activity, Play,
   Wand2, Loader2, Eye, X, Share2, Lock, Link2, Paperclip, Columns,
-  TrendingUp, TrendingDown, Minus, Save,
+  TrendingUp, TrendingDown, Minus, Save, FileDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { t } from "../lib/i18n";
@@ -1930,6 +1930,11 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             { label: isMobile ? "Variable" : "Mudar variável ao vivo", icon: <Eye size={12} />, onClick: () => setGodEyeOpen(!godEyeOpen) },
             { label: isMobile ? "Compare" : "Comparar A vs B", icon: <Columns size={12} />, onClick: () => {} },
             { label: simulationSaved ? "Saved!" : isMobile ? "Save" : "Salvar Simulação", icon: simulationSaved ? <Check size={12} /> : <Save size={12} />, onClick: () => onSaveSimulation?.(), disabled: simulationSaved },
+            { label: isMobile ? "PDF" : "Export PDF", icon: <FileDown size={12} />, onClick: () => {
+              import("../lib/exportPdf").then(({ exportSimulationPdf }) => {
+                exportSimulationPdf({ scenario: simScenario, rounds: engineRounds || [], verdict: engineVerdict, evolution: engineEvolution || [] });
+              });
+            }},
           ].map((btn: any, i: number) => (
             <button key={i} onClick={btn.onClick} disabled={btn.disabled} style={{
               display: "flex", alignItems: "center", gap: 6,
