@@ -14,6 +14,10 @@ import { useEnhance } from "../lib/useEnhance";
 import MarkdownRenderer from "./MarkdownRenderer";
 import { signuxFetch } from "../lib/api-client";
 import type { SimAgent, SimResult, Mode } from "../lib/types";
+import RoundTimeline from "./RoundTimeline";
+import AgentCard from "./AgentCard";
+import EvolutionTracker from "./EvolutionTracker";
+import VerdictPanel from "./VerdictPanel";
 import { parseSignuxMetadata, type SignuxVote, type SignuxTimelineEvent, type SignuxSentiment, type SignuxSource, type SignuxFollowup } from "../lib/parseMetadata";
 import { AGENT_CATEGORY_COLORS, DEFAULT_CATEGORY_COLOR, ENTITY_COLORS, DEFAULT_ENTITY_COLOR } from "../lib/types";
 
@@ -108,6 +112,17 @@ export default function SimulationEngine(props: SimulationEngineProps) {
   const [agentFilter, setAgentFilter] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+
+  // 10x10 Canvas state
+  const [activeRound, setActiveRound] = useState(1);
+  const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
+
+  // Auto-advance activeRound when new rounds arrive
+  useEffect(() => {
+    if (engineRounds && engineRounds.length > 0) {
+      setActiveRound(engineRounds.length);
+    }
+  }, [engineRounds?.length]);
 
   // God's Eye state
   const [godEyeOpen, setGodEyeOpen] = useState(false);
@@ -1423,382 +1438,178 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           </div>
         </motion.div>
 
-        {/* 10x10 ENGINE — Adversarial Debate Rounds arriving live */}
+        {/* 10x10 ENGINE — 4-Zone Canvas */}
         {hasEngineData ? (
           <div style={{
             flex: 1, overflowY: "auto",
-            padding: isMobile ? "12px 12px 90px" : "16px 20px 90px",
+            display: "flex", flexDirection: "column",
           }}>
-            <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+            {/* ZONA 1: Round Timeline */}
+            <RoundTimeline
+              completedRound={engineRounds?.length || 0}
+              activeRound={activeRound}
+              setActiveRound={setActiveRound}
+              currentRoundLoading={engineCurrentRound}
+              isMobile={isMobile}
+            />
 
-              {/* Agent roster bar */}
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{
-                  display: "flex", gap: 6, flexWrap: "wrap",
-                  padding: "10px 14px", borderRadius: 12, marginBottom: 16,
-                  background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
-                }}
-              >
-                {(engineAgents || []).map((ag: any) => (
-                  <div key={ag.id} style={{
-                    display: "flex", alignItems: "center", gap: 4,
-                    padding: "4px 10px", borderRadius: 50,
-                    background: `${ag.color}10`, border: `1px solid ${ag.color}25`,
-                    fontSize: 11, color: ag.color, fontWeight: 500,
-                  }}>
-                    <span>{ag.avatar}</span>
-                    <span>{ag.name}</span>
-                  </div>
-                ))}
-              </motion.div>
+            {/* Main content area */}
+            <div style={{
+              flex: 1, overflowY: "auto",
+              padding: isMobile ? "0 12px 90px" : "0 20px 90px",
+            }}>
+              <div style={{ maxWidth: 900, margin: "0 auto" }}>
 
-              {/* Current round indicator */}
-              {engineCurrentRound && (
-                <motion.div
-                  key={`round-loading-${engineCurrentRound.round}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 10,
-                    padding: "12px 18px", borderRadius: 12, marginBottom: 12,
-                    background: "rgba(212,175,55,0.04)", border: "1px solid rgba(212,175,55,0.15)",
-                  }}
-                >
-                  <Loader2 size={14} style={{ color: "#D4AF37", animation: "spin 1s linear infinite" }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#D4AF37", fontFamily: "var(--font-mono)" }}>
-                    Round {engineCurrentRound.round}/10
-                  </span>
-                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-                    {engineCurrentRound.label}
-                  </span>
-                  <span style={{
-                    marginLeft: "auto", fontSize: 9, padding: "2px 8px", borderRadius: 4,
-                    background: engineCurrentRound.model === "sonnet" ? "rgba(139,92,246,0.1)" : "rgba(59,130,246,0.1)",
-                    color: engineCurrentRound.model === "sonnet" ? "#8B5CF6" : "#3B82F6",
-                    fontFamily: "var(--font-mono)", fontWeight: 600, letterSpacing: "0.1em",
-                  }}>
-                    {engineCurrentRound.model?.toUpperCase()}
-                  </span>
-                </motion.div>
-              )}
+                {/* ZONA 2: Agent Grid — debate of the selected round */}
+                {(() => {
+                  const currentRoundData = (engineRounds || []).find((r: any) => r.round === activeRound);
+                  const currentRoundAgents = currentRoundData?.agents || [];
 
-              {/* Completed rounds — one row per round */}
-              <AnimatePresence>
-                {(engineRounds || []).map((round: any) => (
-                  <motion.div
-                    key={`round-${round.round}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    style={{ marginBottom: 12 }}
-                  >
-                    {/* Round header */}
-                    <div style={{
-                      display: "flex", alignItems: "center", gap: 8,
-                      padding: "6px 0", marginBottom: 6,
-                    }}>
+                  if (currentRoundAgents.length === 0 && !engineCurrentRound) {
+                    // No rounds yet — skeleton
+                    return (
                       <div style={{
-                        fontSize: 10, fontWeight: 700, letterSpacing: "0.15em",
-                        color: round.round <= 5 ? "#3B82F6" : "#8B5CF6",
-                        fontFamily: "var(--font-mono)",
+                        display: "grid",
+                        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                        gap: 10,
+                        marginBottom: 16,
                       }}>
-                        ROUND {round.round}
-                      </div>
-                      <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>
-                        {round.label}
-                      </div>
-                      <div style={{ flex: 1, height: 1, background: "var(--border-secondary)" }} />
-                    </div>
-
-                    {/* Agent responses grid */}
-                    <div style={{
-                      display: "grid",
-                      gridTemplateColumns: isMobile ? "1fr" : "repeat(5, 1fr)",
-                      gap: 6,
-                    }}>
-                      {(round.agents || []).map((agent: any, ai: number) => (
-                        <motion.div
-                          key={agent.agentId}
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: ai * 0.03, duration: 0.25 }}
-                          style={{
-                            padding: "10px 12px", borderRadius: 10,
-                            background: "var(--card-bg)",
-                            border: `1px solid ${agent.color}20`,
-                            position: "relative", overflow: "hidden",
-                          }}
-                        >
-                          {/* Agent header */}
-                          <div style={{
-                            display: "flex", alignItems: "center", gap: 6, marginBottom: 6,
-                          }}>
-                            <span style={{ fontSize: 14 }}>{agent.avatar}</span>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{
-                                fontSize: 10, fontWeight: 600, color: agent.color,
-                                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                              }}>{agent.name}</div>
+                        {Array.from({ length: 10 }, (_, i) => (
+                          <motion.div
+                            key={i}
+                            animate={{ opacity: [0.15, 0.3, 0.15] }}
+                            transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
+                            style={{
+                              padding: "14px", borderRadius: 12,
+                              background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
+                              minHeight: 80,
+                            }}
+                          >
+                            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                              <div style={{ width: 24, height: 24, borderRadius: "50%", background: "var(--bg-tertiary)" }} />
+                              <div>
+                                <div style={{ width: 80, height: 10, borderRadius: 4, background: "var(--bg-tertiary)", marginBottom: 4 }} />
+                                <div style={{ width: 50, height: 8, borderRadius: 4, background: "var(--bg-tertiary)" }} />
+                              </div>
                             </div>
-                            {/* Sentiment + confidence */}
-                            <div style={{
-                              width: 7, height: 7, borderRadius: "50%",
-                              background: engineSentimentColor(agent.sentiment),
-                              flexShrink: 0,
-                            }} />
-                          </div>
-                          {/* Response text */}
-                          <div style={{
-                            fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.45,
-                            maxHeight: 72, overflow: "hidden",
-                            display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical" as any,
-                          }}>
-                            {agent.text}
-                          </div>
-                          {/* Footer: confidence + changed_mind */}
-                          <div style={{
-                            display: "flex", alignItems: "center", gap: 6, marginTop: 6,
-                          }}>
-                            <span style={{
-                              fontSize: 9, fontFamily: "var(--font-mono)", color: "var(--text-tertiary)",
-                            }}>
-                              {agent.confidence}/10
-                            </span>
-                            {agent.changedMind && (
-                              <span style={{
-                                fontSize: 8, padding: "1px 5px", borderRadius: 3,
-                                background: "rgba(245,158,11,0.1)", color: "#F59E0B",
-                                fontWeight: 600, letterSpacing: "0.05em",
-                              }}>
-                                CHANGED
-                              </span>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-
-              {/* Verdict bar — appears after Round 10 */}
-              <AnimatePresence>
-                {engineVerdict && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    style={{
-                      marginTop: 16, padding: "20px 24px", borderRadius: 14,
-                      background: "var(--card-bg)",
-                      border: `1px solid ${engineVerdict.proceedCount > engineVerdict.stopCount ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`,
-                    }}
-                  >
-                    {/* Vote result */}
-                    <div style={{
-                      display: "flex", flexWrap: "wrap", alignItems: "center", gap: 20, marginBottom: 16,
-                    }}>
-                      <div>
-                        <div style={{
-                          fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)",
-                          textTransform: "uppercase", fontFamily: "var(--font-mono)", marginBottom: 4,
-                        }}>
-                          10-AGENT VERDICT
-                        </div>
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                          style={{
-                            fontSize: 28, fontWeight: 800, fontFamily: "var(--font-brand)", letterSpacing: 2,
-                            color: engineVerdict.proceedCount > engineVerdict.stopCount ? "#22c55e" : "#ef4444",
-                          }}
-                        >
-                          {engineVerdict.proceedCount > engineVerdict.stopCount ? "PROCEED" : "STOP"}
-                        </motion.div>
-                      </div>
-                      <div style={{ width: 1, height: 40, background: "var(--border-secondary)" }} />
-                      <div style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: 22, fontWeight: 800, color: "#22c55e", fontFamily: "var(--font-mono)" }}>{engineVerdict.proceedCount}</div>
-                        <div style={{ fontSize: 9, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>PROCEED</div>
-                      </div>
-                      <div style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: 22, fontWeight: 800, color: "#ef4444", fontFamily: "var(--font-mono)" }}>{engineVerdict.stopCount}</div>
-                        <div style={{ fontSize: 9, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>STOP</div>
-                      </div>
-                      <div style={{ width: 1, height: 40, background: "var(--border-secondary)" }} />
-                      <div style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-mono)" }}>{engineVerdict.avgConfidence}</div>
-                        <div style={{ fontSize: 9, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>CONFIDENCE</div>
-                      </div>
-                      <div style={{ textAlign: "center" }}>
-                        <div style={{
-                          fontSize: 22, fontWeight: 800, fontFamily: "var(--font-mono)",
-                          color: engineVerdict.viability >= 7 ? "#22c55e" : engineVerdict.viability >= 4 ? "#f59e0b" : "#ef4444",
-                        }}>{engineVerdict.viability}/10</div>
-                        <div style={{ fontSize: 9, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>VIABILITY</div>
-                      </div>
-                      {engineVerdict.estimatedROI && engineVerdict.estimatedROI !== "N/A" && (
-                        <div style={{ textAlign: "center" }}>
-                          <div style={{
-                            fontSize: 22, fontWeight: 800, fontFamily: "var(--font-mono)",
-                            color: engineVerdict.estimatedROI?.startsWith("-") ? "#EF4444" : "#10B981",
-                          }}>{engineVerdict.estimatedROI}</div>
-                          <div style={{ fontSize: 9, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>EST. ROI</div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Verdict text */}
-                    {engineVerdict.verdict && (
-                      <div style={{
-                        fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6,
-                        padding: "12px 14px", borderRadius: 8, background: "rgba(255,255,255,0.02)",
-                        border: "1px solid var(--border-secondary)", marginBottom: 12,
-                      }}>
-                        {engineVerdict.verdict}
-                      </div>
-                    )}
-
-                    {/* Emergent patterns */}
-                    {engineVerdict.patterns && engineVerdict.patterns.length > 0 && (
-                      <div style={{ marginBottom: 12 }}>
-                        <div style={{
-                          fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)",
-                          fontFamily: "var(--font-mono)", marginBottom: 8, textTransform: "uppercase",
-                        }}>
-                          EMERGENT PATTERNS
-                        </div>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                          {engineVerdict.patterns.map((p: any, pi: number) => {
-                            const typeColor: Record<string, string> = {
-                              consensus: "#22c55e", emerging_risk: "#ef4444", blind_spot: "#f59e0b",
-                              opportunity: "#3b82f6", tension: "#ec4899",
-                            };
-                            return (
-                              <motion.div
-                                key={pi}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: pi * 0.05 }}
-                                style={{
-                                  padding: "8px 12px", borderRadius: 8,
-                                  background: `${typeColor[p.type] || "#6B7280"}08`,
-                                  border: `1px solid ${typeColor[p.type] || "#6B7280"}20`,
-                                  maxWidth: 280,
-                                }}
-                              >
-                                <div style={{
-                                  fontSize: 10, fontWeight: 700, color: typeColor[p.type] || "#6B7280",
-                                  marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.1em",
-                                  fontFamily: "var(--font-mono)",
-                                }}>
-                                  {p.type?.replace("_", " ")}
-                                </div>
-                                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", marginBottom: 2 }}>
-                                  {p.title}
-                                </div>
-                                <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4 }}>
-                                  {p.description}
-                                </div>
-                              </motion.div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Dissent notes */}
-                    {engineVerdict.dissents && engineVerdict.dissents.length > 0 && (
-                      <div>
-                        <div style={{
-                          fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)",
-                          fontFamily: "var(--font-mono)", marginBottom: 8, textTransform: "uppercase",
-                        }}>
-                          DISSENT NOTES
-                        </div>
-                        {engineVerdict.dissents.map((d: any, di: number) => (
-                          <div key={di} style={{
-                            display: "flex", gap: 8, alignItems: "flex-start",
-                            padding: "6px 0", borderBottom: di < engineVerdict.dissents.length - 1 ? "1px solid var(--border-secondary)" : "none",
-                          }}>
-                            <span style={{ fontSize: 14 }}>{d.avatar}</span>
-                            <div>
-                              <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)" }}>{d.agent}:</span>{" "}
-                              <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{d.note}</span>
-                            </div>
-                          </div>
+                            <div style={{ width: "90%", height: 8, borderRadius: 4, background: "var(--bg-tertiary)", marginBottom: 4 }} />
+                            <div style={{ width: "70%", height: 8, borderRadius: 4, background: "var(--bg-tertiary)" }} />
+                          </motion.div>
                         ))}
                       </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    );
+                  }
 
-              {/* Evolution arcs — after verdict */}
-              {engineEvolution && engineEvolution.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.2 }}
-                  style={{
-                    marginTop: 16, padding: "16px 20px", borderRadius: 14,
-                    background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
-                  }}
-                >
-                  <div style={{
-                    fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)",
-                    fontFamily: "var(--font-mono)", marginBottom: 12, textTransform: "uppercase",
-                  }}>
-                    AGENT EVOLUTION — SENTIMENT ARCS
-                  </div>
-                  <div style={{
-                    display: "grid",
-                    gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(5, 1fr)",
-                    gap: 8,
-                  }}>
-                    {engineEvolution.map((agent: any) => (
-                      <div key={agent.agentId} style={{
-                        padding: "8px 10px", borderRadius: 8,
-                        border: `1px solid ${agent.color}15`,
-                        background: `${agent.color}04`,
+                  if (currentRoundAgents.length === 0 && engineCurrentRound) {
+                    // Current round is loading — show loading skeleton with agent names
+                    return (
+                      <div style={{
+                        display: "grid",
+                        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                        gap: 10,
+                        marginBottom: 16,
                       }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 6 }}>
-                          <span style={{ fontSize: 12 }}>{agent.avatar}</span>
-                          <span style={{
-                            fontSize: 9, fontWeight: 600, color: agent.color,
-                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                          }}>{agent.name}</span>
-                        </div>
-                        {/* Mini confidence arc */}
-                        <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 24 }}>
-                          {(agent.arc || []).map((point: any, pi: number) => (
-                            <div key={pi} style={{
-                              flex: 1, borderRadius: 2,
-                              height: `${(point.confidence / 10) * 100}%`,
-                              minHeight: 2,
-                              background: engineSentimentColor(point.sentiment),
-                              opacity: point.changedMind ? 1 : 0.6,
-                              transition: "height 300ms ease",
-                            }} />
-                          ))}
-                        </div>
-                        {/* Changed mind count */}
-                        {(agent.arc || []).some((p: any) => p.changedMind) && (
-                          <div style={{
-                            fontSize: 8, color: "#F59E0B", marginTop: 4,
-                            fontFamily: "var(--font-mono)", fontWeight: 600,
-                          }}>
-                            Changed: {(agent.arc || []).filter((p: any) => p.changedMind).length}x
-                          </div>
-                        )}
+                        {(engineAgents || []).map((ag: any, i: number) => (
+                          <motion.div
+                            key={ag.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.04 }}
+                            style={{
+                              padding: "12px 14px", borderRadius: 12,
+                              background: "var(--card-bg)",
+                              border: `1px solid ${ag.color}12`,
+                              minHeight: 72,
+                            }}
+                          >
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                              <span style={{ fontSize: 18 }}>{ag.avatar}</span>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: ag.color }}>{ag.name}</span>
+                              <Loader2 size={10} style={{ marginLeft: "auto", color: ag.color, opacity: 0.5, animation: "spin 1.5s linear infinite" }} />
+                            </div>
+                            <motion.div
+                              animate={{ opacity: [0.1, 0.25, 0.1] }}
+                              transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.12 }}
+                              style={{ width: "85%", height: 8, borderRadius: 4, background: `${ag.color}15`, marginBottom: 4 }}
+                            />
+                            <motion.div
+                              animate={{ opacity: [0.08, 0.2, 0.08] }}
+                              transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.12 + 0.2 }}
+                              style={{ width: "60%", height: 8, borderRadius: 4, background: `${ag.color}10` }}
+                            />
+                          </motion.div>
+                        ))}
                       </div>
-                    ))}
+                    );
+                  }
+
+                  return (
+                    <div style={{
+                      display: "grid",
+                      gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                      gap: 10,
+                      marginBottom: 16,
+                    }}>
+                      {currentRoundAgents.map((agent: any, i: number) => (
+                        <AgentCard
+                          key={agent.agentId}
+                          agent={agent}
+                          index={i}
+                          expanded={expandedAgent === agent.agentId}
+                          onToggle={() => setExpandedAgent(expandedAgent === agent.agentId ? null : agent.agentId)}
+                        />
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* ZONA 3: Evolution Tracker */}
+                {engineEvolution && engineEvolution.length > 0 ? (
+                  <div style={{ marginBottom: 16 }}>
+                    <EvolutionTracker
+                      evolution={engineEvolution}
+                      activeRound={activeRound}
+                      onSelectRound={setActiveRound}
+                      isMobile={isMobile}
+                      compact
+                    />
                   </div>
-                </motion.div>
-              )}
+                ) : (engineRounds || []).length >= 2 ? (
+                  // Build partial evolution from available rounds
+                  <div style={{ marginBottom: 16 }}>
+                    <EvolutionTracker
+                      evolution={(engineAgents || []).map((ag: any) => ({
+                        agentId: ag.id,
+                        name: ag.name,
+                        avatar: ag.avatar,
+                        color: ag.color,
+                        arc: (engineRounds || []).map((r: any) => {
+                          const agentInRound = (r.agents || []).find((a: any) => a.agentId === ag.id);
+                          return {
+                            round: r.round,
+                            sentiment: agentInRound?.sentiment || "neutral",
+                            confidence: agentInRound?.confidence || 5,
+                            changedMind: agentInRound?.changedMind || false,
+                          };
+                        }),
+                      }))}
+                      activeRound={activeRound}
+                      onSelectRound={setActiveRound}
+                      isMobile={isMobile}
+                      compact
+                    />
+                  </div>
+                ) : null}
+
+                {/* ZONA 4: Verdict Panel — after Round 10 */}
+                <AnimatePresence>
+                  {engineVerdict && (
+                    <div style={{ marginBottom: 16 }}>
+                      <VerdictPanel verdict={engineVerdict} isMobile={isMobile} />
+                    </div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
         ) : hasStreamingUniverses ? (
@@ -2166,280 +1977,114 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
     const duration = simStartTime ? Math.floor((Date.now() - simStartTime) / 1000) : 0;
     const meta = simResult.metadata || {};
 
-    const engineSentimentColorResult = (s: string) => {
-      const map: Record<string, string> = {
-        confident: "#10B981", optimistic: "#22c55e", excited: "#10B981", convinced: "#10B981",
-        cautious: "#F59E0B", neutral: "#6B7280", concerned: "#F59E0B",
-        worried: "#EF4444", skeptical: "#EF4444", contrarian: "#EC4899",
-      };
-      return map[s] || "#6B7280";
-    };
-
     return (
-      <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "24px 12px 120px" : "24px 24px 120px", position: "relative" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-
-          {/* Top bar */}
-          <div style={{
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-            marginBottom: 24, flexWrap: "wrap", gap: 12,
-          }}>
-            <div>
-              <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", fontFamily: "var(--font-brand)", letterSpacing: 1 }}>
-                {t("sim.complete")}
-              </div>
-              <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
-                {meta.agents_count} agents · {meta.rounds} rounds · {meta.total_interactions} interactions · {duration > 60 ? `${Math.floor(duration / 60)}m ${duration % 60}s` : `${duration}s`}
-              </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* Top bar */}
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          padding: isMobile ? "16px 16px 0" : "20px 24px 0",
+          flexWrap: "wrap", gap: 12,
+        }}>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", fontFamily: "var(--font-brand)", letterSpacing: 1 }}>
+              {t("sim.complete")}
             </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={onReset} style={{
-                fontSize: 13, color: "var(--text-secondary)", background: "transparent",
-                border: "1px solid var(--border-primary)", padding: "8px 16px",
-                borderRadius: "var(--radius-sm)", cursor: "pointer",
-              }}>
-                {t("sim.new_simulation")}
-              </button>
+            <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
+              {meta.agents_count} agents · {meta.rounds} rounds · {meta.total_interactions} interactions · {duration > 60 ? `${Math.floor(duration / 60)}m ${duration % 60}s` : `${duration}s`}
             </div>
           </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => setGodEyeOpen(true)} style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "8px 18px", borderRadius: "var(--radius-sm)",
+              border: "1px solid var(--mode-sim-border)",
+              background: "var(--mode-sim-bg)", color: "var(--mode-sim)",
+              fontSize: 13, fontWeight: 600, cursor: "pointer",
+              fontFamily: "var(--font-brand)", letterSpacing: 1,
+            }}>
+              <Eye size={14} /> What if?
+            </button>
+            <button onClick={onReset} style={{
+              fontSize: 13, color: "var(--text-secondary)", background: "transparent",
+              border: "1px solid var(--border-primary)", padding: "8px 16px",
+              borderRadius: "var(--radius-sm)", cursor: "pointer",
+            }}>
+              {t("sim.new_simulation")}
+            </button>
+          </div>
+        </div>
 
-          {/* Verdict card */}
+        {/* ZONA 1: Round Timeline */}
+        <RoundTimeline
+          completedRound={engineRounds?.length || 0}
+          activeRound={activeRound}
+          setActiveRound={setActiveRound}
+          isMobile={isMobile}
+        />
+
+        {/* Scrollable content */}
+        <div style={{
+          flex: 1, overflowY: "auto",
+          padding: isMobile ? "0 12px 120px" : "0 24px 120px",
+        }}>
+          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+
+          {/* ZONA 4: Verdict Panel */}
           {engineVerdict && (
-            <div style={{
-              padding: "20px 24px", borderRadius: 14, marginBottom: 20,
-              background: "var(--card-bg)",
-              border: `1px solid ${(engineVerdict.proceedCount || 0) > (engineVerdict.stopCount || 0) ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`,
-            }}>
-              <div style={{
-                display: "flex", flexWrap: "wrap", alignItems: "center", gap: 20, marginBottom: 16,
-              }}>
-                <div>
-                  <div style={{
-                    fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)",
-                    textTransform: "uppercase", fontFamily: "var(--font-mono)", marginBottom: 4,
-                  }}>
-                    10-AGENT VERDICT
-                  </div>
-                  <div style={{
-                    fontSize: 28, fontWeight: 800, fontFamily: "var(--font-brand)", letterSpacing: 2,
-                    color: (engineVerdict.proceedCount || 0) > (engineVerdict.stopCount || 0) ? "#22c55e" : "#ef4444",
-                  }}>
-                    {(engineVerdict.proceedCount || 0) > (engineVerdict.stopCount || 0) ? "PROCEED" : "STOP"}
-                  </div>
-                </div>
-                <div style={{ width: 1, height: 40, background: "var(--border-secondary)" }} />
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: "#22c55e", fontFamily: "var(--font-mono)" }}>{engineVerdict.proceedCount}</div>
-                  <div style={{ fontSize: 9, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>PROCEED</div>
-                </div>
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: "#ef4444", fontFamily: "var(--font-mono)" }}>{engineVerdict.stopCount}</div>
-                  <div style={{ fontSize: 9, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>STOP</div>
-                </div>
-                <div style={{ width: 1, height: 40, background: "var(--border-secondary)" }} />
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-mono)" }}>{engineVerdict.avgConfidence}</div>
-                  <div style={{ fontSize: 9, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>CONFIDENCE</div>
-                </div>
-                <div style={{ textAlign: "center" }}>
-                  <div style={{
-                    fontSize: 22, fontWeight: 800, fontFamily: "var(--font-mono)",
-                    color: (engineVerdict.viability || 0) >= 7 ? "#22c55e" : (engineVerdict.viability || 0) >= 4 ? "#f59e0b" : "#ef4444",
-                  }}>{engineVerdict.viability}/10</div>
-                  <div style={{ fontSize: 9, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>VIABILITY</div>
-                </div>
-                {engineVerdict.estimatedROI && engineVerdict.estimatedROI !== "N/A" && (
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{
-                      fontSize: 22, fontWeight: 800, fontFamily: "var(--font-mono)",
-                      color: engineVerdict.estimatedROI?.startsWith("-") ? "#EF4444" : "#10B981",
-                    }}>{engineVerdict.estimatedROI}</div>
-                    <div style={{ fontSize: 9, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>EST. ROI</div>
-                  </div>
-                )}
-              </div>
-              {engineVerdict.verdict && (
-                <div style={{
-                  fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6,
-                  padding: "12px 14px", borderRadius: 8, background: "rgba(255,255,255,0.02)",
-                  border: "1px solid var(--border-secondary)", marginBottom: 12,
-                }}>
-                  {engineVerdict.verdict}
-                </div>
-              )}
-              {/* Key Risk + Key Opportunity */}
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                {engineVerdict.keyRisk && (
-                  <div style={{
-                    flex: 1, minWidth: 200, padding: "10px 14px", borderRadius: 8,
-                    background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.15)",
-                  }}>
-                    <div style={{ fontSize: 9, fontWeight: 700, color: "#EF4444", fontFamily: "var(--font-mono)", letterSpacing: "0.1em", marginBottom: 4 }}>KEY RISK</div>
-                    <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.4 }}>{engineVerdict.keyRisk}</div>
-                  </div>
-                )}
-                {engineVerdict.keyOpportunity && (
-                  <div style={{
-                    flex: 1, minWidth: 200, padding: "10px 14px", borderRadius: 8,
-                    background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.15)",
-                  }}>
-                    <div style={{ fontSize: 9, fontWeight: 700, color: "#22c55e", fontFamily: "var(--font-mono)", letterSpacing: "0.1em", marginBottom: 4 }}>KEY OPPORTUNITY</div>
-                    <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.4 }}>{engineVerdict.keyOpportunity}</div>
-                  </div>
-                )}
-              </div>
+            <div style={{ marginBottom: 20 }}>
+              <VerdictPanel verdict={engineVerdict} isMobile={isMobile} />
             </div>
           )}
 
-          {/* Emergent patterns */}
-          {engineVerdict?.patterns && engineVerdict.patterns.length > 0 && (
-            <div style={{
-              padding: "16px 20px", borderRadius: 14, marginBottom: 20,
-              background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
-            }}>
-              <div style={{
-                fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)",
-                fontFamily: "var(--font-mono)", marginBottom: 12, textTransform: "uppercase",
-              }}>
-                EMERGENT PATTERNS
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 10 }}>
-                {engineVerdict.patterns.map((p: any, pi: number) => {
-                  const typeColor: Record<string, string> = {
-                    consensus: "#22c55e", emerging_risk: "#ef4444", blind_spot: "#f59e0b",
-                    opportunity: "#3b82f6", tension: "#ec4899",
-                  };
-                  return (
-                    <div key={pi} style={{
-                      padding: "12px 14px", borderRadius: 10,
-                      background: `${typeColor[p.type] || "#6B7280"}06`,
-                      border: `1px solid ${typeColor[p.type] || "#6B7280"}18`,
-                    }}>
-                      <div style={{
-                        fontSize: 9, fontWeight: 700, color: typeColor[p.type] || "#6B7280",
-                        marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "var(--font-mono)",
-                      }}>
-                        {p.type?.replace("_", " ")}
-                      </div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>{p.title}</div>
-                      <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.5 }}>{p.description}</div>
-                      {p.agents_involved && (
-                        <div style={{ marginTop: 6, display: "flex", gap: 4, flexWrap: "wrap" }}>
-                          {p.agents_involved.map((a: string, ai: number) => (
-                            <span key={ai} style={{
-                              fontSize: 9, padding: "2px 6px", borderRadius: 4,
-                              background: "rgba(255,255,255,0.03)", color: "var(--text-tertiary)",
-                              border: "1px solid var(--border-secondary)",
-                            }}>{a}</span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Evolution arcs */}
-          {engineEvolution && engineEvolution.length > 0 && (
-            <div style={{
-              padding: "16px 20px", borderRadius: 14, marginBottom: 20,
-              background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
-            }}>
-              <div style={{
-                fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)",
-                fontFamily: "var(--font-mono)", marginBottom: 12, textTransform: "uppercase",
-              }}>
-                AGENT EVOLUTION — 10 ROUNDS
-              </div>
+          {/* ZONA 2: Agent Grid — browseable by round */}
+          {(() => {
+            const currentRoundData = (engineRounds || []).find((r: any) => r.round === activeRound);
+            const currentRoundAgents = currentRoundData?.agents || [];
+            if (currentRoundAgents.length === 0) return null;
+            return (
               <div style={{
                 display: "grid",
-                gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(5, 1fr)",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                 gap: 10,
+                marginBottom: 20,
               }}>
-                {engineEvolution.map((agent: any) => (
-                  <div key={agent.agentId} style={{
-                    padding: "12px 14px", borderRadius: 10,
-                    border: `1px solid ${agent.color}18`,
-                    background: `${agent.color}04`,
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                      <span style={{ fontSize: 16 }}>{agent.avatar}</span>
-                      <span style={{
-                        fontSize: 11, fontWeight: 600, color: agent.color,
-                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                      }}>{agent.name}</span>
-                    </div>
-                    {/* Confidence bar chart */}
-                    <div style={{ display: "flex", gap: 3, alignItems: "flex-end", height: 32 }}>
-                      {(agent.arc || []).map((point: any, pi: number) => (
-                        <div key={pi} style={{
-                          flex: 1, borderRadius: 2,
-                          height: `${(point.confidence / 10) * 100}%`,
-                          minHeight: 3,
-                          background: engineSentimentColorResult(point.sentiment),
-                          opacity: point.changedMind ? 1 : 0.5,
-                        }} title={`R${point.round}: ${point.sentiment} (${point.confidence}/10)${point.changedMind ? " - changed mind" : ""}`} />
-                      ))}
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-                      <span style={{ fontSize: 8, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>R1</span>
-                      <span style={{ fontSize: 8, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>R10</span>
-                    </div>
-                    {(agent.arc || []).some((p: any) => p.changedMind) && (
-                      <div style={{
-                        fontSize: 9, color: "#F59E0B", marginTop: 4,
-                        fontFamily: "var(--font-mono)", fontWeight: 600,
-                      }}>
-                        Changed mind: {(agent.arc || []).filter((p: any) => p.changedMind).length}x
-                      </div>
-                    )}
-                  </div>
+                {currentRoundAgents.map((agent: any, i: number) => (
+                  <AgentCard
+                    key={agent.agentId}
+                    agent={agent}
+                    index={i}
+                    expanded={expandedAgent === agent.agentId}
+                    onToggle={() => setExpandedAgent(expandedAgent === agent.agentId ? null : agent.agentId)}
+                  />
                 ))}
               </div>
+            );
+          })()}
+
+          {/* ZONA 3: Evolution */}
+          {engineEvolution && engineEvolution.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <EvolutionTracker
+                evolution={engineEvolution}
+                activeRound={activeRound}
+                onSelectRound={setActiveRound}
+                isMobile={isMobile}
+              />
             </div>
           )}
 
-          {/* Dissent notes */}
-          {engineVerdict?.dissents && engineVerdict.dissents.length > 0 && (
-            <div style={{
-              padding: "16px 20px", borderRadius: 14, marginBottom: 20,
-              background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
-            }}>
-              <div style={{
-                fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)",
-                fontFamily: "var(--font-mono)", marginBottom: 10, textTransform: "uppercase",
-              }}>
-                DISSENT NOTES
-              </div>
-              {engineVerdict.dissents.map((d: any, di: number) => (
-                <div key={di} style={{
-                  display: "flex", gap: 10, alignItems: "flex-start",
-                  padding: "8px 0",
-                  borderBottom: di < engineVerdict.dissents.length - 1 ? "1px solid var(--border-secondary)" : "none",
-                }}>
-                  <span style={{ fontSize: 18 }}>{d.avatar}</span>
-                  <div>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)" }}>{d.agent}</span>
-                    <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, marginTop: 2 }}>{d.note}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Full debate transcript (collapsible by round) */}
+          {/* Full debate transcript — collapsible */}
           {engineRounds && engineRounds.length > 0 && (
             <div style={{
-              padding: "16px 20px", borderRadius: 14,
+              padding: "16px 20px", borderRadius: 12, marginBottom: 20,
               background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
             }}>
               <div style={{
-                fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)",
-                fontFamily: "var(--font-mono)", marginBottom: 12, textTransform: "uppercase",
+                fontSize: 10, fontFamily: "var(--font-mono)",
+                color: "var(--text-tertiary)", textTransform: "uppercase" as const,
+                letterSpacing: 1, marginBottom: 12,
               }}>
-                FULL DEBATE TRANSCRIPT
+                Full Debate Transcript
               </div>
               {engineRounds.map((round: any) => {
                 const isCollapsed = collapsedSections[`er-${round.round}`] !== false;
@@ -2465,38 +2110,17 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                     {!isCollapsed && (
                       <div style={{
                         display: "grid",
-                        gridTemplateColumns: isMobile ? "1fr" : "repeat(5, 1fr)",
-                        gap: 6, padding: "10px 0",
+                        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                        gap: 8, padding: "10px 0",
                       }}>
-                        {(round.agents || []).map((agent: any) => (
-                          <div key={agent.agentId} style={{
-                            padding: "10px 12px", borderRadius: 8,
-                            border: `1px solid ${agent.color}15`,
-                            background: `${agent.color}04`,
-                          }}>
-                            <div style={{
-                              display: "flex", alignItems: "center", gap: 4, marginBottom: 4,
-                            }}>
-                              <span>{agent.avatar}</span>
-                              <span style={{ fontSize: 10, fontWeight: 600, color: agent.color }}>{agent.name}</span>
-                              <div style={{
-                                marginLeft: "auto", width: 6, height: 6, borderRadius: "50%",
-                                background: engineSentimentColorResult(agent.sentiment),
-                              }} />
-                            </div>
-                            <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                              {agent.text}
-                            </div>
-                            <div style={{ marginTop: 4, display: "flex", gap: 6, alignItems: "center" }}>
-                              <span style={{ fontSize: 9, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>{agent.confidence}/10</span>
-                              {agent.changedMind && (
-                                <span style={{
-                                  fontSize: 8, padding: "1px 5px", borderRadius: 3,
-                                  background: "rgba(245,158,11,0.1)", color: "#F59E0B", fontWeight: 600,
-                                }}>CHANGED</span>
-                              )}
-                            </div>
-                          </div>
+                        {(round.agents || []).map((agent: any, ai: number) => (
+                          <AgentCard
+                            key={agent.agentId}
+                            agent={agent}
+                            index={ai}
+                            expanded={expandedAgent === `t-${round.round}-${agent.agentId}`}
+                            onToggle={() => setExpandedAgent(expandedAgent === `t-${round.round}-${agent.agentId}` ? null : `t-${round.round}-${agent.agentId}`)}
+                          />
                         ))}
                       </div>
                     )}
@@ -2508,14 +2132,15 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
 
           {/* Variable Editor for re-simulation */}
           <div style={{
-            marginTop: 20, padding: "16px 20px", borderRadius: 14,
+            padding: "16px 20px", borderRadius: 12,
             background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
           }}>
             <div style={{
-              fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)",
-              fontFamily: "var(--font-mono)", marginBottom: 10, textTransform: "uppercase",
+              fontSize: 10, fontFamily: "var(--font-mono)",
+              color: "var(--text-tertiary)", textTransform: "uppercase" as const,
+              letterSpacing: 1, marginBottom: 10,
             }}>
-              RE-SIMULATE WITH CHANGES
+              Re-simulate with changes
             </div>
             <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
               <input
@@ -2556,6 +2181,8 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                 </button>
               ))}
             </div>
+          </div>
+
           </div>
         </div>
       </div>
