@@ -112,6 +112,8 @@ const zhHans: Record<string, string> = {
   "stage.2": "正在运行多代理模拟",
   "stage.3": "分析师正在推演各类场景",
   "stage.4": "正在编制最终报告",
+  "stage.universes": "生成平行宇宙",
+  "stage.verdict": "合成跨宇宙判决",
 
   // SIDEBAR HISTORY PLACEHOLDERS
   "sidebar.history.1": "香港公司注册",

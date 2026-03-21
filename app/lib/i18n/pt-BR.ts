@@ -112,6 +112,8 @@ const ptBR: Record<string, string> = {
   "stage.2": "Rodando simulação multi-agente",
   "stage.3": "Especialistas debatendo cenários",
   "stage.4": "Compilando relatório final",
+  "stage.universes": "Gerando universos paralelos",
+  "stage.verdict": "Sintetizando veredito cross-universo",
 
   // SIDEBAR HISTORY PLACEHOLDERS
   "sidebar.history.1": "Abertura de empresa em HK",

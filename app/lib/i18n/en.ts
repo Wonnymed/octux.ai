@@ -114,6 +114,8 @@ const en: Record<string, string> = {
   "stage.2": "Running multi-agent simulation",
   "stage.3": "Specialists debating scenarios",
   "stage.4": "Compiling final report",
+  "stage.universes": "Generating parallel universes",
+  "stage.verdict": "Synthesizing cross-universe verdict",
 
   // SIDEBAR HISTORY PLACEHOLDERS
   "sidebar.history.1": "Company setup in HK",

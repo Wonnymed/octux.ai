@@ -26,6 +26,36 @@ export type SimAgent = {
   done: boolean;
 };
 
+export type UniverseData = {
+  id: string;
+  label: string;
+  subtitle: string;
+  color: string;
+  probability: number;
+  riskLabel: string;
+  revenue: string;
+  roi: string;
+  timeline: string;
+  outcome: string;
+  trigger: string;
+  events: { period: string; text: string; sentiment: string }[];
+  keyInsights: string[];
+  agentQuotes: { agent: string; role: string; quote: string }[];
+};
+
+export type VerdictData = {
+  result: "GO" | "CAUTION" | "STOP";
+  viabilityScore: number;
+  estimatedROI: string;
+  confidence: number;
+  goVotes: number;
+  cautionVotes: number;
+  stopVotes: number;
+  reasoning: string;
+  steerTowardA: string[];
+  avoidC: string[];
+};
+
 export type SimResult = {
   error?: string;
   report?: string;
@@ -35,6 +65,8 @@ export type SimResult = {
     agents?: any[];
     simulation_parameters?: any;
   };
+  universes?: UniverseData[];
+  verdict?: VerdictData;
   metadata?: { agents_count?: number; rounds?: number; total_interactions?: number };
 };
 

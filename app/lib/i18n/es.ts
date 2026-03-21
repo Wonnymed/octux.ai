@@ -112,6 +112,8 @@ const es: Record<string, string> = {
   "stage.2": "Ejecutando simulación multi-agente",
   "stage.3": "Especialistas debatiendo escenarios",
   "stage.4": "Compilando informe final",
+  "stage.universes": "Generando universos paralelos",
+  "stage.verdict": "Sintetizando veredicto cross-universo",
 
   // SIDEBAR HISTORY PLACEHOLDERS
   "sidebar.history.1": "Constitución empresa en HK",

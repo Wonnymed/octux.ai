@@ -198,6 +198,229 @@ async function processAgent(
   }
 }
 
+type UniverseData = {
+  id: string;
+  label: string;
+  subtitle: string;
+  color: string;
+  probability: number;
+  riskLabel: string;
+  revenue: string;
+  roi: string;
+  timeline: string;
+  outcome: string;
+  trigger: string;
+  events: { period: string; text: string; sentiment: string }[];
+  keyInsights: string[];
+  agentQuotes: { agent: string; role: string; quote: string }[];
+};
+
+type VerdictData = {
+  result: "GO" | "CAUTION" | "STOP";
+  viabilityScore: number;
+  estimatedROI: string;
+  confidence: number;
+  goVotes: number;
+  cautionVotes: number;
+  stopVotes: number;
+  reasoning: string;
+  steerTowardA: string[];
+  avoidC: string[];
+};
+
+async function generateUniverses(
+  scenario: string, graph: any, agents: any[], simulation: any[],
+  userLang: string, worldContext: string, model: string
+): Promise<UniverseData[]> {
+  const simSummary = simulation.slice(0, 20).map(m =>
+    `[${m.agentName} (${m.role})] Round ${m.round}: ${(m.content || "").slice(0, 200)}`
+  ).join("\n");
+
+  const agentSummary = agents.map(a => `${a.name} — ${a.role} [${a.category}]`).join("\n");
+
+  const universeConfigs = [
+    {
+      id: "A", label: "Best Case", subtitle: "OPTIMISTIC", color: "#10B981",
+      prompt: `You are the OPTIMISTIC universe analyst. Analyze this scenario assuming EVERYTHING GOES WELL.
+Focus on: best-case revenue, fastest timeline, highest ROI, lowest risk.
+Assume favorable market conditions, efficient execution, and positive external factors.
+Be specific with numbers — real projections, not vague optimism.`
+    },
+    {
+      id: "B", label: "Most Likely", subtitle: "REALISTIC", color: "#3B82F6",
+      prompt: `You are the REALISTIC universe analyst. Analyze this scenario with BALANCED expectations.
+Focus on: most probable revenue, realistic timeline, moderate ROI, medium risk.
+Account for typical delays, average market conditions, and normal challenges.
+Be specific with numbers — grounded projections based on industry averages.`
+    },
+    {
+      id: "C", label: "Worst Case", subtitle: "PESSIMISTIC", color: "#F59E0B",
+      prompt: `You are the PESSIMISTIC universe analyst. Analyze this scenario assuming THINGS GO WRONG.
+Focus on: worst-case revenue, longest timeline, lowest/negative ROI, highest risk.
+Account for market downturns, execution failures, regulatory problems, and competition.
+Be specific with numbers — realistic worst-case projections, not apocalyptic fantasy.`
+    },
+  ];
+
+  const universePromises = universeConfigs.map(config =>
+    client.messages.create({
+      model,
+      max_tokens: 2000,
+      system: SECURITY_PREFIX + `${config.prompt}
+
+You have data from a multi-agent simulation with ${agents.length} specialists.
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "probability": <number 1-100, how likely this universe is>,
+  "riskLabel": "<Low|Medium|High>",
+  "revenue": "<projected revenue, e.g. '$180K/yr' or '$2.4M'>",
+  "roi": "<ROI percentage, e.g. '+120%' or '-25%'>",
+  "timeline": "<time to key milestone, e.g. '6 months' or '18 months'>",
+  "outcome": "<1-2 sentence summary of this universe's outcome>",
+  "trigger": "<what conditions trigger this universe>",
+  "events": [
+    {"period": "<e.g. Month 1-2>", "text": "<what happens>", "sentiment": "<positive|neutral|negative|warning>"}
+  ],
+  "keyInsights": ["<insight 1>", "<insight 2>", "<insight 3>"],
+  "agentQuotes": [
+    {"agent": "<agent name from simulation>", "role": "<their role>", "quote": "<a representative 1-sentence quote from their perspective in this universe>"}
+  ]
+}
+
+Include 4-6 timeline events and 2-3 agent quotes.
+Respond in ${userLang}.`,
+      messages: [{
+        role: "user",
+        content: `SCENARIO: ${scenario}
+
+ENTITY GRAPH: ${JSON.stringify(graph)}
+${worldContext ? `\nWORLD CONTEXT:\n${worldContext}\n` : ""}
+AGENTS IN SIMULATION:
+${agentSummary}
+
+SIMULATION HIGHLIGHTS:
+${simSummary}`
+      }],
+    }).then(res => {
+      const text = (res.content[0] as any).text || "{}";
+      try {
+        const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+        return {
+          id: config.id,
+          label: config.label,
+          subtitle: config.subtitle,
+          color: config.color,
+          probability: parsed.probability || (config.id === "A" ? 25 : config.id === "B" ? 50 : 25),
+          riskLabel: parsed.riskLabel || "Medium",
+          revenue: parsed.revenue || "N/A",
+          roi: parsed.roi || "N/A",
+          timeline: parsed.timeline || "N/A",
+          outcome: parsed.outcome || "",
+          trigger: parsed.trigger || "",
+          events: (parsed.events || []).slice(0, 6),
+          keyInsights: (parsed.keyInsights || []).slice(0, 4),
+          agentQuotes: (parsed.agentQuotes || []).slice(0, 3),
+        } as UniverseData;
+      } catch {
+        return {
+          id: config.id, label: config.label, subtitle: config.subtitle, color: config.color,
+          probability: config.id === "A" ? 25 : config.id === "B" ? 50 : 25,
+          riskLabel: config.id === "A" ? "Low" : config.id === "C" ? "High" : "Medium",
+          revenue: "N/A", roi: "N/A", timeline: "N/A", outcome: "", trigger: "",
+          events: [], keyInsights: [], agentQuotes: [],
+        } as UniverseData;
+      }
+    }).catch(() => ({
+      id: config.id, label: config.label, subtitle: config.subtitle, color: config.color,
+      probability: config.id === "A" ? 25 : config.id === "B" ? 50 : 25,
+      riskLabel: config.id === "A" ? "Low" : config.id === "C" ? "High" : "Medium",
+      revenue: "N/A", roi: "N/A", timeline: "N/A", outcome: "", trigger: "",
+      events: [], keyInsights: [], agentQuotes: [],
+    } as UniverseData))
+  );
+
+  const universes = await Promise.all(universePromises);
+
+  // Normalize probabilities to 100%
+  const totalProb = universes.reduce((s, u) => s + u.probability, 0);
+  if (totalProb > 0) {
+    universes.forEach(u => { u.probability = Math.round((u.probability / totalProb) * 100); });
+  }
+
+  return universes;
+}
+
+async function generateVerdict(
+  scenario: string, universes: UniverseData[], agents: any[],
+  simulation: any[], userLang: string, model: string
+): Promise<VerdictData> {
+  const simVotes = simulation.map(m => {
+    const content = (m.content || "").toLowerCase();
+    const hasGo = /\bgo\b|✅|approve|viable|recommend|proceed/i.test(content);
+    const hasStop = /\bstop\b|🛑|reject|abandon|no-go|fatal/i.test(content);
+    const hasCaution = /\bcaution\b|⚠|careful|risk|concern|warning/i.test(content);
+    return { agent: m.agentName, role: m.role, go: hasGo, caution: hasCaution, stop: hasStop };
+  });
+
+  const response = await client.messages.create({
+    model,
+    max_tokens: 1500,
+    system: SECURITY_PREFIX + `You are the cross-universe verdict synthesizer. You have 3 parallel universe analyses and agent simulation data.
+
+Return ONLY valid JSON:
+{
+  "result": "<GO|CAUTION|STOP>",
+  "viabilityScore": <number 1-10>,
+  "estimatedROI": "<e.g. +45% or -10%>",
+  "confidence": <number 0-100>,
+  "goVotes": <number of agents leaning GO>,
+  "cautionVotes": <number of agents leaning CAUTION>,
+  "stopVotes": <number of agents leaning STOP>,
+  "reasoning": "<2-3 sentence synthesis of why this verdict>",
+  "steerTowardA": ["<action 1>", "<action 2>", "<action 3>"],
+  "avoidC": ["<safeguard 1>", "<safeguard 2>", "<safeguard 3>"]
+}
+
+Respond in ${userLang}.`,
+    messages: [{
+      role: "user",
+      content: `SCENARIO: ${scenario}
+
+UNIVERSE A (Best Case): ${universes[0]?.outcome || "N/A"} — Probability: ${universes[0]?.probability}%, ROI: ${universes[0]?.roi}
+UNIVERSE B (Most Likely): ${universes[1]?.outcome || "N/A"} — Probability: ${universes[1]?.probability}%, ROI: ${universes[1]?.roi}
+UNIVERSE C (Worst Case): ${universes[2]?.outcome || "N/A"} — Probability: ${universes[2]?.probability}%, ROI: ${universes[2]?.roi}
+
+AGENT VOTE SIGNALS (${agents.length} agents):
+${simVotes.map(v => `${v.agent} (${v.role}): ${v.go ? "GO" : v.stop ? "STOP" : v.caution ? "CAUTION" : "NEUTRAL"}`).join("\n")}
+
+Synthesize a final verdict considering all universes and agent opinions.`
+    }],
+  });
+
+  const text = (response.content[0] as any).text || "{}";
+  try {
+    const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+    return {
+      result: parsed.result || "CAUTION",
+      viabilityScore: parsed.viabilityScore || 5,
+      estimatedROI: parsed.estimatedROI || "N/A",
+      confidence: parsed.confidence || 50,
+      goVotes: parsed.goVotes || 0,
+      cautionVotes: parsed.cautionVotes || 0,
+      stopVotes: parsed.stopVotes || 0,
+      reasoning: parsed.reasoning || "",
+      steerTowardA: parsed.steerTowardA || [],
+      avoidC: parsed.avoidC || [],
+    };
+  } catch {
+    return {
+      result: "CAUTION", viabilityScore: 5, estimatedROI: "N/A", confidence: 50,
+      goVotes: 0, cautionVotes: 0, stopVotes: 0, reasoning: "", steerTowardA: [], avoidC: [],
+    };
+  }
+}
+
 async function generateReport(scenario: string, graph: any, agents: any[], simulation: any[], params: any, userLang: string, worldContext: string, model: string) {
   const simText = simulation.map(m =>
     `[${m.agentName} (${m.role}, ${m.category}) — Round ${m.round}]:\n${m.content}`
@@ -489,16 +712,37 @@ export async function POST(req: NextRequest) {
         sendSSE(controller, encoder, { type: "report", content: report });
         sendSSE(controller, encoder, { type: "stage_done", stage: 4 });
 
+        // Stage 5: Parallel Universe Engine
+        sendSSE(controller, encoder, { type: "status", message: "Generating parallel universes..." });
+        sendSSE(controller, encoder, { type: "stage", stage: 5 });
+
+        const [universes, _] = await Promise.all([
+          generateUniverses(scenario, graph, agents, allMessages, userLang, worldContext, models.simulate_agents),
+          Promise.resolve(), // placeholder for future parallel work
+        ]);
+        sendSSE(controller, encoder, { type: "universes", data: universes });
+
+        // Stage 6: Cross-Universe Verdict
+        sendSSE(controller, encoder, { type: "status", message: "Synthesizing cross-universe verdict..." });
+        sendSSE(controller, encoder, { type: "stage", stage: 6 });
+
+        const verdict = await generateVerdict(scenario, universes, agents, allMessages, userLang, models.simulate_report);
+        sendSSE(controller, encoder, { type: "verdict", data: verdict });
+        sendSSE(controller, encoder, { type: "stage_done", stage: 6 });
+
         // Save context for agent memory
         if (userId) {
           try {
             await supabaseAdmin.from("user_context").insert({
               user_id: userId,
               context_type: "simulation",
-              summary: `Simulated: ${scenario.slice(0, 200)}. ${agents.length} agents, ${allMessages.length} interactions.`,
+              summary: `Simulated: ${scenario.slice(0, 200)}. ${agents.length} agents, ${allMessages.length} interactions. Verdict: ${verdict.result}. Viability: ${verdict.viabilityScore}/10.`,
               key_insights: [
                 `Agents: ${agents.length}`,
                 `Rounds: ${rounds}`,
+                `Verdict: ${verdict.result}`,
+                `Viability: ${verdict.viabilityScore}/10`,
+                `Best case ROI: ${universes[0]?.roi}`,
               ],
               metadata: { scenario: scenario.slice(0, 100) },
             });
@@ -512,6 +756,8 @@ export async function POST(req: NextRequest) {
             stages: { graph, agents, simulation_parameters },
             simulation: allMessages,
             report,
+            universes,
+            verdict,
             metadata: {
               total_interactions: allMessages.length,
               rounds,

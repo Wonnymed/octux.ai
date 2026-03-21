@@ -18,8 +18,8 @@ import { parseSignuxMetadata, type SignuxVote, type SignuxTimelineEvent, type Si
 import { AGENT_CATEGORY_COLORS, DEFAULT_CATEGORY_COLOR, ENTITY_COLORS, DEFAULT_ENTITY_COLOR } from "../lib/types";
 
 const SIM_EXAMPLE_KEYS = ["sim.example.1", "sim.example.2", "sim.example.3"];
-const SIM_STAGE_KEYS = ["stage.intelligence", "stage.0", "stage.1", "stage.2", "stage.3", "stage.4"];
-const SIM_STAGE_ICONS = [Globe, Network, Users, Zap, MessageSquare, FileText];
+const SIM_STAGE_KEYS = ["stage.intelligence", "stage.0", "stage.1", "stage.2", "stage.3", "stage.4", "stage.universes", "stage.verdict"];
+const SIM_STAGE_ICONS = [Globe, Network, Users, Zap, MessageSquare, FileText, Columns, BarChart3];
 
 type AgentMessage = {
   agentId?: string;
@@ -959,7 +959,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
 
   /* ═══ RUNNING STATE — 3 UNIVERSE ANIMATED CANVAS ═══ */
   if (simulating) {
-    const progressPct = Math.min(((simStage + 1) / 6) * 100, 100);
+    const progressPct = Math.min(((simStage + 1) / 8) * 100, 100);
     const doneAgents = simLiveAgents.filter(a => a.done).length;
     const elapsed = simStartTime ? Math.floor((Date.now() - simStartTime) / 1000) : 0;
     const risk = calculateRiskScore(simLiveAgents, simAgentMessages);
@@ -1599,29 +1599,21 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
     a.href = url; a.download = `signux-simulation-${Date.now()}.txt`; a.click();
   };
 
-  // Build universe data from simulation results
-  const resultUniA: any[] = [];
-  const resultUniB: any[] = [];
-  const resultUniC: any[] = [];
-  simulation.forEach((msg: any, i: number) => {
-    const role = (msg.role || msg.agentName || "").toLowerCase();
-    const cat = (msg.category || "").toLowerCase();
-    if (role.includes("strategy") || role.includes("market") || role.includes("operation") || cat.includes("opportunity")) {
-      resultUniA.push(msg);
-    } else if (role.includes("financial") || role.includes("customer") || role.includes("tech") || cat.includes("finance")) {
-      resultUniB.push(msg);
-    } else if (role.includes("risk") || role.includes("devil") || role.includes("legal") || cat.includes("risk")) {
-      resultUniC.push(msg);
-    } else {
-      [resultUniA, resultUniB, resultUniC][i % 3].push(msg);
-    }
-  });
+  // Use real backend universe data if available, fallback to derived data
+  const backendUniverses = simResult.universes;
+  const backendVerdict = simResult.verdict;
 
-  const goVotes = vote?.go || 2;
-  const cautionVotes = vote?.caution || 3;
-  const stopVotes = vote?.stop || 1;
+  const goVotes = backendVerdict?.goVotes || vote?.go || 2;
+  const cautionVotes = backendVerdict?.cautionVotes || vote?.caution || 3;
+  const stopVotes = backendVerdict?.stopVotes || vote?.stop || 1;
   const totalVoteCount = goVotes + cautionVotes + stopVotes;
-  const viabilityScore = vote?.confidence_avg ? (vote.confidence_avg / 10).toFixed(1) : "7.0";
+  const viabilityScore = backendVerdict?.viabilityScore?.toFixed(1) || (vote?.confidence_avg ? (vote.confidence_avg / 10).toFixed(1) : "7.0");
+  const verdictResult = backendVerdict?.result || vote?.result || "CAUTION";
+  const verdictConfidence = backendVerdict?.confidence || vote?.confidence_avg || 50;
+  const estimatedROI = backendVerdict?.estimatedROI || `+${Math.round((goVotes / totalVoteCount) * 100)}%`;
+  const verdictReasoning = backendVerdict?.reasoning || "";
+  const steerTowardA = backendVerdict?.steerTowardA || [];
+  const avoidC = backendVerdict?.avoidC || [];
 
   const AGENT_EMOJI: Record<string, string> = {
     strategy: "\uD83C\uDFAF", market: "\uD83D\uDCC8", financial: "\uD83D\uDCCA", finance: "\uD83D\uDCCA",
@@ -1639,42 +1631,50 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
   const sentimentDotColor = (s: string) =>
     s === "positive" ? "#10B981" : s === "negative" ? "#EF4444" : s === "warning" ? "#F59E0B" : "var(--text-tertiary)";
 
-  const resultUniverses = [
-    {
-      id: "A", label: "Best Case", subtitle: "OPTIMISTIC", color: "#10B981",
-      probability: Math.round((goVotes / totalVoteCount) * 100),
-      riskLabel: "Low", msgs: resultUniA,
-      events: reportTimeline.filter((_: any, i: number) => i % 3 === 0).slice(0, 4).map((e: any) => ({
-        period: e.period, text: e.event,
-        sentiment: (e.probability || 0) >= 0.5 ? "positive" : "neutral",
-      })),
-    },
-    {
-      id: "B", label: "Most Likely", subtitle: "REALISTIC", color: "#3B82F6", featured: true,
-      probability: Math.round((cautionVotes / totalVoteCount) * 100),
-      riskLabel: "Medium", msgs: resultUniB,
-      events: reportTimeline.filter((_: any, i: number) => i % 3 === 1).slice(0, 4).map((e: any) => ({
-        period: e.period, text: e.event, sentiment: "neutral" as const,
-      })),
-    },
-    {
-      id: "C", label: "Worst Case", subtitle: "PESSIMISTIC", color: "#F59E0B",
-      probability: Math.round((stopVotes / totalVoteCount) * 100),
-      riskLabel: "High", msgs: resultUniC,
-      events: reportTimeline.filter((_: any, i: number) => i % 3 === 2).slice(0, 4).map((e: any) => ({
-        period: e.period, text: e.event,
-        sentiment: (e.probability || 0) < 0.3 ? "negative" : "warning",
-      })),
-    },
-  ];
-
-  // If timeline events weren't distributed well, spread evenly
-  if (reportTimeline.length > 0 && resultUniverses.some((u: any) => u.events.length === 0)) {
-    const per = Math.ceil(reportTimeline.length / 3);
-    resultUniverses[0].events = reportTimeline.slice(0, per).map((e: any) => ({ period: e.period, text: e.event, sentiment: "positive" }));
-    resultUniverses[1].events = reportTimeline.slice(per, per * 2).map((e: any) => ({ period: e.period, text: e.event, sentiment: "neutral" }));
-    resultUniverses[2].events = reportTimeline.slice(per * 2).map((e: any) => ({ period: e.period, text: e.event, sentiment: "warning" }));
-  }
+  // Build resultUniverses from backend data or fallback to derived
+  const resultUniverses = backendUniverses && backendUniverses.length === 3
+    ? backendUniverses.map((u, i) => ({
+        ...u,
+        featured: u.id === "B",
+        msgs: simulation.filter((_: any, idx: number) => idx % 3 === i),
+      }))
+    : (() => {
+        // Fallback: derive from agent messages
+        const resultUniA: any[] = [];
+        const resultUniB: any[] = [];
+        const resultUniC: any[] = [];
+        simulation.forEach((msg: any, i: number) => {
+          const role = (msg.role || msg.agentName || "").toLowerCase();
+          const cat = (msg.category || "").toLowerCase();
+          if (role.includes("strategy") || role.includes("market") || role.includes("operation") || cat.includes("opportunity")) resultUniA.push(msg);
+          else if (role.includes("financial") || role.includes("customer") || role.includes("tech") || cat.includes("finance")) resultUniB.push(msg);
+          else if (role.includes("risk") || role.includes("devil") || role.includes("legal") || cat.includes("risk")) resultUniC.push(msg);
+          else [resultUniA, resultUniB, resultUniC][i % 3].push(msg);
+        });
+        return [
+          {
+            id: "A", label: "Best Case", subtitle: "OPTIMISTIC", color: "#10B981",
+            probability: Math.round((goVotes / totalVoteCount) * 100),
+            riskLabel: "Low", revenue: "High", roi: "+120%", timeline: "6 mo",
+            outcome: "", trigger: "", events: reportTimeline.filter((_: any, i: number) => i % 3 === 0).slice(0, 4).map((e: any) => ({ period: e.period, text: e.event, sentiment: (e.probability || 0) >= 0.5 ? "positive" : "neutral" })),
+            keyInsights: [], agentQuotes: [], msgs: resultUniA,
+          },
+          {
+            id: "B", label: "Most Likely", subtitle: "REALISTIC", color: "#3B82F6", featured: true,
+            probability: Math.round((cautionVotes / totalVoteCount) * 100),
+            riskLabel: "Medium", revenue: "Moderate", roi: "+45%", timeline: "9 mo",
+            outcome: "", trigger: "", events: reportTimeline.filter((_: any, i: number) => i % 3 === 1).slice(0, 4).map((e: any) => ({ period: e.period, text: e.event, sentiment: "neutral" })),
+            keyInsights: [], agentQuotes: [], msgs: resultUniB,
+          },
+          {
+            id: "C", label: "Worst Case", subtitle: "PESSIMISTIC", color: "#F59E0B",
+            probability: Math.round((stopVotes / totalVoteCount) * 100),
+            riskLabel: "High", revenue: "Low", roi: "-15%", timeline: "12 mo",
+            outcome: "", trigger: "", events: reportTimeline.filter((_: any, i: number) => i % 3 === 2).slice(0, 4).map((e: any) => ({ period: e.period, text: e.event, sentiment: (e.probability || 0) < 0.3 ? "negative" : "warning" })),
+            keyInsights: [], agentQuotes: [], msgs: resultUniC,
+          },
+        ];
+      })();
 
   const winResultUni = resultUniverses.reduce((a: any, b: any) => a.probability > b.probability ? a : b);
   const [showFullReport, setShowFullReport] = useState(false);
@@ -1762,13 +1762,10 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           gap: 16, marginBottom: 28,
         }}>
           {resultUniverses.map((uni: any, uIdx: number) => {
-            const lastMsgs = uni.msgs.slice(-3);
-            const metricsMap: Record<string, { revenue: string; roi: string; timeline: string }> = {
-              A: { revenue: "High", roi: "+120%", timeline: `${Math.max(6, (meta.rounds || 3) * 2)} mo` },
-              B: { revenue: "Moderate", roi: "+45%", timeline: `${Math.max(9, (meta.rounds || 3) * 3)} mo` },
-              C: { revenue: "Low", roi: "-15%", timeline: `${Math.max(12, (meta.rounds || 3) * 4)} mo` },
-            };
-            const m = metricsMap[uni.id] || metricsMap.B;
+            const lastMsgs = (uni.agentQuotes && uni.agentQuotes.length > 0)
+              ? uni.agentQuotes.map((q: any) => ({ agentName: q.agent, role: q.role, content: q.quote }))
+              : (uni.msgs || []).slice(-3);
+            const m = { revenue: uni.revenue || "N/A", roi: uni.roi || "N/A", timeline: uni.timeline || "N/A" };
             const favorCount = uni.id === "A" ? goVotes : uni.id === "C" ? stopVotes : cautionVotes;
             return (
               <motion.div
@@ -1897,9 +1894,9 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             </div>
             <div style={{
               fontSize: 22, fontWeight: 800, fontFamily: "var(--font-brand)", letterSpacing: 2,
-              color: vote?.result === "GO" ? "#22c55e" : vote?.result === "CAUTION" ? "#f59e0b" : vote?.result === "STOP" ? "#ef4444" : "var(--text-primary)",
+              color: verdictResult === "GO" ? "#22c55e" : verdictResult === "CAUTION" ? "#f59e0b" : verdictResult === "STOP" ? "#ef4444" : "var(--text-primary)",
             }}>
-              {vote?.result || "CAUTION"}
+              {verdictResult}
             </div>
           </div>
 
@@ -1911,7 +1908,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           </div>
 
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: "#10B981", fontFamily: "var(--font-mono)" }}>+{Math.round((goVotes / totalVoteCount) * 100)}%</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: estimatedROI.startsWith("-") ? "#EF4444" : "#10B981", fontFamily: "var(--font-mono)" }}>{estimatedROI}</div>
             <div style={{ fontSize: 9, letterSpacing: "0.12em", color: "var(--text-tertiary)", textTransform: "uppercase", fontFamily: "var(--font-mono)" }}>EST. ROI</div>
           </div>
 
@@ -1933,6 +1930,72 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           </div>
         </motion.div>
       </div>
+
+      {/* ── Verdict Reasoning + Strategy ── */}
+      {(verdictReasoning || steerTowardA.length > 0 || avoidC.length > 0) && (
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : verdictReasoning ? "1fr 1fr 1fr" : "1fr 1fr",
+              gap: 16, marginBottom: 28,
+            }}
+          >
+            {verdictReasoning && (
+              <div style={{
+                padding: "18px 20px", borderRadius: 14,
+                background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
+              }}>
+                <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "var(--text-tertiary)", textTransform: "uppercase", fontFamily: "var(--font-mono)", marginBottom: 10 }}>
+                  VERDICT REASONING
+                </div>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, margin: 0 }}>
+                  {verdictReasoning}
+                </p>
+              </div>
+            )}
+            {steerTowardA.length > 0 && (
+              <div style={{
+                padding: "18px 20px", borderRadius: 14,
+                background: "rgba(16,185,129,0.03)", border: "1px solid rgba(16,185,129,0.12)",
+              }}>
+                <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "#10B981", textTransform: "uppercase", fontFamily: "var(--font-mono)", marginBottom: 10 }}>
+                  HOW TO STEER TOWARD BEST CASE
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {steerTowardA.map((action: string, i: number) => (
+                    <div key={i} style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, display: "flex", gap: 8 }}>
+                      <span style={{ color: "#10B981", fontWeight: 700, flexShrink: 0 }}>{i + 1}.</span>
+                      <span>{action}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {avoidC.length > 0 && (
+              <div style={{
+                padding: "18px 20px", borderRadius: 14,
+                background: "rgba(245,158,11,0.03)", border: "1px solid rgba(245,158,11,0.12)",
+              }}>
+                <div style={{ fontSize: 9, letterSpacing: "0.15em", color: "#F59E0B", textTransform: "uppercase", fontFamily: "var(--font-mono)", marginBottom: 10 }}>
+                  HOW TO AVOID WORST CASE
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {avoidC.map((safeguard: string, i: number) => (
+                    <div key={i} style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, display: "flex", gap: 8 }}>
+                      <span style={{ color: "#F59E0B", fontWeight: 700, flexShrink: 0 }}>{i + 1}.</span>
+                      <span>{safeguard}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      )}
 
       {/* ═══════ NORMAL WIDTH CONTAINER ═══════ */}
       <div style={{ maxWidth: "clamp(600px, 52vw, 820px)", margin: "0 auto" }}>
