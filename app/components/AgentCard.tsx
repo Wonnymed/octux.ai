@@ -10,6 +10,7 @@ type AgentData = {
   sentiment: string;
   confidence: number;
   changedMind: boolean;
+  failed?: boolean;
 };
 
 const SENTIMENT_COLORS: Record<string, string> = {
@@ -47,12 +48,15 @@ export default function AgentCard({ agent, index, expanded, onToggle }: AgentCar
         padding: "12px 14px",
         borderRadius: 12,
         background: "var(--card-bg)",
-        border: agent.changedMind
-          ? "1px solid rgba(212,175,55,0.3)"
-          : `1px solid ${agent.color}18`,
+        border: agent.failed
+          ? "1px solid rgba(107,114,128,0.2)"
+          : agent.changedMind
+            ? "1px solid rgba(212,175,55,0.3)"
+            : `1px solid ${agent.color}18`,
         cursor: "pointer",
         transition: "border-color 200ms, box-shadow 200ms",
         overflow: "hidden",
+        opacity: agent.failed ? 0.5 : 1,
       }}
       whileHover={{
         borderColor: `${agent.color}40`,
@@ -97,7 +101,19 @@ export default function AgentCard({ agent, index, expanded, onToggle }: AgentCar
             </span>
           </div>
         </div>
-        {agent.changedMind && (
+        {agent.failed ? (
+          <span style={{
+            fontSize: 9,
+            padding: "2px 6px",
+            borderRadius: 4,
+            background: "rgba(239,68,68,0.1)",
+            color: "#EF4444",
+            fontWeight: 600,
+            flexShrink: 0,
+          }}>
+            FAILED
+          </span>
+        ) : agent.changedMind ? (
           <span style={{
             fontSize: 9,
             padding: "2px 6px",
@@ -109,7 +125,7 @@ export default function AgentCard({ agent, index, expanded, onToggle }: AgentCar
           }}>
             CHANGED
           </span>
-        )}
+        ) : null}
       </div>
 
       {/* Text */}

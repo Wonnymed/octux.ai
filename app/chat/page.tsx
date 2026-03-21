@@ -811,6 +811,21 @@ function ChatPage() {
               // Update live agents progress
               setSimLiveAgents(data.agents.map((a: any) => ({ name: a.name, role: a.agentId, category: a.agentId, done: true })));
               setSimAgentMessages(prev => [...prev, ...data.agents.map((a: any) => ({ agentId: a.agentId, agentName: a.name, content: a.text, round: data.round }))]);
+            } else if (data.type === "agent_failed") {
+              // Mark failed agent in the current round's data
+              setEngineRounds(prev => {
+                const updated = [...prev];
+                const lastRound = updated[updated.length - 1];
+                if (lastRound && lastRound.round === data.round) {
+                  lastRound.agents = lastRound.agents.map((a: any) =>
+                    a.agentId === data.agentId ? { ...a, failed: true, text: data.text || "(Agent unavailable this round)" } : a
+                  );
+                }
+                return updated;
+              });
+            } else if (data.type === "round_skipped") {
+              // Skip — just advance the round counter
+              setEngineCurrentRound(null);
             } else if (data.type === "verdict") {
               setEngineVerdict(data);
               setSimStage(7);

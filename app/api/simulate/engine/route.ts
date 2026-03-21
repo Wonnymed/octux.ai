@@ -13,6 +13,35 @@ const supabaseAdmin = createClient(
 );
 
 /* ═══════════════════════════════════════════════════════════
+   RESILIENCE UTILITIES
+   ═══════════════════════════════════════════════════════════ */
+
+async function withTimeout<T>(fn: () => Promise<T>, ms = 15000): Promise<T> {
+  return Promise.race([
+    fn(),
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("Timeout")), ms)
+    ),
+  ]);
+}
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  retries = 1,
+  delayMs = 1000
+): Promise<T> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (i === retries) throw err;
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+  throw new Error("Unreachable");
+}
+
+/* ═══════════════════════════════════════════════════════════
    10 INDEPENDENT AGENTS — each is a SEPARATE Claude call
    ═══════════════════════════════════════════════════════════ */
 
@@ -191,7 +220,11 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       const send = (data: any) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        } catch {
+          // Controller may be closed if client disconnected
+        }
       };
 
       type TranscriptEntry = {
@@ -204,10 +237,12 @@ export async function POST(req: NextRequest) {
         sentiment: string;
         confidence: number;
         changedMind: boolean;
+        failed?: boolean;
       };
 
       const transcript: TranscriptEntry[] = [];
       const roundSummaries: string[] = [];
+      let skippedRounds: number[] = [];
 
       try {
         // Send agent roster
@@ -226,6 +261,7 @@ export async function POST(req: NextRequest) {
           const useDeep = roundNum > 5 && tier !== "free";
           const model = useDeep ? "claude-sonnet-4-20250514" : "claude-haiku-4-5-20251001";
           const maxTokens = useDeep ? 400 : 250;
+          const agentTimeoutMs = useDeep ? 20000 : 15000;
 
           send({
             type: "round_start",
@@ -243,15 +279,15 @@ export async function POST(req: NextRequest) {
           // Last round's full responses (most recent context)
           const lastRoundFull = round > 0
             ? `\n\nLAST ROUND (Round ${round}) — FULL RESPONSES:\n${transcript
-                .filter(t => t.round === round)
+                .filter(t => t.round === round && !t.failed)
                 .map(t => `${t.avatar} ${t.name}: "${t.text}"`)
                 .join("\n")}`
             : "";
 
-          // Run all 10 agents IN PARALLEL for this round
+          // Run all 10 agents IN PARALLEL for this round — each with retry + timeout
           const agentPromises = AGENTS.map(async (agent): Promise<TranscriptEntry> => {
             const agentPrevious = transcript
-              .filter(t => t.agentId === agent.id)
+              .filter(t => t.agentId === agent.id && !t.failed)
               .map(t => `[Round ${t.round}] You said: "${t.text}" (sentiment: ${t.sentiment})`)
               .join("\n");
 
@@ -269,12 +305,22 @@ Respond ONLY in this JSON format (no markdown, no backticks):
 {"text": "<your response, 2-4 sentences max>", "sentiment": "<one of: confident, optimistic, cautious, worried, skeptical, convinced, contrarian, neutral, excited, concerned>", "confidence": <number 1-10>, "changed_mind": <true or false>}`;
 
             try {
-              const res = await anthropic.messages.create({
-                model,
-                max_tokens: maxTokens,
-                system: agent.system,
-                messages: [{ role: "user", content: userMsg }],
-              });
+              // withRetry wraps withTimeout — 1 retry after 1s delay
+              const res = await withRetry(
+                () =>
+                  withTimeout(
+                    () =>
+                      anthropic.messages.create({
+                        model,
+                        max_tokens: maxTokens,
+                        system: agent.system,
+                        messages: [{ role: "user", content: userMsg }],
+                      }),
+                    agentTimeoutMs
+                  ),
+                1,
+                1000
+              );
 
               const raw = (res.content[0] as any)?.text || "";
               const clean = raw.replace(/```json\n?|```\n?/g, "").trim();
@@ -312,55 +358,112 @@ Respond ONLY in this JSON format (no markdown, no backticks):
                 confidence: 5,
                 changedMind: false,
               };
-            } catch {
+            } catch (err: any) {
+              // Both attempts failed — mark agent as failed this round
+              const reason =
+                err?.message === "Timeout"
+                  ? "(Agent timed out this round)"
+                  : "(Agent unavailable this round)";
+
+              send({
+                type: "agent_failed",
+                round: roundNum,
+                agentId: agent.id,
+                agentName: agent.name,
+                reason,
+              });
+
               return {
                 agentId: agent.id,
                 name: agent.name,
                 avatar: agent.avatar,
                 color: agent.color,
                 round: roundNum,
-                text: "(Agent failed to respond this round)",
+                text: reason,
                 sentiment: "neutral",
                 confidence: 5,
                 changedMind: false,
+                failed: true,
               };
             }
           });
 
           const roundResults = await Promise.all(agentPromises);
 
-          // Add to transcript
-          roundResults.forEach(r => transcript.push(r));
+          // Count failures in this round
+          const failedCount = roundResults.filter(r => r.failed).length;
 
-          // Send round results to frontend
-          send({
-            type: "round_complete",
-            round: roundNum,
-            label: ROUND_LABELS[round],
-            agents: roundResults,
-          });
+          if (failedCount > 3) {
+            // More than 3 agents failed — skip round, signal to frontend
+            send({
+              type: "round_skipped",
+              round: roundNum,
+              label: ROUND_LABELS[round],
+              failedCount,
+              reason: `${failedCount}/10 agents failed — round skipped`,
+            });
+            skippedRounds.push(roundNum);
+
+            // Still add successful results to transcript
+            roundResults
+              .filter(r => !r.failed)
+              .forEach(r => transcript.push(r));
+          } else {
+            // Add all results to transcript
+            roundResults.forEach(r => transcript.push(r));
+
+            // Send round results to frontend
+            send({
+              type: "round_complete",
+              round: roundNum,
+              label: ROUND_LABELS[round],
+              agents: roundResults,
+              failedCount,
+            });
+          }
 
           // Summarize this round for context compression (1 cheap Haiku call)
           if (round < 9) {
-            try {
-              const summaryRes = await anthropic.messages.create({
-                model: "claude-haiku-4-5-20251001",
-                max_tokens: 200,
-                system: "Summarize a debate round in 3-4 bullet points. Focus on: key disagreements, strongest arguments, any agents who changed position. Be extremely concise.",
-                messages: [{
-                  role: "user",
-                  content: `Round ${roundNum} debate on "${scenario.slice(0, 200)}":\n${roundResults.map(r => `${r.avatar} ${r.name}: "${r.text}" [sentiment: ${r.sentiment}]`).join("\n")}`,
-                }],
-              });
-              roundSummaries.push(`Round ${roundNum}: ${(summaryRes.content[0] as any)?.text || ""}`);
-            } catch {
-              roundSummaries.push(`Round ${roundNum}: (summary unavailable)`);
+            const successfulResults = roundResults.filter(r => !r.failed);
+            if (successfulResults.length >= 3) {
+              try {
+                const summaryRes = await withRetry(
+                  () =>
+                    withTimeout(
+                      () =>
+                        anthropic.messages.create({
+                          model: "claude-haiku-4-5-20251001",
+                          max_tokens: 200,
+                          system:
+                            "Summarize a debate round in 3-4 bullet points. Focus on: key disagreements, strongest arguments, any agents who changed position. Be extremely concise.",
+                          messages: [
+                            {
+                              role: "user",
+                              content: `Round ${roundNum} debate on "${scenario.slice(0, 200)}":\n${successfulResults.map(r => `${r.avatar} ${r.name}: "${r.text}" [sentiment: ${r.sentiment}]`).join("\n")}`,
+                            },
+                          ],
+                        }),
+                      10000
+                    ),
+                  1,
+                  500
+                );
+                roundSummaries.push(
+                  `Round ${roundNum}: ${(summaryRes.content[0] as any)?.text || ""}`
+                );
+              } catch {
+                roundSummaries.push(`Round ${roundNum}: (summary unavailable)`);
+              }
+            } else {
+              roundSummaries.push(
+                `Round ${roundNum}: (insufficient data — ${failedCount} agents failed)`
+              );
             }
           }
         }
 
         // ═══ FINAL VERDICT — from Round 10 votes ═══
-        const round10 = transcript.filter(t => t.round === 10);
+        const round10 = transcript.filter(t => t.round === 10 && !t.failed);
         const votes = round10.map(r => {
           const textLower = r.text.toLowerCase();
           return {
@@ -387,27 +490,39 @@ Respond ONLY in this JSON format (no markdown, no backticks):
         // ═══ EMERGENT PATTERNS — synthesize from all round summaries ═══
         let patternData: any = { patterns: [], verdict: "Insufficient data", viability: 5, estimatedROI: "N/A" };
         try {
-          const patternsRes = await anthropic.messages.create({
-            model: "claude-sonnet-4-20250514",
-            max_tokens: 600,
-            system: `You analyze multi-agent debate transcripts and identify EMERGENT PATTERNS — insights that no single agent would have produced alone. Respond in ${userLang}. Respond ONLY in JSON.`,
-            messages: [{
-              role: "user",
-              content: `10-round adversarial debate on: "${scenario.slice(0, 300)}"
+          const patternsRes = await withRetry(
+            () =>
+              withTimeout(
+                () =>
+                  anthropic.messages.create({
+                    model: "claude-sonnet-4-20250514",
+                    max_tokens: 600,
+                    system: `You analyze multi-agent debate transcripts and identify EMERGENT PATTERNS — insights that no single agent would have produced alone. Respond in ${userLang}. Respond ONLY in JSON.`,
+                    messages: [{
+                      role: "user",
+                      content: `10-round adversarial debate on: "${scenario.slice(0, 300)}"
 
 ${roundSummaries.join("\n\n")}
 
 FINAL VOTES: ${proceedCount} PROCEED, ${stopCount} STOP (avg confidence: ${avgConfidence}/10)
 DISSENTS: ${dissents.map(d => `${d.avatar} ${d.agent}: "${d.note}"`).join("; ") || "None"}
+${skippedRounds.length > 0 ? `\nSKIPPED ROUNDS: ${skippedRounds.join(", ")} (too many agent failures)` : ""}
 
 Identify emergent patterns. Respond ONLY in JSON (no markdown):
 {"patterns": [{"type": "consensus|emerging_risk|blind_spot|opportunity|tension", "title": "<3-5 word title>", "description": "<1-2 sentence pattern>", "agents_involved": ["<agent names>"]}], "verdict": "<2-sentence recommended action>", "viability": <1-10>, "estimatedROI": "<e.g. +45% or -15%>", "keyRisk": "<single biggest risk>", "keyOpportunity": "<single biggest opportunity>"}`,
-            }],
-          });
+                    }],
+                  }),
+                20000
+              ),
+            1,
+            1000
+          );
           const raw = (patternsRes.content[0] as any)?.text || "";
           const m = raw.replace(/```json\n?|```\n?/g, "").match(/\{[\s\S]*\}/);
           if (m) patternData = JSON.parse(m[0]);
-        } catch {}
+        } catch {
+          // Pattern detection failed — use defaults, don't break simulation
+        }
 
         send({
           type: "verdict",
@@ -422,6 +537,7 @@ Identify emergent patterns. Respond ONLY in JSON (no markdown):
           estimatedROI: patternData.estimatedROI || "N/A",
           keyRisk: patternData.keyRisk || "",
           keyOpportunity: patternData.keyOpportunity || "",
+          skippedRounds,
         });
 
         // ═══ EVOLUTION DATA — track sentiment arcs ═══
@@ -437,6 +553,7 @@ Identify emergent patterns. Respond ONLY in JSON (no markdown):
               sentiment: t.sentiment,
               confidence: t.confidence,
               changedMind: t.changedMind,
+              failed: t.failed || false,
             })),
         }));
 
@@ -448,7 +565,7 @@ Identify emergent patterns. Respond ONLY in JSON (no markdown):
             await supabaseAdmin.from("user_context").insert({
               user_id: userId,
               context_type: "simulation",
-              summary: `10x10 Engine: "${scenario.slice(0, 200)}". ${proceedCount} PROCEED, ${stopCount} STOP. Viability: ${patternData.viability}/10. ${transcript.length} interactions.`,
+              summary: `10x10 Engine: "${scenario.slice(0, 200)}". ${proceedCount} PROCEED, ${stopCount} STOP. Viability: ${patternData.viability}/10. ${transcript.length} interactions.${skippedRounds.length > 0 ? ` Skipped rounds: ${skippedRounds.join(",")}` : ""}`,
               key_insights: [
                 `Verdict: ${proceedCount > stopCount ? "PROCEED" : "STOP"} (${proceedCount}/${stopCount})`,
                 `Viability: ${patternData.viability}/10`,
@@ -456,20 +573,27 @@ Identify emergent patterns. Respond ONLY in JSON (no markdown):
                 `ROI: ${patternData.estimatedROI}`,
                 ...(dissents.slice(0, 3).map(d => `Dissent (${d.agent}): ${d.note?.slice(0, 80)}`)),
               ],
-              metadata: { scenario: scenario.slice(0, 100), engine: "10x10" },
+              metadata: { scenario: scenario.slice(0, 100), engine: "10x10", skippedRounds },
             });
           } catch {}
         }
 
+        const totalFailed = transcript.filter(t => t.failed).length;
         send({
           type: "done",
           totalCalls: transcript.length + roundSummaries.length + 1,
           totalAgents: AGENTS.length,
           totalRounds: 10,
+          skippedRounds,
+          totalFailed,
         });
 
       } catch (err: any) {
-        send({ type: "error", error: err.message || "Engine error" });
+        send({
+          type: "error",
+          error: err.message || "Engine error",
+          recoverable: false,
+        });
       }
 
       controller.close();
