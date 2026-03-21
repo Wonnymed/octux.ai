@@ -42,6 +42,8 @@ type SidebarProps = {
   tier?: string;
   usage?: { simulations_month: number; researches_month: number; globalops_month: number; invest_month: number };
   limits?: { simulate_monthly: number; research_monthly: number; globalops_monthly: number; invest_monthly: number };
+  savedSimulations?: any[];
+  onLoadSimulation?: (id: string) => void;
 };
 
 const MODES: { key: Mode; icon: any; label: string; color: string }[] = [
@@ -413,7 +415,7 @@ export default function Sidebar({
   open, onClose, onOpen, isLoggedIn, onSignOut, isMobile, authUser,
   conversations, loadingHistory = false, activeConversationId, onLoadConversation, onDeleteConversation,
   projects = [], activeProject, onSelectProject, onCreateProject, onOpenKnowledge,
-  tier, usage, limits,
+  tier, usage, limits, savedSimulations = [], onLoadSimulation,
 }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -768,6 +770,47 @@ export default function Sidebar({
             </div>
           ) : null}
         </div>
+
+        {/* Saved Simulations */}
+        {savedSimulations.length > 0 && (
+          <div style={{ borderTop: "1px solid var(--border-secondary)", padding: "8px 8px 0" }}>
+            <div style={{
+              padding: "6px 12px", fontSize: 10, fontWeight: 600,
+              color: "#D4AF37", textTransform: "uppercase", letterSpacing: 1,
+              display: "flex", alignItems: "center", gap: 6,
+            }}>
+              <Zap size={10} /> Saved Simulations
+            </div>
+            <div style={{ maxHeight: 160, overflowY: "auto" }}>
+              {savedSimulations.slice(0, 10).map((sim: any) => (
+                <div
+                  key={sim.id}
+                  onClick={() => { onLoadSimulation?.(sim.id); onClose(); }}
+                  style={{
+                    padding: "8px 12px", borderRadius: 6, cursor: "pointer",
+                    transition: "background 150ms", fontSize: 12,
+                    color: "var(--text-secondary)",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                >
+                  <div style={{
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    fontWeight: 500, color: "var(--text-primary)", marginBottom: 2,
+                  }}>
+                    {sim.scenario?.slice(0, 60) || "Untitled"}
+                  </div>
+                  <div style={{ fontSize: 10, color: "var(--text-tertiary)", display: "flex", gap: 8 }}>
+                    <span>{new Date(sim.created_at).toLocaleDateString()}</span>
+                    {sim.verdict?.viability != null && (
+                      <span style={{ color: "#D4AF37" }}>{sim.verdict.viability}/10</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Bottom */}
         <div style={{ borderTop: "1px solid var(--border-secondary)", padding: 8 }}>

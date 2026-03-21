@@ -74,6 +74,8 @@ type SimulationEngineProps = {
   engineVerdict?: any | null;
   engineEvolution?: any[];
   engineDone?: boolean;
+  onSaveSimulation?: () => Promise<void>;
+  simulationSaved?: boolean;
 };
 
 function calculateRiskScore(agents: SimAgent[], messages: AgentMessage[]): { score: number; label: string; color: string } {
@@ -98,7 +100,7 @@ function calculateRiskScore(agents: SimAgent[], messages: AgentMessage[]): { sco
 }
 
 export default function SimulationEngine(props: SimulationEngineProps) {
-  const { simulating, simResult, simScenario, setSimScenario, simStage, simLiveAgents, simTotalAgents, simStartTime, onSimulate, onReset, simStarting, simAgentMessages, onSetMode, lang, isLoggedIn, tier, streamingUniverses, streamingVerdict, engineAgents, engineRounds, engineCurrentRound, engineVerdict, engineEvolution, engineDone } = props;
+  const { simulating, simResult, simScenario, setSimScenario, simStage, simLiveAgents, simTotalAgents, simStartTime, onSimulate, onReset, simStarting, simAgentMessages, onSetMode, lang, isLoggedIn, tier, streamingUniverses, streamingVerdict, engineAgents, engineRounds, engineCurrentRound, engineVerdict, engineEvolution, engineDone, onSaveSimulation, simulationSaved } = props;
   const feedRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -1927,17 +1929,17 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           {[
             { label: isMobile ? "Variable" : "Mudar variável ao vivo", icon: <Eye size={12} />, onClick: () => setGodEyeOpen(!godEyeOpen) },
             { label: isMobile ? "Compare" : "Comparar A vs B", icon: <Columns size={12} />, onClick: () => {} },
-            { label: isMobile ? "Save" : "Salvar Simulação", icon: <Save size={12} />, onClick: () => {} },
-          ].map((btn, i) => (
-            <button key={i} onClick={btn.onClick} style={{
+            { label: simulationSaved ? "Saved!" : isMobile ? "Save" : "Salvar Simulação", icon: simulationSaved ? <Check size={12} /> : <Save size={12} />, onClick: () => onSaveSimulation?.(), disabled: simulationSaved },
+          ].map((btn: any, i: number) => (
+            <button key={i} onClick={btn.onClick} disabled={btn.disabled} style={{
               display: "flex", alignItems: "center", gap: 6,
               padding: isMobile ? "6px 10px" : "7px 16px", borderRadius: 50,
-              border: i === 1 ? "1px solid rgba(212,175,55,0.3)" : "1px solid var(--border-secondary)",
-              background: i === 1 ? "rgba(212,175,55,0.08)" : "transparent",
-              color: i === 1 ? "#D4AF37" : "var(--text-tertiary)",
-              fontSize: 11, fontWeight: i === 1 ? 600 : 400,
-              cursor: "pointer", transition: "all 150ms",
-              whiteSpace: "nowrap",
+              border: btn.disabled ? "1px solid rgba(16,185,129,0.3)" : i === 1 ? "1px solid rgba(212,175,55,0.3)" : "1px solid var(--border-secondary)",
+              background: btn.disabled ? "rgba(16,185,129,0.08)" : i === 1 ? "rgba(212,175,55,0.08)" : "transparent",
+              color: btn.disabled ? "#10B981" : i === 1 ? "#D4AF37" : "var(--text-tertiary)",
+              fontSize: 11, fontWeight: i === 1 || btn.disabled ? 600 : 400,
+              cursor: btn.disabled ? "default" : "pointer", transition: "all 150ms",
+              whiteSpace: "nowrap", opacity: btn.disabled ? 0.8 : 1,
             }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(212,175,55,0.4)"; e.currentTarget.style.color = "#D4AF37"; e.currentTarget.style.background = "rgba(212,175,55,0.06)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = i === 1 ? "rgba(212,175,55,0.3)" : "var(--border-secondary)"; e.currentTarget.style.color = i === 1 ? "#D4AF37" : "var(--text-tertiary)"; e.currentTarget.style.background = i === 1 ? "rgba(212,175,55,0.08)" : "transparent"; }}

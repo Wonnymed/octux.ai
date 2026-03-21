@@ -226,6 +226,8 @@ function ChatPage() {
   const [engineVerdict, setEngineVerdict] = useState<any | null>(null);
   const [engineEvolution, setEngineEvolution] = useState<any[]>([]);
   const [engineDone, setEngineDone] = useState(false);
+  const [simulationSaved, setSimulationSaved] = useState(false);
+  const [savedSimulations, setSavedSimulations] = useState<any[]>([]);
 
   /* Auth */
   const { user: authUser, loading: authLoading, signOut: authSignOut } = useAuth();
@@ -921,6 +923,63 @@ function ChatPage() {
     setSimStage(0);
     setSimAgentMessages([]);
     setSimStartTime(null);
+    setSimulationSaved(false);
+  };
+
+  /* ═══ Saved Simulations ═══ */
+  const fetchSavedSimulations = useCallback(async () => {
+    if (!authUser) return;
+    try {
+      const res = await signuxFetch("/api/simulations/list");
+      if (res.ok) setSavedSimulations(await res.json());
+    } catch {}
+  }, [authUser]);
+
+  useEffect(() => { fetchSavedSimulations(); }, [fetchSavedSimulations]);
+
+  const saveSimulation = async () => {
+    if (!authUser || !engineDone) return;
+    try {
+      const res = await signuxFetch("/api/simulations/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scenario: simScenario,
+          rounds: engineRounds,
+          verdict: engineVerdict,
+          evolution: engineEvolution,
+        }),
+      });
+      if (res.ok) {
+        setSimulationSaved(true);
+        fetchSavedSimulations();
+      }
+    } catch {}
+  };
+
+  const loadSimulation = async (id: string) => {
+    try {
+      const res = await signuxFetch(`/api/simulations/${id}`);
+      if (!res.ok) return;
+      const sim = await res.json();
+      setSimScenario(sim.scenario);
+      setEngineAgents([]);
+      setEngineRounds(sim.rounds || []);
+      setEngineCurrentRound(null);
+      setEngineVerdict(sim.verdict || null);
+      setEngineEvolution(sim.evolution || []);
+      setEngineDone(true);
+      setSimulationSaved(true);
+      setSimResult({
+        report: "",
+        metadata: { agents_count: 10, rounds: sim.rounds?.length || 10, total_interactions: 100 },
+        stages: { agents: [] },
+        simulation: [],
+        engineData: { done: true },
+      });
+      setMode("simulate");
+      if (sidebarOpen) setSidebarOpen(false);
+    } catch {}
   };
 
   /* ═══ Delete Conversation ═══ */
@@ -1081,6 +1140,8 @@ function ChatPage() {
         tier={tier}
         usage={usage}
         limits={limits}
+        savedSimulations={savedSimulations}
+        onLoadSimulation={loadSimulation}
       />
 
       <main style={{
@@ -1167,6 +1228,8 @@ function ChatPage() {
                 engineVerdict={engineVerdict}
                 engineEvolution={engineEvolution}
                 engineDone={engineDone}
+                onSaveSimulation={saveSimulation}
+                simulationSaved={simulationSaved}
               />
             </motion.div>
           ) : mode === "launchpad" ? (
