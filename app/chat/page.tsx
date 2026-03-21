@@ -35,10 +35,13 @@ import {
 
 import { useIsMobile } from "../lib/useIsMobile";
 import { useUserTier } from "../lib/useUserTier";
+import { useTokens } from "../lib/useTokens";
 import type { FileAttachment } from "../components/ChatInput";
 import { createSupabaseBrowser } from "../lib/supabase-browser";
 import { signuxFetch } from "../lib/api-client";
 import { useProjects } from "../lib/useProjects";
+
+const TokenCounter = dynamic(() => import("../components/TokenCounter"), { ssr: false });
 
 const ProjectKnowledge = dynamic(() => import("../components/ProjectKnowledge"), { ssr: false });
 
@@ -246,6 +249,7 @@ function ChatPage() {
   const [showKnowledge, setShowKnowledge] = useState(false);
   const isMobile = useIsMobile();
   const { tier, usage, limits, refresh: refreshUsage } = useUserTier(!!authUser);
+  const tokens = useTokens(!!authUser);
   const {
     projects, activeProject, activeProjectId, selectProject,
     createProject, updateProject,
@@ -1223,6 +1227,7 @@ function ChatPage() {
         limits={limits}
         savedSimulations={savedSimulations}
         onLoadSimulation={loadSimulation}
+        tokenStatus={{ available: tokens.available, monthlyTotal: tokens.monthlyTotal, plan: tokens.plan }}
       />
 
       <main style={{
@@ -1313,6 +1318,9 @@ function ChatPage() {
                 simulationSaved={simulationSaved}
                 simulationUsage={{ used: usage.simulations_month, limit: limits.simulate_monthly }}
                 onLoadDemo={loadDemo}
+                tokenStatus={tokens}
+                onConsumeTokens={tokens.consume}
+                onRefreshTokens={tokens.refresh}
               />
             </motion.div>
           ) : mode === "launchpad" ? (

@@ -26,7 +26,7 @@ type UsageData = {
 const DEFAULT: UsageData = {
   tier: "free",
   usage: { chat_today: 0, simulations_month: 0, researches_month: 0, globalops_month: 0, invest_month: 0 },
-  limits: { chat_daily: 5, simulate_monthly: 1, research_monthly: 0, globalops_monthly: 0, invest_monthly: 0, second_opinion: false, challenge: false, model: "sonnet" },
+  limits: { chat_daily: 5, simulate_monthly: 3, research_monthly: 0, globalops_monthly: 0, invest_monthly: 0, second_opinion: false, challenge: false, model: "sonnet" },
 };
 
 export function useUserTier(isLoggedIn: boolean) {

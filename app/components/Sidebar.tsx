@@ -44,6 +44,7 @@ type SidebarProps = {
   limits?: { simulate_monthly: number; research_monthly: number; globalops_monthly: number; invest_monthly: number };
   savedSimulations?: any[];
   onLoadSimulation?: (id: string) => void;
+  tokenStatus?: { available: number; monthlyTotal: number; plan: string };
 };
 
 const MODES: { key: Mode; icon: any; label: string; color: string }[] = [
@@ -415,7 +416,7 @@ export default function Sidebar({
   open, onClose, onOpen, isLoggedIn, onSignOut, isMobile, authUser,
   conversations, loadingHistory = false, activeConversationId, onLoadConversation, onDeleteConversation,
   projects = [], activeProject, onSelectProject, onCreateProject, onOpenKnowledge,
-  tier, usage, limits, savedSimulations = [], onLoadSimulation,
+  tier, usage, limits, savedSimulations = [], onLoadSimulation, tokenStatus,
 }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -834,6 +835,41 @@ export default function Sidebar({
               </div>
               <span>Decisions need follow-up</span>
             </a>
+          )}
+
+          {/* Token counter */}
+          {tokenStatus && (
+            <div style={{
+              margin: "0 0 4px", padding: "8px 12px", borderRadius: 8,
+              background: tokenStatus.available <= 0 ? "rgba(239,68,68,0.04)" : "rgba(212,175,55,0.04)",
+              border: `1px solid ${tokenStatus.available <= 0 ? "rgba(239,68,68,0.1)" : "rgba(212,175,55,0.08)"}`,
+              display: "flex", alignItems: "center", gap: 8,
+            }}>
+              <Zap size={13} style={{ color: tokenStatus.available <= 0 ? "#EF4444" : "#D4AF37", flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontSize: 11, fontWeight: 600, fontFamily: "var(--font-mono)",
+                  color: tokenStatus.available <= 0 ? "#EF4444" : "#D4AF37",
+                }}>
+                  {tokenStatus.available.toLocaleString()} / {tokenStatus.monthlyTotal.toLocaleString()} ST
+                </div>
+                <div style={{ fontSize: 9, color: "var(--text-tertiary)", marginTop: 1 }}>
+                  {tokenStatus.plan === "guest" ? "Guest tokens" : `${tokenStatus.plan.charAt(0).toUpperCase() + tokenStatus.plan.slice(1)} plan`}
+                </div>
+              </div>
+              {showUpgrade && (
+                <span
+                  onClick={() => router.push("/pricing")}
+                  style={{
+                    fontSize: 9, fontWeight: 600, color: "#D4AF37", cursor: "pointer",
+                    padding: "2px 6px", borderRadius: 4,
+                    background: "rgba(212,175,55,0.08)",
+                  }}
+                >
+                  Upgrade
+                </span>
+              )}
+            </div>
           )}
 
           {/* Upgrade to Pro card — shown for free users */}

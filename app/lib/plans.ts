@@ -7,13 +7,14 @@ export const PLANS = {
   founding: { name: "Founding", price: 500, priceId: process.env.STRIPE_PRICE_FOUNDING || "price_founding" },
 } as const;
 
+// With the token system, all modes are accessible — tokens gate usage
 export const MODE_TIER_REQUIREMENT: Record<string, Tier> = {
   chat: "free",
-  simulate: "pro",
-  research: "pro",
-  launchpad: "pro",
-  globalops: "pro",
-  invest: "pro",
+  simulate: "free",
+  research: "free",
+  launchpad: "free",
+  globalops: "free",
+  invest: "free",
 };
 
 export const TIER_LIMITS = {

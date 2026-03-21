@@ -78,6 +78,9 @@ type SimulationEngineProps = {
   simulationSaved?: boolean;
   simulationUsage?: { used: number; limit: number };
   onLoadDemo?: () => void;
+  tokenStatus?: { available: number; monthlyTotal: number; monthlyUsed: number; plan: string; daysUntilReset: number; features: any; costs: Record<string, number> };
+  onConsumeTokens?: (action: string, metadata?: Record<string, any>) => Promise<boolean>;
+  onRefreshTokens?: () => void;
 };
 
 function calculateRiskScore(agents: SimAgent[], messages: AgentMessage[]): { score: number; label: string; color: string } {
@@ -102,7 +105,7 @@ function calculateRiskScore(agents: SimAgent[], messages: AgentMessage[]): { sco
 }
 
 export default function SimulationEngine(props: SimulationEngineProps) {
-  const { simulating, simResult, simScenario, setSimScenario, simStage, simLiveAgents, simTotalAgents, simStartTime, onSimulate, onReset, simStarting, simAgentMessages, onSetMode, lang, isLoggedIn, tier, streamingUniverses, streamingVerdict, engineAgents, engineRounds, engineCurrentRound, engineVerdict, engineEvolution, engineDone, onSaveSimulation, simulationSaved, simulationUsage, onLoadDemo } = props;
+  const { simulating, simResult, simScenario, setSimScenario, simStage, simLiveAgents, simTotalAgents, simStartTime, onSimulate, onReset, simStarting, simAgentMessages, onSetMode, lang, isLoggedIn, tier, streamingUniverses, streamingVerdict, engineAgents, engineRounds, engineCurrentRound, engineVerdict, engineEvolution, engineDone, onSaveSimulation, simulationSaved, simulationUsage, onLoadDemo, tokenStatus, onConsumeTokens, onRefreshTokens } = props;
   const feedRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -117,6 +120,7 @@ export default function SimulationEngine(props: SimulationEngineProps) {
   const [exportOpen, setExportOpen] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showAuthGate, setShowAuthGate] = useState(false);
+  const [showTokenLimit, setShowTokenLimit] = useState(false);
 
   // 10x10 Canvas state
   const [activeRound, setActiveRound] = useState(1);
@@ -457,13 +461,34 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
       "Partner with a competitor",
     ];
 
-    const handleRun = () => {
+    const handleRun = async () => {
+      // Token-based gating
+      const simCost = tokenStatus?.costs?.simulate_full || 100;
+
       if (!isLoggedIn) {
-        // Guest: allow 1 free simulation, then show auth gate
-        const guestUsed = typeof window !== "undefined" && localStorage.getItem("signux-guest-simulation");
-        if (guestUsed) { setShowAuthGate(true); return; }
-        if (typeof window !== "undefined") localStorage.setItem("signux-guest-simulation", "true");
-      } else if (tier === "free") { setShowPaywall(true); return; }
+        // Guest: check token balance (50 ST guest allowance)
+        if (tokenStatus && tokenStatus.available < simCost) {
+          setShowAuthGate(true);
+          return;
+        }
+        // Consume guest tokens
+        if (onConsumeTokens) {
+          const ok = await onConsumeTokens("simulate_full", { scenario: simScenario });
+          if (!ok) { setShowAuthGate(true); return; }
+        }
+      } else {
+        // Logged in: check token balance
+        if (tokenStatus && tokenStatus.available < simCost) {
+          setShowTokenLimit(true);
+          return;
+        }
+        // Consume tokens
+        if (onConsumeTokens) {
+          const ok = await onConsumeTokens("simulate_full", { scenario: simScenario });
+          if (!ok) { setShowTokenLimit(true); return; }
+        }
+      }
+
       const activeTeam = customAgents.filter(a => a.active);
       const teamPrefix = activeTeam.length !== DEFAULT_ROLES.length || activeTeam.some(a => !DEFAULT_ROLES.find(d => d.id === a.id))
         ? `\n\nSPECIALIST TEAM FOR THIS SIMULATION:\n${activeTeam.map(a => `- ${a.name}`).join("\n")}\n\nRun the debate with ONLY these specialists. Each should contribute from their specific expertise.`
@@ -743,25 +768,31 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           </div>
         )}
 
-        {/* Usage counter */}
-        {simulationUsage && !compareMode && (
+        {/* Token cost indicator */}
+        {tokenStatus && !compareMode && (
           <div style={{
-            display: "flex", justifyContent: "center", marginTop: 8,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8,
           }}>
+            <Zap size={10} style={{ color: tokenStatus.available < 100 ? "#EF4444" : "#D4AF37" }} />
             <span style={{
-              fontSize: 10, color: simulationUsage.used >= simulationUsage.limit ? "#EF4444" : "var(--text-tertiary)",
-              fontFamily: "var(--font-mono)",
+              fontSize: 10, fontFamily: "var(--font-mono)",
+              color: tokenStatus.available < 100 ? "#EF4444" : "var(--text-tertiary)",
             }}>
-              {simulationUsage.used}/{simulationUsage.limit === Infinity ? "∞" : simulationUsage.limit} simulations this month
-              {simulationUsage.used >= simulationUsage.limit && (
-                <span
-                  onClick={() => window.location.href = "/pricing"}
-                  style={{ color: "#D4AF37", cursor: "pointer", marginLeft: 6 }}
-                >
-                  Upgrade →
-                </span>
-              )}
+              {tokenStatus.available.toLocaleString()} ST remaining
             </span>
+            <span style={{
+              fontSize: 9, color: "var(--text-tertiary)", opacity: 0.6,
+            }}>
+              · Full sim costs 100 ST
+            </span>
+            {tokenStatus.available < 100 && (
+              <span
+                onClick={() => window.location.href = "/pricing"}
+                style={{ fontSize: 10, color: "#D4AF37", cursor: "pointer" }}
+              >
+                Upgrade →
+              </span>
+            )}
           </div>
         )}
 
@@ -1061,7 +1092,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                 Sign up to unlock simulations
               </h3>
               <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20, lineHeight: 1.5 }}>
-                Create a free account to run AI-powered business simulations with 10 expert agents debating your scenario.
+                Sign up free and get <strong style={{ color: "#D4AF37" }}>200 Signux Tokens</strong> monthly — enough for 2 full simulations, 200 chat messages, and more.
               </p>
               <button
                 onClick={() => { if (typeof window !== "undefined") window.location.href = "/signup"; }}
@@ -1082,6 +1113,60 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                   color: "var(--text-tertiary)", fontSize: 13, cursor: "pointer",
                 }}
               >
+                Maybe later
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Token limit modal */}
+        {showTokenLimit && tokenStatus && (
+          <div style={{
+            position: "fixed", inset: 0, zIndex: 1000,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+          }} onClick={() => setShowTokenLimit(false)}>
+            <div onClick={e => e.stopPropagation()} style={{
+              maxWidth: 420, width: "90%", padding: "32px 28px", borderRadius: 16,
+              background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
+              textAlign: "center",
+            }}>
+              <Lock size={36} style={{ color: "#EF4444", marginBottom: 12 }} />
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 8px" }}>
+                Not enough tokens
+              </h3>
+              <p style={{ fontSize: 13, color: "var(--text-tertiary)", lineHeight: 1.5, margin: "0 0 6px" }}>
+                A full simulation costs <strong style={{ color: "#D4AF37" }}>100 ST</strong>.
+                You have <strong style={{ color: "#EF4444" }}>{tokenStatus.available} ST</strong> remaining.
+              </p>
+              <p style={{ fontSize: 12, color: "var(--text-tertiary)", margin: "0 0 20px" }}>
+                Tokens reset in {tokenStatus.daysUntilReset} day{tokenStatus.daysUntilReset !== 1 ? "s" : ""}.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+                {tokenStatus.plan !== "pro" && tokenStatus.plan !== "max" && tokenStatus.plan !== "founding" && (
+                  <button onClick={() => { window.location.href = "/pricing"; }} style={{
+                    width: "100%", padding: "12px", borderRadius: 10,
+                    background: "#D4AF37", border: "none", color: "#000",
+                    fontSize: 14, fontWeight: 700, cursor: "pointer",
+                  }}>
+                    Upgrade to Pro — 2,000 ST/mo → $29
+                  </button>
+                )}
+                {tokenStatus.plan === "pro" && (
+                  <button onClick={() => { window.location.href = "/pricing"; }} style={{
+                    width: "100%", padding: "12px", borderRadius: 10,
+                    background: "#D4AF37", border: "none", color: "#000",
+                    fontSize: 14, fontWeight: 700, cursor: "pointer",
+                  }}>
+                    Upgrade to Max — 10,000 ST/mo → $99
+                  </button>
+                )}
+              </div>
+              <button onClick={() => setShowTokenLimit(false)} style={{
+                width: "100%", padding: "10px", borderRadius: 10,
+                background: "transparent", border: "1px solid var(--border-secondary)",
+                color: "var(--text-tertiary)", fontSize: 13, cursor: "pointer",
+              }}>
                 Maybe later
               </button>
             </div>
