@@ -70,7 +70,7 @@ export default function VerdictPanel({ verdict, isMobile }: VerdictPanelProps) {
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
             style={{
-              fontSize: 32,
+              fontSize: isMobile ? 24 : 32,
               fontWeight: 800,
               color: mainColor,
               fontFamily: "var(--font-mono)",
@@ -91,7 +91,7 @@ export default function VerdictPanel({ verdict, isMobile }: VerdictPanelProps) {
         {/* Viability */}
         <div style={{ textAlign: "center" }}>
           <div style={{
-            fontSize: 28,
+            fontSize: isMobile ? 20 : 28,
             fontWeight: 800,
             color: "#D4AF37",
             fontFamily: "var(--font-mono)",

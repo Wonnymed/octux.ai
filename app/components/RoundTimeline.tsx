@@ -36,8 +36,15 @@ export default function RoundTimeline({
       <div style={{
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent: isMobile ? "flex-start" : "center",
         gap: isMobile ? 2 : 4,
+        ...(isMobile ? {
+          overflowX: "auto" as const,
+          WebkitOverflowScrolling: "touch" as const,
+          scrollbarWidth: "none" as const,
+          msOverflowStyle: "none" as const,
+          paddingBottom: 4,
+        } : {}),
       }}>
         {Array.from({ length: 10 }, (_, i) => {
           const roundNum = i + 1;

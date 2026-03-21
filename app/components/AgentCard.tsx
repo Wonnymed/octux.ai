@@ -35,9 +35,10 @@ type AgentCardProps = {
   index: number;
   expanded: boolean;
   onToggle: () => void;
+  isMobile?: boolean;
 };
 
-export default function AgentCard({ agent, index, expanded, onToggle }: AgentCardProps) {
+export default function AgentCard({ agent, index, expanded, onToggle, isMobile }: AgentCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -45,7 +46,7 @@ export default function AgentCard({ agent, index, expanded, onToggle }: AgentCar
       transition={{ delay: index * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       onClick={onToggle}
       style={{
-        padding: "12px 14px",
+        padding: isMobile ? "10px 12px" : "12px 14px",
         borderRadius: 12,
         background: "var(--card-bg)",
         border: agent.failed
@@ -143,7 +144,7 @@ export default function AgentCard({ agent, index, expanded, onToggle }: AgentCar
 
       {/* Text */}
       <p style={{
-        fontSize: 12,
+        fontSize: isMobile ? 11 : 12,
         color: "var(--text-secondary)",
         lineHeight: 1.5,
         margin: 0,
@@ -151,7 +152,7 @@ export default function AgentCard({ agent, index, expanded, onToggle }: AgentCar
           ? {}
           : {
               display: "-webkit-box",
-              WebkitLineClamp: 3,
+              WebkitLineClamp: isMobile ? 2 : 3,
               WebkitBoxOrient: "vertical" as const,
               overflow: "hidden",
             }),

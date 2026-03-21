@@ -1613,6 +1613,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                           index={i}
                           expanded={expandedAgent === agent.agentId}
                           onToggle={() => setExpandedAgent(expandedAgent === agent.agentId ? null : agent.agentId)}
+                          isMobile={isMobile}
                         />
                       ))}
                     </div>
@@ -1938,7 +1939,9 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           transition={{ duration: 0.5, delay: 0.6 }}
           style={{
             position: "absolute", bottom: 0, left: 0, right: 0,
-            display: "flex", alignItems: "center", gap: 10,
+            display: "flex", alignItems: isMobile ? "stretch" : "center",
+            flexDirection: isMobile ? "column" : "row",
+            gap: isMobile ? 6 : 10,
             padding: isMobile ? "10px 12px" : "12px 20px",
             background: "linear-gradient(180deg, rgba(10,10,10,0.75) 0%, rgba(10,10,10,0.95) 100%)",
             backdropFilter: "blur(16px)",
@@ -1977,9 +1980,14 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             </div>
           </div>
 
-          <div style={{ flex: 1 }} />
+          {!isMobile && <div style={{ flex: 1 }} />}
 
           {/* Action buttons */}
+          <div style={{
+            display: "flex", gap: isMobile ? 6 : 0,
+            flexWrap: "wrap",
+            ...(isMobile ? { width: "100%" } : {}),
+          }}>
           {[
             { label: isMobile ? "Variable" : "Mudar variável ao vivo", icon: <Eye size={12} />, onClick: () => setGodEyeOpen(!godEyeOpen) },
             { label: isMobile ? "Compare" : "Comparar A vs B", icon: <Columns size={12} />, onClick: () => {
@@ -2014,6 +2022,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               {btn.icon} {btn.label}
             </button>
           ))}
+          </div>
         </motion.div>
       </div>
     );
@@ -2263,20 +2272,20 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               {meta.agents_count} agents · {meta.rounds} rounds · {meta.total_interactions} interactions · {duration > 60 ? `${Math.floor(duration / 60)}m ${duration % 60}s` : `${duration}s`}
             </div>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button onClick={() => setGodEyeOpen(true)} style={{
               display: "flex", alignItems: "center", gap: 6,
-              padding: "8px 18px", borderRadius: "var(--radius-sm)",
+              padding: isMobile ? "6px 12px" : "8px 18px", borderRadius: "var(--radius-sm)",
               border: "1px solid var(--mode-sim-border)",
               background: "var(--mode-sim-bg)", color: "var(--mode-sim)",
-              fontSize: 13, fontWeight: 600, cursor: "pointer",
+              fontSize: isMobile ? 11 : 13, fontWeight: 600, cursor: "pointer",
               fontFamily: "var(--font-brand)", letterSpacing: 1,
             }}>
-              <Eye size={14} /> What if?
+              <Eye size={isMobile ? 12 : 14} /> What if?
             </button>
             <button onClick={onReset} style={{
-              fontSize: 13, color: "var(--text-secondary)", background: "transparent",
-              border: "1px solid var(--border-primary)", padding: "8px 16px",
+              fontSize: isMobile ? 11 : 13, color: "var(--text-secondary)", background: "transparent",
+              border: "1px solid var(--border-primary)", padding: isMobile ? "6px 12px" : "8px 16px",
               borderRadius: "var(--radius-sm)", cursor: "pointer",
             }}>
               {t("sim.new_simulation")}
@@ -2391,6 +2400,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                             index={ai}
                             expanded={expandedAgent === `t-${round.round}-${agent.agentId}`}
                             onToggle={() => setExpandedAgent(expandedAgent === `t-${round.round}-${agent.agentId}` ? null : `t-${round.round}-${agent.agentId}`)}
+                            isMobile={isMobile}
                           />
                         ))}
                       </div>

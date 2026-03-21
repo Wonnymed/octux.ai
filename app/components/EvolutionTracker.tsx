@@ -70,7 +70,7 @@ export default function EvolutionTracker({
     a.rounds.some(r => r.changedMind)
   ).length;
 
-  const svgW = isMobile ? 80 : 110;
+  const svgW = isMobile ? 60 : 110;
   const svgH = compact ? 16 : 20;
 
   return (
