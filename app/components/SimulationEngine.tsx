@@ -158,6 +158,9 @@ export default function SimulationEngine(props: SimulationEngineProps) {
   const [compareMode, setCompareMode] = useState(false);
   const [scenarioA, setScenarioA] = useState("");
   const [scenarioB, setScenarioB] = useState("");
+  const [compareSnapshot, setCompareSnapshot] = useState<{
+    scenario: string; rounds: any[]; verdict: any; evolution: any[];
+  } | null>(null);
 
   // Customizable agent roles
   type AgentRole = { id: string; name: string; active: boolean };
@@ -529,6 +532,34 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           width: "100%",
           maxWidth: isMobile ? 680 : "clamp(600px, 52vw, 820px)",
         }}>
+
+        {/* Compare mode banner */}
+        {compareSnapshot && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "10px 14px", borderRadius: 10, marginBottom: 12,
+            background: "rgba(59,130,246,0.06)",
+            border: "1px solid rgba(59,130,246,0.15)",
+            width: "100%",
+          }}>
+            <Columns size={14} style={{ color: "#3b82f6", flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#3b82f6" }}>Comparing with Simulation A</div>
+              <div style={{
+                fontSize: 10, color: "var(--text-tertiary)",
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const,
+              }}>
+                {compareSnapshot.scenario.slice(0, 80)}{compareSnapshot.scenario.length > 80 ? "..." : ""}
+              </div>
+            </div>
+            <button onClick={() => setCompareSnapshot(null)} style={{
+              background: "none", border: "none", cursor: "pointer",
+              color: "var(--text-tertiary)", padding: 4, flexShrink: 0,
+            }}>
+              <X size={14} />
+            </button>
+          </div>
+        )}
 
         {/* ── MAIN INPUT CONTAINER ── */}
         {!compareMode && (
@@ -1951,7 +1982,15 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           {/* Action buttons */}
           {[
             { label: isMobile ? "Variable" : "Mudar variável ao vivo", icon: <Eye size={12} />, onClick: () => setGodEyeOpen(!godEyeOpen) },
-            { label: isMobile ? "Compare" : "Comparar A vs B", icon: <Columns size={12} />, onClick: () => {} },
+            { label: isMobile ? "Compare" : "Comparar A vs B", icon: <Columns size={12} />, onClick: () => {
+              setCompareSnapshot({
+                scenario: simScenario,
+                rounds: engineRounds || [],
+                verdict: engineVerdict,
+                evolution: engineEvolution || [],
+              });
+              onReset();
+            }},
             { label: simulationSaved ? "Saved!" : isMobile ? "Save" : "Salvar Simulação", icon: simulationSaved ? <Check size={12} /> : <Save size={12} />, onClick: () => onSaveSimulation?.(), disabled: simulationSaved },
             { label: isMobile ? "PDF" : "Export PDF", icon: <FileDown size={12} />, onClick: () => {
               import("../lib/exportPdf").then(({ exportSimulationPdf }) => {
@@ -1997,6 +2036,207 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           >
             {t("sim.try_again")}
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ═══ COMPARE A vs B RESULT VIEW ═══ */
+  if (simResult?.engineData && engineDone && compareSnapshot) {
+    const simA = compareSnapshot;
+    const simB = { scenario: simScenario, rounds: engineRounds || [], verdict: engineVerdict, evolution: engineEvolution || [] };
+
+    const renderSide = (sim: typeof simA, label: string, color: string, borderColor: string) => {
+      const v = sim.verdict || {};
+      const isProceed = (v.proceedCount || 0) >= 6;
+      return (
+        <div style={{
+          borderRadius: 12, border: `1px solid ${borderColor}`,
+          padding: 16, background: "var(--card-bg)", flex: 1, minWidth: 0,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color }}>{label}</span>
+          </div>
+          <div style={{
+            fontSize: 10, color: "var(--text-tertiary)", marginBottom: 10,
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const,
+          }}>
+            {sim.scenario.slice(0, 60)}{sim.scenario.length > 60 ? "..." : ""}
+          </div>
+          <div style={{
+            fontSize: 28, fontWeight: 800, fontFamily: "var(--font-mono)",
+            color: isProceed ? "#10B981" : "#EF4444", lineHeight: 1,
+          }}>
+            {v.proceedCount || 0}-{v.stopCount || 0}
+          </div>
+          <div style={{ fontSize: 10, color: isProceed ? "#10B981" : "#EF4444", marginBottom: 10 }}>
+            {isProceed ? "PROCEED" : "STOP"}
+          </div>
+          <div style={{ display: "flex", gap: 16, marginBottom: 10 }}>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#D4AF37", fontFamily: "var(--font-mono)" }}>{v.viability || 0}/10</div>
+              <div style={{ fontSize: 8, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>VIABILITY</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-mono)" }}>{v.avgConfidence || 0}</div>
+              <div style={{ fontSize: 8, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>AVG CONF</div>
+            </div>
+            {v.estimatedROI && v.estimatedROI !== "N/A" && (
+              <div>
+                <div style={{
+                  fontSize: 18, fontWeight: 800, fontFamily: "var(--font-mono)",
+                  color: v.estimatedROI.startsWith("-") ? "#EF4444" : "#10B981",
+                }}>{v.estimatedROI}</div>
+                <div style={{ fontSize: 8, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>EST. ROI</div>
+              </div>
+            )}
+          </div>
+          {v.verdict && (
+            <p style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.5, margin: "0 0 10px" }}>
+              {v.verdict}
+            </p>
+          )}
+          {v.patterns && v.patterns.length > 0 && (
+            <div>
+              <div style={{ fontSize: 8, fontFamily: "var(--font-mono)", color: "var(--text-tertiary)", marginBottom: 4, textTransform: "uppercase" as const, letterSpacing: 0.8 }}>Patterns</div>
+              {v.patterns.slice(0, 4).map((p: any, i: number) => (
+                <div key={i} style={{ fontSize: 10, color: "var(--text-secondary)", marginBottom: 3, lineHeight: 1.4 }}>
+                  • {p.title}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // Compute diffs
+    const diffs: { label: string; a: string; b: string; winner: "A" | "B" | "tie" }[] = [];
+    const va = simA.verdict || {};
+    const vb = simB.verdict || {};
+    if (va.viability !== vb.viability) {
+      diffs.push({ label: "Viability", a: `${va.viability || 0}/10`, b: `${vb.viability || 0}/10`, winner: (va.viability || 0) > (vb.viability || 0) ? "A" : "B" });
+    }
+    if (va.proceedCount !== vb.proceedCount) {
+      diffs.push({ label: "Votes", a: `${va.proceedCount || 0}-${va.stopCount || 0}`, b: `${vb.proceedCount || 0}-${vb.stopCount || 0}`, winner: (va.proceedCount || 0) > (vb.proceedCount || 0) ? "A" : "B" });
+    }
+    if (va.avgConfidence !== vb.avgConfidence) {
+      diffs.push({ label: "Avg Confidence", a: `${va.avgConfidence || 0}`, b: `${vb.avgConfidence || 0}`, winner: (va.avgConfidence || 0) > (vb.avgConfidence || 0) ? "A" : "B" });
+    }
+    if (va.estimatedROI !== vb.estimatedROI) {
+      diffs.push({ label: "Est. ROI", a: va.estimatedROI || "N/A", b: vb.estimatedROI || "N/A", winner: "tie" });
+    }
+
+    return (
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          padding: isMobile ? "16px 16px 0" : "20px 24px 0",
+        }}>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", fontFamily: "var(--font-brand)", letterSpacing: 1 }}>
+              Compare A vs B
+            </div>
+            <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
+              Side-by-side analysis of two simulation outcomes
+            </div>
+          </div>
+          <button onClick={() => { setCompareSnapshot(null); }} style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "7px 16px", borderRadius: 50,
+            border: "1px solid var(--border-secondary)", background: "transparent",
+            color: "var(--text-tertiary)", fontSize: 11, cursor: "pointer",
+          }}>
+            <RotateCcw size={12} /> New simulation
+          </button>
+        </div>
+
+        <div style={{
+          flex: 1, overflowY: "auto", padding: isMobile ? 16 : 24,
+          display: "flex", flexDirection: "column", gap: 16,
+        }}>
+          {/* Side by side */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: 16,
+          }}>
+            {renderSide(simA, "Simulation A", "#D4AF37", "rgba(212,175,55,0.2)")}
+            {renderSide(simB, "Simulation B", "#3B82F6", "rgba(59,130,246,0.2)")}
+          </div>
+
+          {/* Key Differences */}
+          {diffs.length > 0 && (
+            <div style={{
+              padding: "14px 16px", borderRadius: 12,
+              background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
+            }}>
+              <div style={{
+                fontSize: 10, fontFamily: "var(--font-mono)", color: "var(--text-tertiary)",
+                textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 10,
+              }}>
+                Key Differences
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {diffs.map((d, i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    padding: "6px 10px", borderRadius: 8,
+                    background: "rgba(255,255,255,0.02)",
+                  }}>
+                    <span style={{ fontSize: 10, color: "var(--text-tertiary)", width: 100 }}>{d.label}</span>
+                    <span style={{
+                      fontSize: 12, fontFamily: "var(--font-mono)", fontWeight: 600, width: 60,
+                      color: d.winner === "A" ? "#D4AF37" : "var(--text-secondary)",
+                    }}>{d.a}</span>
+                    <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>vs</span>
+                    <span style={{
+                      fontSize: 12, fontFamily: "var(--font-mono)", fontWeight: 600, width: 60,
+                      color: d.winner === "B" ? "#3B82F6" : "var(--text-secondary)",
+                    }}>{d.b}</span>
+                    {d.winner !== "tie" && (
+                      <span style={{
+                        fontSize: 8, padding: "1px 6px", borderRadius: 3, fontWeight: 700, marginLeft: "auto",
+                        background: d.winner === "A" ? "rgba(212,175,55,0.1)" : "rgba(59,130,246,0.1)",
+                        color: d.winner === "A" ? "#D4AF37" : "#3B82F6",
+                      }}>
+                        {d.winner} WINS
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Dissent comparison */}
+          {(va.dissents?.length > 0 || vb.dissents?.length > 0) && (
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+              gap: 16,
+            }}>
+              {[{ v: va, label: "A", color: "#D4AF37" }, { v: vb, label: "B", color: "#3B82F6" }].map(({ v: sv, label, color }) => (
+                <div key={label} style={{
+                  padding: "12px 14px", borderRadius: 10,
+                  background: "rgba(239,68,68,0.03)", border: "1px solid rgba(239,68,68,0.08)",
+                }}>
+                  <div style={{ fontSize: 9, fontFamily: "var(--font-mono)", color, marginBottom: 6, letterSpacing: 0.5 }}>
+                    DISSENTS — {label}
+                  </div>
+                  {(sv.dissents || []).map((d: any, i: number) => (
+                    <div key={i} style={{ fontSize: 10, color: "var(--text-secondary)", marginBottom: 4, lineHeight: 1.4 }}>
+                      {d.avatar} <strong>{d.agent}:</strong> &ldquo;{d.note}&rdquo;
+                    </div>
+                  ))}
+                  {(!sv.dissents || sv.dissents.length === 0) && (
+                    <div style={{ fontSize: 10, color: "var(--text-tertiary)", fontStyle: "italic" }}>No dissents</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
