@@ -551,45 +551,32 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
         position: "relative",
       }}>
 
-        {/* ── HERO HEADER — matches WelcomeScreen ── */}
+        {/* ── HERO HEADER ── */}
         <div style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: isMobile ? 8 : 12,
+          gap: 6,
           marginBottom: isMobile ? 16 : 24,
         }}>
-          <div style={{
-            width: isMobile ? 44 : 72,
-            height: isMobile ? 44 : 72,
-            borderRadius: isMobile ? 14 : 20,
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.07)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            <Zap size={isMobile ? 22 : 36} style={{ color: "#EDEDEF" }} />
-          </div>
           <span style={{
             fontFamily: "var(--font-brand)",
-            fontSize: isMobile ? 28 : "clamp(32px, 3vw, 48px)",
-            fontWeight: 800,
-            letterSpacing: "clamp(6px, 0.6vw, 10px)",
+            fontSize: 24,
+            fontWeight: 300,
+            letterSpacing: 6,
             color: "var(--text-primary)",
           }}>
             SIMULATE
           </span>
+          <p style={{
+            textAlign: "center",
+            fontSize: 13,
+            color: "var(--text-tertiary)",
+            margin: 0,
+          }}>
+            See the future before it happens
+          </p>
         </div>
-        <p style={{
-          textAlign: "center",
-          fontSize: 14,
-          color: "var(--text-tertiary)",
-          marginBottom: isMobile ? "clamp(24px, 4vh, 40px)" : "clamp(32px, 6vh, 60px)",
-          maxWidth: 500,
-        }}>
-          See the future before it happens — and choose the best path
-        </p>
 
         <div style={{
           width: "100%",
@@ -628,16 +615,13 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
         {!compareMode && (
           <div style={{ width: "100%" }}>
             <div style={{
-              borderRadius: 14,
+              borderRadius: 12,
               border: simScenario.trim()
-                ? "1px solid rgba(255,255,255,0.12)"
-                : "1px solid var(--border-secondary)",
-              background: "var(--card-bg)",
+                ? "1px solid var(--accent-border)"
+                : "1px solid var(--border-primary)",
+              background: "var(--bg-card)",
               overflow: "hidden",
-              transition: "border-color 200ms, box-shadow 200ms",
-              boxShadow: simScenario.trim()
-                ? "0 0 20px rgba(255,255,255,0.04)"
-                : "none",
+              transition: "border-color 200ms",
             }}>
               <textarea
                 value={simScenario}
@@ -648,14 +632,15 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                     handleEnhance();
                   }
                 }}
-                placeholder="Describe any business scenario… Ex: I want to open a coffee franchise in 3 cities with a $200K budget…"
-                rows={isMobile ? 3 : 4}
+                placeholder="Describe any business scenario... Ex: I want to open a coffee franchise in 3 cities with a $200K budget..."
+                rows={isMobile ? 3 : 5}
                 style={{
                   width: "100%", padding: "16px 18px 8px",
                   background: "transparent", border: "none",
-                  color: "var(--text-primary)", fontSize: 14,
+                  color: "var(--text-primary)", fontSize: 15,
                   lineHeight: 1.6, resize: "none", outline: "none",
                   fontFamily: "var(--font-body)",
+                  minHeight: 120,
                   opacity: enhancing ? 0.5 : 1,
                 }}
               />
@@ -664,14 +649,13 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               <div style={{
                 display: "flex", alignItems: "center",
                 padding: "8px 12px", gap: 6,
-                borderTop: "1px solid var(--border-secondary)",
+                borderTop: "1px solid var(--border-primary)",
               }}>
                 <button onClick={() => setShowUrlInput(!showUrlInput)} style={{
                   display: "flex", alignItems: "center", gap: isMobile ? 0 : 4,
                   padding: "5px 10px", borderRadius: 6,
-                  background: "transparent",
-                  border: "1px solid var(--border-secondary)",
-                  color: "var(--text-tertiary)", fontSize: 11,
+                  background: "transparent", border: "none",
+                  color: "var(--text-tertiary)", fontSize: 12,
                   cursor: "pointer",
                 }}>
                   <Link2 size={12} />
@@ -680,9 +664,8 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                 <button onClick={() => fileInputRef.current?.click()} style={{
                   display: "flex", alignItems: "center", gap: isMobile ? 0 : 4,
                   padding: "5px 10px", borderRadius: 6,
-                  background: "transparent",
-                  border: "1px solid var(--border-secondary)",
-                  color: "var(--text-tertiary)", fontSize: 11,
+                  background: "transparent", border: "none",
+                  color: "var(--text-tertiary)", fontSize: 12,
                   cursor: "pointer",
                 }}>
                   <Paperclip size={12} />
@@ -725,10 +708,9 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                     style={{
                       display: "flex", alignItems: "center", gap: 4,
                       padding: "5px 10px", borderRadius: 6,
-                      border: "1px solid var(--border-secondary)",
-                      background: wasEnhanced ? "rgba(255,255,255,0.06)" : "transparent",
+                      background: "transparent", border: "none",
                       color: wasEnhanced ? "var(--positive)" : "var(--text-tertiary)",
-                      fontSize: 11, cursor: enhancing ? "wait" : "pointer",
+                      fontSize: 12, cursor: enhancing ? "wait" : "pointer",
                     }}
                   >
                     {enhancing ? <Loader2 size={11} style={{ animation: "spin 1s linear infinite" }} /> : <Wand2 size={11} />}
@@ -745,12 +727,12 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                   style={{
                     display: "flex", alignItems: "center", gap: 6,
                     padding: "8px 20px", borderRadius: 50,
-                    background: simScenario.trim() && !simStarting ? "var(--accent)" : "rgba(255,255,255,0.05)",
-                    color: simScenario.trim() && !simStarting ? "#000" : "var(--text-tertiary)",
-                    fontSize: 13, fontWeight: 700, border: "none",
+                    background: simScenario.trim() && !simStarting ? "var(--accent)" : "transparent",
+                    color: simScenario.trim() && !simStarting ? "#09090B" : "var(--text-tertiary)",
+                    fontSize: 13, fontWeight: 600,
+                    border: simScenario.trim() && !simStarting ? "none" : "1px solid var(--border-primary)",
                     cursor: simScenario.trim() && !simStarting ? "pointer" : "default",
-                    opacity: simScenario.trim() && !simStarting ? 1 : 0.4,
-                    transition: "all 300ms ease",
+                    transition: "all 200ms ease",
                     letterSpacing: 0.5,
                     whiteSpace: "nowrap",
                   }}
@@ -758,7 +740,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                   {simStarting ? (
                     <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />
                   ) : (
-                    <Play size={13} fill={simScenario.trim() && !simStarting ? "#000" : "var(--text-tertiary)"} />
+                    <Play size={13} fill={simScenario.trim() && !simStarting ? "#09090B" : "var(--text-tertiary)"} />
                   )}
                   {simStarting ? "Starting..." : "SIMULATE FUTURE"}
                 </button>
@@ -768,7 +750,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               {showUrlInput && (
                 <div style={{
                   display: "flex", gap: 6, padding: "8px 12px",
-                  borderTop: "1px solid var(--border-secondary)",
+                  borderTop: "1px solid var(--border-primary)",
                 }}>
                   <input
                     type="url"
@@ -801,26 +783,20 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
         {/* Token cost indicator */}
         {tokenStatus && !compareMode && (
           <div style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 8,
           }}>
-            <Zap size={10} style={{ color: tokenStatus.available < 100 ? "#EF4444" : "#D4AF37" }} />
             <span style={{
-              fontSize: 10, fontFamily: "var(--font-mono)",
-              color: tokenStatus.available < 100 ? "#EF4444" : "var(--text-tertiary)",
+              fontSize: 11, fontFamily: "var(--font-mono)",
+              color: tokenStatus.available < 100 ? "var(--negative)" : "var(--text-tertiary)",
             }}>
-              {tokenStatus.available.toLocaleString()} ST remaining
-            </span>
-            <span style={{
-              fontSize: 9, color: "var(--text-tertiary)", opacity: 0.6,
-            }}>
-              · Full sim costs 100 ST
+              {tokenStatus.available.toLocaleString()} ST remaining · 100 ST per sim
             </span>
             {tokenStatus.available < 100 && (
               <span
                 onClick={() => window.location.href = "/pricing"}
-                style={{ fontSize: 10, color: "#D4AF37", cursor: "pointer" }}
+                style={{ fontSize: 11, color: "var(--accent)", cursor: "pointer" }}
               >
-                Upgrade →
+                Upgrade
               </span>
             )}
           </div>
@@ -919,20 +895,20 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           {quickScenarios.map((sc, i) => (
             <button key={i} onClick={() => setSimScenario(sc)} style={{
               padding: "5px 11px", borderRadius: 50,
-              border: "1px solid var(--border-secondary)",
-              background: "transparent", color: "var(--text-secondary)",
-              fontSize: 11, cursor: "pointer",
+              border: "1px solid var(--border-primary)",
+              background: "transparent", color: "var(--text-tertiary)",
+              fontSize: 12, cursor: "pointer",
               transition: "all 150ms",
               whiteSpace: "nowrap",
               flexShrink: 0,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
-              e.currentTarget.style.color = "#EDEDEF";
+              e.currentTarget.style.borderColor = "var(--border-hover)";
+              e.currentTarget.style.color = "var(--text-secondary)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border-secondary)";
-              e.currentTarget.style.color = "var(--text-secondary)";
+              e.currentTarget.style.borderColor = "var(--border-primary)";
+              e.currentTarget.style.color = "var(--text-tertiary)";
             }}
             >
               {sc}
@@ -946,34 +922,30 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           display: "flex", alignItems: "center", justifyContent: "center",
           gap: 12, flexWrap: "wrap",
         }}>
-          <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>
+          <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
             10 AI specialists · 10 debate rounds
           </span>
 
           <button onClick={() => setShowAgentCustomizer(!showAgentCustomizer)} style={{
             display: "flex", alignItems: "center", gap: 4,
-            padding: "4px 10px", borderRadius: 6,
-            border: "1px solid var(--border-secondary)",
+            padding: 0, border: "none",
             background: "transparent", color: "var(--text-tertiary)",
-            fontSize: 10, cursor: "pointer",
+            fontSize: 12, cursor: "pointer",
+            textDecoration: "underline",
+            textUnderlineOffset: 3,
           }}>
-            <Users size={11} />
             Customize team
-            <ChevronDown size={10} style={{
-              transform: showAgentCustomizer ? "rotate(180deg)" : "none",
-              transition: "transform 200ms",
-            }} />
           </button>
 
           {!compareMode && (
             <button onClick={() => setCompareMode(true)} style={{
               display: "flex", alignItems: "center", gap: 4,
-              padding: "4px 10px", borderRadius: 6,
-              border: "1px solid var(--border-secondary)",
+              padding: 0, border: "none",
               background: "transparent", color: "var(--text-tertiary)",
-              fontSize: 10, cursor: "pointer",
+              fontSize: 12, cursor: "pointer",
+              textDecoration: "underline",
+              textUnderlineOffset: 3,
             }}>
-              <Columns size={11} />
               Compare A vs B
             </button>
           )}
@@ -1041,25 +1013,18 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           </div>
         )}
 
-        {/* ── WATCH DEMO — video modal trigger ── */}
+        {/* ── WATCH DEMO ── */}
         <div style={{ margin: "8px auto 0", width: "100%", textAlign: "center" }}>
           <button onClick={() => setShowVideoDemo(true)} style={{
-            display: "inline-flex", alignItems: "center", gap: 5,
-            padding: "5px 12px", borderRadius: 50,
-            border: "1px dashed rgba(255,255,255,0.10)",
-            background: "transparent",
-            color: "var(--text-tertiary)", fontSize: 10,
-            cursor: "pointer", transition: "all 200ms",
-          }}
-            onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = "var(--text-primary)"; }}
-            onMouseLeave={e => { e.currentTarget.style.opacity = "0.7"; e.currentTarget.style.color = "var(--text-tertiary)"; }}
-          >
-            <Play size={10} style={{ color: "var(--text-secondary)" }} />
-            Watch a demo simulation
+            display: "inline-flex", alignItems: "center", gap: 4,
+            padding: 0, border: "none", background: "transparent",
+            color: "var(--text-tertiary)", fontSize: 12,
+            cursor: "pointer",
+            textDecoration: "underline",
+            textUnderlineOffset: 3,
+          }}>
+            Watch a demo
           </button>
-          <div style={{ fontSize: 9, color: "var(--text-tertiary)", marginTop: 4, opacity: 0.5 }}>
-            See how 10 AI experts analyze a real business scenario
-          </div>
         </div>
 
         {/* ── DISCLAIMER ── */}
