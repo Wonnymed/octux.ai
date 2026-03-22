@@ -47,7 +47,7 @@ const TokenCounter = dynamic(() => import("../components/TokenCounter"), { ssr: 
 const ProjectKnowledge = dynamic(() => import("../components/ProjectKnowledge"), { ssr: false });
 
 const SimulationEngine = dynamic(() => import("../components/SimulationEngine"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
-const CompeteView = dynamic(() => import("../components/IntelView"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
+const CompeteView = dynamic(() => import("../components/CompeteEngine"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
 const BuildView = dynamic(() => import("../components/BuildEngine"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
 const GrowView = dynamic(() => import("../components/GrowEngine"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
 const ProtectView = dynamic(() => import("../components/ProtectEngine"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
