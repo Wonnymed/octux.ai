@@ -81,7 +81,7 @@ function ScoreGauge({ label, value, max = 10, icon }: { label: string; value: nu
   );
 }
 
-export default function HireEngine({ lang }: { lang?: string }) {
+export default function HireEngine({ lang, initialQuestion }: { lang?: string; initialQuestion?: string }) {
   const isMobile = useIsMobile();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -90,6 +90,10 @@ export default function HireEngine({ lang }: { lang?: string }) {
   const [copied, setCopied] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (initialQuestion) setQuery(initialQuestion);
+  }, [initialQuestion]);
 
   useEffect(() => {
     if (result && resultRef.current) {

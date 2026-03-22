@@ -39,12 +39,13 @@ type ChatAreaProps = {
   mode?: string;
   onDecisionDetected?: (decision: Record<string, string>, confidence: string) => void;
   tier?: string;
+  onRouteAndSwitch?: (question: string, engine: Mode) => void;
 };
 
 export default function ChatArea({
   messages, loading, searching, input, setInput, onSend,
   profileName, onRetry, onCopy, attachments, onAttachmentsChange, onToast,
-  onSwitchToSimulate, onSwitchToResearch, onSwitchMode, onStop, onOpenThreatRadar, onOpenDealXRay, onOpenWarGame, onOpenCausalMap, onOpenScenarios, lang, mode, onDecisionDetected, tier,
+  onSwitchToSimulate, onSwitchToResearch, onSwitchMode, onStop, onOpenThreatRadar, onOpenDealXRay, onOpenWarGame, onOpenCausalMap, onOpenScenarios, lang, mode, onDecisionDetected, tier, onRouteAndSwitch,
 }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
@@ -176,6 +177,7 @@ export default function ChatArea({
             onOpenWarGame={onOpenWarGame}
             onOpenCausalMap={onOpenCausalMap}
             onOpenScenarios={onOpenScenarios}
+            onRouteAndSwitch={onRouteAndSwitch}
             lang={lang}
           />
           <LandingSections />

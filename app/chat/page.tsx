@@ -211,6 +211,9 @@ function ChatPage() {
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [activeTool, setActiveTool] = useState<"threat-radar" | "deal-xray" | "wargame" | "causal-map" | "scenarios" | null>(null);
 
+  /* Ask Signux — initial question carried into engines */
+  const [initialQuestion, setInitialQuestion] = useState("");
+
   /* Simulation */
   const [simulating, setSimulating] = useState(false);
   const [simResult, setSimResult] = useState<SimResult | null>(null);
@@ -290,6 +293,7 @@ function ChatPage() {
 
   /* ═══ Mode Change with Animation ═══ */
   const handleModeChange = useCallback((newMode: Mode) => {
+    setInitialQuestion(""); // Clear carried question on manual mode switch
     const prefersReducedMotion = typeof window !== "undefined"
       && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (seenModes.has(newMode) || prefersReducedMotion) {
@@ -307,6 +311,24 @@ function ChatPage() {
   const handleTransitionComplete = useCallback(() => {
     setModeTransitioning(false);
   }, []);
+
+  /* ═══ Ask Signux — route question into engine ═══ */
+  const handleRouteAndSwitch = useCallback((question: string, engine: Mode) => {
+    // For simulate, seed the scenario state
+    if (engine === "simulate") {
+      setSimScenario(question);
+    }
+    // Switch mode (this clears initialQuestion), then immediately re-set it
+    const prefersReducedMotion = typeof window !== "undefined"
+      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!seenModes.has(engine) && !prefersReducedMotion) {
+      setModeTransitioning(true);
+    }
+    setMode(engine);
+    setSeenModes(prev => new Set([...prev, engine]));
+    setInitialQuestion(question);
+    setInput("");
+  }, [seenModes]);
 
   useEffect(() => {
     try {
@@ -1125,6 +1147,7 @@ function ChatPage() {
                 onSetMode={setMode}
                 isLoggedIn={isLoggedIn}
                 tier={tier}
+                initialQuestion={initialQuestion}
               />
             </motion.div>
           ) : mode === "simulate" ? (
@@ -1178,7 +1201,7 @@ function ChatPage() {
               transition={{ duration: 0.15 }}
               style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
-              <BuildView lang={lang} userId={authUser?.id} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} />
+              <BuildView lang={lang} userId={authUser?.id} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} initialQuestion={initialQuestion} />
             </motion.div>
           ) : mode === "grow" ? (
             <motion.div
@@ -1189,7 +1212,7 @@ function ChatPage() {
               transition={{ duration: 0.15 }}
               style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
-              <GrowView lang={lang} />
+              <GrowView lang={lang} initialQuestion={initialQuestion} />
             </motion.div>
           ) : mode === "protect" ? (
             <motion.div
@@ -1200,7 +1223,7 @@ function ChatPage() {
               transition={{ duration: 0.15 }}
               style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
-              <ProtectView lang={lang} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} />
+              <ProtectView lang={lang} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} initialQuestion={initialQuestion} />
             </motion.div>
           ) : mode === "hire" ? (
             <motion.div
@@ -1211,7 +1234,7 @@ function ChatPage() {
               transition={{ duration: 0.15 }}
               style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
-              <HireView lang={lang} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} />
+              <HireView lang={lang} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} initialQuestion={initialQuestion} />
             </motion.div>
           ) : (
             <motion.div
@@ -1324,6 +1347,7 @@ function ChatPage() {
                 mode={mode}
                 onDecisionDetected={handleDecisionDetected}
                 tier={tier}
+                onRouteAndSwitch={handleRouteAndSwitch}
               />
               </>
               )}

@@ -48,7 +48,7 @@ type CompeteResult = EngineResponse & {
   counter_moves?: { move: string; target: string; expected_impact: string; timeline: string }[];
 };
 
-export default function CompeteEngine({ lang }: { lang?: string }) {
+export default function CompeteEngine({ lang, initialQuestion }: { lang?: string; initialQuestion?: string }) {
   const isMobile = useIsMobile();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -57,6 +57,10 @@ export default function CompeteEngine({ lang }: { lang?: string }) {
   const [copied, setCopied] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (initialQuestion) setQuery(initialQuestion);
+  }, [initialQuestion]);
 
   useEffect(() => {
     if (result && resultRef.current) {

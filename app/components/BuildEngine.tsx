@@ -43,7 +43,7 @@ type BuildResult = EngineResponse & {
   first_90_days?: string[];
 };
 
-export default function BuildEngine({ lang }: { lang?: string }) {
+export default function BuildEngine({ lang, initialQuestion }: { lang?: string; initialQuestion?: string }) {
   const isMobile = useIsMobile();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,6 +53,10 @@ export default function BuildEngine({ lang }: { lang?: string }) {
   const [expandedPhase, setExpandedPhase] = useState<number | null>(0);
   const resultRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (initialQuestion) setQuery(initialQuestion);
+  }, [initialQuestion]);
 
   useEffect(() => {
     if (result && resultRef.current) {

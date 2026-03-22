@@ -54,7 +54,7 @@ type GrowResult = EngineResponse & {
   experiments?: { name: string; hypothesis: string; timeline: string; success_metric: string }[];
 };
 
-export default function GrowEngine({ lang }: { lang?: string }) {
+export default function GrowEngine({ lang, initialQuestion }: { lang?: string; initialQuestion?: string }) {
   const isMobile = useIsMobile();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -63,6 +63,10 @@ export default function GrowEngine({ lang }: { lang?: string }) {
   const [copied, setCopied] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (initialQuestion) setQuery(initialQuestion);
+  }, [initialQuestion]);
 
   useEffect(() => {
     if (result && resultRef.current) {
