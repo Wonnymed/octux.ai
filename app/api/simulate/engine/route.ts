@@ -314,7 +314,9 @@ export async function POST(req: NextRequest) {
     console.log("ENGINE USAGE BLOCKED:", { userId, status: 403 });
     return usageError;
   }
-  if (userId) incrementUsage(userId, "simulations").catch(() => {});
+  if (userId) {
+    incrementUsage(userId, "simulations").catch(() => {});
+  }
 
   const tier = await getTierFromRequest(req);
 
@@ -386,14 +388,15 @@ export async function POST(req: NextRequest) {
           })),
         });
 
-        for (let round = 0; round < 10; round++) {
+        // ═══ ROUNDS 1-9: Individual agent calls ═══
+        for (let round = 0; round < 9; round++) {
           const roundNum = round + 1;
-          // Rounds 1-5: Haiku (fast, cheap). Rounds 6-10: Sonnet (deep).
+          // Rounds 1-5: Haiku (fast, cheap). Rounds 6-9: Sonnet (deep).
           // Free tier always uses Haiku.
           const useDeep = roundNum > 5 && tier !== "free";
           const model = useDeep ? "claude-sonnet-4-20250514" : "claude-haiku-4-5-20251001";
-          const maxTokens = useDeep ? 400 : 250;
-          const agentTimeoutMs = 60000; // 60s timeout for long-context calls
+          const maxTokens = useDeep ? 600 : 450;
+          const agentTimeoutMs = 60000;
 
           console.log(`[ENGINE] Round ${roundNum}/10 starting — ${ROUND_LABELS[round]} (${useDeep ? "sonnet" : "haiku"})`);
           send({
@@ -404,23 +407,27 @@ export async function POST(req: NextRequest) {
             model: useDeep ? "sonnet" : "haiku",
           });
 
-          // Build context for this round
-          const prevContext = roundSummaries.length > 0
-            ? `\n\nPREVIOUS ROUNDS SUMMARY:\n${roundSummaries.join("\n\n")}`
+          // Build context — last 4 round summaries
+          const recentSummaries = roundSummaries.slice(-4);
+          const prevContext = recentSummaries.length > 0
+            ? `\n\nPREVIOUS ROUNDS SUMMARY:\n${recentSummaries.join("\n\n")}`
             : "";
 
-          // Last round's full responses (most recent context)
-          const lastRoundFull = round > 0
-            ? `\n\nLAST ROUND (Round ${round}) — FULL RESPONSES:\n${transcript
+          // Last round's lead agent responses
+          const lastRoundLeads = round > 0
+            ? transcript
                 .filter(t => t.round === round && !t.failed)
-                .map(t => `[${t.name}]: "${t.text}"`)
-                .join("\n")}`
+                .filter(t => ROUNDS[round - 1]?.lead?.includes(t.agentId) || false)
+            : [];
+          const lastRoundFull = lastRoundLeads.length > 0
+            ? `\n\nLAST ROUND KEY VOICES:\n${lastRoundLeads.map(t => `[${t.name}]: "${t.text}"`).join("\n")}`
             : "";
 
-          // Run agents in batches of 3 with 800ms delay to avoid rate limits
+          // Run agents in batches of 3
           const agentFactories = AGENTS.map((agent, agentIdx) => async (): Promise<TranscriptEntry> => {
             const agentPrevious = transcript
               .filter(t => t.agentId === agent.id && !t.failed)
+              .slice(-3)
               .map(t => `[Round ${t.round}] You said: "${t.text}" (sentiment: ${t.sentiment})`)
               .join("\n");
 
@@ -440,7 +447,6 @@ Respond ONLY in this JSON format (no markdown, no backticks):
 {"text": "<your expert analysis — 2-4 sentences with specific numbers and natural confidence expression>", "sentiment": "<one of: confident, optimistic, cautious, worried, skeptical, convinced, contrarian, neutral, excited, concerned>", "confidence": <number 1-10>, "changed_mind": <true or false>}`;
 
             try {
-              // withRetry wraps withTimeout — 3 retries with 2s/5s/10s backoff
               const res = await withRetry(
                 () =>
                   withTimeout(
@@ -459,21 +465,30 @@ Respond ONLY in this JSON format (no markdown, no backticks):
 
               const raw = (res.content[0] as any)?.text || "";
               const clean = raw.replace(/```json\n?|```\n?/g, "").trim();
+
               const match = clean.match(/\{[\s\S]*\}/);
-              let parsed: any;
+              let parsed: any = null;
               try {
                 parsed = match ? JSON.parse(match[0]) : null;
               } catch {
-                parsed = null;
+                const textMatch = clean.match(/"text"\s*:\s*"((?:[^"\\]|\\.)*)(?:"|$)/);
+                if (textMatch) {
+                  const sentMatch = clean.match(/"sentiment"\s*:\s*"([^"]+)"/);
+                  const confMatch = clean.match(/"confidence"\s*:\s*(\d+)/);
+                  const cmMatch = clean.match(/"changed_mind"\s*:\s*(true|false)/);
+                  parsed = {
+                    text: textMatch[1].replace(/\\"/g, '"').replace(/\\n/g, ' '),
+                    sentiment: sentMatch ? sentMatch[1] : "neutral",
+                    confidence: confMatch ? parseInt(confMatch[1]) : 5,
+                    changed_mind: cmMatch ? cmMatch[1] === "true" : false,
+                  };
+                }
               }
 
               if (parsed && parsed.text) {
                 console.log(`[ENGINE] Round ${roundNum}/10 - Agent ${agent.name} complete (${agentIdx + 1}/10)`);
                 return {
-                  agentId: agent.id,
-                  name: agent.name,
-                  color: agent.color,
-                  round: roundNum,
+                  agentId: agent.id, name: agent.name, color: agent.color, round: roundNum,
                   text: typeof parsed.text === "string" ? parsed.text : String(parsed.text ?? ""),
                   sentiment: typeof parsed.sentiment === "string" ? parsed.sentiment : "neutral",
                   confidence: typeof parsed.confidence === "number" ? parsed.confidence : 5,
@@ -481,118 +496,162 @@ Respond ONLY in this JSON format (no markdown, no backticks):
                 };
               }
 
-              // Fallback: treat raw as text
+              const fallbackText = clean
+                .replace(/^\s*\{\s*"text"\s*:\s*"?/, "")
+                .replace(/"?\s*,?\s*"sentiment"[\s\S]*$/, "")
+                .replace(/```/g, "")
+                .trim();
               return {
-                agentId: agent.id,
-                name: agent.name,
-                color: agent.color,
-                round: roundNum,
-                text: raw.slice(0, 500),
-                sentiment: "neutral",
-                confidence: 5,
-                changedMind: false,
+                agentId: agent.id, name: agent.name, color: agent.color, round: roundNum,
+                text: fallbackText.slice(0, 600), sentiment: "neutral", confidence: 5, changedMind: false,
               };
             } catch (err: any) {
-              // All 3 retries failed — use fallback, don't stop the simulation
-              console.warn(`[ENGINE] Round ${roundNum} - Agent ${agent.name} FAILED after 3 retries: ${err?.message}`);
-
-              send({
-                type: "agent_failed",
-                round: roundNum,
-                agentId: agent.id,
-                agentName: agent.name,
-                reason: err?.message || "unavailable",
-              });
-
-              // Graceful fallback — agent defers to colleagues
+              console.warn(`[ENGINE] Round ${roundNum} - Agent ${agent.name} FAILED: ${err?.message}`);
+              send({ type: "agent_failed", round: roundNum, agentId: agent.id, agentName: agent.name, reason: err?.message || "unavailable" });
               return {
-                agentId: agent.id,
-                name: agent.name,
-                color: agent.color,
-                round: roundNum,
-                text: "I defer to my colleagues on this round.",
-                sentiment: "neutral",
-                confidence: 5,
-                changedMind: false,
-                failed: true,
+                agentId: agent.id, name: agent.name, color: agent.color, round: roundNum,
+                text: "I defer to my colleagues on this round.", sentiment: "neutral", confidence: 5, changedMind: false, failed: true,
               };
             }
           });
 
           const roundResults = await runInBatches(agentFactories, 3, 800);
-
-          // Count failures in this round
           const failedCount = roundResults.filter(r => r.failed).length;
 
           if (failedCount > 3) {
-            // More than 3 agents failed — skip round, signal to frontend
             console.warn(`[ENGINE] Round ${roundNum}/10 SKIPPED — ${failedCount}/10 agents failed`);
-            send({
-              type: "round_skipped",
-              round: roundNum,
-              label: ROUND_LABELS[round],
-              failedCount,
-              reason: `${failedCount}/10 agents failed — round skipped`,
-            });
+            send({ type: "round_skipped", round: roundNum, label: ROUND_LABELS[round], failedCount, reason: `${failedCount}/10 agents failed — round skipped` });
             send({ type: "error", message: `Round ${roundNum} skipped: ${failedCount}/10 agents failed, continuing...`, recoverable: true });
             skippedRounds.push(roundNum);
-
-            // Still add successful results to transcript
-            roundResults
-              .filter(r => !r.failed)
-              .forEach(r => transcript.push(r));
+            roundResults.filter(r => !r.failed).forEach(r => transcript.push(r));
           } else {
-            // Add all results to transcript
             roundResults.forEach(r => transcript.push(r));
-
-            // Send round results to frontend
-            send({
-              type: "round_complete",
-              round: roundNum,
-              label: ROUND_LABELS[round],
-              agents: roundResults,
-              failedCount,
-            });
+            send({ type: "round_complete", round: roundNum, label: ROUND_LABELS[round], agents: roundResults, failedCount });
             console.log(`[ENGINE] Round ${roundNum}/10 complete (${failedCount} failures)`);
           }
 
-          // Summarize this round for context compression (1 cheap Haiku call)
-          if (round < 9) {
-            const successfulResults = roundResults.filter(r => !r.failed);
-            if (successfulResults.length >= 3) {
-              try {
-                const summaryRes = await withRetry(
-                  () =>
-                    withTimeout(
-                      () =>
-                        anthropic.messages.create({
-                          model: "claude-haiku-4-5-20251001",
-                          max_tokens: 200,
-                          system:
-                            "Summarize a debate round in 3-4 bullet points. Focus on: key disagreements, strongest arguments, any agents who changed position. Be extremely concise.",
-                          messages: [
-                            {
-                              role: "user",
-                              content: `Round ${roundNum} debate on "${scenario.slice(0, 200)}":\n${successfulResults.map(r => `[${r.name}]: "${r.text}" [sentiment: ${r.sentiment}]`).join("\n")}`,
-                            },
-                          ],
-                        }),
-                      30000
-                    ),
-                  3,
-                  RETRY_DELAYS
-                );
-                roundSummaries.push(
-                  `Round ${roundNum}: ${(summaryRes.content[0] as any)?.text || ""}`
-                );
-              } catch {
-                roundSummaries.push(`Round ${roundNum}: (summary unavailable)`);
-              }
-            } else {
-              roundSummaries.push(
-                `Round ${roundNum}: (insufficient data — ${failedCount} agents failed)`
+          // Summarize this round for context compression
+          const successfulResults = roundResults.filter(r => !r.failed);
+          if (successfulResults.length >= 3) {
+            try {
+              const summaryRes = await withRetry(
+                () =>
+                  withTimeout(
+                    () =>
+                      anthropic.messages.create({
+                        model: "claude-haiku-4-5-20251001",
+                        max_tokens: 200,
+                        system: "Summarize a debate round in 3-4 bullet points. Focus on: key disagreements, strongest arguments, any agents who changed position. Be extremely concise.",
+                        messages: [{ role: "user", content: `Round ${roundNum} debate on "${scenario.slice(0, 200)}":\n${successfulResults.map(r => `[${r.name}]: "${r.text}" [sentiment: ${r.sentiment}]`).join("\n")}` }],
+                      }),
+                    30000
+                  ),
+                3, RETRY_DELAYS
               );
+              roundSummaries.push(`Round ${roundNum}: ${(summaryRes.content[0] as any)?.text || ""}`);
+            } catch {
+              roundSummaries.push(`Round ${roundNum}: (summary unavailable)`);
             }
+          } else {
+            roundSummaries.push(`Round ${roundNum}: (insufficient data — ${failedCount} agents failed)`);
+          }
+        }
+
+        // ═══ ROUND 10: FINAL SYNTHESIS — single consolidated call ═══
+        // Instead of 10 individual agent calls (which timeout), use ONE Sonnet call
+        // that generates all 10 agent final votes at once.
+        {
+          console.log("[ENGINE] Round 10/10 starting — Final Synthesis (consolidated)");
+          send({ type: "round_start", round: 10, total: 10, label: "Final Synthesis", model: tier !== "free" ? "sonnet" : "haiku" });
+
+          const synthModel = tier !== "free" ? "claude-sonnet-4-20250514" : "claude-haiku-4-5-20251001";
+          const lastSummaries = roundSummaries.slice(-4);
+          const agentNames = AGENTS.map(a => `${a.name} (${a.id})`).join(", ");
+
+          const synthPrompt = `You are synthesizing a 9-round adversarial debate among 10 expert agents.
+
+SCENARIO: "${scenario}"
+
+DEBATE SUMMARIES:
+${lastSummaries.join("\n\n")}
+
+AGENTS: ${agentNames}
+
+${ROUND_INSTRUCTIONS[9]}
+
+Generate each agent's final synthesis vote. Each agent should stay in character based on their role.
+Respond ONLY in JSON (no markdown, no backticks). Use this exact format:
+{"agents": [{"agentId": "<agent-id>", "text": "<1-2 sentence final verdict from this agent's perspective>", "sentiment": "<one of: confident, optimistic, cautious, worried, skeptical, convinced, contrarian, neutral>", "confidence": <1-10>, "changed_mind": <true or false>}]}
+
+Include all 10 agents. Each text should mention PROCEED or STOP and include a dissent note starting with "DISSENT:" if the agent disagrees with the majority.`;
+
+          try {
+            const synthRes = await withRetry(
+              () => withTimeout(
+                () => anthropic.messages.create({
+                  model: synthModel,
+                  max_tokens: 2000,
+                  system: SECURITY_PREFIX + "You are the simulation synthesis engine for SIGNUX AI. Generate authentic final votes for each expert agent based on the debate history. Each agent should stay in character.",
+                  messages: [{ role: "user", content: synthPrompt }],
+                }),
+                60000
+              ),
+              2, RETRY_DELAYS
+            );
+
+            const raw = (synthRes.content[0] as any)?.text || "";
+            const clean = raw.replace(/```json\n?|```\n?/g, "").trim();
+            const match = clean.match(/\{[\s\S]*\}/);
+            let synthData: any = null;
+            try { synthData = match ? JSON.parse(match[0]) : null; } catch {}
+
+            const round10Results: TranscriptEntry[] = [];
+            if (synthData?.agents && Array.isArray(synthData.agents)) {
+              for (const vote of synthData.agents) {
+                const agent = AGENTS.find(a => a.id === vote.agentId);
+                if (!agent) continue;
+                round10Results.push({
+                  agentId: agent.id, name: agent.name, color: agent.color, round: 10,
+                  text: typeof vote.text === "string" ? vote.text : String(vote.text ?? ""),
+                  sentiment: typeof vote.sentiment === "string" ? vote.sentiment : "neutral",
+                  confidence: typeof vote.confidence === "number" ? vote.confidence : 5,
+                  changedMind: !!vote.changed_mind,
+                });
+              }
+            }
+
+            // Fill in any missing agents with fallback
+            for (const agent of AGENTS) {
+              if (!round10Results.find(r => r.agentId === agent.id)) {
+                round10Results.push({
+                  agentId: agent.id, name: agent.name, color: agent.color, round: 10,
+                  text: "I defer to the majority verdict.", sentiment: "neutral", confidence: 5, changedMind: false, failed: true,
+                });
+              }
+            }
+
+            round10Results.forEach(r => transcript.push(r));
+            const failedCount = round10Results.filter(r => r.failed).length;
+            send({ type: "round_complete", round: 10, label: "Final Synthesis", agents: round10Results, failedCount });
+            console.log(`[ENGINE] Round 10/10 complete (${failedCount} failures)`);
+
+          } catch (err: any) {
+            console.warn(`[ENGINE] Round 10 consolidated synthesis FAILED: ${err?.message}`);
+            // Generate fallback votes from last round's sentiments
+            const round10Fallback: TranscriptEntry[] = AGENTS.map(agent => {
+              const lastEntry = transcript.filter(t => t.agentId === agent.id && !t.failed).pop();
+              const vote = lastEntry && (lastEntry.sentiment === "skeptical" || lastEntry.sentiment === "worried" || lastEntry.sentiment === "concerned") ? "STOP" : "PROCEED";
+              return {
+                agentId: agent.id, name: agent.name, color: agent.color, round: 10,
+                text: `${vote} — based on my analysis across all rounds.`,
+                sentiment: lastEntry?.sentiment || "neutral",
+                confidence: lastEntry?.confidence || 5,
+                changedMind: false, failed: true,
+              };
+            });
+            round10Fallback.forEach(r => transcript.push(r));
+            send({ type: "round_complete", round: 10, label: "Final Synthesis", agents: round10Fallback, failedCount: 10 });
+            send({ type: "error", message: "Final synthesis used sentiment-based fallback votes", recoverable: true });
           }
         }
 
