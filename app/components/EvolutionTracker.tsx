@@ -34,14 +34,35 @@ const SENTIMENT_MAP: Record<string, number> = {
   concerned: 2, contrarian: 4,
 };
 
-const SENTIMENT_COLORS: Record<string, string> = {
-  confident: "#10B981", optimistic: "#10B981", excited: "#10B981", convinced: "#10B981",
-  cautious: "#F59E0B", neutral: "#6B7280", skeptical: "#F59E0B",
-  worried: "#EF4444", concerned: "#EF4444", contrarian: "#EC4899",
+/* Agent name → color mapping (matches AgentCard) */
+const AGENT_NAME_COLORS: Record<string, string> = {
+  strategist: "#A8A29E", strategy: "#A8A29E", base: "#A8A29E",
+  finance: "#7DD3FC", financial: "#7DD3FC", unit: "#7DD3FC",
+  operator: "#FCD34D", operations: "#FCD34D", execution: "#FCD34D",
+  market: "#6EE7B7", demand: "#6EE7B7",
+  risk: "#FCA5A5", regulatory: "#FCA5A5", regime: "#FCA5A5",
+  innovator: "#C4B5FD", innovation: "#C4B5FD", intervention: "#C4B5FD",
+  devil: "#FDBA74", adversary: "#FDBA74", competitive: "#FDBA74",
+  global: "#5EEAD4",
+  human: "#F9A8D4", customer: "#F9A8D4",
+  futurist: "#A5B4FC", decision: "#A5B4FC",
 };
 
+function getAgentColor(name: string, fallback: string): string {
+  const lower = (name || "").toLowerCase();
+  for (const [key, color] of Object.entries(AGENT_NAME_COLORS)) {
+    if (lower.includes(key)) return color;
+  }
+  return fallback;
+}
+
 export function sentimentColor(s: string) {
-  return SENTIMENT_COLORS[s] || "#6B7280";
+  const map: Record<string, string> = {
+    confident: "#3ECF8E", optimistic: "#3ECF8E", excited: "#3ECF8E", convinced: "#3ECF8E",
+    cautious: "#F59E0B", neutral: "#6B7280", skeptical: "#F59E0B",
+    worried: "#F75B5B", concerned: "#F75B5B", contrarian: "#EC4899",
+  };
+  return map[s] || "#6B7280";
 }
 
 export default function EvolutionTracker({
@@ -50,14 +71,11 @@ export default function EvolutionTracker({
 }: Props) {
   const raw = Array.isArray(agentsProp) ? agentsProp : Array.isArray(evolution) ? evolution : [];
 
-  // Normalize: accept both arc and sentimentOverRounds
-  // IMPORTANT: useMemo hooks must be called before any early return (React Rules of Hooks)
   const normalized = useMemo(() => raw.map(a => ({
     ...a,
     rounds: a.sentimentOverRounds || a.arc || [],
   })), [raw]);
 
-  // Sort by final confidence
   const sorted = useMemo(() => {
     return [...normalized].sort((a, b) => {
       const aLast = a.rounds[a.rounds.length - 1]?.confidence || 5;
@@ -72,8 +90,8 @@ export default function EvolutionTracker({
     a.rounds.some(r => r.changedMind)
   ).length;
 
-  const svgW = isMobile ? 60 : 110;
-  const svgH = compact ? 16 : 20;
+  const svgW = isMobile ? 64 : 120;
+  const svgH = 20;
 
   return (
     <motion.div
@@ -81,80 +99,66 @@ export default function EvolutionTracker({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       style={{
-        padding: compact ? "12px 14px" : "16px 20px",
+        padding: compact ? "14px 16px" : "20px",
         borderRadius: 12,
-        background: "var(--card-bg)",
-        border: "1px solid var(--border-secondary)",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border-primary)",
       }}
     >
       {/* Header */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        marginBottom: compact ? 8 : 14,
+        marginBottom: compact ? 10 : 16,
       }}>
-        <div style={{
+        <span style={{
           fontSize: 10, fontFamily: "var(--font-mono)",
-          color: "var(--text-tertiary)", textTransform: "uppercase" as const,
-          letterSpacing: 1,
+          color: "var(--text-tertiary)",
+          letterSpacing: 2,
         }}>
-          Agent Evolution
-        </div>
-        {!compact && (
-          <div style={{ fontSize: 10, color: "var(--text-tertiary)" }}>
-            {changedCount}/{normalized.length} changed position
-          </div>
-        )}
+          AGENT EVOLUTION
+        </span>
+        <span style={{
+          fontSize: 11, fontFamily: "var(--font-mono)",
+          color: "var(--text-tertiary)",
+        }}>
+          {changedCount}/{normalized.length} changed position
+        </span>
       </div>
 
       {/* Agent rows */}
       {sorted.map(agent => {
         const points = agent.rounds.map(r => SENTIMENT_MAP[r.sentiment] || 5);
         const confidences = agent.rounds.map(r => r.confidence);
-        const lastSentiment = agent.rounds[agent.rounds.length - 1]?.sentiment || "neutral";
         const lastConfidence = confidences[confidences.length - 1] || 5;
         const firstConfidence = confidences[0] || 5;
         const delta = lastConfidence - firstConfidence;
-        const anyChanged = agent.rounds.some(r => r.changedMind);
+        const changedTimes = agent.rounds.filter(r => r.changedMind).length;
+        const nameColor = getAgentColor(agent.name, agent.color);
 
         return (
           <div
             key={agent.agentId}
             onClick={() => onAgentClick?.(agent.agentId)}
             style={{
-              display: "flex", alignItems: "center", gap: compact ? 6 : 8,
-              marginBottom: compact ? 4 : 8, padding: compact ? "2px 0" : "4px 0",
+              display: "flex", alignItems: "center", gap: isMobile ? 6 : 10,
+              padding: "4px 0",
+              marginBottom: 2,
               cursor: onAgentClick ? "pointer" : "default",
-              borderRadius: 6,
-              transition: "background 150ms",
             }}
-            onMouseEnter={(e) => { if (onAgentClick) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
-            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
           >
-            {/* Color dot */}
-            <div style={{
-              width: compact ? 8 : 10,
-              height: compact ? 8 : 10,
-              borderRadius: "50%",
-              background: agent.color,
-              flexShrink: 0,
-            }} />
-
             {/* Name */}
             <span style={{
-              fontSize: 10, color: agent.color,
-              width: isMobile ? 60 : 85,
+              fontSize: 12, color: nameColor,
+              width: isMobile ? 64 : 90,
               overflow: "hidden", textOverflow: "ellipsis",
               whiteSpace: "nowrap" as const, fontWeight: 500,
+              flexShrink: 0,
             }}>
               {agent.name.replace("The ", "")}
             </span>
 
             {/* Sparkline */}
             <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ flexShrink: 0 }}>
-              {/* Midline */}
-              <line x1="0" y1={svgH / 2} x2={svgW} y2={svgH / 2}
-                stroke="var(--border-secondary)" strokeWidth="0.5" strokeDasharray="2 2" />
-
               {/* Line */}
               {points.length > 1 && (
                 <polyline
@@ -164,33 +168,38 @@ export default function EvolutionTracker({
                     return `${x},${y}`;
                   }).join(" ")}
                   fill="none"
-                  stroke={agent.color}
+                  stroke={nameColor}
                   strokeWidth={1.5}
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  opacity={0.8}
+                  opacity={0.5}
                 />
               )}
 
-              {/* Dots */}
+              {/* Dots — only changed, active, and last */}
               {points.map((p, i) => {
                 const x = points.length > 1 ? (i / (points.length - 1)) * (svgW - 4) + 2 : svgW / 2;
                 const y = svgH - 2 - (p / 10) * (svgH - 4);
-                const isActive = activeRound === i + 1;
                 const changed = agent.rounds[i]?.changedMind;
+                const isActive = activeRound === i + 1;
                 const isLast = i === points.length - 1;
+                const sentiment = agent.rounds[i]?.sentiment || "neutral";
 
                 if (!changed && !isActive && !isLast) return null;
+
+                let fill: string;
+                if (changed) fill = "var(--accent, #C8A84E)";
+                else if (sentimentColor(sentiment) === "#3ECF8E") fill = "#3ECF8E";
+                else if (sentimentColor(sentiment) === "#F75B5B") fill = "#F75B5B";
+                else fill = nameColor;
 
                 return (
                   <circle
                     key={i}
                     cx={x} cy={y}
-                    r={changed ? 3 : isActive ? 2.5 : 2}
-                    fill={changed ? "#EDEDEF" : sentimentColor(agent.rounds[i]?.sentiment || "neutral")}
-                    stroke={isActive ? "#EDEDEF" : changed ? "#0F0E0D" : "none"}
-                    strokeWidth={isActive ? 1.5 : changed ? 1 : 0}
-                    opacity={1}
+                    r={changed || isActive ? 3 : 2}
+                    fill={fill}
+                    opacity={isActive ? 1 : 0.8}
                     style={{ cursor: onSelectRound ? "pointer" : "default" }}
                     onClick={(e) => { e.stopPropagation(); onSelectRound?.(i + 1); }}
                   />
@@ -198,61 +207,57 @@ export default function EvolutionTracker({
               })}
             </svg>
 
-            {/* Sentiment dot */}
-            <div style={{
-              width: 7, height: 7, borderRadius: "50%",
-              background: SENTIMENT_COLORS[lastSentiment] || "#6B7280",
-              flexShrink: 0,
-            }} />
-
             {/* Confidence */}
             <span style={{
-              fontSize: 10, fontFamily: "var(--font-mono)",
-              color: "var(--text-tertiary)", width: 22,
-              textAlign: "right" as const,
+              fontSize: 12, fontFamily: "var(--font-mono)",
+              color: "var(--text-secondary)",
+              width: 22, textAlign: "right" as const,
+              flexShrink: 0,
             }}>
               {lastConfidence}
             </span>
 
             {/* Delta */}
-            {!compact && (
-              <span style={{
-                fontSize: 9, fontFamily: "var(--font-mono)", width: 24,
-                color: delta > 0 ? "#10B981" : delta < 0 ? "#EF4444" : "var(--text-tertiary)",
-              }}>
-                {delta > 0 ? `+${delta}` : delta === 0 ? "—" : String(delta)}
-              </span>
-            )}
+            <span style={{
+              fontSize: 11, fontFamily: "var(--font-mono)",
+              width: 28, textAlign: "right" as const,
+              flexShrink: 0,
+              color: delta > 0 ? "#3ECF8E" : delta < 0 ? "#F75B5B" : "var(--text-tertiary)",
+            }}>
+              {delta > 0 ? `+${delta}` : delta === 0 ? "—" : String(delta)}
+            </span>
 
             {/* Changed badge */}
-            {anyChanged && (
+            {changedTimes > 0 && (
               <span style={{
-                fontSize: compact ? 7 : 8, padding: "1px 4px", borderRadius: 3,
-                background: "rgba(255,255,255,0.08)", color: "#EDEDEF",
-                fontWeight: 700, letterSpacing: 0.3,
+                fontSize: 9, padding: "1px 5px", borderRadius: 50,
+                background: "rgba(200,168,78,0.08)",
+                color: "var(--accent, #C8A84E)",
+                fontWeight: 600,
                 fontFamily: "var(--font-mono)",
+                flexShrink: 0,
               }}>
-                {compact ? "⟳" : `${agent.rounds.filter(r => r.changedMind).length}x`}
+                {changedTimes}x
               </span>
             )}
           </div>
         );
       })}
 
-      {/* Legend — only in non-compact */}
+      {/* Legend */}
       {!compact && (
         <div style={{
-          display: "flex", gap: 12, marginTop: 10, paddingTop: 8,
-          borderTop: "1px solid var(--border-secondary)",
+          display: "flex", gap: 14, marginTop: 12, paddingTop: 10,
+          borderTop: "1px solid var(--border-primary)",
         }}>
           {[
-            { color: "#EDEDEF", label: "Changed mind" },
-            { color: "#10B981", label: "Positive" },
-            { color: "#EF4444", label: "Negative" },
+            { color: "var(--accent, #C8A84E)", label: "Changed mind" },
+            { color: "#3ECF8E", label: "Positive" },
+            { color: "#F75B5B", label: "Negative" },
           ].map(l => (
             <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: l.color }} />
-              <span style={{ fontSize: 8, color: "var(--text-tertiary)" }}>{l.label}</span>
+              <div style={{ width: 4, height: 4, borderRadius: "50%", background: l.color }} />
+              <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{l.label}</span>
             </div>
           ))}
         </div>
