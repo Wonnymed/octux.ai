@@ -97,15 +97,15 @@ const CAPITAL_OPTIONS = [
 const PRIORITY_OPTIONS = ["Freedom", "Income", "Impact", "Creativity", "Scalability", "Low stress"];
 
 const AGENT_ICONS: Record<string, any> = {
-  "Market Analyst": TrendingUp,
-  "Financial Advisor": DollarSign,
-  "Risk Assessor": Shield,
-  "Customer Expert": Users,
-  "Competition Analyst": Target,
-  "Devil's Advocate": AlertTriangle,
+  "Base Rate Archivist": Shield,
+  "Unit Economics Auditor": DollarSign,
+  "Demand Signal Analyst": TrendingUp,
+  "Regulatory Gatekeeper": AlertTriangle,
+  "Execution Operator": Target,
+  "Competitive Adversary": Users,
 };
 
-const AGENT_NAMES = ["Market Analyst", "Financial Advisor", "Risk Assessor", "Customer Expert", "Competition Analyst", "Devil's Advocate"];
+const AGENT_NAMES = ["Base Rate Archivist", "Unit Economics Auditor", "Demand Signal Analyst", "Regulatory Gatekeeper", "Execution Operator", "Competitive Adversary"];
 
 /* ═══ Component ═══ */
 export default function LaunchpadView({ lang, userId, onSetMode, isLoggedIn, tier }: { lang: string; userId?: string; onSetMode?: (m: Mode) => void; isLoggedIn?: boolean; tier?: string }) {

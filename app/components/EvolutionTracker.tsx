@@ -12,7 +12,7 @@ interface RoundData {
 interface AgentEvolution {
   agentId: string;
   name: string;
-  avatar: string;
+  avatar?: string;
   color: string;
   arc?: RoundData[];
   sentimentOverRounds?: RoundData[];
@@ -130,10 +130,14 @@ export default function EvolutionTracker({
             onMouseEnter={(e) => { if (onAgentClick) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
             onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
           >
-            {/* Avatar */}
-            <span style={{ fontSize: compact ? 12 : 14, width: 20, textAlign: "center" as const }}>
-              {agent.avatar}
-            </span>
+            {/* Color dot */}
+            <div style={{
+              width: compact ? 8 : 10,
+              height: compact ? 8 : 10,
+              borderRadius: "50%",
+              background: agent.color,
+              flexShrink: 0,
+            }} />
 
             {/* Name */}
             <span style={{

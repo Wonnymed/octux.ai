@@ -85,23 +85,23 @@ async function setupAgents(graph: any, scenario: string, userLang: string, world
     system: SECURITY_PREFIX + `You are a simulation architect. Generate 12 to 15 specialist agents to analyze this operation.
 
 MANDATORY agents (ALWAYS include all 6):
-1. Financial Analyst — P&L, cash flow, unit economics, break-even
-2. Regulatory Expert — compliance, licensing, legal requirements
-3. Market Analyst — TAM/SAM/SOM, competition, trends
-4. Operations Specialist — logistics, processes, supply chain
-5. Risk Assessor — risk matrix, probability × impact
-6. Devil's Advocate — ATTACKS the plan, finds fatal flaws, worst-case scenarios
+1. Base Rate Archivist — outside view, historical comparables, reference classes
+2. Unit Economics Auditor — financial viability, margin discipline, CAC/LTV
+3. Demand Signal Analyst — customer demand validation, market pull, ICP clarity
+4. Regulatory Gatekeeper — legal, compliance, market-entry constraints
+5. Execution Operator — operational feasibility, execution sequencing
+6. Competitive Adversary — stress-testing defensibility, competitive attack
 
 CONTEXTUAL agents (include 6-9 based on the scenario):
-- Tax Strategist (if cross-border or tax-relevant)
-- Technology Advisor (if tech/SaaS)
-- HR Consultant (if hiring/team involved)
-- Marketing Strategist (if customer acquisition relevant)
-- Customer Experience Expert (if B2C or service)
+- Strategic Architect (positioning, wedge selection, strategic coherence)
+- Regime Sentinel (timing, macro conditions, external shocks)
+- Intervention Optimizer (highest-leverage action, next best move)
+- Decision Chair (final synthesis, executive summary)
+- Industry Specialist (specific to the industry mentioned)
 - Supply Chain Analyst (if physical goods)
 - Legal Counsel (if contracts/IP involved)
-- Industry Specialist (specific to the industry mentioned)
-- Geopolitical Analyst (if international operations)
+- Tax Strategist (if cross-border or tax-relevant)
+- Technology Advisor (if tech/SaaS)
 
 Each agent MUST have:
 - A realistic human name appropriate to their country/culture
@@ -111,9 +111,9 @@ Each agent MUST have:
 - Natural biases that create realistic tension
 
 NOT all agents should agree. Create natural conflicts:
-- The Devil's Advocate should find fatal flaws in the plan
-- The Risk Assessor and Market Analyst should disagree on opportunity vs risk
-- The Financial Analyst and Operations Specialist should have different cost assumptions
+- The Competitive Adversary should attack where the plan is weakest
+- The Base Rate Archivist and Demand Signal Analyst should disagree on historical precedent vs current demand
+- The Unit Economics Auditor and Execution Operator should have different cost and feasibility assumptions
 
 Return ONLY valid JSON:
 {
@@ -157,9 +157,12 @@ BIAS: ${agent.bias}
 
 RULES:
 - Stay in character at ALL times. You ARE this person.
-- Reference specific numbers, prices, timelines, regulations when possible.
-- Be specific. Real numbers. Real timelines. Real risks.
-- Keep your response focused and concise (2-3 paragraphs max).
+- ALWAYS cite SPECIFIC NUMBERS: revenue figures, cost estimates, percentages, market sizes, timelines, probabilities. Vague claims are worthless — quantify everything.
+- Reference REAL-WORLD EXAMPLES: name actual companies, products, regulations, or market events that parallel this scenario.
+- Express your confidence naturally within your text ("I'm highly confident because...", "I have serious doubts given...", "The data makes me cautiously optimistic...").
+- When you change your mind, say EXPLICITLY what changed: "I was wrong about X because Y" or "After seeing the data on X, I'm revising my position."
+- NEVER output raw JSON, code blocks, or markdown formatting. Write as a human expert speaks in a high-stakes boardroom.
+- Keep your response focused and concise (2-3 paragraphs max) but packed with substance — every sentence must add value.
 - Respond in ${userLang}.`;
 
   if (round === 1) {
@@ -171,7 +174,7 @@ Analyze the scenario from your expertise. Be specific with numbers. Present your
 Review other agents' analyses and CHALLENGE weak points. Identify conflicts between assessments. Point out what other agents got wrong or overlooked. Push back on optimistic assumptions.`;
   }
   return SECURITY_PREFIX + base + SIMULATE_KNOWLEDGE + `\n\nThis is Round 3: ADVERSARIAL.
-The Devil's Advocate has attacked the plan. Defend your position OR agree with the attack and explain why. Be brutally honest — if the plan is flawed, say so. If you still support it, explain what MUST change.`;
+The Competitive Adversary has attacked the plan. Defend your position OR agree with the attack and explain why. Be brutally honest — if the plan is flawed, say so. If you still support it, explain what MUST change.`;
 }
 
 async function processAgent(
@@ -441,10 +444,10 @@ For the FIRST time each agent speaks, introduce them with a backstory:
 **Agent Name** (emoji) — *Brief 1-line backstory relevant to this scenario*: [their analysis]
 
 Example backstories (ADAPT to scenario):
-- **Financial Analyst** (📊) — *Ex-Goldman Sachs VP, 12 years in unit economics*: [analysis]
-- **Risk Assessor** (🛡️) — *Insurance actuary turned startup advisor*: [analysis]
-- **Market Expert** (📈) — *Built and sold 3 companies in this sector*: [analysis]
-- **Devil's Advocate** (😈) — *Professional contrarian, finds fatal flaws*: [analysis]
+- **Unit Economics Auditor** — *Ex-Goldman VP, 12 years in unit economics*: [analysis]
+- **Base Rate Archivist** — *Actuarial analyst turned reference-class forecaster*: [analysis]
+- **Demand Signal Analyst** — *Built and sold 3 companies in this sector*: [analysis]
+- **Competitive Adversary** — *Professional stress-tester, finds attack paths*: [analysis]
 
 After first introduction, use just: **Agent Name** (emoji): [analysis]
 
@@ -491,8 +494,8 @@ Present each specialist's initial assessment with their backstory intro. Include
 
 ## 🟡 ROUND 2 — Challenges & Rebuttals
 Show specialists challenging each other's assumptions. Format as:
-**Risk Assessor** (🛡️) challenges **Market Expert** (📈): [specific challenge]
-**Financial Analyst** (📊) responds: [defense or concession]
+**Base Rate Archivist** challenges **Demand Signal Analyst**: [specific challenge]
+**Unit Economics Auditor** responds: [defense or concession]
 Include 3-5 exchanges that reveal blind spots.
 
 ## 🟢 ROUND 3 — Consensus & Verdict

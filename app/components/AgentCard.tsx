@@ -5,7 +5,7 @@ import { cleanAgentResponse } from "../lib/utils";
 type AgentData = {
   agentId: string;
   name: string;
-  avatar: string;
+  avatar?: string;
   color: string;
   text: string;
   sentiment: string;
@@ -72,7 +72,13 @@ export default function AgentCard({ agent, index, expanded, onToggle, isMobile }
         gap: 8,
         marginBottom: 6,
       }}>
-        <span style={{ fontSize: 18 }}>{agent.avatar}</span>
+        <div style={{
+          width: 10,
+          height: 10,
+          borderRadius: "50%",
+          background: agent.color,
+          flexShrink: 0,
+        }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             fontSize: 12,

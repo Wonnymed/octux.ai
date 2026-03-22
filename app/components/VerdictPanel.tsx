@@ -9,7 +9,7 @@ type PatternData = {
 };
 
 type DissentData = {
-  avatar: string;
+  avatar?: string;
   agent: string;
   note: string | null;
 };
@@ -210,7 +210,11 @@ export default function VerdictPanel({ verdict, isMobile }: VerdictPanelProps) {
                 fontSize: 10,
               }}
             >
-              <span>{v.avatar}</span>
+              <div style={{
+                width: 6, height: 6, borderRadius: "50%",
+                background: v.color || (v.vote === "PROCEED" ? "#10B981" : "#EF4444"),
+                flexShrink: 0,
+              }} />
               <span style={{
                 color: v.vote === "PROCEED" ? "#10B981" : "#EF4444",
                 fontWeight: 600,
@@ -401,7 +405,6 @@ export default function VerdictPanel({ verdict, isMobile }: VerdictPanelProps) {
                 lineHeight: 1.5,
               }}
             >
-              <span style={{ marginRight: 4 }}>{typeof d.avatar === "string" ? d.avatar : ""}</span>
               <strong style={{ color: "var(--text-primary)" }}>{typeof d.agent === "string" ? d.agent : "Agent"}:</strong>{" "}
               &ldquo;{typeof d.note === "string" ? d.note : String(d.note ?? "")}&rdquo;
             </div>

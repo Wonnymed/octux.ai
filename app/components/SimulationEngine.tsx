@@ -212,20 +212,18 @@ export default function SimulationEngine(props: SimulationEngineProps) {
   // Customizable agent roles
   type AgentRole = { id: string; name: string; active: boolean };
   const DEFAULT_ROLES: AgentRole[] = [
-    { id: "strategy", name: "Strategy Lead", active: true },
-    { id: "financial", name: "Financial Analyst", active: true },
-    { id: "risk", name: "Risk Assessor", active: true },
-    { id: "market", name: "Market Expert", active: true },
-    { id: "operations", name: "Operations Lead", active: true },
-    { id: "devil", name: "Devil's Advocate", active: true },
+    { id: "base-rate-archivist", name: "Base Rate Archivist", active: true },
+    { id: "unit-economics-auditor", name: "Unit Economics Auditor", active: true },
+    { id: "demand-signal-analyst", name: "Demand Signal Analyst", active: true },
+    { id: "regulatory-gatekeeper", name: "Regulatory Gatekeeper", active: true },
+    { id: "execution-operator", name: "Execution Operator", active: true },
+    { id: "competitive-adversary", name: "Competitive Adversary", active: true },
   ];
   const OPTIONAL_ROLES: AgentRole[] = [
-    { id: "lawyer", name: "Legal Advisor", active: false },
-    { id: "tech", name: "Tech Architect", active: false },
-    { id: "hr", name: "HR Specialist", active: false },
-    { id: "global", name: "International Expert", active: false },
-    { id: "customer", name: "Customer Advocate", active: false },
-    { id: "investor", name: "Investor Perspective", active: false },
+    { id: "strategic-architect", name: "Strategic Architect", active: false },
+    { id: "regime-sentinel", name: "Regime Sentinel", active: false },
+    { id: "intervention-optimizer", name: "Intervention Optimizer", active: false },
+    { id: "decision-chair", name: "Decision Chair", active: false },
   ];
   const [customAgents, setCustomAgents] = useState<AgentRole[]>([...DEFAULT_ROLES]);
   const [showAgentCustomizer, setShowAgentCustomizer] = useState(false);
@@ -1847,7 +1845,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                             }}
                           >
                             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                              <span style={{ fontSize: 18 }}>{ag.avatar}</span>
+                              <div style={{ width: 10, height: 10, borderRadius: "50%", background: ag.color, flexShrink: 0 }} />
                               <span style={{ fontSize: 12, fontWeight: 600, color: ag.color }}>{ag.name}</span>
                               <Loader2 size={10} style={{ marginLeft: "auto", color: ag.color, opacity: 0.5, animation: "spin 1.5s linear infinite" }} />
                             </div>
@@ -1906,7 +1904,6 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                       evolution={(engineAgents || []).map((ag: any) => ({
                         agentId: ag.id,
                         name: ag.name,
-                        avatar: ag.avatar,
                         color: ag.color,
                         arc: (engineRounds || []).map((r: any) => {
                           const agentInRound = (r.agents || []).find((a: any) => a.agentId === ag.id);
@@ -2505,7 +2502,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                   </div>
                   {(sv.dissents || []).map((d: any, i: number) => (
                     <div key={i} style={{ fontSize: 10, color: "var(--text-secondary)", marginBottom: 4, lineHeight: 1.4 }}>
-                      {String(d.avatar ?? "")} <strong>{String(d.agent ?? "Agent")}:</strong> &ldquo;{typeof d.note === "string" ? d.note : String(d.note ?? "")}&rdquo;
+                      <strong>{String(d.agent ?? "Agent")}:</strong> &ldquo;{typeof d.note === "string" ? d.note : String(d.note ?? "")}&rdquo;
                     </div>
                   ))}
                   {(!sv.dissents || sv.dissents.length === 0) && (

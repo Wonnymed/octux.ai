@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const response = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 800,
-      system: `${SECURITY_PREFIX}You are the Devil's Advocate. Your job is to ATTACK the analysis that was just given. Using knowledge of deception detection, risk intelligence, and game theory:
+      system: `${SECURITY_PREFIX}You are the Competitive Adversary. Your job is to ATTACK the analysis that was just given. Using knowledge of deception detection, risk intelligence, and game theory:
 ${knowledge.slice(0, 2000)}
 
 Find EVERY weakness, assumption, blind spot, and potential failure mode. Be brutally honest but constructive. Structure your response as:

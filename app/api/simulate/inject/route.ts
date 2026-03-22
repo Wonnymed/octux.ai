@@ -50,11 +50,11 @@ You already analyzed a business scenario and gave your assessment.
 Now a NEW VARIABLE has been injected: "${variable}"
 
 Recalculate your analysis considering this change. Be specific about:
-1. What changes in your previous assessment
-2. New risk level (1-10)
-3. What they should do differently now
+1. What changes in your previous assessment — cite the SPECIFIC numbers that shift
+2. New risk level (1-10) — express your confidence naturally ("I'm now deeply concerned because..." or "This actually strengthens my position since...")
+3. What they should do differently now — name REAL companies or market examples that inform your updated recommendation
 
-Use specific numbers. Be concise (2-3 paragraphs max). Respond in ${lang || "English"}.`,
+CRITICAL: Write ONLY natural text — no JSON, no code blocks, no markdown formatting. Cite specific numbers (revenue, costs, percentages, timelines). Reference real-world parallels. Be concise (2-3 paragraphs max). Respond in ${lang || "English"}.`,
               messages: [{
                 role: "user",
                 content: `ORIGINAL SCENARIO: ${originalScenario}\n\nYOUR PREVIOUS ANALYSIS: ${agent.lastAnalysis || "N/A"}\n\nNEW VARIABLE: ${variable}\n\nHow does this change your assessment?`,

@@ -32,12 +32,12 @@ export async function POST(req: NextRequest) {
         sendSSE({ type: "stage", stage: "market", label: "Analyzing market..." });
 
         const agents = [
-          { name: "Market Analyst", prompt: `Analyze market demand for: ${business.name}. Is the market growing? How competitive is it? Be specific with numbers.` },
-          { name: "Financial Advisor", prompt: `Given ${profile.capital} capital and ${profile.time} time commitment, are the revenue projections realistic for ${business.name}? Calculate break-even timeline.` },
-          { name: "Risk Assessor", prompt: `What are the top 5 risks of starting ${business.name} with ${profile.skills} skills and ${profile.capital} capital? Be brutally honest.` },
-          { name: "Customer Expert", prompt: `Who is the ideal customer for ${business.name}? How hard is it to reach them? What's the realistic CAC?` },
-          { name: "Competition Analyst", prompt: `Who are the existing competitors for ${business.name}? What would this person need to do differently to compete?` },
-          { name: "Devil's Advocate", prompt: `Give me the STRONGEST argument for why ${business.name} will FAIL for someone with ${profile.skills} skills, ${profile.capital} capital, and ${profile.time} time. Don't hold back.` },
+          { name: "Demand Signal Analyst", prompt: `Analyze market demand for: ${business.name}. Is the market growing? How competitive is it? Be specific with numbers.` },
+          { name: "Unit Economics Auditor", prompt: `Given ${profile.capital} capital and ${profile.time} time commitment, are the revenue projections realistic for ${business.name}? Calculate break-even timeline.` },
+          { name: "Regulatory Gatekeeper", prompt: `What are the top 5 risks of starting ${business.name} with ${profile.skills} skills and ${profile.capital} capital? Be brutally honest.` },
+          { name: "Base Rate Archivist", prompt: `What are the historical base rates for businesses like ${business.name}? What typically happens in comparable situations?` },
+          { name: "Competitive Adversary", prompt: `Who are the existing competitors for ${business.name}? What would this person need to do differently to compete?` },
+          { name: "Execution Operator", prompt: `Can someone with ${profile.skills} skills, ${profile.capital} capital, and ${profile.time} time actually execute ${business.name}? What breaks first?` },
         ];
 
         const results: any[] = [];
