@@ -810,8 +810,8 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             }}>
               <div style={{ flex: 1 }}>
                 <div style={{
-                  fontSize: 10, fontWeight: 700, color: "#3b82f6",
-                  fontFamily: "var(--font-mono)", marginBottom: 4, letterSpacing: 0.5,
+                  fontSize: 10, fontFamily: "var(--font-mono)",
+                  color: "var(--text-tertiary)", marginBottom: 6, letterSpacing: 2,
                 }}>SCENARIO A</div>
                 <textarea
                   value={scenarioA}
@@ -819,9 +819,9 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                   placeholder="First scenario..."
                   rows={isMobile ? 3 : 4}
                   style={{
-                    width: "100%", padding: "10px 12px", borderRadius: 10,
-                    border: "1px solid rgba(59,130,246,0.15)",
-                    background: "rgba(59,130,246,0.03)",
+                    width: "100%", padding: "10px 12px", borderRadius: 8,
+                    border: "1px solid var(--border-primary)",
+                    background: "var(--bg-secondary)",
                     color: "var(--text-primary)", fontSize: 13,
                     resize: "none", outline: "none",
                   }}
@@ -829,8 +829,8 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{
-                  fontSize: 10, fontWeight: 700, color: "#8b5cf6",
-                  fontFamily: "var(--font-mono)", marginBottom: 4, letterSpacing: 0.5,
+                  fontSize: 10, fontFamily: "var(--font-mono)",
+                  color: "var(--text-tertiary)", marginBottom: 6, letterSpacing: 2,
                 }}>SCENARIO B</div>
                 <textarea
                   value={scenarioB}
@@ -838,9 +838,9 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                   placeholder="Second scenario..."
                   rows={isMobile ? 3 : 4}
                   style={{
-                    width: "100%", padding: "10px 12px", borderRadius: 10,
-                    border: "1px solid rgba(139,92,246,0.15)",
-                    background: "rgba(139,92,246,0.03)",
+                    width: "100%", padding: "10px 12px", borderRadius: 8,
+                    border: "1px solid var(--border-primary)",
+                    background: "var(--bg-secondary)",
                     color: "var(--text-primary)", fontSize: 13,
                     resize: "none", outline: "none",
                   }}
@@ -854,20 +854,20 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                 style={{
                   display: "flex", alignItems: "center", gap: 6,
                   padding: "8px 20px", borderRadius: 50,
-                  background: (scenarioA.trim() && scenarioB.trim()) ? "var(--accent)" : "rgba(255,255,255,0.05)",
-                  color: (scenarioA.trim() && scenarioB.trim()) ? "#000" : "var(--text-tertiary)",
-                  fontSize: 13, fontWeight: 700, border: "none",
+                  background: (scenarioA.trim() && scenarioB.trim()) ? "var(--accent)" : "transparent",
+                  color: (scenarioA.trim() && scenarioB.trim()) ? "#09090B" : "var(--text-tertiary)",
+                  fontSize: 13, fontWeight: 600,
+                  border: (scenarioA.trim() && scenarioB.trim()) ? "none" : "1px solid var(--border-primary)",
                   cursor: (scenarioA.trim() && scenarioB.trim()) ? "pointer" : "default",
-                  opacity: (scenarioA.trim() && scenarioB.trim()) ? 1 : 0.4,
                 }}
               >
-                <Columns size={13} /> Compare →
+                <Columns size={13} /> Compare
               </button>
               <button
                 onClick={() => { setCompareMode(false); setScenarioA(""); setScenarioB(""); }}
                 style={{
                   padding: "8px 14px", borderRadius: 50,
-                  border: "1px solid var(--border-secondary)",
+                  border: "1px solid var(--border-primary)",
                   background: "transparent", color: "var(--text-tertiary)",
                   fontSize: 12, cursor: "pointer",
                 }}
@@ -2239,63 +2239,74 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
     const simA = compareSnapshot;
     const simB = { scenario: simScenario, rounds: engineRounds || [], verdict: engineVerdict, evolution: engineEvolution || [] };
 
-    const renderSide = (sim: typeof simA, label: string, color: string, borderColor: string) => {
+    const renderSide = (sim: typeof simA, label: string) => {
       const v = sim.verdict || {};
-      const isProceed = (v.proceedCount || 0) >= 6;
+      const isProceed = (v.proceedCount || 0) >= (v.stopCount || 0);
       return (
         <div style={{
-          borderRadius: 12, border: `1px solid ${borderColor}`,
-          padding: 16, background: "var(--card-bg)", flex: 1, minWidth: 0,
+          borderRadius: 12, border: "1px solid var(--border-primary)",
+          padding: 20, background: "var(--bg-card)", flex: 1, minWidth: 0,
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color }}>{label}</span>
+          <div style={{
+            fontSize: 10, fontFamily: "var(--font-mono)",
+            color: "var(--text-tertiary)", letterSpacing: 2, marginBottom: 12,
+          }}>
+            {label}
           </div>
           <div style={{
-            fontSize: 10, color: "var(--text-tertiary)", marginBottom: 10,
+            fontSize: 12, color: "var(--text-secondary)", marginBottom: 14,
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const,
           }}>
-            {sim.scenario.slice(0, 60)}{sim.scenario.length > 60 ? "..." : ""}
+            {sim.scenario.slice(0, 80)}{sim.scenario.length > 80 ? "..." : ""}
           </div>
           <div style={{
-            fontSize: 28, fontWeight: 800, fontFamily: "var(--font-mono)",
-            color: isProceed ? "#10B981" : "#EF4444", lineHeight: 1,
+            fontSize: 32, fontWeight: 300, fontFamily: "var(--font-mono)",
+            lineHeight: 1, display: "flex", alignItems: "baseline", gap: 4,
           }}>
-            {v.proceedCount || 0}-{v.stopCount || 0}
+            <span style={{ color: isProceed ? "var(--positive, #3ECF8E)" : "var(--negative, #F75B5B)" }}>
+              {isProceed ? (v.proceedCount || 0) : (v.stopCount || 0)}
+            </span>
+            <span style={{ color: "var(--text-tertiary)", fontSize: 22, fontWeight: 300 }}>–</span>
+            <span style={{ color: isProceed ? "var(--negative, #F75B5B)" : "var(--positive, #3ECF8E)" }}>
+              {isProceed ? (v.stopCount || 0) : (v.proceedCount || 0)}
+            </span>
           </div>
-          <div style={{ fontSize: 10, color: isProceed ? "#10B981" : "#EF4444", marginBottom: 10 }}>
+          <div style={{
+            fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 2, marginTop: 4, marginBottom: 14,
+            color: isProceed ? "var(--positive, #3ECF8E)" : "var(--negative, #F75B5B)",
+          }}>
             {isProceed ? "PROCEED" : "STOP"}
           </div>
-          <div style={{ display: "flex", gap: 16, marginBottom: 10 }}>
+          <div style={{ display: "flex", gap: 20, marginBottom: 14 }}>
             <div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "#EDEDEF", fontFamily: "var(--font-mono)" }}>{v.viability || 0}/10</div>
-              <div style={{ fontSize: 8, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>VIABILITY</div>
+              <div style={{ fontSize: 20, fontWeight: 300, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{v.viability || 0}/10</div>
+              <div style={{ fontSize: 10, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: 2, marginTop: 2 }}>VIABILITY</div>
             </div>
             <div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-mono)" }}>{v.avgConfidence || 0}</div>
-              <div style={{ fontSize: 8, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>AVG CONF</div>
+              <div style={{ fontSize: 20, fontWeight: 300, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>{v.avgConfidence || 0}</div>
+              <div style={{ fontSize: 10, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: 2, marginTop: 2 }}>AVG CONF</div>
             </div>
             {v.estimatedROI && v.estimatedROI !== "N/A" && (
               <div>
                 <div style={{
-                  fontSize: 18, fontWeight: 800, fontFamily: "var(--font-mono)",
-                  color: (typeof v.estimatedROI === "string" && v.estimatedROI.startsWith("-")) ? "#EF4444" : "#10B981",
+                  fontSize: 20, fontWeight: 300, fontFamily: "var(--font-mono)",
+                  color: (typeof v.estimatedROI === "string" && v.estimatedROI.startsWith("-")) ? "var(--negative, #F75B5B)" : "var(--positive, #3ECF8E)",
                 }}>{String(v.estimatedROI)}</div>
-                <div style={{ fontSize: 8, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>EST. ROI</div>
+                <div style={{ fontSize: 10, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", letterSpacing: 2, marginTop: 2 }}>EST. ROI</div>
               </div>
             )}
           </div>
           {v.verdict && (
-            <p style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.5, margin: "0 0 10px" }}>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5, margin: "0 0 12px" }}>
               {typeof v.verdict === "string" ? v.verdict : String(v.verdict ?? "")}
             </p>
           )}
           {v.patterns && v.patterns.length > 0 && (
             <div>
-              <div style={{ fontSize: 8, fontFamily: "var(--font-mono)", color: "var(--text-tertiary)", marginBottom: 4, textTransform: "uppercase" as const, letterSpacing: 0.8 }}>Patterns</div>
+              <div style={{ fontSize: 10, fontFamily: "var(--font-mono)", color: "var(--text-tertiary)", marginBottom: 6, letterSpacing: 2 }}>PATTERNS</div>
               {v.patterns.slice(0, 4).map((p: any, i: number) => (
-                <div key={i} style={{ fontSize: 10, color: "var(--text-secondary)", marginBottom: 3, lineHeight: 1.4 }}>
-                  • {typeof p.title === "string" ? p.title : String(p.title ?? "")}
+                <div key={i} style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 4, lineHeight: 1.4 }}>
+                  {typeof p.title === "string" ? p.title : String(p.title ?? "")}
                 </div>
               ))}
             </div>
@@ -2328,18 +2339,18 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           padding: isMobile ? "16px 16px 0" : "20px 24px 0",
         }}>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", fontFamily: "var(--font-brand)", letterSpacing: 1 }}>
+            <h2 style={{ fontSize: 24, fontWeight: 400, color: "var(--text-primary)", margin: 0 }}>
               Compare A vs B
-            </div>
-            <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
+            </h2>
+            <p style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--text-tertiary)", margin: "6px 0 0" }}>
               Side-by-side analysis of two simulation outcomes
-            </div>
+            </p>
           </div>
           <button onClick={() => { setCompareSnapshot(null); }} style={{
             display: "flex", alignItems: "center", gap: 6,
             padding: "7px 16px", borderRadius: 50,
-            border: "1px solid var(--border-secondary)", background: "transparent",
-            color: "var(--text-tertiary)", fontSize: 11, cursor: "pointer",
+            border: "1px solid var(--border-primary)", background: "transparent",
+            color: "var(--text-secondary)", fontSize: 12, cursor: "pointer",
           }}>
             <RotateCcw size={12} /> New simulation
           </button>
@@ -2355,46 +2366,47 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
             gap: 16,
           }}>
-            {renderSide(simA, "Simulation A", "#EDEDEF", "rgba(255,255,255,0.10)")}
-            {renderSide(simB, "Simulation B", "#3B82F6", "rgba(59,130,246,0.2)")}
+            {renderSide(simA, "SIMULATION A")}
+            {renderSide(simB, "SIMULATION B")}
           </div>
 
           {/* Key Differences */}
           {diffs.length > 0 && (
             <div style={{
-              padding: "14px 16px", borderRadius: 12,
-              background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
+              padding: "16px 20px", borderRadius: 12,
+              background: "var(--bg-card)", border: "1px solid var(--border-primary)",
             }}>
               <div style={{
                 fontSize: 10, fontFamily: "var(--font-mono)", color: "var(--text-tertiary)",
-                textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 10,
+                letterSpacing: 2, marginBottom: 12,
               }}>
-                Key Differences
+                KEY DIFFERENCES
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {diffs.map((d, i) => (
                   <div key={i} style={{
-                    display: "flex", alignItems: "center", gap: 10,
-                    padding: "6px 10px", borderRadius: 8,
-                    background: "rgba(255,255,255,0.02)",
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "8px 0",
+                    borderTop: i > 0 ? "1px solid var(--border-secondary)" : "none",
                   }}>
-                    <span style={{ fontSize: 10, color: "var(--text-tertiary)", width: 100 }}>{d.label}</span>
+                    <span style={{ fontSize: 12, color: "var(--text-tertiary)", width: 110 }}>{d.label}</span>
                     <span style={{
-                      fontSize: 12, fontFamily: "var(--font-mono)", fontWeight: 600, width: 60,
-                      color: d.winner === "A" ? "#EDEDEF" : "var(--text-secondary)",
+                      fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 500, width: 60,
+                      color: d.winner === "A" ? "var(--text-primary)" : "var(--text-secondary)",
                     }}>{d.a}</span>
-                    <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>vs</span>
+                    <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>vs</span>
                     <span style={{
-                      fontSize: 12, fontFamily: "var(--font-mono)", fontWeight: 600, width: 60,
-                      color: d.winner === "B" ? "#3B82F6" : "var(--text-secondary)",
+                      fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 500, width: 60,
+                      color: d.winner === "B" ? "var(--text-primary)" : "var(--text-secondary)",
                     }}>{d.b}</span>
                     {d.winner !== "tie" && (
                       <span style={{
-                        fontSize: 8, padding: "1px 6px", borderRadius: 3, fontWeight: 700, marginLeft: "auto",
-                        background: d.winner === "A" ? "rgba(255,255,255,0.06)" : "rgba(59,130,246,0.1)",
-                        color: d.winner === "A" ? "#EDEDEF" : "#3B82F6",
+                        fontSize: 9, padding: "2px 8px", borderRadius: 50, fontWeight: 600, marginLeft: "auto",
+                        fontFamily: "var(--font-mono)",
+                        background: "rgba(200,168,78,0.08)",
+                        color: "var(--accent)",
                       }}>
-                        {d.winner} WINS
+                        {d.winner}
                       </span>
                     )}
                   </div>
@@ -2410,21 +2422,25 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
               gap: 16,
             }}>
-              {[{ v: va, label: "A", color: "#EDEDEF" }, { v: vb, label: "B", color: "#3B82F6" }].map(({ v: sv, label, color }) => (
+              {[{ v: va, label: "A" }, { v: vb, label: "B" }].map(({ v: sv, label }) => (
                 <div key={label} style={{
-                  padding: "12px 14px", borderRadius: 10,
-                  background: "rgba(239,68,68,0.03)", border: "1px solid rgba(239,68,68,0.08)",
+                  padding: "16px 18px", borderRadius: 12,
+                  background: "var(--bg-card)", border: "1px solid var(--border-primary)",
                 }}>
-                  <div style={{ fontSize: 9, fontFamily: "var(--font-mono)", color, marginBottom: 6, letterSpacing: 0.5 }}>
+                  <div style={{ fontSize: 10, fontFamily: "var(--font-mono)", color: "var(--text-tertiary)", marginBottom: 10, letterSpacing: 2 }}>
                     DISSENTS — {label}
                   </div>
                   {(sv.dissents || []).map((d: any, i: number) => (
-                    <div key={i} style={{ fontSize: 10, color: "var(--text-secondary)", marginBottom: 4, lineHeight: 1.4 }}>
-                      <strong>{String(d.agent ?? "Agent")}:</strong> &ldquo;{typeof d.note === "string" ? d.note : String(d.note ?? "")}&rdquo;
+                    <div key={i} style={{
+                      fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5,
+                      padding: "8px 0",
+                      borderTop: i > 0 ? "1px solid var(--border-secondary)" : "none",
+                    }}>
+                      <strong style={{ fontWeight: 500 }}>{String(d.agent ?? "Agent")}:</strong> {typeof d.note === "string" ? d.note : String(d.note ?? "")}
                     </div>
                   ))}
                   {(!sv.dissents || sv.dissents.length === 0) && (
-                    <div style={{ fontSize: 10, color: "var(--text-tertiary)", fontStyle: "italic" }}>No dissents</div>
+                    <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>No dissents</div>
                   )}
                 </div>
               ))}
@@ -3934,11 +3950,13 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
 
       </div>
 
-      {/* God's Eye Modal */}
+      {/* What If Modal */}
       {godEyeOpen && (
         <div
           style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+            position: "fixed", inset: 0,
+            background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
             display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100,
             animation: "fadeIn 0.15s ease-out",
           }}
@@ -3948,25 +3966,21 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             onClick={e => e.stopPropagation()}
             style={{
               width: "100%", maxWidth: 560, maxHeight: "85vh", overflowY: "auto",
-              borderRadius: 16,
-              border: "1px solid var(--mode-sim-border)",
-              background: "var(--bg-primary)", padding: 24,
-              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-              animation: "fadeInUp 0.2s ease-out",
+              borderRadius: 12,
+              border: "1px solid var(--border-primary)",
+              background: "var(--bg-card)", padding: 24,
+              animation: "modalIn 200ms ease",
               margin: 16,
             }}
           >
             {/* Header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <Eye size={18} style={{ color: "var(--mode-sim)" }} />
-                <span style={{
-                  fontFamily: "var(--font-brand)", fontSize: 18, fontWeight: 700,
-                  letterSpacing: 2, color: "var(--text-primary)",
-                }}>
-                  GOD&apos;S EYE
-                </span>
-              </div>
+              <span style={{
+                fontSize: 10, fontFamily: "var(--font-mono)",
+                letterSpacing: 2, color: "var(--text-tertiary)",
+              }}>
+                WHAT IF
+              </span>
               <button
                 onClick={() => !godEyeRunning && setGodEyeOpen(false)}
                 style={{
@@ -3974,12 +3988,12 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                   color: "var(--text-tertiary)", padding: 4,
                 }}
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
             <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 16, lineHeight: 1.5 }}>
-              Inject a variable and watch the agents recalculate. What happens if...
+              What would you change? Agents will recalculate based on the new variable.
             </p>
 
             {/* Presets */}
@@ -3996,10 +4010,10 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                   key={preset}
                   onClick={() => setGodEyeInput(preset)}
                   style={{
-                    padding: "5px 12px", borderRadius: 20,
-                    border: godEyeInput === preset ? "1px solid var(--mode-sim)" : "1px solid var(--card-border)",
-                    background: godEyeInput === preset ? "var(--mode-sim-bg)" : "var(--card-bg)",
-                    fontSize: 11, color: godEyeInput === preset ? "var(--mode-sim)" : "var(--text-secondary)",
+                    padding: "5px 12px", borderRadius: 50,
+                    border: godEyeInput === preset ? "1px solid var(--accent-border)" : "1px solid var(--border-primary)",
+                    background: "transparent",
+                    fontSize: 11, color: godEyeInput === preset ? "var(--accent)" : "var(--text-tertiary)",
                     cursor: "pointer", transition: "all 150ms",
                   }}
                 >
@@ -4015,10 +4029,10 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               placeholder="What if..."
               disabled={godEyeRunning}
               style={{
-                width: "100%", padding: "12px 16px", borderRadius: 10,
-                border: "1px solid var(--mode-sim-border)", background: "var(--card-bg)",
+                width: "100%", padding: "12px 16px", borderRadius: 8,
+                border: "1px solid var(--border-primary)", background: "var(--bg-secondary)",
                 color: "var(--text-primary)", fontSize: 14, outline: "none",
-                marginBottom: 16, fontFamily: "var(--font-sans)",
+                marginBottom: 16,
               }}
               onKeyDown={e => { if (e.key === "Enter" && godEyeInput.trim() && !godEyeRunning) runGodEye(); }}
             />
@@ -4028,34 +4042,35 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               onClick={runGodEye}
               disabled={!godEyeInput.trim() || godEyeRunning}
               style={{
-                width: "100%", padding: "12px", borderRadius: 10,
-                background: godEyeInput.trim() && !godEyeRunning ? "var(--mode-sim)" : "var(--bg-tertiary)",
-                color: godEyeInput.trim() && !godEyeRunning ? "#000" : "var(--text-tertiary)",
-                fontWeight: 600, fontSize: 14, border: "none",
+                width: "100%", padding: "12px", borderRadius: 8,
+                background: "transparent",
+                color: godEyeInput.trim() && !godEyeRunning ? "var(--text-primary)" : "var(--text-tertiary)",
+                fontWeight: 500, fontSize: 13,
+                border: "1px solid var(--border-primary)",
                 cursor: godEyeInput.trim() && !godEyeRunning ? "pointer" : "default",
-                fontFamily: "var(--font-brand)", letterSpacing: 1,
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                transition: "border-color 150ms, color 150ms",
               }}
             >
               {godEyeRunning && <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
-              {godEyeRunning ? "RECALCULATING..." : "INJECT VARIABLE"}
+              {godEyeRunning ? "Recalculating..." : "Re-simulate"}
             </button>
 
             {/* Results */}
             {godEyeResults.length > 0 && (
-              <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 8 }}>
                 {godEyeResults.map((r, i) => {
                   if (r.type === "recalc") {
                     return (
                       <div key={i} style={{
                         padding: "12px 14px", borderRadius: 10,
-                        background: "var(--bg-secondary)", border: "1px solid var(--border-secondary)",
+                        background: "var(--bg-secondary)", border: "1px solid var(--border-primary)",
                       }}>
                         <div style={{
-                          fontSize: 12, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4,
+                          fontSize: 12, fontWeight: 500, color: "var(--text-primary)", marginBottom: 4,
                           display: "flex", alignItems: "center", gap: 6,
                         }}>
-                          <Check size={12} style={{ color: "var(--success)" }} />
+                          <Check size={12} style={{ color: "var(--positive, #3ECF8E)" }} />
                           {r.agent}
                           <span style={{ fontSize: 10, color: "var(--text-tertiary)", fontWeight: 400 }}>{r.role}</span>
                         </div>
@@ -4069,14 +4084,14 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                     return (
                       <div key={i} style={{
                         padding: 16, borderRadius: 10,
-                        background: "var(--mode-sim-bg)", border: "1px solid var(--mode-sim-border)",
+                        background: "var(--bg-card)", border: "1px solid var(--border-primary)",
                       }}>
                         <div style={{
-                          fontSize: 12, fontWeight: 600, color: "var(--mode-sim)", marginBottom: 8,
-                          display: "flex", alignItems: "center", gap: 6,
-                          fontFamily: "var(--font-mono)", letterSpacing: 1, textTransform: "uppercase",
+                          fontSize: 10, fontFamily: "var(--font-mono)",
+                          color: "var(--text-tertiary)", marginBottom: 8,
+                          letterSpacing: 2,
                         }}>
-                          <Zap size={12} /> Impact Report
+                          IMPACT REPORT
                         </div>
                         <div style={{ fontSize: 14, lineHeight: 1.7, color: "var(--text-secondary)" }}>
                           <MarkdownRenderer content={r.content || ""} />
