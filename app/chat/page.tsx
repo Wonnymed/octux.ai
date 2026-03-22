@@ -58,6 +58,7 @@ const ScenarioPlanner = dynamic(() => import("../components/ScenarioPlanner"), {
 const SettingsModal = dynamic(() => import("../components/SettingsModal"), { ssr: false });
 const Onboarding = dynamic(() => import("../components/Onboarding"), { ssr: false });
 const ModeTransition = dynamic(() => import("../components/ModeTransition"), { ssr: false });
+const EngineIntro = dynamic(() => import("../components/EngineIntro"), { ssr: false });
 
 /* ═══ File Helpers ═══ */
 async function fileToBase64(file: File): Promise<string> {
@@ -203,6 +204,16 @@ function ChatPage() {
       } catch {}
     }
     return new Set(["chat"]);
+  });
+  const [introCompleted, setIntroCompleted] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    // Pre-populate with engines that have already been seen (localStorage)
+    const seen = new Set<string>();
+    const engineIds = ["simulate", "build", "grow", "hire", "protect", "compete"];
+    engineIds.forEach(id => {
+      if (localStorage.getItem(`signux-intro-${id}`) === "seen") seen.add(id);
+    });
+    return seen;
   });
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -1137,8 +1148,11 @@ function ChatPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
-              style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
+              style={{ position: "relative", flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
+              {!introCompleted.has("compete") && (
+                <EngineIntro engineId="compete" onComplete={() => setIntroCompleted(prev => new Set([...prev, "compete"]))} />
+              )}
               <CompeteView
                 lang={lang}
                 onContinueInChat={continueResearchInChat}
@@ -1155,8 +1169,11 @@ function ChatPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
-              style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
+              style={{ position: "relative", flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
+              {!introCompleted.has("simulate") && (
+                <EngineIntro engineId="simulate" onComplete={() => setIntroCompleted(prev => new Set([...prev, "simulate"]))} />
+              )}
               <SimulationEngine
                 simulating={simulating}
                 simResult={simResult}
@@ -1197,8 +1214,11 @@ function ChatPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
-              style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
+              style={{ position: "relative", flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
+              {!introCompleted.has("build") && (
+                <EngineIntro engineId="build" onComplete={() => setIntroCompleted(prev => new Set([...prev, "build"]))} />
+              )}
               <BuildView lang={lang} userId={authUser?.id} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} initialQuestion={initialQuestion} />
             </motion.div>
           ) : mode === "grow" ? (
@@ -1208,8 +1228,11 @@ function ChatPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
-              style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
+              style={{ position: "relative", flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
+              {!introCompleted.has("grow") && (
+                <EngineIntro engineId="grow" onComplete={() => setIntroCompleted(prev => new Set([...prev, "grow"]))} />
+              )}
               <GrowView lang={lang} initialQuestion={initialQuestion} />
             </motion.div>
           ) : mode === "protect" ? (
@@ -1219,8 +1242,11 @@ function ChatPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
-              style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
+              style={{ position: "relative", flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
+              {!introCompleted.has("protect") && (
+                <EngineIntro engineId="protect" onComplete={() => setIntroCompleted(prev => new Set([...prev, "protect"]))} />
+              )}
               <ProtectView lang={lang} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} initialQuestion={initialQuestion} />
             </motion.div>
           ) : mode === "hire" ? (
@@ -1230,8 +1256,11 @@ function ChatPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
-              style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
+              style={{ position: "relative", flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
+              {!introCompleted.has("hire") && (
+                <EngineIntro engineId="hire" onComplete={() => setIntroCompleted(prev => new Set([...prev, "hire"]))} />
+              )}
               <HireView lang={lang} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} initialQuestion={initialQuestion} />
             </motion.div>
           ) : (

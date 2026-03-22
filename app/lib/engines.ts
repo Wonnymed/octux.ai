@@ -14,6 +14,10 @@ export const ENGINES = {
     icon: "Zap",
     color: "#3B82F6",
     chips: ["10 expert agents", "10 structured rounds", "Success probability", "Key disagreement", "Best next action"],
+    intro: {
+      features: ["10 specialist agents", "10 adversarial rounds", "Decision-ready output"],
+      micro: "100 perspectives. Under 60 seconds.",
+    },
   },
   build: {
     id: "build",
@@ -25,6 +29,10 @@ export const ENGINES = {
     icon: "Hammer",
     color: "#10B981",
     chips: ["Execution roadmap", "30/60/90-day plan", "Bottleneck detection", "Resource sequencing", "Fastest path to proof"],
+    intro: {
+      features: ["30/60/90-day roadmap", "Bottleneck detection", "Fastest path to proof"],
+      micro: "From idea to action. One conversation.",
+    },
   },
   grow: {
     id: "grow",
@@ -36,6 +44,10 @@ export const ENGINES = {
     icon: "TrendingUp",
     color: "#8B5CF6",
     chips: ["Growth levers", "Revenue bottlenecks", "Channel prioritization", "Pricing opportunities", "Experiment roadmap"],
+    intro: {
+      features: ["Ranked growth levers", "Channel prioritization", "Experiment roadmap"],
+      micro: "Know exactly what to test first.",
+    },
   },
   hire: {
     id: "hire",
@@ -47,6 +59,10 @@ export const ENGINES = {
     icon: "UserCheck",
     color: "#F59E0B",
     chips: ["Candidate-role fit", "Red flag detection", "Timing of hire", "ROI of the role", "Interview focus points"],
+    intro: {
+      features: ["Candidate-role fit score", "Red flag detection", "Interview focus points"],
+      micro: "Bad hires cost $50K\u2013$500K. Evaluate first.",
+    },
   },
   protect: {
     id: "protect",
@@ -58,6 +74,10 @@ export const ENGINES = {
     icon: "Shield",
     color: "#EF4444",
     chips: ["Threat scan", "Downside mapping", "Compliance exposure", "Fragility detection", "Mitigation actions"],
+    intro: {
+      features: ["Threat scan", "Risk matrix", "Mitigation actions"],
+      micro: "See threats before they hit.",
+    },
   },
   compete: {
     id: "compete",
@@ -69,6 +89,10 @@ export const ENGINES = {
     icon: "Swords",
     color: "#F97316",
     chips: ["Competitor mapping", "Response simulation", "Weakness detection", "Positioning gaps", "Counter-move strategy"],
+    intro: {
+      features: ["Competitor mapping", "Response simulation", "Positioning gaps"],
+      micro: "Simulate their next move.",
+    },
   },
 } as const;
 
