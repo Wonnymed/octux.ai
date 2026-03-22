@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Zap, Search, Rocket, Globe, TrendingUp, Wrench, CircleSlash, Copy, Users, Shield, Scan, Swords, GitBranch, Map, Target, Crown, Check, ArrowRight, Hammer, UserCheck } from "lucide-react";
+import { Zap, Hammer, TrendingUp, UserCheck, Shield, Swords, Check, ArrowRight, ChevronDown, Lock, Layers, Brain, BarChart3 } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
 import SignuxFooter from "./SignuxFooter";
 import { ENGINES } from "../lib/engines";
@@ -20,7 +20,7 @@ function useFadeIn() {
           observer.unobserve(el);
         }
       },
-      { threshold: 0.15 },
+      { threshold: 0.12 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -28,895 +28,481 @@ function useFadeIn() {
   return ref;
 }
 
-function FadeSection({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+function Fade({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   const ref = useFadeIn();
   return (
-    <div ref={ref} style={{ opacity: 0, transform: "translateY(20px)", transition: "opacity 0.5s ease, transform 0.5s ease", ...style }}>
+    <div ref={ref} style={{ opacity: 0, transform: "translateY(16px)", transition: "opacity 0.6s ease, transform 0.6s ease", ...style }}>
       {children}
     </div>
   );
 }
 
-/* ═══ Hex to rgba ═══ */
-function hexA(hex: string, a: number) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r},${g},${b},${a})`;
-}
+/* ═══ Shared styles ═══ */
+const SECTION_PAD = { padding: "80px 24px", maxWidth: 960, margin: "0 auto" } as const;
+const SECTION_PAD_M = { padding: "48px 16px", maxWidth: 960, margin: "0 auto" } as const;
+const LABEL: React.CSSProperties = {
+  fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 2,
+  textTransform: "uppercase", color: "var(--mk-text-tertiary)", marginBottom: 12,
+};
+const H2: React.CSSProperties = {
+  fontFamily: "var(--font-brand)", fontWeight: 600, lineHeight: 1.2, marginBottom: 12,
+};
+const BODY: React.CSSProperties = {
+  fontSize: 16, lineHeight: 1.7, color: "var(--mk-text-secondary)", maxWidth: 600, margin: "0 auto 40px",
+};
+const CARD: React.CSSProperties = {
+  background: "var(--mk-card)", border: "1px solid var(--mk-border)",
+  borderRadius: 12, padding: "24px 20px", boxShadow: "var(--mk-shadow)",
+};
 
-/* ═══ Section Divider ═══ */
-function Divider() {
-  return <div style={{ height: 1, maxWidth: 600, margin: "0 auto", background: "linear-gradient(90deg, transparent, var(--divider), transparent)" }} />;
-}
+const ICON_MAP: Record<string, typeof Zap> = { Zap, Hammer, TrendingUp, UserCheck, Shield, Swords };
 
-/* ═══ Mode data ═══ */
-const MODE_SECTIONS = [
-  {
-    icon: Zap, color: ENGINES.simulate.color, name: ENGINES.simulate.name, textOnColor: "#000",
-    title: "Know if your idea will work — before you spend a dollar",
-    desc: "Describe any business scenario. AI specialists will debate it from every angle — finding the risks you can't see, the competitors you forgot, and the numbers that actually matter.",
-    features: ENGINES.simulate.chips.slice(0, 4),
-    preview: SimulatePreview,
-  },
-  {
-    icon: Hammer, color: ENGINES.build.color, name: ENGINES.build.name, textOnColor: "#000",
-    title: "Your first $1,000 in 90 days",
-    desc: "Tell us what you're good at and how much you can invest. We'll find the best business for you, predict if it will work, and create your 90-day plan.",
-    features: ENGINES.build.chips.slice(0, 4),
-    preview: LaunchpadPreview,
-  },
-  {
-    icon: TrendingUp, color: ENGINES.grow.color, name: ENGINES.grow.name, textOnColor: "#fff",
-    title: "Find the fastest path to better revenue",
-    desc: "Map your growth levers, identify revenue bottlenecks, prioritize channels, and build an experiment roadmap. The strategy your business needs right now.",
-    features: ENGINES.grow.chips.slice(0, 4),
-    preview: InvestPreview,
-  },
-  {
-    icon: UserCheck, color: ENGINES.hire.color, name: ENGINES.hire.name, textOnColor: "#000",
-    title: "Decide who to hire, and when",
-    desc: "Evaluate candidates, assess role timing, detect red flags, and get interview focus points. The same rigor hedge funds use for portfolio decisions, applied to your team.",
-    features: ENGINES.hire.chips.slice(0, 4),
-    preview: GlobalOpsPreview,
-  },
-  {
-    icon: Shield, color: ENGINES.protect.color, name: ENGINES.protect.name, textOnColor: "#fff",
-    title: "Find what could break your business next",
-    desc: "Scan threats, map downside scenarios, check compliance exposure, and detect fragility. Know the risks before they become problems.",
-    features: ENGINES.protect.chips.slice(0, 4),
-    preview: IntelPreview,
-  },
-  {
-    icon: Swords, color: ENGINES.compete.color, name: ENGINES.compete.name, textOnColor: "#000",
-    title: "See how rivals move, and where you can win",
-    desc: "Map competitors, simulate their responses, detect weaknesses, and find positioning gaps. Your competitive intelligence engine.",
-    features: ENGINES.compete.chips.slice(0, 4),
-    preview: IntelPreview,
-  },
+const ENGINES_LIST = [
+  { ...ENGINES.simulate, id: "simulate" },
+  { ...ENGINES.build, id: "build" },
+  { ...ENGINES.grow, id: "grow" },
+  { ...ENGINES.hire, id: "hire" },
+  { ...ENGINES.protect, id: "protect" },
+  { ...ENGINES.compete, id: "compete" },
 ];
 
-/* ═══ Preview Components ═══ */
-function SimulatePreview() {
-  const bars = [
-    { label: "Regulatory", pct: 72, color: "#ef4444" },
-    { label: "Financial", pct: 45, color: "#f59e0b" },
-    { label: "Market", pct: 58, color: "#3b82f6" },
-  ];
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      {bars.map(b => (
-        <div key={b.label}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text-tertiary)", marginBottom: 4 }}>
-            <span>{b.label}</span><span>{b.pct}%</span>
-          </div>
-          <div style={{ height: 4, borderRadius: 2, background: "var(--card-hover-bg)" }}>
-            <div style={{ height: "100%", width: `${b.pct}%`, borderRadius: 2, background: b.color, opacity: 0.7 }} />
-          </div>
-        </div>
-      ))}
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, paddingTop: 10, borderTop: "1px solid var(--card-hover-bg)" }}>
-        <div>
-          <div style={{ fontSize: 9, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: 1 }}>Viability</div>
-          <div style={{ fontSize: 22, fontFamily: "var(--font-brand)", fontWeight: 700, color: "#EDEDEF" }}>7.3</div>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 9, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: 1 }}>Est. ROI</div>
-          <div style={{ fontSize: 22, fontFamily: "var(--font-brand)", fontWeight: 700, color: "#22c55e" }}>+23%</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function IntelPreview() {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <div style={{ textAlign: "center", marginBottom: 4 }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", color: "#DC2626", marginBottom: 6 }}>
-          Threat level
-        </div>
-        <div style={{ fontFamily: "var(--font-brand)", fontSize: 28, fontWeight: 700, color: "#F59E0B" }}>
-          ELEVATED
-        </div>
-      </div>
-      {[
-        { name: "Market", score: 7, color: "#ef4444" },
-        { name: "Regulatory", score: 4, color: "#22c55e" },
-        { name: "Operational", score: 6, color: "#f59e0b" },
-        { name: "Cyber", score: 3, color: "#22c55e" },
-        { name: "Geopolitical", score: 5, color: "#f59e0b" },
-      ].map((axis, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 10, color: "var(--text-tertiary)", width: 70 }}>{axis.name}</span>
-          <div style={{ flex: 1, height: 4, borderRadius: 2, background: "var(--card-border)" }}>
-            <div style={{ width: `${axis.score * 10}%`, height: "100%", borderRadius: 2, background: axis.color }} />
-          </div>
-          <span style={{ fontSize: 10, color: axis.color, fontWeight: 600, width: 16 }}>{axis.score}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function LaunchpadPreview() {
-  const steps = [
-    { label: "Discovery", active: true },
-    { label: "Validation", active: false },
-    { label: "Blueprint", active: false },
-    { label: "Launch", active: false },
-  ];
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      {steps.map((s, i) => (
-        <div key={s.label} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.active ? "#14B8A6" : "var(--card-border)", border: s.active ? "none" : "1.5px solid var(--border-primary)", boxShadow: s.active ? "0 0 8px rgba(20,184,166,0.3)" : "none" }} />
-            {i < steps.length - 1 && <div style={{ width: 1, height: 28, background: "var(--card-border)" }} />}
-          </div>
-          <div>
-            <span style={{ fontSize: 11, fontWeight: s.active ? 600 : 400, color: s.active ? "#14B8A6" : "var(--text-tertiary)" }}>{s.label}</span>
-            {s.active && <div style={{ fontSize: 9, color: "var(--text-tertiary)", marginTop: 2 }}>In progress</div>}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function GlobalOpsPreview() {
-  const jurisdictions = [
-    { name: "Hong Kong", pct: 92 },
-    { name: "Singapore", pct: 87 },
-    { name: "Dubai DMCC", pct: 74 },
-    { name: "BVI", pct: 68 },
-  ];
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {jurisdictions.map(j => (
-        <div key={j.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{j.name}</span>
-          <span style={{ fontSize: 12, fontFamily: "var(--font-brand)", fontWeight: 700, color: j.pct >= 80 ? "#22C55E" : j.pct >= 70 ? "#f59e0b" : "var(--text-tertiary)" }}>{j.pct}%</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function InvestPreview() {
-  const metrics = [
-    { label: "EV", value: "+$1.2M", color: "#22c55e" },
-    { label: "Kelly", value: "12%", color: "#A855F7" },
-    { label: "Bayes", value: "0.67", color: "#6B8AFF" },
-    { label: "Base Rate", value: "34%", color: "#f59e0b" },
-  ];
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-      {metrics.map(m => (
-        <div key={m.label} style={{ padding: "10px 8px", borderRadius: 8, background: "var(--card-bg)", border: "1px solid var(--card-border)", textAlign: "center" }}>
-          <div style={{ fontSize: 8, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{m.label}</div>
-          <div style={{ fontSize: 16, fontFamily: "var(--font-brand)", fontWeight: 700, color: m.color }}>{m.value}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ═══ Tools data ═══ */
-const TOOLS = [
-  { name: "Pitch Deck Builder", command: "/pitch", color: "#EDEDEF" },
-  { name: "Financial Model", command: "/financial", color: "#22c55e" },
-  { name: "Business Plan Writer", command: "/plan", color: "#6B8AFF" },
-  { name: "Pricing Strategy", command: "/pricing", color: "#F97316" },
-  { name: "Contract Analyzer", command: "/contract", color: "#DC2626" },
-];
-const TOOLS_SOON = ["Brand Kit Generator", "Outreach Writer", "Market Sizing", "Ad Copy Agent"];
-
-/* ═══ MAIN LANDING PAGE ═══ */
+/* ═══ MAIN ═══ */
 export default function LandingSections() {
   const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
     setIsMobile(window.innerWidth < 768);
-    const handler = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
+    const h = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", h);
+    return () => window.removeEventListener("resize", h);
   }, []);
 
+  const sp = isMobile ? SECTION_PAD_M : SECTION_PAD;
+
   return (
-    <div id="landing-start" style={{ background: "var(--bg-primary)", color: "var(--text-primary)", fontFamily: "var(--font-sans)", overflowX: "hidden" }}>
+    <div data-surface="below-fold" style={{
+      background: "var(--mk-bg)", color: "var(--mk-text)",
+      fontFamily: "var(--font-sans)",
+    }}>
 
-      {/* Hero removed — shown as chat welcome */}
-      {false && <section style={{
-        minHeight: "100vh", display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center",
-        padding: isMobile ? "120px 20px 60px" : "120px 24px 80px",
-        textAlign: "center", position: "relative",
-      }}>
-        {/* Ambient glow */}
-        <div style={{
-          position: "absolute", top: "40%", left: "50%", transform: "translate(-50%, -50%)",
-          width: 800, height: 800, background: "radial-gradient(circle, var(--glow-color) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }} />
-        {/* Floating particles */}
-        {[
-          { top: "20%", left: "15%", dur: "8s", delay: "0s" },
-          { top: "35%", left: "82%", dur: "10s", delay: "1.5s" },
-          { top: "70%", left: "25%", dur: "12s", delay: "3s" },
-          { top: "60%", left: "78%", dur: "9s", delay: "0.5s" },
-        ].map((p, i) => (
-          <div key={`lp-${i}`} style={{
-            position: "absolute", top: p.top, left: p.left,
-            width: 1.5, height: 1.5, borderRadius: "50%",
-            background: "rgba(255,255,255,0.06)", pointerEvents: "none",
-            animation: `float1 ${p.dur} ease-in-out infinite`,
-            animationDelay: p.delay,
-          }} />
-        ))}
+      {/* ═══ SCROLL BRIDGE ═══ */}
+      <div style={{
+        height: 64,
+        background: "linear-gradient(to bottom, var(--bg-primary), var(--mk-bg))",
+      }} />
 
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: 0 }}>
-            <SignuxIcon size={isMobile ? 44 : 52} variant="gold" />
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span style={{
-                fontFamily: "var(--font-brand)", fontWeight: 700,
-                fontSize: isMobile ? 40 : 56, letterSpacing: 6,
-                color: "var(--text-primary)", lineHeight: 1,
-              }}>
-                SIGNUX
-              </span>
-              <span style={{
-                fontFamily: "var(--font-brand)", fontWeight: 300,
-                fontSize: isMobile ? 40 : 56, letterSpacing: 4,
-                color: "var(--text-primary)", opacity: 0.22, lineHeight: 1,
-              }}>
-                AI
-              </span>
-            </div>
+      {/* ═══ 1. HOW IT WORKS ═══ */}
+      <section id="how-it-works" style={sp}>
+        <Fade>
+          <div style={{ textAlign: "center" }}>
+            <div style={LABEL}>How it works</div>
+            <h2 style={{ ...H2, fontSize: isMobile ? 26 : 36, color: "var(--mk-text)" }}>
+              Describe the decision. Get a structured answer.
+            </h2>
+            <p style={BODY}>
+              Signux routes your question to the right engine. Each engine is built for a specific type of business decision — with its own prompt architecture, output format, and domain knowledge.
+            </p>
           </div>
-          <div style={{ width: 48, height: 1.5, background: "var(--accent)", margin: "8px auto 0" }} />
-
-          <h1 style={{
-            fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 32 : 48,
-            letterSpacing: 2, color: "var(--text-primary)", maxWidth: 700,
-            lineHeight: 1.1, margin: "32px auto 16px",
-          }}>
-            See what happens before it happens.
-          </h1>
-          <p style={{ fontSize: isMobile ? 15 : 18, color: "var(--text-secondary)", maxWidth: 520, margin: "0 auto 40px", lineHeight: 1.6 }}>
-            Test any idea before you invest. Spot bad deals before you sign. Know how competitors will react before they move. The AI that sees around corners.
-          </p>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/chat" style={{
-              padding: "14px 32px", borderRadius: 50, background: "var(--accent)",
-              color: "#000", fontWeight: 600, fontSize: 15, textDecoration: "none",
-              fontFamily: "var(--font-brand)", letterSpacing: 1,
-            }}>Start free</Link>
-            <a href="#compare" style={{
-              padding: "14px 32px", borderRadius: 50,
-              border: "1px solid var(--border-primary)", color: "var(--text-secondary)",
-              fontSize: 15, textDecoration: "none",
-            }}>See the difference</a>
-          </div>
-
-          {/* Avatar stack + social proof */}
           <div style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            gap: 10, marginTop: 24,
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
+            gap: 16, maxWidth: 720, margin: "0 auto",
           }}>
-            <div style={{ display: "flex" }}>
-              {["NV","SK","AR","PT","LC","JM","RK"].map((initials, i) => (
-                <div key={i} style={{
-                  width: 28, height: 28, borderRadius: "50%",
-                  background: ["#EDEDEF","#DC2626","#14B8A6","#22C55E","#8B5CF6","#F59E0B","#06B6D4"][i],
-                  border: "2px solid var(--bg-primary)",
-                  marginLeft: i > 0 ? -8 : 0,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 9, color: "#fff", fontWeight: 600,
+            {[
+              { step: "01", title: "Ask your question", desc: "Describe the decision, idea, hire, risk, or competitive situation." },
+              { step: "02", title: "Signux routes it", desc: "Your question is matched to the right engine with the right domain context." },
+              { step: "03", title: "Get a structured answer", desc: "Not a wall of text. A visual, structured result you can act on immediately." },
+            ].map((s) => (
+              <div key={s.step} style={CARD}>
+                <div style={{
+                  fontSize: 24, fontFamily: "var(--font-mono)", fontWeight: 600,
+                  color: "var(--mk-accent-gold)", marginBottom: 12, opacity: 0.6,
                 }}>
-                  {initials}
+                  {s.step}
                 </div>
-              ))}
-            </div>
-            <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-              Used by founders and operators worldwide
-            </span>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--mk-text)", marginBottom: 6 }}>
+                  {s.title}
+                </div>
+                <div style={{ fontSize: 13, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>
+                  {s.desc}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        </Fade>
+      </section>
 
-        <div style={{ position: "absolute", bottom: 32, left: 0, right: 0, textAlign: "center", fontSize: 12, color: "var(--text-tertiary)" }}>
-          Free to start. No credit card required.
-        </div>
-      </section>}
-
-      {/* ═══ COMPARISON TABLE ═══ */}
-      <Divider />
-      <section id="compare" style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 900, margin: "0 auto" }}>
-        <FadeSection>
-          <h2 style={{
-            fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 22 : 28,
-            color: "var(--text-primary)", textAlign: "center", marginBottom: 6,
+      {/* ═══ 2. SIX ENGINES ═══ */}
+      <section id="engines" style={{ ...sp, background: "var(--mk-card)" }}>
+        <Fade>
+          <div style={{ textAlign: "center" }}>
+            <div style={LABEL}>Six engines</div>
+            <h2 style={{ ...H2, fontSize: isMobile ? 26 : 36, color: "var(--mk-text)" }}>
+              One question. The right engine.
+            </h2>
+            <p style={BODY}>
+              Each engine is purpose-built for a specific business decision. Not generic chat — specialized intelligence.
+            </p>
+          </div>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
+            gap: 14,
           }}>
-            What makes Signux different
-          </h2>
-          <p style={{ fontSize: isMobile ? 12 : 14, color: "var(--text-tertiary)", textAlign: "center", marginBottom: isMobile ? 20 : 32 }}>
-            Not another chatbot. A decision intelligence platform.
-          </p>
+            {ENGINES_LIST.map((engine) => {
+              const Icon = ICON_MAP[engine.icon] || Zap;
+              return (
+                <div key={engine.id} style={{
+                  ...CARD,
+                  display: "flex", flexDirection: "column", gap: 12,
+                }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 10,
+                    background: `${engine.color}10`, display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                  }}>
+                    <Icon size={18} color={engine.color} strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: "var(--mk-text)", marginBottom: 4 }}>
+                      {engine.name}
+                    </div>
+                    <div style={{ fontSize: 13, color: "var(--mk-text-secondary)", lineHeight: 1.5 }}>
+                      {engine.subtitle}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--mk-text-tertiary)", fontStyle: "italic" }}>
+                    &ldquo;{engine.question}&rdquo;
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Fade>
+      </section>
+
+      {/* ═══ 3. WHY SIGNUX / COMPARISON ═══ */}
+      <section id="compare" style={sp}>
+        <Fade>
+          <div style={{ textAlign: "center" }}>
+            <div style={LABEL}>Why Signux</div>
+            <h2 style={{ ...H2, fontSize: isMobile ? 26 : 36, color: "var(--mk-text)" }}>
+              Not another chatbot
+            </h2>
+            <p style={BODY}>
+              Chatbots give opinions. Signux gives structured intelligence. Each engine has its own prompt architecture, output schema, and domain knowledge base.
+            </p>
+          </div>
 
           {isMobile ? (
-            /* ── MOBILE: STACKED CARDS ── */
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {([
-                { feature: "Predict if your idea works", signux: "AI simulation", chatgpt: "Generic opinion", consultant: "$5,000+" },
-                { feature: "Detect lies in deals", signux: "Deal X-Ray", chatgpt: "✕", consultant: "$25,000+" },
-                { feature: "See how competitors react", signux: "War Game", chatgpt: "✕", consultant: "$10,000+" },
-                { feature: "Map threats to your business", signux: "Threat Radar", chatgpt: "✕", consultant: "$500/hr" },
-                { feature: "Win a negotiation", signux: "War Room", chatgpt: "Generic tips", consultant: "$500/hr" },
-                { feature: "Idea to revenue in 90 days", signux: "Launchpad", chatgpt: "✕", consultant: "$50,000+" },
-                { feature: "Specialized intelligence", signux: "Proprietary", chatgpt: "General", consultant: "1-2 areas" },
-                { feature: "Price", signux: "Free to start", chatgpt: "$20/mo", consultant: "$5,000+/mo" },
-              ]).map((row, i) => (
-                <div key={i} style={{
-                  padding: "12px 14px", borderRadius: 10,
-                  border: "1px solid var(--border-secondary)",
-                  background: "var(--bg-secondary)",
-                }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
-                    {row.feature}
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: 11, color: "var(--accent)", fontWeight: 600 }}>Signux AI</span>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: "#22c55e", padding: "2px 8px", borderRadius: 4, background: "rgba(34,197,94,0.08)" }}>
-                        ✓ {row.signux}
-                      </span>
+              {[
+                { cap: "Predict if your idea works", s: "AI simulation engine", c: "Generic opinion", co: "$5,000+" },
+                { cap: "Structured risk analysis", s: "Protect engine", c: "Bullet list", co: "$500/hr" },
+                { cap: "Competitive intelligence", s: "Compete engine", c: "Generic tips", co: "$10,000+" },
+                { cap: "Hiring evaluation", s: "Hire engine + scores", c: "Generic advice", co: "$25,000+" },
+                { cap: "Growth strategy", s: "Grow engine + levers", c: "Generic advice", co: "$5,000+" },
+                { cap: "Price", s: "Free to start", c: "$20/mo", co: "$5,000+/mo" },
+              ].map((r, i) => (
+                <div key={i} style={{ ...CARD, padding: "14px 16px" }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--mk-text)", marginBottom: 8 }}>{r.cap}</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "var(--mk-accent-gold)", fontWeight: 600 }}>Signux</span>
+                      <span style={{ color: "#22863a", fontWeight: 500 }}>{r.s}</span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>ChatGPT</span>
-                      <span style={{ fontSize: 11, color: "var(--text-tertiary)", opacity: row.chatgpt === "✕" ? 0.4 : 0.7 }}>
-                        {row.chatgpt}
-                      </span>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "var(--mk-text-tertiary)" }}>ChatGPT / Claude</span>
+                      <span style={{ color: "var(--mk-text-tertiary)" }}>{r.c}</span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>Consultant</span>
-                      <span style={{ fontSize: 11, color: "var(--text-tertiary)", opacity: 0.7 }}>
-                        {row.consultant}
-                      </span>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "var(--mk-text-tertiary)" }}>Consultant</span>
+                      <span style={{ color: "var(--mk-text-tertiary)" }}>{r.co}</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            /* ── DESKTOP: TABLE ── */
-            <>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 20 }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", animation: "pulse 2s ease-in-out infinite" }} />
-                <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>
-                  Live — analyzing decisions right now
-                </span>
-              </div>
-              <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--border-secondary)" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, fontFamily: "var(--font-sans)" }}>
-                  <thead>
-                    <tr style={{ borderBottom: "1px solid var(--border-secondary)" }}>
-                      <th style={{ padding: "14px 20px", textAlign: "left", fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 1.5, textTransform: "uppercase", color: "var(--text-tertiary)", fontWeight: 400, width: "30%" }}>Capability</th>
-                      <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 700, color: "var(--accent)", fontSize: 14, background: "rgba(255,255,255,0.02)" }}>Signux AI</th>
-                      <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--text-tertiary)", fontSize: 13 }}>ChatGPT</th>
-                      <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--text-tertiary)", fontSize: 13 }}>Claude</th>
-                      <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--text-tertiary)", fontSize: 13 }}>Consultant</th>
+            <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid var(--mk-border)", background: "var(--mk-card)" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--mk-border)" }}>
+                    <th style={{ padding: "14px 20px", textAlign: "left", fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 1.5, textTransform: "uppercase", color: "var(--mk-text-tertiary)", fontWeight: 400, width: "30%" }}>Capability</th>
+                    <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 600, color: "var(--mk-accent-gold)", fontSize: 13 }}>Signux AI</th>
+                    <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--mk-text-tertiary)", fontSize: 13 }}>ChatGPT / Claude</th>
+                    <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--mk-text-tertiary)", fontSize: 13 }}>Consultant</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { cap: "Predict if your idea will work", s: "AI simulation", c: "Generic opinion", co: "$5,000+" },
+                    { cap: "Structured risk analysis", s: "Protect engine", c: "Bullet list", co: "$500/hr" },
+                    { cap: "Competitive intelligence", s: "Compete engine", c: "Generic tips", co: "$10,000+" },
+                    { cap: "Hiring evaluation with scores", s: "Hire engine", c: "Generic advice", co: "$25,000+" },
+                    { cap: "Growth strategy with experiments", s: "Grow engine", c: "Generic advice", co: "$5,000+" },
+                    { cap: "Execution roadmap", s: "Build engine", c: "Generic plan", co: "$50,000+" },
+                    { cap: "Price", s: "Free to start", c: "$20/mo", co: "$5,000+/mo" },
+                  ].map((row, i, arr) => (
+                    <tr key={i} style={{ borderBottom: i < arr.length - 1 ? "1px solid var(--mk-border)" : "none" }}>
+                      <td style={{ padding: "14px 20px", color: "var(--mk-text)", fontSize: 13, fontWeight: 500 }}>{row.cap}</td>
+                      <td style={{ padding: "14px 16px", textAlign: "center" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 6, background: "rgba(34,134,58,0.06)", border: "1px solid rgba(34,134,58,0.12)", fontSize: 12, fontWeight: 600, color: "#22863a" }}>
+                          {row.s}
+                        </span>
+                      </td>
+                      <td style={{ padding: "14px 16px", textAlign: "center", color: "var(--mk-text-tertiary)", fontSize: 12 }}>{row.c}</td>
+                      <td style={{ padding: "14px 16px", textAlign: "center", color: "var(--mk-text-tertiary)", fontSize: 12 }}>{row.co}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {([
-                      { feature: "Predict if your idea will work", signux: "AI simulation", chatgpt: "Generic opinion", claude: "Generic opinion", consultant: "$5,000+" },
-                      { feature: "Detect lies and red flags in deals", signux: "Deal X-Ray", chatgpt: "✕", claude: "✕", consultant: "$25,000+" },
-                      { feature: "See how competitors will react", signux: "War Game", chatgpt: "✕", claude: "✕", consultant: "$10,000+" },
-                      { feature: "Map every threat to your business", signux: "Threat Radar", chatgpt: "✕", claude: "✕", consultant: "$500/hr" },
-                      { feature: "Prepare to win a negotiation", signux: "War Room", chatgpt: "Generic tips", claude: "Generic tips", consultant: "$500/hr" },
-                      { feature: "Go from idea to revenue in 90 days", signux: "Launchpad", chatgpt: "✕", claude: "✕", consultant: "$50,000+" },
-                      { feature: "Specialized business intelligence", signux: "Proprietary domains", chatgpt: "General knowledge", claude: "General knowledge", consultant: "1-2 specialties" },
-                      { feature: "Price", signux: "Free to start", chatgpt: "$20/mo", claude: "$20/mo", consultant: "$5,000+/mo" },
-                    ] as const).map((row, i, arr) => (
-                      <tr key={i} style={{ borderBottom: i < arr.length - 1 ? "1px solid var(--border-secondary)" : "none" }}>
-                        <td style={{ padding: "14px 20px", color: "var(--text-primary)", fontSize: 13, fontWeight: 500 }}>{row.feature}</td>
-                        <td style={{ padding: "14px 16px", textAlign: "center", background: "rgba(255,255,255,0.02)" }}>
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 6, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.15)", fontSize: 12, fontWeight: 600, color: "#22c55e" }}>
-                            ✓ {row.signux}
-                          </span>
-                        </td>
-                        <td style={{ padding: "14px 16px", textAlign: "center", color: row.chatgpt === "✕" ? "var(--text-tertiary)" : "var(--text-secondary)", fontSize: 12, opacity: row.chatgpt === "✕" ? 0.4 : 0.7 }}>{row.chatgpt}</td>
-                        <td style={{ padding: "14px 16px", textAlign: "center", color: row.claude === "✕" ? "var(--text-tertiary)" : "var(--text-secondary)", fontSize: 12, opacity: row.claude === "✕" ? 0.4 : 0.7 }}>{row.claude}</td>
-                        <td style={{ padding: "14px 16px", textAlign: "center", color: "var(--text-secondary)", fontSize: 12, opacity: 0.7 }}>{row.consultant}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
-          <p style={{ fontSize: 11, color: "var(--text-tertiary)", textAlign: "center", marginTop: 12, opacity: 0.4 }}>
-            Based on publicly available features, 2026
-          </p>
-        </FadeSection>
+        </Fade>
       </section>
 
-      {/* ═══ MODES SHOWCASE — Simulate + Intel first ═══ */}
-      <div id="modes">
-        {MODE_SECTIONS.slice(0, 2).map((sec, idx) => {
-          const Icon = sec.icon;
-          const Preview = sec.preview;
-          const reverse = idx % 2 === 1;
-          return (
-            <div key={sec.name}>
-              <Divider />
-              <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
-                <FadeSection>
-                  <div style={{
-                    display: "flex", gap: isMobile ? 24 : 40, alignItems: "flex-start",
-                    flexDirection: isMobile ? "column" : reverse ? "row-reverse" : "row",
-                  }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{
-                        display: "inline-flex", alignItems: "center", gap: 6,
-                        padding: "4px 10px", borderRadius: 6,
-                        background: hexA(sec.color, 0.08), color: sec.color,
-                        fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase",
-                        marginBottom: 16,
-                      }}>
-                        <Icon size={12} /> {sec.name}
-                      </div>
-                      <h2 style={{
-                        fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 32,
-                        color: "var(--text-primary)", marginBottom: 12, lineHeight: 1.2,
-                      }}>{sec.title}</h2>
-                      <p style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 24 }}>
-                        {sec.desc}
-                      </p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
-                        {sec.features.map(f => (
-                          <span key={f} style={{ fontSize: 11, color: "var(--text-tertiary)", padding: "4px 10px", borderRadius: 20, border: "1px solid var(--card-border)" }}>{f}</span>
-                        ))}
-                      </div>
-                      <Link href="/chat" style={{
-                        display: "inline-flex", alignItems: "center", gap: 8,
-                        padding: "10px 24px", borderRadius: 50,
-                        background: sec.color, color: sec.textOnColor,
-                        fontWeight: 600, fontSize: 13, textDecoration: "none",
-                        fontFamily: "var(--font-brand)", letterSpacing: 1, textTransform: "uppercase",
-                      }}>
-                        <Icon size={14} /> Try {sec.name}
-                      </Link>
-                    </div>
-                    {!isMobile && (
-                      <div style={{
-                        width: 280, flexShrink: 0, borderRadius: 14,
-                        border: "1px solid var(--card-border)", background: "var(--card-bg)",
-                        padding: 20, overflow: "hidden",
-                      }}>
-                        <Preview />
-                      </div>
-                    )}
-                  </div>
-                </FadeSection>
-              </section>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ═══ INTELLIGENCE TOOLS ═══ */}
-      <Divider />
-      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
-        <FadeSection>
-          <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 28, color: "var(--text-primary)", marginBottom: 8, textAlign: "center" }}>
-            See around corners
-          </h2>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", textAlign: "center", marginBottom: 40 }}>
-            Each tool answers a question you should ask before every big decision.
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 16 }}>
-            {([
-              { icon: Shield, title: "Threat Radar", desc: "What could hurt my business next? Scan every risk before it becomes a problem.", color: "#ef4444", cmd: "/threats" },
-              { icon: Scan, title: "Deal X-Ray", desc: "Is this deal hiding something? Spot red flags and hidden incentives instantly.", color: "#f59e0b", cmd: "/xray" },
-              { icon: Swords, title: "War Game", desc: "What will competitors do next? AI simulates their moves so you can plan yours.", color: "#D4AF37", cmd: "/wargame" },
-              { icon: GitBranch, title: "Causal Map", desc: "Did that actually cause the result? Separate real causes from coincidences.", color: "#6366F1", cmd: "/causal" },
-              { icon: Map, title: "Scenario Planner", desc: "What could happen next year? See possible futures with early warnings and backup plans.", color: "#A855F7", cmd: "/scenarios" },
-              { icon: Target, title: "Negotiation War Room", desc: "How do I walk out winning? Full prep from intel to practice rounds.", color: "#F97316", cmd: "/negotiate" },
-            ] as const).map((tool, i) => {
-              const Icon = tool.icon;
+      {/* ═══ 4. PRODUCT TRUST ═══ */}
+      <section style={{ ...sp, background: "var(--mk-card)" }}>
+        <Fade>
+          <div style={{ textAlign: "center" }}>
+            <div style={LABEL}>Built for trust</div>
+            <h2 style={{ ...H2, fontSize: isMobile ? 26 : 36, color: "var(--mk-text)" }}>
+              Intelligence you can rely on
+            </h2>
+          </div>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
+            gap: 16, maxWidth: 720, margin: "0 auto",
+          }}>
+            {[
+              { icon: Lock, title: "Private by default", desc: "Your data stays yours. No training on your inputs. No sharing across accounts." },
+              { icon: BarChart3, title: "Confidence scoring", desc: "Every result includes a confidence level. You always know how certain the analysis is." },
+              { icon: Brain, title: "Domain knowledge", desc: "Each engine draws from a proprietary knowledge base. Not just generic internet data." },
+            ].map((item, i) => {
+              const Icon = item.icon;
               return (
-                <div key={i} style={{ padding: 20, borderRadius: 12, border: "1px solid var(--card-border)", background: "var(--card-bg)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: `${tool.color}10` }}>
-                      <Icon size={14} style={{ color: tool.color }} />
-                    </div>
-                    <span style={{ fontSize: 10, fontFamily: "var(--font-mono)", color: "var(--text-tertiary)", letterSpacing: 1 }}>{tool.cmd}</span>
+                <div key={i} style={{ ...CARD, textAlign: "center" }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 10,
+                    background: "rgba(31,58,95,0.06)", display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                    margin: "0 auto 12px",
+                  }}>
+                    <Icon size={20} color="var(--mk-accent)" strokeWidth={1.5} />
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>{tool.title}</div>
-                  <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{tool.desc}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--mk-text)", marginBottom: 6 }}>{item.title}</div>
+                  <div style={{ fontSize: 13, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>{item.desc}</div>
                 </div>
               );
             })}
           </div>
-        </FadeSection>
+        </Fade>
       </section>
 
-      {/* ═══ INTELLIGENCE BEHIND THE AI ═══ */}
-      <Divider />
-      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto", textAlign: "center" }}>
-        <FadeSection>
-          <div style={{
-            fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
-            textTransform: "uppercase", color: "var(--text-tertiary)", marginBottom: 8,
-          }}>
-            Proprietary knowledge base
-          </div>
-          <h2 style={{
-            fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 28,
-            color: "var(--text-primary)", marginBottom: 8,
-          }}>
-            Not just another AI
-          </h2>
-          <p style={{
-            fontSize: 14, color: "var(--text-secondary)", marginBottom: 32,
-            maxWidth: 540, margin: "0 auto 32px",
-          }}>
-            While other AIs search the internet, Signux draws from a proprietary knowledge base built over months across specialized business domains — from competitive strategy to risk detection to negotiation frameworks. This is why our answers are different.
-          </p>
-          <div style={{
-            display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(3, 1fr)", gap: 12,
-            maxWidth: 720, margin: "0 auto 24px",
-          }}>
-            {[
-              { name: "Protecting your deals", domains: "Spot lies, detect threats, verify claims, stay secure", color: "#DC2626" },
-              { name: "Outsmarting competitors", domains: "Predict moves, find advantages, win markets", color: "#8B5CF6" },
-              { name: "Growing your revenue", domains: "Price right, spend smart, scale profitably", color: "#EDEDEF" },
-              { name: "Running your business", domains: "Build systems, delegate, scale without chaos", color: "#14B8A6" },
-              { name: "Going international", domains: "Navigate regulations, optimize taxes, expand safely", color: "#22C55E" },
-              { name: "Making better decisions", domains: "Separate fact from noise, predict outcomes", color: "#06B6D4" },
-            ].map((cat, i) => (
-              <div key={i} style={{
-                padding: "16px 14px", borderRadius: 10,
-                border: "1px solid var(--card-border)", background: "var(--card-bg)",
-                textAlign: "left",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: cat.color, opacity: 0.6 }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{cat.name}</span>
-                </div>
-                <div style={{ height: 4 }} />
-                <div style={{ fontSize: 10, color: "var(--text-tertiary)", lineHeight: 1.4 }}>
-                  {cat.domains}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            padding: "8px 16px", borderRadius: 50,
-            background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
-          }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#EDEDEF", animation: "pulse 2s ease-in-out infinite" }} />
-            <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-              New domains added weekly
-            </span>
-          </div>
-        </FadeSection>
-      </section>
-
-      {/* ═══ MODES — Launchpad, Global Ops, Invest ═══ */}
-      {MODE_SECTIONS.slice(2).map((sec, idx) => {
-        const Icon = sec.icon;
-        const Preview = sec.preview;
-        const reverse = (idx + 2) % 2 === 1;
-        return (
-          <div key={sec.name}>
-            <Divider />
-            <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
-              <FadeSection>
-                <div style={{
-                  display: "flex", gap: isMobile ? 24 : 40, alignItems: "flex-start",
-                  flexDirection: isMobile ? "column" : reverse ? "row-reverse" : "row",
-                }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{
-                      display: "inline-flex", alignItems: "center", gap: 6,
-                      padding: "4px 10px", borderRadius: 6,
-                      background: hexA(sec.color, 0.08), color: sec.color,
-                      fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase",
-                      marginBottom: 16,
-                    }}>
-                      <Icon size={12} /> {sec.name}
-                    </div>
-                    <h2 style={{
-                      fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 32,
-                      color: "var(--text-primary)", marginBottom: 12, lineHeight: 1.2,
-                    }}>{sec.title}</h2>
-                    <p style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 24 }}>
-                      {sec.desc}
-                    </p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
-                      {sec.features.map(f => (
-                        <span key={f} style={{ fontSize: 11, color: "var(--text-tertiary)", padding: "4px 10px", borderRadius: 20, border: "1px solid var(--card-border)" }}>{f}</span>
-                      ))}
-                    </div>
-                    <Link href="/chat" style={{
-                      display: "inline-flex", alignItems: "center", gap: 8,
-                      padding: "10px 24px", borderRadius: 50,
-                      background: sec.color, color: sec.textOnColor,
-                      fontWeight: 600, fontSize: 13, textDecoration: "none",
-                      fontFamily: "var(--font-brand)", letterSpacing: 1, textTransform: "uppercase",
-                    }}>
-                      <Icon size={14} /> Try {sec.name}
-                    </Link>
-                  </div>
-                  {!isMobile && (
-                    <div style={{
-                      width: 280, flexShrink: 0, borderRadius: 14,
-                      border: "1px solid var(--card-border)", background: "var(--card-bg)",
-                      padding: 20, overflow: "hidden",
-                    }}>
-                      <Preview />
-                    </div>
-                  )}
-                </div>
-              </FadeSection>
-            </section>
-          </div>
-        );
-      })}
-
-      {/* ═══ REALITY CHECK ═══ */}
-      <Divider />
-      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
-        <FadeSection>
-          <div style={{
-            display: "flex", gap: isMobile ? 24 : 40, alignItems: "flex-start",
-            flexDirection: isMobile ? "column" : "row",
-          }}>
-            <div style={{ flex: 1 }}>
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 6,
-                background: "rgba(239,68,68,0.08)", color: "#ef4444",
-                fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16,
-              }}>
-                <CircleSlash size={12} /> Reality Check
-              </div>
-              <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 32, color: "var(--text-primary)", marginBottom: 12, lineHeight: 1.2 }}>
-                Is it still worth it? Know in 10 seconds.
-              </h2>
-              <p style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 24 }}>
-                Thinking about dropshipping? Wondering if that course is worth it? Get an honest GO, CAUTION, or STOP — with real data, not opinions. Know before you spend.
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
-                {["Web search", "Real data", "10 seconds", "GO / CAUTION / STOP"].map(f => (
-                  <span key={f} style={{ fontSize: 11, color: "var(--text-tertiary)", padding: "4px 10px", borderRadius: 20, border: "1px solid var(--card-border)" }}>{f}</span>
-                ))}
-              </div>
-              <Link href="/chat" style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                padding: "10px 24px", borderRadius: 50,
-                background: "#ef4444", color: "#fff",
-                fontWeight: 600, fontSize: 13, textDecoration: "none",
-                fontFamily: "var(--font-brand)", letterSpacing: 1, textTransform: "uppercase",
-              }}>
-                <CircleSlash size={14} /> Try Reality Check
-              </Link>
-            </div>
-            {!isMobile && (
-              <div style={{
-                width: 280, flexShrink: 0, borderRadius: 14,
-                border: "1px solid var(--card-border)", background: "var(--card-bg)",
-                padding: 20, overflow: "hidden",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                  <div style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: 28, color: "#f59e0b" }}>CAUTION</div>
-                </div>
-                <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 12 }}>
-                  Worth learning but market is shifting
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
-                  <div style={{ padding: 8, borderRadius: 6, background: "var(--card-bg)", border: "1px solid var(--card-border)", textAlign: "center" }}>
-                    <div style={{ fontFamily: "var(--font-brand)", fontWeight: 600, fontSize: 16, color: "#f59e0b" }}>62%</div>
-                    <div style={{ fontSize: 8, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: 1 }}>Relevant</div>
-                  </div>
-                  <div style={{ padding: 8, borderRadius: 6, background: "var(--card-bg)", border: "1px solid var(--card-border)", textAlign: "center" }}>
-                    <div style={{ fontFamily: "var(--font-brand)", fontWeight: 600, fontSize: 16, color: "#22c55e" }}>$89K</div>
-                    <div style={{ fontSize: 8, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: 1 }}>Avg salary</div>
-                  </div>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <div style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 10, color: "var(--text-secondary)" }}>
-                    <span style={{ width: 12, height: 12, borderRadius: "50%", background: "rgba(34,197,94,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 7, color: "#22c55e", flexShrink: 0 }}>+</span>
-                    High freelance demand
-                  </div>
-                  <div style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 10, color: "var(--text-secondary)" }}>
-                    <span style={{ width: 12, height: 12, borderRadius: "50%", background: "rgba(239,68,68,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 7, color: "#ef4444", flexShrink: 0 }}>-</span>
-                    AI reducing junior demand
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </FadeSection>
-      </section>
-
-      {/* ═══ BUILT FOR BETTER CONVERSATIONS ═══ */}
-      <Divider />
-      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto" }}>
-        <FadeSection>
-          <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 28, color: "var(--text-primary)", marginBottom: 32, textAlign: "center" }}>
-            Built for better conversations
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 16 }}>
-            {[
-              { title: "Enhance", desc: "AI improves your prompt before sending. Better input = better output.", color: "var(--accent)" },
-              { title: "Confidence Meter", desc: "See how sure the AI is about each answer. Green, yellow, or red.", color: "#22c55e" },
-              { title: "Decision Journal", desc: "Auto-tracks your decisions. Follows up 30 days later.", color: "#A855F7" },
-            ].map((f, i) => (
-              <div key={i} style={{ padding: 20, borderRadius: 12, border: "1px solid var(--card-border)", background: "var(--card-bg)" }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: f.color, marginBottom: 12, opacity: 0.6 }} />
-                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>{f.title}</div>
-                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{f.desc}</div>
-              </div>
-            ))}
-          </div>
-        </FadeSection>
-      </section>
-
-      {/* ═══ TOOLS ═══ */}
-      <Divider />
-      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", maxWidth: 960, margin: "0 auto", textAlign: "center" }}>
-        <FadeSection>
-          <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 28, color: "var(--text-primary)", marginBottom: 32 }}>
-            Specialized tools
-          </h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-            {TOOLS.map(tool => (
-              <span key={tool.name} style={{
-                padding: "8px 16px", borderRadius: 8,
-                border: `1px solid ${tool.color}20`, background: `${tool.color}06`,
-                fontSize: 13, color: "var(--text-secondary)",
-                display: "inline-flex", alignItems: "center", gap: 8,
-              }}>
-                {tool.name}
-                <span style={{ fontSize: 10, fontFamily: "var(--font-mono)", color: tool.color, opacity: 0.7 }}>{tool.command}</span>
-              </span>
-            ))}
-            {TOOLS_SOON.map(tool => (
-              <span key={tool} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid var(--card-border)", background: "var(--card-bg)", fontSize: 13, color: "var(--text-tertiary)", opacity: 0.5 }}>
-                {tool} <span style={{ fontSize: 8, fontFamily: "var(--font-mono)", letterSpacing: 1 }}>SOON</span>
-              </span>
-            ))}
-          </div>
-        </FadeSection>
-      </section>
-
-      {/* ═══ MINI PRICING ═══ */}
-      <Divider />
-      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px" }}>
-        <FadeSection>
-          <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 24 : 32, color: "var(--text-primary)", marginBottom: 8 }}>
-              Simple pricing. Powerful intelligence.
+      {/* ═══ 5. ARCHITECTURE / MOAT ═══ */}
+      <section style={sp}>
+        <Fade>
+          <div style={{ textAlign: "center" }}>
+            <div style={LABEL}>Architecture</div>
+            <h2 style={{ ...H2, fontSize: isMobile ? 26 : 36, color: "var(--mk-text)" }}>
+              Purpose-built, not prompt-wrapped
             </h2>
-            <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-              Pro gives you everything. Max removes all limits.
+            <p style={BODY}>
+              Each engine has its own system prompt, output schema, domain knowledge base, and visual result renderer. This is not a generic chatbot with different skins.
             </p>
           </div>
           <div style={{
-            display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-            gap: 16, maxWidth: 640, margin: "0 auto",
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: 14, maxWidth: 680, margin: "0 auto",
           }}>
-            {/* Pro card */}
+            {[
+              { title: "Proprietary knowledge base", desc: "Months of curated business frameworks, competitive strategy, risk detection, and negotiation models." },
+              { title: "Structured JSON output", desc: "Every engine returns structured data — not paragraphs. Visual cards, scores, matrices, and action lists." },
+              { title: "Engine-specific prompt architecture", desc: "Each engine has a different system prompt optimized for its decision type. Not one-size-fits-all." },
+              { title: "Fallback-safe parsing", desc: "If the AI returns text instead of JSON, the result renders as clean markdown. The user never sees an error." },
+            ].map((item, i) => (
+              <div key={i} style={CARD}>
+                <Layers size={16} color="var(--mk-accent)" style={{ marginBottom: 10 }} />
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--mk-text)", marginBottom: 4 }}>{item.title}</div>
+                <div style={{ fontSize: 13, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>{item.desc}</div>
+              </div>
+            ))}
+          </div>
+        </Fade>
+      </section>
+
+      {/* ═══ 6. FAQ ═══ */}
+      <section style={{ ...sp, background: "var(--mk-card)" }}>
+        <Fade>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <div style={LABEL}>FAQ</div>
+            <h2 style={{ ...H2, fontSize: isMobile ? 26 : 36, color: "var(--mk-text)" }}>
+              Common questions
+            </h2>
+          </div>
+          <div style={{ maxWidth: 640, margin: "0 auto", display: "flex", flexDirection: "column", gap: 0 }}>
+            {[
+              { q: "How is this different from ChatGPT?", a: "ChatGPT is a general chatbot. Signux is a decision intelligence platform with 6 specialized engines, each with its own prompt architecture, output schema, and domain knowledge. You get structured results, not paragraphs." },
+              { q: "Is my data private?", a: "Yes. Your inputs are not used for training. Your conversations are not shared across accounts. We use Anthropic's Claude API with data privacy protections." },
+              { q: "Do I need to know which engine to use?", a: "No. You can type any question into the main input and Signux will route it to the right engine. Or you can choose an engine directly if you know what you need." },
+              { q: "What does the free tier include?", a: "The free tier gives you access to all 6 engines with a limited number of analyses per month. Upgrade to Pro or Max for higher limits and more powerful models." },
+              { q: "Can I use this for my team?", a: "Currently Signux is individual accounts. Team features with shared analysis and decision tracking are on the roadmap." },
+            ].map((faq, i, arr) => (
+              <details
+                key={i}
+                style={{
+                  borderBottom: i < arr.length - 1 ? "1px solid var(--mk-border)" : "none",
+                  padding: "16px 0",
+                }}
+              >
+                <summary style={{
+                  fontSize: 15, fontWeight: 500, color: "var(--mk-text)",
+                  cursor: "pointer", listStyle: "none", display: "flex",
+                  alignItems: "center", justifyContent: "space-between",
+                }}>
+                  {faq.q}
+                  <ChevronDown size={16} color="var(--mk-text-tertiary)" style={{ flexShrink: 0, marginLeft: 12 }} />
+                </summary>
+                <p style={{ fontSize: 14, color: "var(--mk-text-secondary)", lineHeight: 1.7, marginTop: 10, marginBottom: 0 }}>
+                  {faq.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </Fade>
+      </section>
+
+      {/* ═══ 7. USE CASES ═══ */}
+      <section style={sp}>
+        <Fade>
+          <div style={{ textAlign: "center" }}>
+            <div style={LABEL}>Use cases</div>
+            <h2 style={{ ...H2, fontSize: isMobile ? 26 : 36, color: "var(--mk-text)" }}>
+              Built for real decisions
+            </h2>
+          </div>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
+            gap: 14,
+          }}>
+            {[
+              { title: "Founders", desc: "Validate ideas, plan execution, evaluate hires, and scan risks before committing resources." },
+              { title: "Operators", desc: "Find growth levers, detect operational fragilities, and build execution plans for the next quarter." },
+              { title: "Investors", desc: "Evaluate competitive landscapes, stress-test business models, and identify deal red flags." },
+              { title: "Product teams", desc: "Pressure-test feature decisions, map competitive positioning, and prioritize with structured analysis." },
+              { title: "Consultants", desc: "Deliver client-ready competitive analysis, risk assessments, and growth strategies in minutes." },
+              { title: "Solo operators", desc: "Get the strategic analysis that used to require a team of analysts. All six engines, one subscription." },
+            ].map((uc, i) => (
+              <div key={i} style={CARD}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--mk-text)", marginBottom: 4 }}>{uc.title}</div>
+                <div style={{ fontSize: 13, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>{uc.desc}</div>
+              </div>
+            ))}
+          </div>
+        </Fade>
+      </section>
+
+      {/* ═══ 8. PRICING + CTA ═══ */}
+      <section style={{ ...sp, background: "var(--mk-card)" }}>
+        <Fade>
+          <div style={{ textAlign: "center" }}>
+            <div style={LABEL}>Pricing</div>
+            <h2 style={{ ...H2, fontSize: isMobile ? 26 : 36, color: "var(--mk-text)" }}>
+              Simple pricing. Powerful intelligence.
+            </h2>
+            <p style={{ ...BODY, marginBottom: 48 }}>
+              Start free. Upgrade when you need more.
+            </p>
+          </div>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: 20, maxWidth: 600, margin: "0 auto 48px",
+          }}>
+            {/* Pro */}
             <div style={{
-              padding: 24, borderRadius: 14, border: "2px solid #EDEDEF",
-              background: "var(--bg-secondary, rgba(20,20,20,0.6))",
+              ...CARD, border: "2px solid var(--mk-accent)",
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                <Zap size={16} style={{ color: "#EDEDEF" }} />
-                <span style={{ fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 600, color: "#EDEDEF", letterSpacing: 1 }}>PRO</span>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--mk-accent)", marginBottom: 8, fontFamily: "var(--font-mono)", letterSpacing: 1 }}>PRO</div>
+              <div style={{ marginBottom: 16 }}>
+                <span style={{ fontSize: 36, fontWeight: 700, color: "var(--mk-text)" }}>$29</span>
+                <span style={{ fontSize: 14, color: "var(--mk-text-secondary)" }}>/month</span>
               </div>
-              <div style={{ marginBottom: 12 }}>
-                <span style={{ fontSize: 32, fontWeight: 700 }}>$29</span>
-                <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>/month</span>
-              </div>
-              {["All 6 modes", "20 simulations/month", "10 deep researches", "5 Global Ops & Invest"].map(f => (
-                <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                  <Check size={12} style={{ color: "#EDEDEF" }} />
-                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{f}</span>
+              {["All 6 engines", "20 simulations/month", "10 deep researches", "Priority response times"].map(f => (
+                <div key={f} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <Check size={14} color="#22863a" />
+                  <span style={{ fontSize: 13, color: "var(--mk-text-secondary)" }}>{f}</span>
                 </div>
               ))}
               <Link href="/pricing" style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                marginTop: 16, padding: "10px 20px", borderRadius: 8,
-                background: "#C8A84E", color: "#000", fontWeight: 600,
-                fontSize: 13, textDecoration: "none", fontFamily: "var(--font-brand)", letterSpacing: 0.5,
+                marginTop: 20, padding: "12px 24px", borderRadius: 8,
+                background: "var(--mk-accent)", color: "#FFFFFF", fontWeight: 600,
+                fontSize: 14, textDecoration: "none",
               }}>
-                Get Pro <ArrowRight size={12} />
+                Get Pro <ArrowRight size={14} />
               </Link>
             </div>
-            {/* Max card */}
+            {/* Max */}
             <div style={{
-              padding: 24, borderRadius: 14, border: "1px solid rgba(168,85,247,0.3)",
-              background: "var(--bg-secondary, rgba(20,20,20,0.6))",
+              ...CARD, border: "2px solid #6E4AE2",
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                <Crown size={16} style={{ color: "#A855F7" }} />
-                <span style={{ fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 600, color: "#A855F7", letterSpacing: 1 }}>MAX</span>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#6E4AE2", marginBottom: 8, fontFamily: "var(--font-mono)", letterSpacing: 1 }}>MAX</div>
+              <div style={{ marginBottom: 16 }}>
+                <span style={{ fontSize: 36, fontWeight: 700, color: "var(--mk-text)" }}>$99</span>
+                <span style={{ fontSize: 14, color: "var(--mk-text-secondary)" }}>/month</span>
               </div>
-              <div style={{ marginBottom: 12 }}>
-                <span style={{ fontSize: 32, fontWeight: 700 }}>$99</span>
-                <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>/month</span>
-              </div>
-              {["Everything unlimited", "Second Opinion & Challenge", "Opus model — best AI", "New features first"].map(f => (
-                <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                  <Check size={12} style={{ color: "#A855F7" }} />
-                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{f}</span>
+              {["Everything unlimited", "Most powerful AI model", "New features first", "Priority support"].map(f => (
+                <div key={f} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <Check size={14} color="#6E4AE2" />
+                  <span style={{ fontSize: 13, color: "var(--mk-text-secondary)" }}>{f}</span>
                 </div>
               ))}
               <Link href="/pricing" style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                marginTop: 16, padding: "10px 20px", borderRadius: 8,
-                background: "#A855F7", color: "#fff", fontWeight: 600,
-                fontSize: 13, textDecoration: "none", fontFamily: "var(--font-brand)", letterSpacing: 0.5,
+                marginTop: 20, padding: "12px 24px", borderRadius: 8,
+                background: "#6E4AE2", color: "#FFFFFF", fontWeight: 600,
+                fontSize: 14, textDecoration: "none",
               }}>
-                Get Max <ArrowRight size={12} />
+                Get Max <ArrowRight size={14} />
               </Link>
             </div>
           </div>
-        </FadeSection>
-      </section>
 
-      {/* ═══ CTA FINAL ═══ */}
-      <Divider />
-      <section style={{ padding: isMobile ? "24px 16px" : "48px 24px", textAlign: "center" }}>
-        <FadeSection>
-          <h2 style={{ fontFamily: "var(--font-brand)", fontWeight: 700, fontSize: isMobile ? 28 : 36, color: "var(--text-primary)", marginBottom: 16 }}>
-            Stop guessing. Start knowing.
-          </h2>
-          <p style={{ fontSize: 16, color: "var(--text-secondary)", marginBottom: 32 }}>
-            See what your AI finds in 30 seconds. Free to start.
-          </p>
-          <Link href="/chat" style={{
-            display: "inline-flex", padding: "16px 40px", borderRadius: 50,
-            background: "var(--accent)", color: "#000", fontWeight: 700,
-            fontSize: 16, textDecoration: "none", fontFamily: "var(--font-brand)",
-            letterSpacing: 1,
-          }}>Start free</Link>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 16, opacity: 0.5 }}>
-            <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>
-              Analyzing decisions since March 2026
-            </span>
+          {/* Final CTA */}
+          <div style={{ textAlign: "center", paddingTop: 24 }}>
+            <h3 style={{ fontSize: isMobile ? 24 : 32, fontWeight: 600, color: "var(--mk-text)", marginBottom: 12, fontFamily: "var(--font-brand)" }}>
+              Stop guessing. Start knowing.
+            </h3>
+            <p style={{ fontSize: 15, color: "var(--mk-text-secondary)", marginBottom: 24 }}>
+              Describe your next decision. See what Signux finds in 30 seconds.
+            </p>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "14px 36px", borderRadius: 8,
+                background: "var(--mk-accent)", color: "#FFFFFF", fontWeight: 600,
+                fontSize: 15, border: "none", cursor: "pointer",
+                fontFamily: "var(--font-brand)", letterSpacing: 0.5,
+              }}
+            >
+              Start free <ArrowRight size={16} />
+            </button>
+            <div style={{ fontSize: 12, color: "var(--mk-text-tertiary)", marginTop: 12 }}>
+              No credit card required
+            </div>
           </div>
-        </FadeSection>
+        </Fade>
       </section>
 
-      {/* ═══ FOOTER ═══ */}
-      <Divider />
-      <SignuxFooter />
+      {/* ═══ 9. FOOTER ═══ */}
+      <div style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
+        <SignuxFooter />
+      </div>
     </div>
   );
 }

@@ -1,12 +1,14 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { ArrowDown, Square } from "lucide-react";
+import Link from "next/link";
 import type { Message, Mode } from "../lib/types";
 import { useIsMobile } from "../lib/useIsMobile";
 import MessageBlock from "./MessageBlock";
 import WelcomeScreen from "./WelcomeScreen";
 import ChatInput, { type FileAttachment } from "./ChatInput";
 import LandingSections from "./LandingSections";
+import { SignuxIcon } from "./SignuxIcon";
 
 /* Shared content width — single source of truth for alignment */
 const CONTENT_MAX_WIDTH = 720;
@@ -79,10 +81,63 @@ export default function ChatArea({
 
   const hPad = isMobile ? 16 : 24;
 
+  /* ═══ Floating navbar for welcome/landing scroll ═══ */
+  const [navScrolled, setNavScrolled] = useState(false);
+  useEffect(() => {
+    if (messages.length > 0) return;
+    const handleNavScroll = () => setNavScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", handleNavScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleNavScroll);
+  }, [messages.length]);
+
   /* ═══ Welcome state ═══ */
   if (messages.length === 0) {
     return (
       <>
+        {/* Floating navbar */}
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: isMobile ? "10px 16px" : "10px 24px",
+          background: navScrolled ? "rgba(9,9,11,0.85)" : "transparent",
+          backdropFilter: navScrolled ? "blur(12px)" : "none",
+          WebkitBackdropFilter: navScrolled ? "blur(12px)" : "none",
+          borderBottom: navScrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
+          transition: "all 300ms ease",
+        }}>
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              background: "none", border: "none", cursor: "pointer", padding: 0,
+            }}
+          >
+            <SignuxIcon size={22} variant="gold" />
+            <span style={{
+              fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 300,
+              letterSpacing: 4, color: "var(--text-primary)",
+              opacity: navScrolled ? 1 : 0, transition: "opacity 300ms",
+            }}>
+              SIGNUX
+            </span>
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Link href="/login" style={{
+              fontSize: 13, color: "var(--text-secondary)", textDecoration: "none",
+              padding: "6px 12px",
+            }}>
+              Log in
+            </Link>
+            <Link href="/signup" style={{
+              fontSize: 13, color: "#09090B", textDecoration: "none",
+              padding: "6px 16px", borderRadius: 6,
+              background: "var(--accent)", fontWeight: 500,
+            }}>
+              Start free
+            </Link>
+          </div>
+        </div>
+
         <div style={{ flexShrink: 0 }}>
           <WelcomeScreen
             profileName={profileName}

@@ -199,16 +199,49 @@ export default function WelcomeScreen({
         })}
       </div>
 
-      {/* Hint text */}
-      <span style={{
-        fontSize: 11,
-        color: "var(--text-tertiary)",
-        textAlign: "center",
-        maxWidth: 400,
-        lineHeight: 1.5,
+      {/* Supporting microcopy */}
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 6,
+        marginTop: 4,
       }}>
-        Not sure? Just type your question and Signux will route to the right engine.
-      </span>
+        <span style={{
+          fontSize: 11,
+          color: "var(--text-tertiary)",
+          textAlign: "center",
+          maxWidth: 400,
+          lineHeight: 1.5,
+        }}>
+          Six engines. One decision layer.
+        </span>
+        <button
+          onClick={() => {
+            const el = document.getElementById("how-it-works");
+            el?.scrollIntoView({ behavior: "smooth" });
+          }}
+          style={{
+            fontSize: 12,
+            color: "var(--text-tertiary)",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "4px 0",
+            transition: "color 150ms",
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text-secondary)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-tertiary)"; }}
+        >
+          Learn more
+          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
+      </div>
 
       {/* Scroll Hint */}
       <div
