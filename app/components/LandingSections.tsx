@@ -755,42 +755,85 @@ export default function LandingSections() {
       </section>
 
       {/* ═══ 6. FAQ ═══ */}
-      <section style={{ ...sp, background: "var(--mk-card)" }}>
+      <section id="faq" style={{
+        ...sp, background: "#FAFAF7",
+        maxWidth: 920, margin: "0 auto",
+        padding: isMobile ? "72px 16px" : "96px 24px",
+      }}>
         <Fade>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <div style={LABEL}>FAQ</div>
-            <h2 style={{ ...H2, fontSize: isMobile ? 26 : 36, color: "var(--mk-text)" }}>
-              Common questions
+          {/* Header */}
+          <div style={{ textAlign: "center", marginBottom: isMobile ? 28 : 36 }}>
+            <div style={{
+              fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 2,
+              textTransform: "uppercase", fontWeight: 600, color: "#B8941F", marginBottom: 14,
+            }}>
+              FAQ
+            </div>
+            <h2 style={{
+              fontFamily: "var(--font-brand)", fontWeight: 300,
+              lineHeight: 1.18, fontSize: isMobile ? 24 : 34,
+              color: "#111111", maxWidth: 760, margin: "0 auto", marginBottom: 16,
+            }}>
+              Questions people ask before they trust a new category.
             </h2>
+            <p style={{
+              fontSize: 16, lineHeight: 1.6, color: "#5B5B5B",
+              maxWidth: 760, margin: "0 auto",
+            }}>
+              Clear answers to the questions that matter most.
+            </p>
           </div>
-          <div style={{ maxWidth: 640, margin: "0 auto", display: "flex", flexDirection: "column", gap: 0 }}>
-            {[
-              { q: "How is this different from ChatGPT?", a: "ChatGPT is a general chatbot. Signux is a decision intelligence platform with 6 specialized engines, each with its own prompt architecture, output schema, and domain knowledge. You get structured results, not paragraphs." },
-              { q: "Is my data private?", a: "Yes. Your inputs are not used for training. Your conversations are not shared across accounts. We use Anthropic's Claude API with data privacy protections." },
-              { q: "Do I need to know which engine to use?", a: "No. You can type any question into the main input and Signux will route it to the right engine. Or you can choose an engine directly if you know what you need." },
-              { q: "What does the free tier include?", a: "The free tier gives you access to all 6 engines with a limited number of analyses per month. Upgrade to Pro or Max for higher limits and more powerful models." },
-              { q: "Can I use this for my team?", a: "Currently Signux is individual accounts. Team features with shared analysis and decision tracking are on the roadmap." },
-            ].map((faq, i, arr) => (
+
+          {/* Accordion */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {([
+              { q: "Is Signux just another chatbot?", a: "No. Signux is designed as a decision engine, not a single-answer interface. The goal is not only to generate text, but to structure judgment." },
+              { q: "What makes it different from consulting?", a: "It aims to be faster than traditional advisory processes and more structured than general-purpose chat. The product is designed for speed, clarity, and decision usefulness." },
+              { q: "How does it handle uncertainty?", a: "It does not hide uncertainty. It surfaces probability, disagreement, risk, and the move most likely to improve the odds." },
+              { q: "Can normal users understand the output?", a: "Yes. The system underneath is complex, but the output is designed to be simple: a clearer decision, the main risk, the key leverage point, and the next action." },
+              { q: "Is the product already live?", a: "Yes. The live product exists today, and the architecture behind it is designed to deepen over time." },
+              { q: "How does it improve over time?", a: "By adding decision infrastructure such as resolution, calibration, base-rate memory, and error tracking. The long-term goal is not just output, but accumulated judgment quality." },
+              { q: "Who is Signux built for?", a: "Founders, operators, and investors making consequential decisions under uncertainty." },
+            ] as const).map((faq, i) => (
               <details
                 key={i}
+                open={i === 0}
                 style={{
-                  borderBottom: i < arr.length - 1 ? "1px solid var(--mk-border)" : "none",
-                  padding: "16px 0",
+                  background: "#FFFFFF", border: "1px solid #E8E8E3",
+                  borderRadius: 12, overflow: "hidden",
                 }}
               >
                 <summary style={{
-                  fontSize: 15, fontWeight: 500, color: "var(--mk-text)",
-                  cursor: "pointer", listStyle: "none", display: "flex",
-                  alignItems: "center", justifyContent: "space-between",
+                  fontSize: 16, fontWeight: 500, color: "#111111",
+                  cursor: "pointer", listStyle: "none",
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "20px 22px",
                 }}>
                   {faq.q}
-                  <ChevronDown size={16} color="var(--mk-text-tertiary)" style={{ flexShrink: 0, marginLeft: 12 }} />
+                  <ChevronDown size={16} color="#8A8A84" style={{ flexShrink: 0, marginLeft: 12 }} />
                 </summary>
-                <p style={{ fontSize: 14, color: "var(--mk-text-secondary)", lineHeight: 1.7, marginTop: 10, marginBottom: 0 }}>
+                <div style={{
+                  padding: "0 22px 20px 22px",
+                  fontSize: 14, lineHeight: 1.75, color: "#5B5B5B",
+                }}>
                   {faq.a}
-                </p>
+                </div>
               </details>
             ))}
+          </div>
+
+          {/* Bottom line */}
+          <div style={{
+            fontSize: 14, color: "#5B5B5B", fontStyle: "italic",
+            marginTop: 22, textAlign: "center",
+          }}>
+            New category. Familiar need.
+          </div>
+          <div style={{
+            fontSize: 13, color: "#777777",
+            marginTop: 8, textAlign: "center",
+          }}>
+            Most important decisions still need more than one answer.
           </div>
         </Fade>
       </section>
