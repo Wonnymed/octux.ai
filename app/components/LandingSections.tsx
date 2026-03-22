@@ -474,40 +474,126 @@ export default function LandingSections() {
       </section>
 
       {/* ═══ 4. PRODUCT TRUST ═══ */}
-      <section style={{ ...sp, background: "var(--mk-card)" }}>
+      <section id="trust" style={{ ...sp, background: "#FAFAF7" }}>
         <Fade>
-          <div style={{ textAlign: "center" }}>
-            <div style={LABEL}>Built for trust</div>
-            <h2 style={{ ...H2, fontSize: isMobile ? 26 : 36, color: "var(--mk-text)" }}>
-              Intelligence you can rely on
+          {/* Header */}
+          <div style={{ textAlign: "center", marginBottom: isMobile ? 32 : 44 }}>
+            <div style={{
+              fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 2,
+              textTransform: "uppercase", fontWeight: 600, color: "#B8941F", marginBottom: 14,
+            }}>
+              TRUST
+            </div>
+            <h2 style={{
+              fontFamily: "var(--font-brand)", fontWeight: 300,
+              lineHeight: 1.18, fontSize: isMobile ? 24 : 34,
+              color: "#111111", maxWidth: 760, margin: "0 auto", marginBottom: 16,
+            }}>
+              Built for real decisions, not just impressive answers.
             </h2>
+            <p style={{
+              fontSize: 16, lineHeight: 1.6, color: "#5B5B5B",
+              maxWidth: 760, margin: "0 auto",
+            }}>
+              Most AI tools generate output. Signux is designed to structure judgment.
+            </p>
           </div>
+
+          {/* 2-column layout */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
-            gap: 16, maxWidth: 720, margin: "0 auto",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: 20, alignItems: "start",
           }}>
-            {[
-              { icon: Lock, title: "Private by default", desc: "Your data stays yours. No training on your inputs. No sharing across accounts." },
-              { icon: BarChart3, title: "Confidence scoring", desc: "Every result includes a confidence level. You always know how certain the analysis is." },
-              { icon: Brain, title: "Domain knowledge", desc: "Each engine draws from a proprietary knowledge base. Not just generic internet data." },
-            ].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <div key={i} style={{ ...CARD, textAlign: "center" }}>
-                  <div style={{
-                    width: 40, height: 40, borderRadius: 10,
-                    background: "rgba(31,58,95,0.06)", display: "flex",
-                    alignItems: "center", justifyContent: "center",
-                    margin: "0 auto 12px",
-                  }}>
-                    <Icon size={20} color="var(--mk-accent)" strokeWidth={1.5} />
+            {/* Left — Trust blocks */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {([
+                { title: "Structured judgment", body: "Signux pressure-tests a decision across multiple specialist perspectives instead of stopping at a single answer." },
+                { title: "Visible disagreement", body: "Instead of hiding uncertainty, it shows where the most important tensions are and why they matter." },
+                { title: "Decision-ready output", body: "The result is not just analysis. It is probability, risk, leverage, and the best next move." },
+              ] as const).map((block) => (
+                <div key={block.title} style={{
+                  background: "#FFFFFF", border: "1px solid #E8E8E3",
+                  borderRadius: 12, padding: 24,
+                }}>
+                  <div style={{ fontSize: 17, fontWeight: 600, color: "#111111", marginBottom: 8 }}>
+                    {block.title}
                   </div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--mk-text)", marginBottom: 6 }}>{item.title}</div>
-                  <div style={{ fontSize: 13, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>{item.desc}</div>
+                  <div style={{ fontSize: 14, lineHeight: 1.7, color: "#5B5B5B" }}>
+                    {block.body}
+                  </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
+            {/* Right — Outcome panel */}
+            <div style={{
+              background: "#FFFFFF", border: "1px solid #E8E8E3",
+              borderRadius: 16, padding: 28,
+              boxShadow: "0 6px 20px rgba(0,0,0,0.04)",
+              display: "flex", flexDirection: "column",
+            }}>
+              <span style={{
+                fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 1.5,
+                fontWeight: 600, color: "#1F3A5F",
+              }}>
+                WHAT THE PRODUCT GIVES YOU
+              </span>
+              <div style={{
+                fontSize: isMobile ? 20 : 24, fontWeight: 300,
+                lineHeight: 1.3, color: "#111111", marginTop: 12,
+              }}>
+                Clarity where most teams still guess.
+              </div>
+              <div style={{
+                display: "flex", flexDirection: "column", gap: 14,
+                marginTop: 24,
+              }}>
+                {[
+                  "A clearer decision",
+                  "A sharper downside view",
+                  "A stronger next action",
+                  "Less noise, more judgment",
+                ].map((item) => (
+                  <div key={item} style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    fontSize: 15, lineHeight: 1.7, color: "#333333",
+                  }}>
+                    <span style={{
+                      width: 6, height: 6, borderRadius: "50%",
+                      background: "#1F3A5F", flexShrink: 0, opacity: 0.5,
+                    }} />
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <div style={{
+                fontSize: 13, color: "#5B5B5B", marginTop: 24,
+                paddingTop: 16, borderTop: "1px solid #F0F0EC",
+              }}>
+                Designed for high-stakes business decisions.
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom line */}
+          <div style={{
+            fontSize: 14, color: "#5B5B5B", fontStyle: "italic",
+            marginTop: 28, textAlign: "center", lineHeight: 1.6,
+          }}>
+            Designed for founders, operators, and investors making consequential decisions.
+          </div>
+
+          {/* Mini trust strip */}
+          <div style={{
+            display: "flex", flexWrap: "wrap", justifyContent: "center",
+            gap: isMobile ? 12 : 24, marginTop: 18,
+          }}>
+            {["Live product", "Structured simulation", "Decision-ready outputs", "Built for consequential decisions"].map((label) => (
+              <span key={label} style={{ fontSize: 12, color: "#777777" }}>
+                {label}
+              </span>
+            ))}
           </div>
         </Fade>
       </section>
