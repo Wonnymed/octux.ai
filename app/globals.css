@@ -80,9 +80,9 @@
   --sidebar-expanded: 280px;
 
   /* Mode accent colors — synced with engines.ts */
-  --mode-sim: #3B82F6;
-  --mode-sim-bg: rgba(59,130,246,0.06);
-  --mode-sim-border: rgba(59,130,246,0.1);
+  --mode-sim: #C8A84E;
+  --mode-sim-bg: rgba(200,168,78,0.06);
+  --mode-sim-border: rgba(200,168,78,0.1);
   --mode-res: #8B5CF6;
   --mode-res-bg: rgba(139,92,246,0.06);
   --mode-res-border: rgba(139,92,246,0.1);
