@@ -8,6 +8,7 @@ import {
   Wand2, Loader2, Eye, X, Share2, Lock, Link2, Paperclip, Columns,
   TrendingUp, TrendingDown, Minus, Save, FileDown,
 } from "lucide-react";
+import { cleanAgentResponse } from "../lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 /* ═══ Error Boundary — prevents black screen on render crash ═══ */
@@ -2119,7 +2120,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                             </div>
                             <div style={{ paddingBottom: 6 }}>
                               <div style={{ fontSize: 10, fontWeight: 600, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>{String(ev.period ?? "")}</div>
-                              <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4 }}>{typeof ev.text === "string" ? ev.text.slice(0, 80) : ""}</div>
+                              <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4 }}>{cleanAgentResponse(typeof ev.text === "string" ? ev.text : "").slice(0, 80)}</div>
                             </div>
                           </motion.div>
                         ))}
@@ -3052,7 +3053,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                           </div>
                           <div style={{ paddingBottom: 8 }}>
                             <div style={{ fontSize: 10, fontWeight: 600, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>{ev.period}</div>
-                            <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4 }}>{typeof ev.text === "string" ? ev.text.slice(0, 80) : ""}{typeof ev.text === "string" && ev.text.length > 80 ? "..." : ""}</div>
+                            <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4 }}>{(() => { const cleaned = cleanAgentResponse(typeof ev.text === "string" ? ev.text : ""); return cleaned.slice(0, 80) + (cleaned.length > 80 ? "..." : ""); })()}</div>
                           </div>
                         </div>
                       ))}

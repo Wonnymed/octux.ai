@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import { cleanAgentResponse } from "../lib/utils";
 
 type AgentData = {
   agentId: string;
@@ -157,7 +158,7 @@ export default function AgentCard({ agent, index, expanded, onToggle, isMobile }
               overflow: "hidden",
             }),
       }}>
-        {typeof agent.text === "string" ? agent.text : String(agent.text ?? "")}
+        {cleanAgentResponse(typeof agent.text === "string" ? agent.text : String(agent.text ?? ""))}
       </p>
     </motion.div>
   );
