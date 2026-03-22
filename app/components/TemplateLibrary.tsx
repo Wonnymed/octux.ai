@@ -142,7 +142,7 @@ export default function TemplateLibrary({ onSelectTemplate }: { onSelectTemplate
             display: "flex", alignItems: "center", gap: 4,
             padding: "6px 12px", borderRadius: 50,
             border: `1px solid ${selectedCategory === cat.category ? "var(--accent)" : "var(--border-secondary)"}`,
-            background: selectedCategory === cat.category ? "rgba(212,175,55,0.06)" : "transparent",
+            background: selectedCategory === cat.category ? "rgba(255,255,255,0.04)" : "transparent",
             color: selectedCategory === cat.category ? "var(--accent)" : "var(--text-secondary)",
             fontSize: 12, cursor: "pointer", transition: "all 150ms",
           }}

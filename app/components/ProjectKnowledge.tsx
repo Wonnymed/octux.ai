@@ -132,7 +132,7 @@ export default function ProjectKnowledge({
           style={{
             padding: 28, borderRadius: 10, textAlign: "center",
             border: `2px dashed ${dragOver ? "var(--accent)" : "var(--border-secondary)"}`,
-            background: dragOver ? "rgba(212,175,55,0.04)" : "transparent",
+            background: dragOver ? "rgba(255,255,255,0.03)" : "transparent",
             cursor: uploading ? "wait" : "pointer", marginBottom: 16,
             transition: "all 200ms",
           }}

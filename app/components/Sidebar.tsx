@@ -47,13 +47,16 @@ type SidebarProps = {
   tokenStatus?: { available: number; monthlyTotal: number; plan: string };
 };
 
+const ICON_IDLE = "#6B6B6B";
+const ICON_ACTIVE = "#EDEDEF";
+
 const MODES: { key: Mode; icon: any; label: string; color: string }[] = [
-  { key: "chat", icon: MessageSquare, label: "sidebar.mode_chat", color: "#A8A29E" },
-  { key: "simulate", icon: Zap, label: "sidebar.mode_simulate", color: "#D4AF37" },
-  { key: "intel", icon: Shield, label: "sidebar.mode_intel", color: "#EF4444" },
-  { key: "launchpad", icon: Rocket, label: "sidebar.mode_launchpad", color: "#3B82F6" },
-  { key: "globalops", icon: Globe, label: "sidebar.mode_globalops", color: "#10B981" },
-  { key: "invest", icon: TrendingUp, label: "sidebar.mode_invest", color: "#8B5CF6" },
+  { key: "chat", icon: MessageSquare, label: "sidebar.mode_chat", color: ICON_IDLE },
+  { key: "simulate", icon: Zap, label: "sidebar.mode_simulate", color: ICON_IDLE },
+  { key: "intel", icon: Shield, label: "sidebar.mode_intel", color: ICON_IDLE },
+  { key: "launchpad", icon: Rocket, label: "sidebar.mode_launchpad", color: ICON_IDLE },
+  { key: "globalops", icon: Globe, label: "sidebar.mode_globalops", color: ICON_IDLE },
+  { key: "invest", icon: TrendingUp, label: "sidebar.mode_invest", color: ICON_IDLE },
 ];
 
 /* ═══ Portal-based Sidebar Tooltip — renders in <body>, outside overflow:hidden ═══ */
@@ -98,15 +101,15 @@ function SidebarTooltip({ show, text, anchorRef }: {
       transform: "translateY(-50%)",
       padding: "6px 12px",
       borderRadius: 8,
-      background: "#252322",
-      border: "1px solid #2E2A27",
+      background: "#141418",
+      border: "1px solid var(--border-secondary)",
       boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
       whiteSpace: "nowrap",
       zIndex: 10000,
       pointerEvents: "none",
       animation: "tooltipFadeIn 150ms ease-out forwards",
     }}>
-      <span style={{ fontSize: 12, fontWeight: 500, color: "#F3F0EC" }}>
+      <span style={{ fontSize: 12, fontWeight: 500, color: "#EDEDEF" }}>
         {text}
       </span>
     </div>,
@@ -129,24 +132,20 @@ function SidebarIconButton({ icon, tooltip, active, activeColor, modeColor, onCl
   const [hovered, setHovered] = useState(false);
   const btnRef = useRef<HTMLDivElement>(null);
 
-  // Mode-colored icon: idle=50% opacity, hover=full, active=full
-  const iconColor = modeColor
-    ? (active ? modeColor : hovered ? modeColor : `${modeColor}80`)
-    : active
-      ? (activeColor || "var(--accent)")
-      : isPrimary
-        ? (hovered ? "var(--accent)" : "var(--text-primary)")
-        : hovered
-          ? "var(--text-primary)"
-          : "var(--text-tertiary)";
-
-  const bgColor = modeColor
-    ? (active ? `${modeColor}1A` : hovered ? `${modeColor}0F` : "transparent")
-    : active
-      ? "rgba(212,175,55,0.12)"
+  // Neutral scheme: idle=#6B6B6B, hover=lighter, active=white
+  const iconColor = active
+    ? ICON_ACTIVE
+    : isPrimary
+      ? (hovered ? "var(--text-primary)" : "var(--text-secondary)")
       : hovered
-        ? "rgba(255,255,255,0.06)"
-        : "transparent";
+        ? "#9A9A9A"
+        : (modeColor || "var(--text-tertiary)");
+
+  const bgColor = active
+    ? "rgba(255,255,255,0.04)"
+    : hovered
+      ? "rgba(255,255,255,0.03)"
+      : "transparent";
 
   return (
     <div
@@ -164,6 +163,7 @@ function SidebarIconButton({ icon, tooltip, active, activeColor, modeColor, onCl
         justifyContent: "center",
         cursor: "pointer",
         border: "none",
+        borderLeft: active ? "2px solid var(--accent)" : "2px solid transparent",
         padding: 0,
         background: bgColor,
         color: iconColor,
@@ -237,8 +237,8 @@ function ProfilePopover({
         width: 240,
         padding: 8,
         borderRadius: 14,
-        background: "var(--card-bg, #252322)",
-        border: "1px solid var(--border-secondary, #2E2A27)",
+        background: "var(--card-bg, #141418)",
+        border: "1px solid var(--border-secondary)",
         boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04)",
         animation: "profilePopoverIn 150ms ease-out",
       }}>
@@ -255,10 +255,10 @@ function ProfilePopover({
           ) : (
             <div style={{
               width: 36, height: 36, borderRadius: "50%",
-              background: "rgba(212,175,55,0.1)",
-              border: "1px solid rgba(212,175,55,0.2)",
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 14, fontWeight: 600, color: "var(--accent)",
+              fontSize: 14, fontWeight: 600, color: "var(--text-primary)",
             }}>
               {userInitials}
             </div>
@@ -271,7 +271,7 @@ function ProfilePopover({
               {tier === "max" || tier === "founding" ? (
                 <span style={{ color: "#A855F7" }}>Max plan</span>
               ) : tier === "pro" ? (
-                <span style={{ color: "#D4AF37" }}>Pro plan</span>
+                <span style={{ color: "#EDEDEF" }}>Pro plan</span>
               ) : (
                 "Free plan"
               )}
@@ -481,7 +481,7 @@ export default function Sidebar({
   // Close profile popover when sidebar state changes
   useEffect(() => { setProfilePopoverOpen(false); }, [open]);
 
-  const iconSize = 18;
+  const iconSize = 20;
   const iconSW = 1.5;
   const sidebarWidth = open ? 260 : 56;
 
@@ -494,7 +494,7 @@ export default function Sidebar({
           position: "fixed", top: 0, left: 0, bottom: 0, width: 280, zIndex: 200,
           transform: open ? "translateX(0)" : "translateX(-100%)",
           transition: "transform 250ms ease",
-          background: "var(--bg-sidebar)", borderRight: "1px solid var(--sidebar-border)",
+          background: "var(--bg-primary)", borderRight: "1px solid var(--border-primary)",
           display: "flex", flexDirection: "column",
         }}>
           {renderExpandedContent()}
@@ -540,8 +540,8 @@ export default function Sidebar({
         height: "100vh",
         width: sidebarWidth,
         zIndex: 45,
-        background: "var(--bg-sidebar)",
-        borderRight: "1px solid var(--sidebar-border)",
+        background: "var(--bg-primary)",
+        borderRight: "1px solid var(--border-primary)",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
@@ -610,7 +610,7 @@ export default function Sidebar({
             cursor: "pointer", color: "var(--text-primary)", fontSize: 13,
             transition: "all 200ms ease",
           }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(212,175,55,0.05)"; e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)"; }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "var(--border-secondary)"; }}>
             <Plus size={16} strokeWidth={2} />
             <span>New chat</span>
@@ -642,24 +642,28 @@ export default function Sidebar({
 
         {/* Mode buttons */}
         <div style={{ padding: "0 8px 8px" }}>
-          {MODES.map(({ key, icon: Icon, label, color }, idx) => (
+          {MODES.map(({ key, icon: Icon, label }, idx) => {
+            const isActive = mode === key;
+            return (
             <div key={key}>
               <button onClick={() => handleMode(key)} style={{
-                display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px", border: "none",
-                borderRadius: "var(--radius-xs)", cursor: "pointer", fontSize: 13, transition: "all 0.15s", textAlign: "left",
-                background: mode === key ? "var(--bg-hover)" : "none",
-                color: mode === key ? (color || "var(--text-primary)") : "var(--text-secondary)",
-                fontWeight: mode === key ? 500 : 400,
-              }} onMouseEnter={e => { if (mode !== key) e.currentTarget.style.background = "var(--bg-hover)"; }}
-                 onMouseLeave={e => { if (mode !== key) e.currentTarget.style.background = "transparent"; }}>
-                <Icon size={16} strokeWidth={1.5} style={{ color: color }} />
+                display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px",
+                border: "none", borderLeft: isActive ? "2px solid var(--accent)" : "2px solid transparent",
+                borderRadius: "var(--radius-xs)", cursor: "pointer", fontSize: 13, transition: "all 150ms", textAlign: "left",
+                background: isActive ? "rgba(255,255,255,0.04)" : "none",
+                color: isActive ? ICON_ACTIVE : "var(--text-secondary)",
+                fontWeight: isActive ? 500 : 400,
+              }} onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
+                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}>
+                <Icon size={16} strokeWidth={1.5} style={{ color: isActive ? ICON_ACTIVE : ICON_IDLE }} />
                 <span style={{ flex: 1 }}>{t(label)}</span>
               </button>
               {idx === 3 && (
                 <div style={{ height: 1, width: "calc(100% - 16px)", background: "var(--border-secondary)", margin: "4px 8px" }} />
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* BUG 4 FIX: Settings button in expanded sidebar */}
@@ -688,10 +692,10 @@ export default function Sidebar({
               Usage this month
             </div>
             {[
-              { label: "Simulations", used: usage.simulations_month, total: limits.simulate_monthly, color: "#D4AF37" },
-              { label: "Research", used: usage.researches_month, total: limits.research_monthly, color: "#DC2626" },
-              { label: "Global Ops", used: usage.globalops_month, total: limits.globalops_monthly, color: "#22C55E" },
-              { label: "Invest", used: usage.invest_month, total: limits.invest_monthly, color: "#A855F7" },
+              { label: "Simulations", used: usage.simulations_month, total: limits.simulate_monthly, color: "#71717A" },
+              { label: "Research", used: usage.researches_month, total: limits.research_monthly, color: "#71717A" },
+              { label: "Global Ops", used: usage.globalops_month, total: limits.globalops_monthly, color: "#71717A" },
+              { label: "Invest", used: usage.invest_month, total: limits.invest_monthly, color: "#71717A" },
             ].filter(u => u.total > 0 && u.total < Infinity).map(u => (
               <div key={u.label} style={{ padding: "3px 12px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 3 }}>
@@ -777,7 +781,7 @@ export default function Sidebar({
           <div style={{ borderTop: "1px solid var(--border-secondary)", padding: "8px 8px 0" }}>
             <div style={{
               padding: "6px 12px", fontSize: 10, fontWeight: 600,
-              color: "#D4AF37", textTransform: "uppercase", letterSpacing: 1,
+              color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: 1,
               display: "flex", alignItems: "center", gap: 6,
             }}>
               <Zap size={10} /> Saved Simulations
@@ -804,7 +808,7 @@ export default function Sidebar({
                   <div style={{ fontSize: 10, color: "var(--text-tertiary)", display: "flex", gap: 8 }}>
                     <span>{new Date(sim.created_at).toLocaleDateString()}</span>
                     {sim.verdict?.viability != null && (
-                      <span style={{ color: "#D4AF37" }}>{sim.verdict.viability}/10</span>
+                      <span style={{ color: "var(--text-secondary)" }}>{sim.verdict.viability}/10</span>
                     )}
                   </div>
                 </div>
@@ -837,74 +841,39 @@ export default function Sidebar({
             </a>
           )}
 
-          {/* Token counter */}
+          {/* Token counter — mono font, minimal */}
           {tokenStatus && (
             <div style={{
-              margin: "0 0 4px", padding: "8px 12px", borderRadius: 8,
-              background: tokenStatus.available <= 0 ? "rgba(239,68,68,0.04)" : "rgba(212,175,55,0.04)",
-              border: `1px solid ${tokenStatus.available <= 0 ? "rgba(239,68,68,0.1)" : "rgba(212,175,55,0.08)"}`,
+              margin: "0 0 4px", padding: "6px 12px",
               display: "flex", alignItems: "center", gap: 8,
             }}>
-              <Zap size={13} style={{ color: tokenStatus.available <= 0 ? "#EF4444" : "#D4AF37", flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{
-                  fontSize: 11, fontWeight: 600, fontFamily: "var(--font-mono)",
-                  color: tokenStatus.available <= 0 ? "#EF4444" : "#D4AF37",
-                }}>
-                  {tokenStatus.available.toLocaleString()} / {tokenStatus.monthlyTotal.toLocaleString()} ST
-                </div>
-                <div style={{ fontSize: 9, color: "var(--text-tertiary)", marginTop: 1 }}>
-                  {tokenStatus.plan === "guest" ? "Guest tokens" : `${tokenStatus.plan.charAt(0).toUpperCase() + tokenStatus.plan.slice(1)} plan`}
-                </div>
-              </div>
-              {showUpgrade && (
-                <span
-                  onClick={() => router.push("/pricing")}
-                  style={{
-                    fontSize: 9, fontWeight: 600, color: "#D4AF37", cursor: "pointer",
-                    padding: "2px 6px", borderRadius: 4,
-                    background: "rgba(212,175,55,0.08)",
-                  }}
-                >
-                  Upgrade
-                </span>
-              )}
+              <Zap size={12} style={{ color: tokenStatus.available <= 0 ? "#F75B5B" : "#C8A84E", flexShrink: 0 }} />
+              <span style={{
+                fontSize: 11, fontWeight: 500, fontFamily: "var(--font-mono)",
+                color: tokenStatus.available <= 0 ? "#F75B5B" : "var(--text-secondary)",
+              }}>
+                {tokenStatus.available >= 1000 ? `${(tokenStatus.available / 1000).toFixed(0)}K` : tokenStatus.available} ST
+              </span>
             </div>
           )}
 
-          {/* Upgrade to Pro card — shown for free users */}
+          {/* Upgrade — subtle link, not a loud card */}
           {showUpgrade && (
-            <div
+            <button
               onClick={() => router.push("/pricing")}
               style={{
-                margin: "0 0 4px",
-                padding: "10px 12px",
-                borderRadius: 8,
-                background: "rgba(212,175,55,0.04)",
-                border: "1px solid rgba(212,175,55,0.1)",
-                cursor: "pointer",
-                transition: "all 150ms",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
+                display: "flex", alignItems: "center", gap: 8, width: "100%",
+                padding: "6px 12px", margin: "0 0 4px",
+                border: "none", borderRadius: 6, background: "transparent",
+                cursor: "pointer", transition: "background 150ms",
+                fontSize: 12, color: "var(--text-tertiary)", textAlign: "left",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(212,175,55,0.08)"; e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(212,175,55,0.04)"; e.currentTarget.style.borderColor = "rgba(212,175,55,0.1)"; }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "#D4AF37" }}>Upgrade to Pro</div>
-                <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>Unlock all modes & tools</div>
-              </div>
-              <div style={{
-                width: 32, height: 32, borderRadius: "50%",
-                background: "rgba(212,175,55,0.08)",
-                border: "1px solid rgba(212,175,55,0.15)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0,
-              }}>
-                <Crown size={14} style={{ color: "#D4AF37" }} />
-              </div>
-            </div>
+              <Crown size={13} strokeWidth={1.5} style={{ color: "#C8A84E" }} />
+              <span>Upgrade to Pro</span>
+            </button>
           )}
 
           {/* Profile row — click opens popover */}
@@ -927,9 +896,9 @@ export default function Sidebar({
               ) : (
                 <div style={{
                   width: 28, height: 28, borderRadius: "50%",
-                  background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.15)",
+                  background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 11, fontWeight: 600, color: "var(--accent)",
+                  fontSize: 11, fontWeight: 600, color: "var(--text-primary)",
                 }}>
                   {userInitials}
                 </div>
@@ -988,7 +957,7 @@ export default function Sidebar({
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 4,
+          gap: 8,
           flex: 1,
         }}>
           {MODES.map(({ key, icon: Icon, label, color }, idx) => (
@@ -1015,7 +984,7 @@ export default function Sidebar({
           <SidebarIconButton
             icon={<Crown size={iconSize} strokeWidth={iconSW} />}
             tooltip="Upgrade to Pro"
-            modeColor="#D4AF37"
+            modeColor="#C8A84E"
             onClick={() => router.push("/pricing")}
           />
         )}
@@ -1031,10 +1000,10 @@ export default function Sidebar({
               ) : (
                 <div style={{
                   width: 28, height: 28, borderRadius: "50%",
-                  background: "rgba(212,175,55,0.08)",
-                  border: "1px solid rgba(212,175,55,0.15)",
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.07)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 11, fontWeight: 600, color: "var(--accent)",
+                  fontSize: 11, fontWeight: 600, color: "var(--text-primary)",
                 }}>
                   {userInitials}
                 </div>

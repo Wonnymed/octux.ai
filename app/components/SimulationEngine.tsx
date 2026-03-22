@@ -564,13 +564,13 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             width: isMobile ? 44 : 72,
             height: isMobile ? 44 : 72,
             borderRadius: isMobile ? 14 : 20,
-            background: "rgba(212,175,55,0.06)",
-            border: "1px solid rgba(212,175,55,0.12)",
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.07)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}>
-            <Zap size={isMobile ? 22 : 36} style={{ color: "#D4AF37" }} />
+            <Zap size={isMobile ? 22 : 36} style={{ color: "#EDEDEF" }} />
           </div>
           <span style={{
             fontFamily: "var(--font-brand)",
@@ -631,13 +631,13 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             <div style={{
               borderRadius: 14,
               border: simScenario.trim()
-                ? "1px solid rgba(212,175,55,0.25)"
+                ? "1px solid rgba(255,255,255,0.12)"
                 : "1px solid var(--border-secondary)",
               background: "var(--card-bg)",
               overflow: "hidden",
               transition: "border-color 200ms, box-shadow 200ms",
               boxShadow: simScenario.trim()
-                ? "0 0 20px rgba(212,175,55,0.04)"
+                ? "0 0 20px rgba(255,255,255,0.04)"
                 : "none",
             }}>
               <textarea
@@ -699,8 +699,8 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                   <div style={{
                     display: "flex", alignItems: "center", gap: 4,
                     padding: "3px 8px", borderRadius: 4,
-                    background: "rgba(212,175,55,0.06)",
-                    border: "1px solid rgba(212,175,55,0.12)",
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.07)",
                     fontSize: 10, color: "var(--accent)",
                     maxWidth: 120, overflow: "hidden",
                   }}>
@@ -727,7 +727,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                       display: "flex", alignItems: "center", gap: 4,
                       padding: "5px 10px", borderRadius: 6,
                       border: "1px solid var(--border-secondary)",
-                      background: wasEnhanced ? "rgba(212,175,55,0.08)" : "transparent",
+                      background: wasEnhanced ? "rgba(255,255,255,0.06)" : "transparent",
                       color: wasEnhanced ? "var(--accent)" : "var(--text-tertiary)",
                       fontSize: 11, cursor: enhancing ? "wait" : "pointer",
                     }}
@@ -928,8 +928,8 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               flexShrink: 0,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "rgba(212,175,55,0.3)";
-              e.currentTarget.style.color = "var(--accent)";
+              e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
+              e.currentTarget.style.color = "#EDEDEF";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = "var(--border-secondary)";
@@ -1001,7 +1001,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                   }} style={{
                     display: "flex", alignItems: "center", gap: 4,
                     padding: "4px 10px", borderRadius: 50,
-                    background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.12)",
+                    background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.07)",
                     fontSize: 11, color: "var(--text-primary)", cursor: "pointer",
                   }}>
                     {agent.name} <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{"\u2715"}</span>
@@ -1047,7 +1047,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           <button onClick={() => setShowVideoDemo(true)} style={{
             display: "inline-flex", alignItems: "center", gap: 5,
             padding: "5px 12px", borderRadius: 50,
-            border: "1px dashed rgba(212,175,55,0.2)",
+            border: "1px dashed rgba(255,255,255,0.10)",
             background: "transparent",
             color: "var(--text-tertiary)", fontSize: 10,
             cursor: "pointer", transition: "all 200ms",
@@ -1216,7 +1216,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             <div style={{
               width: "90vw", maxWidth: 960, position: "relative",
               borderRadius: 16, overflow: "hidden", background: "#000",
-              boxShadow: "0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(212,175,55,0.1)",
+              boxShadow: "0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07)",
             }}>
               {/* Close button */}
               <button
@@ -1239,7 +1239,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                 pointerEvents: "none",
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#D4AF37" }} />
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#EDEDEF" }} />
                   <span style={{
                     fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.7)",
                     fontFamily: "var(--font-mono)", textTransform: "uppercase" as const, letterSpacing: 1,
@@ -1254,20 +1254,20 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                 <div style={{
                   position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                  background: "#0A0908", gap: 16,
+                  background: "#09090B", gap: 16,
                 }}>
                   <div style={{
                     width: 64, height: 64, borderRadius: "50%",
-                    background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.2)",
+                    background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
-                    <Play size={28} style={{ color: "#D4AF37", marginLeft: 3 }} />
+                    <Play size={28} style={{ color: "#EDEDEF", marginLeft: 3 }} />
                   </div>
                   <div style={{ textAlign: "center" }}>
-                    <h3 style={{ fontSize: 18, fontWeight: 700, color: "#F3F0EC", margin: "0 0 6px" }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 700, color: "#EDEDEF", margin: "0 0 6px" }}>
                       Demo video coming soon
                     </h3>
-                    <p style={{ fontSize: 13, color: "rgba(243,240,236,0.4)", margin: 0 }}>
+                    <p style={{ fontSize: 13, color: "rgba(237,237,239,0.4)", margin: 0 }}>
                       10 AI agents debating a real business scenario in real-time
                     </p>
                   </div>
@@ -1276,10 +1276,10 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
 
               {/* Footer */}
               <div style={{
-                padding: "12px 20px", background: "#0A0908",
+                padding: "12px 20px", background: "#09090B",
                 display: "flex", alignItems: "center", justifyContent: "space-between",
               }}>
-                <div style={{ fontSize: 12, color: "rgba(243,240,236,0.4)" }}>
+                <div style={{ fontSize: 12, color: "rgba(237,237,239,0.4)" }}>
                   10 agents · 10 rounds · Real simulation result
                 </div>
                 <button
@@ -1361,7 +1361,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
     const maxMsgs = Math.max(universeA.length, universeB.length, universeC.length);
     const winningUniverse = universeA.length === maxMsgs ? "A" : universeB.length === maxMsgs ? "B" : "C";
     const votePercent = simAgentMessages.length > 0 ? Math.round((maxMsgs / simAgentMessages.length) * 100) : 0;
-    const winningColor = UNIVERSES.find(u => u.id === winningUniverse)?.color || "#D4AF37";
+    const winningColor = UNIVERSES.find(u => u.id === winningUniverse)?.color || "#EDEDEF";
 
     // Mini sparkline data generation based on message count
     const generateSparkline = (msgs: AgentMessage[], direction: string) => {
@@ -1402,10 +1402,10 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             display: "flex",
             flexDirection: "column",
             borderRadius: 16,
-            border: (u as any).featured ? `2px solid #D4AF37` : `1px solid ${u.color}25`,
+            border: (u as any).featured ? `2px solid rgba(255,255,255,0.12)` : `1px solid ${u.color}25`,
             background: `linear-gradient(180deg, ${u.glow} 0%, transparent 60%)`,
             boxShadow: (u as any).featured
-              ? `0 0 60px ${u.color}10, 0 0 30px rgba(212,175,55,0.08), inset 0 1px 0 ${u.color}15`
+              ? `0 0 60px ${u.color}10, 0 0 30px rgba(255,255,255,0.04), inset 0 1px 0 ${u.color}15`
               : `0 0 40px ${u.color}06, inset 0 1px 0 ${u.color}10`,
             overflow: "hidden",
             minWidth: 0,
@@ -1416,7 +1416,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           {(u as any).featured && (
             <div style={{
               position: "absolute", inset: -1, borderRadius: 17,
-              border: "1px solid rgba(212,175,55,0.25)",
+              border: "1px solid rgba(255,255,255,0.10)",
               pointerEvents: "none", zIndex: 1,
             }} />
           )}
@@ -1697,19 +1697,19 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             animate={{ rotate: [0, 360] }}
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           >
-            <Zap size={14} style={{ color: "#D4AF37" }} />
+            <Zap size={14} style={{ color: "#EDEDEF" }} />
           </motion.div>
           <span style={{
             fontSize: 11, fontWeight: 700, letterSpacing: 1.5,
-            color: "#D4AF37", fontFamily: "var(--font-mono)",
+            color: "#EDEDEF", fontFamily: "var(--font-mono)",
           }}>
             SIMULATION RUNNING
           </span>
           <div style={{
             display: "flex", alignItems: "center", gap: 6,
             padding: "2px 10px", borderRadius: 50,
-            background: "rgba(212,175,55,0.06)",
-            border: "1px solid rgba(212,175,55,0.12)",
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.07)",
           }}>
             <span style={{ fontSize: 10, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>
               {doneAgents}/{simTotalAgents || "?"} agents
@@ -1743,7 +1743,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               transition={{ duration: 0.8, ease: "easeOut" }}
               style={{
                 height: "100%", borderRadius: 2,
-                background: "linear-gradient(90deg, #D4AF37, #F5D680)",
+                background: "linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.45))",
                 position: "relative",
               }}
             />
@@ -2043,9 +2043,9 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                     transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                     style={{
                       borderRadius: 14, overflow: "hidden",
-                      border: su.id === "B" ? "2px solid #D4AF3740" : `1px solid ${su.color}20`,
+                      border: su.id === "B" ? "2px solid rgba(255,255,255,0.10)" : `1px solid ${su.color}20`,
                       background: "var(--card-bg)",
-                      boxShadow: su.id === "B" ? "0 0 24px rgba(212,175,55,0.06)" : "none",
+                      boxShadow: su.id === "B" ? "0 0 24px rgba(255,255,255,0.04)" : "none",
                       display: "flex", flexDirection: "column",
                     }}
                   >
@@ -2277,15 +2277,15 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             <button key={i} onClick={btn.onClick} disabled={btn.disabled} style={{
               display: "flex", alignItems: "center", gap: 6,
               padding: isMobile ? "6px 10px" : "7px 16px", borderRadius: 50,
-              border: btn.disabled ? "1px solid rgba(16,185,129,0.3)" : i === 1 ? "1px solid rgba(212,175,55,0.3)" : "1px solid var(--border-secondary)",
-              background: btn.disabled ? "rgba(16,185,129,0.08)" : i === 1 ? "rgba(212,175,55,0.08)" : "transparent",
-              color: btn.disabled ? "#10B981" : i === 1 ? "#D4AF37" : "var(--text-tertiary)",
+              border: btn.disabled ? "1px solid rgba(16,185,129,0.3)" : i === 1 ? "1px solid rgba(255,255,255,0.12)" : "1px solid var(--border-secondary)",
+              background: btn.disabled ? "rgba(16,185,129,0.08)" : i === 1 ? "rgba(255,255,255,0.06)" : "transparent",
+              color: btn.disabled ? "#10B981" : i === 1 ? "#EDEDEF" : "var(--text-tertiary)",
               fontSize: 11, fontWeight: i === 1 || btn.disabled ? 600 : 400,
               cursor: btn.disabled ? "default" : "pointer", transition: "all 150ms",
               whiteSpace: "nowrap", opacity: btn.disabled ? 0.8 : 1,
             }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(212,175,55,0.4)"; e.currentTarget.style.color = "#D4AF37"; e.currentTarget.style.background = "rgba(212,175,55,0.06)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = i === 1 ? "rgba(212,175,55,0.3)" : "var(--border-secondary)"; e.currentTarget.style.color = i === 1 ? "#D4AF37" : "var(--text-tertiary)"; e.currentTarget.style.background = i === 1 ? "rgba(212,175,55,0.08)" : "transparent"; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.color = "#EDEDEF"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = i === 1 ? "rgba(255,255,255,0.12)" : "var(--border-secondary)"; e.currentTarget.style.color = i === 1 ? "#EDEDEF" : "var(--text-tertiary)"; e.currentTarget.style.background = i === 1 ? "rgba(255,255,255,0.06)" : "transparent"; }}
             >
               {btn.icon} {btn.label}
             </button>
@@ -2352,7 +2352,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           </div>
           <div style={{ display: "flex", gap: 16, marginBottom: 10 }}>
             <div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "#D4AF37", fontFamily: "var(--font-mono)" }}>{v.viability || 0}/10</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#EDEDEF", fontFamily: "var(--font-mono)" }}>{v.viability || 0}/10</div>
               <div style={{ fontSize: 8, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>VIABILITY</div>
             </div>
             <div>
@@ -2439,7 +2439,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
             gap: 16,
           }}>
-            {renderSide(simA, "Simulation A", "#D4AF37", "rgba(212,175,55,0.2)")}
+            {renderSide(simA, "Simulation A", "#EDEDEF", "rgba(255,255,255,0.10)")}
             {renderSide(simB, "Simulation B", "#3B82F6", "rgba(59,130,246,0.2)")}
           </div>
 
@@ -2465,7 +2465,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                     <span style={{ fontSize: 10, color: "var(--text-tertiary)", width: 100 }}>{d.label}</span>
                     <span style={{
                       fontSize: 12, fontFamily: "var(--font-mono)", fontWeight: 600, width: 60,
-                      color: d.winner === "A" ? "#D4AF37" : "var(--text-secondary)",
+                      color: d.winner === "A" ? "#EDEDEF" : "var(--text-secondary)",
                     }}>{d.a}</span>
                     <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>vs</span>
                     <span style={{
@@ -2475,8 +2475,8 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                     {d.winner !== "tie" && (
                       <span style={{
                         fontSize: 8, padding: "1px 6px", borderRadius: 3, fontWeight: 700, marginLeft: "auto",
-                        background: d.winner === "A" ? "rgba(212,175,55,0.1)" : "rgba(59,130,246,0.1)",
-                        color: d.winner === "A" ? "#D4AF37" : "#3B82F6",
+                        background: d.winner === "A" ? "rgba(255,255,255,0.06)" : "rgba(59,130,246,0.1)",
+                        color: d.winner === "A" ? "#EDEDEF" : "#3B82F6",
                       }}>
                         {d.winner} WINS
                       </span>
@@ -2494,7 +2494,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
               gap: 16,
             }}>
-              {[{ v: va, label: "A", color: "#D4AF37" }, { v: vb, label: "B", color: "#3B82F6" }].map(({ v: sv, label, color }) => (
+              {[{ v: va, label: "A", color: "#EDEDEF" }, { v: vb, label: "B", color: "#3B82F6" }].map(({ v: sv, label, color }) => (
                 <div key={label} style={{
                   padding: "12px 14px", borderRadius: 10,
                   background: "rgba(239,68,68,0.03)", border: "1px solid rgba(239,68,68,0.08)",
@@ -2724,8 +2724,8 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               {["Budget doubled", "Timeline cut in half", "Competitor launches first", "Market downturn 20%"].map(chip => (
                 <button key={chip} onClick={() => handleWhatIf(chip)} style={{
                   padding: "5px 12px", borderRadius: 50, fontSize: 11,
-                  background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.15)",
-                  color: "#D4AF37", cursor: "pointer",
+                  background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.07)",
+                  color: "#EDEDEF", cursor: "pointer",
                 }}>
                   {chip}
                 </button>
@@ -2940,7 +2940,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               display: "flex", alignItems: "center", gap: 6,
               padding: "8px 16px", borderRadius: 50,
               border: "1px solid var(--border-secondary)",
-              background: shareUrl ? "var(--accent-soft, rgba(212,175,55,0.08))" : "transparent",
+              background: shareUrl ? "var(--accent-soft, rgba(255,255,255,0.06))" : "transparent",
               color: shareUrl ? "var(--accent)" : "var(--text-secondary)",
               fontSize: 12, cursor: "pointer", transition: "all 200ms",
             }}>
@@ -2995,9 +2995,9 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                 transition={{ delay: uIdx * 0.12, duration: 0.45 }}
                 style={{
                   borderRadius: 14, overflow: "hidden",
-                  border: uni.featured ? "2px solid #D4AF3740" : "1px solid var(--border-secondary)",
+                  border: uni.featured ? "2px solid rgba(255,255,255,0.10)" : "1px solid var(--border-secondary)",
                   background: "var(--card-bg)",
-                  boxShadow: uni.featured ? "0 0 24px rgba(212,175,55,0.06)" : "none",
+                  boxShadow: uni.featured ? "0 0 24px rgba(255,255,255,0.04)" : "none",
                   display: "flex", flexDirection: "column",
                 }}
               >
@@ -3229,7 +3229,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <Zap size={14} style={{ color: "#D4AF37" }} />
+            <Zap size={14} style={{ color: "#EDEDEF" }} />
             <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>Change a variable</span>
             <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>
               — Modify any variable and see how all 3 universes react
@@ -3248,7 +3248,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                 fontFamily: "var(--font-sans)",
                 transition: "border-color 200ms, box-shadow 200ms",
               }}
-              onFocus={e => { e.currentTarget.style.borderColor = "rgba(212,175,55,0.35)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(212,175,55,0.06)"; }}
+              onFocus={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(255,255,255,0.04)"; }}
               onBlur={e => { e.currentTarget.style.borderColor = "var(--border-secondary)"; e.currentTarget.style.boxShadow = "none"; }}
             />
             <button
@@ -3285,7 +3285,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                   fontSize: 10, cursor: "pointer", transition: "all 150ms",
                   whiteSpace: "nowrap",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(212,175,55,0.3)"; e.currentTarget.style.color = "#D4AF37"; }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.color = "#EDEDEF"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-secondary)"; e.currentTarget.style.color = "var(--text-tertiary)"; }}
               >
                 {suggestion}
@@ -3687,7 +3687,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                       <span style={{
                         padding: "1px 4px", borderRadius: 3, fontSize: 8,
                         fontFamily: "var(--font-mono)",
-                        background: src.type === "web" ? "rgba(59,130,246,0.1)" : src.type === "kb" ? "rgba(212,175,55,0.1)" : "rgba(168,85,247,0.1)",
+                        background: src.type === "web" ? "rgba(59,130,246,0.1)" : src.type === "kb" ? "rgba(255,255,255,0.06)" : "rgba(168,85,247,0.1)",
                         color: src.type === "web" ? "#3b82f6" : src.type === "kb" ? "var(--accent)" : "#a855f7",
                       }}>
                         {src.type}
@@ -3704,13 +3704,13 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               <button onClick={generateParallelFutures} style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 width: "100%", padding: "14px 20px", borderRadius: 12, marginTop: 16,
-                border: "1px solid rgba(212,175,55,0.2)",
-                background: "linear-gradient(135deg, rgba(212,175,55,0.04) 0%, rgba(139,92,246,0.04) 100%)",
-                color: "var(--accent)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                border: "1px solid rgba(255,255,255,0.10)",
+                background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(139,92,246,0.04) 100%)",
+                color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer",
                 transition: "all 200ms",
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(212,175,55,0.4)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)"; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.20)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/><path d="M12 2 C 7 8, 7 16, 12 22"/><path d="M12 2 C 17 8, 17 16, 12 22"/><line x1="2" y1="12" x2="22" y2="12"/>

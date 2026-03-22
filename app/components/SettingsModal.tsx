@@ -322,7 +322,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
                       display: "flex", alignItems: "center", gap: 5,
                       padding: "7px 14px", borderRadius: 8,
                       border: `1px solid ${theme === opt.id ? "var(--accent)" : "var(--border-secondary)"}`,
-                      background: theme === opt.id ? "rgba(212,175,55,0.06)" : "transparent",
+                      background: theme === opt.id ? "rgba(255,255,255,0.04)" : "transparent",
                       color: theme === opt.id ? "var(--accent)" : "var(--text-secondary)",
                       fontSize: 12, fontWeight: 500, cursor: "pointer",
                       transition: "all 150ms",
@@ -525,7 +525,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
                       {plan !== "free" && (
                         <span style={{
                           padding: "2px 8px", borderRadius: 4, fontSize: 9,
-                          background: "rgba(212,175,55,0.1)", color: "var(--accent)",
+                          background: "rgba(255,255,255,0.08)", color: "var(--accent)",
                           fontWeight: 700, letterSpacing: 0.5,
                         }}>
                           ACTIVE
@@ -667,7 +667,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
                       label: "Simulations this month",
                       used: usage?.simulations_month || 0,
                       limit: limits?.simulate_monthly || 1,
-                      color: "#D4AF37",
+                      color: "#EDEDEF",
                     },
                     {
                       label: "Intel reports this month",
@@ -718,8 +718,8 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
                 {plan === "free" && (
                   <div style={{
                     marginTop: 12, padding: "10px 14px", borderRadius: 10,
-                    background: "rgba(212,175,55,0.04)",
-                    border: "1px solid rgba(212,175,55,0.12)",
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.08)",
                     display: "flex", alignItems: "center", justifyContent: "space-between",
                   }}>
                     <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>

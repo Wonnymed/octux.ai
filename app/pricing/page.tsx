@@ -52,7 +52,7 @@ const PLANS = [
       "Opus model",
     ],
     cta: "Upgrade to Pro",
-    color: "#D4AF37",
+    color: "#C8A84E",
     popular: true,
     icon: Zap,
   },
@@ -158,8 +158,8 @@ export default function PricingPage() {
         flexWrap: "wrap",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-secondary)" }}>
-          <Zap size={14} style={{ color: "#D4AF37" }} />
-          <span><strong style={{ color: "#D4AF37" }}>Pro</strong> — all modes, monthly limits</span>
+          <Zap size={14} style={{ color: "#C8A84E" }} />
+          <span><strong style={{ color: "#C8A84E" }}>Pro</strong> — all modes, monthly limits</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-secondary)" }}>
           <Crown size={14} style={{ color: "#A855F7" }} />
@@ -310,7 +310,7 @@ export default function PricingPage() {
             }}>
               <span style={{ color: "var(--text-secondary)", fontWeight: 500 }}>{row.feature}</span>
               <span style={{ color: "var(--text-tertiary)", textAlign: "center" }}>{row.free}</span>
-              <span style={{ color: "#D4AF37", textAlign: "center", fontWeight: 500 }}>{row.pro}</span>
+              <span style={{ color: "#C8A84E", textAlign: "center", fontWeight: 500 }}>{row.pro}</span>
               <span style={{ color: "#A855F7", textAlign: "center", fontWeight: 500 }}>{row.max}</span>
             </div>
           ))}

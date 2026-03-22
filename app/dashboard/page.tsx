@@ -76,7 +76,7 @@ export default function DashboardPage() {
   };
 
   const STAT_CARDS = [
-    { label: "Simulations", value: stats.simulations, color: "#D4AF37", icon: Zap },
+    { label: "Simulations", value: stats.simulations, color: "#C8A84E", icon: Zap },
     { label: "Intel Reports", value: stats.intelReports, color: "#DC2626", icon: Shield },
     { label: "Active Watches", value: stats.activeWatches, color: "#22C55E", icon: Eye },
     { label: "Decisions", value: stats.decisions, color: "#8B5CF6", icon: FileText },
@@ -201,7 +201,7 @@ export default function DashboardPage() {
                   {patterns.recommendation && (
                     <div style={{
                       marginTop: 8, padding: "8px 12px", borderRadius: 8,
-                      background: "rgba(212,175,55,0.04)", border: "1px solid rgba(212,175,55,0.12)",
+                      background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)",
                       fontSize: 11, color: "var(--text-secondary)",
                     }}>
                       <span style={{ color: "var(--accent)", fontWeight: 600 }}>Tip:</span> {patterns.recommendation}
@@ -236,11 +236,11 @@ export default function DashboardPage() {
                   }}>
                     <div style={{
                       width: 32, height: 32, borderRadius: 8,
-                      background: item.context_type === "simulation" ? "rgba(212,175,55,0.06)" : "rgba(220,38,38,0.06)",
+                      background: item.context_type === "simulation" ? "rgba(255,255,255,0.03)" : "rgba(220,38,38,0.06)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
                       {item.context_type === "simulation" ? (
-                        <Zap size={14} style={{ color: "#D4AF37" }} />
+                        <Zap size={14} style={{ color: "#C8A84E" }} />
                       ) : (
                         <Shield size={14} style={{ color: "#DC2626" }} />
                       )}

@@ -55,7 +55,7 @@ export default function SignupPage() {
         width: 600,
         height: 600,
         borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(212,175,55,0.04) 0%, transparent 70%)",
+        background: "radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 70%)",
         pointerEvents: "none",
       }} />
 
@@ -84,14 +84,14 @@ export default function SignupPage() {
               fontSize: 28,
               fontWeight: 800,
               letterSpacing: 6,
-              color: "#F3F0EC",
+              color: "#EDEDEF",
             }}>SIGNUX</span>
             <span style={{
               fontFamily: "var(--font-brand)",
               fontSize: 28,
               fontWeight: 300,
               letterSpacing: 6,
-              color: "rgba(243,240,236,0.25)",
+              color: "rgba(237,237,239,0.25)",
             }}>AI</span>
           </div>
         </div>
@@ -102,13 +102,13 @@ export default function SignupPage() {
             textAlign: "center",
             padding: "32px 24px",
             borderRadius: 16,
-            background: "rgba(212,175,55,0.04)",
-            border: "1px solid rgba(212,175,55,0.12)",
+            background: "rgba(255,255,255,0.02)",
+            border: "1px solid rgba(255,255,255,0.06)",
           }}>
             <div style={{
               width: 48, height: 48, borderRadius: "50%",
-              background: "rgba(212,175,55,0.08)",
-              border: "1px solid rgba(212,175,55,0.2)",
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.1)",
               display: "flex", alignItems: "center", justifyContent: "center",
               margin: "0 auto 16px",
               fontSize: 22,
@@ -116,17 +116,17 @@ export default function SignupPage() {
               <span role="img" aria-label="email">&#9993;</span>
             </div>
             <h2 style={{
-              fontSize: 20, fontWeight: 700, color: "#F3F0EC",
+              fontSize: 20, fontWeight: 700, color: "#EDEDEF",
               marginBottom: 8,
             }}>Check your email</h2>
             <p style={{
-              fontSize: 14, color: "rgba(243,240,236,0.5)",
+              fontSize: 14, color: "rgba(237,237,239,0.5)",
               lineHeight: 1.6,
             }}>
-              We sent a sign-in link to <strong style={{ color: "#D4AF37" }}>{email}</strong>
+              We sent a sign-in link to <strong style={{ color: "#C8A84E" }}>{email}</strong>
             </p>
             <p style={{
-              fontSize: 12, color: "rgba(243,240,236,0.3)",
+              fontSize: 12, color: "rgba(237,237,239,0.3)",
               marginTop: 16,
             }}>
               Didn&apos;t receive it?{" "}
@@ -134,7 +134,7 @@ export default function SignupPage() {
                 onClick={() => { setSent(false); setEmail(""); }}
                 style={{
                   background: "none", border: "none", cursor: "pointer",
-                  color: "#D4AF37", fontSize: 12, textDecoration: "underline",
+                  color: "#C8A84E", fontSize: 12, textDecoration: "underline",
                 }}
               >Try again</button>
             </p>
@@ -144,11 +144,11 @@ export default function SignupPage() {
             {/* Heading */}
             <div style={{ textAlign: "center", marginBottom: 32 }}>
               <h1 style={{
-                fontSize: 22, fontWeight: 700, color: "#F3F0EC",
+                fontSize: 22, fontWeight: 700, color: "#EDEDEF",
                 marginBottom: 6,
               }}>Create your account</h1>
               <p style={{
-                fontSize: 14, color: "rgba(243,240,236,0.4)",
+                fontSize: 14, color: "rgba(237,237,239,0.4)",
               }}>Start with 10 free messages. No credit card required.</p>
             </div>
 
@@ -159,9 +159,9 @@ export default function SignupPage() {
                 width: "100%",
                 padding: "13px 0",
                 borderRadius: 12,
-                background: "#1A1918",
-                border: "1px solid rgba(243,240,236,0.08)",
-                color: "#F3F0EC",
+                background: "#09090B",
+                border: "1px solid rgba(237,237,239,0.08)",
+                color: "#EDEDEF",
                 fontSize: 14,
                 fontWeight: 600,
                 cursor: "pointer",
@@ -173,12 +173,12 @@ export default function SignupPage() {
                 marginBottom: 24,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(243,240,236,0.15)";
+                e.currentTarget.style.borderColor = "rgba(237,237,239,0.15)";
                 e.currentTarget.style.background = "#222120";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(243,240,236,0.08)";
-                e.currentTarget.style.background = "#1A1918";
+                e.currentTarget.style.borderColor = "rgba(237,237,239,0.08)";
+                e.currentTarget.style.background = "#09090B";
               }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24">
@@ -197,9 +197,9 @@ export default function SignupPage() {
               gap: 16,
               marginBottom: 24,
             }}>
-              <div style={{ flex: 1, height: 1, background: "rgba(243,240,236,0.06)" }} />
-              <span style={{ fontSize: 12, color: "rgba(243,240,236,0.25)", fontFamily: "var(--font-mono)" }}>or</span>
-              <div style={{ flex: 1, height: 1, background: "rgba(243,240,236,0.06)" }} />
+              <div style={{ flex: 1, height: 1, background: "rgba(237,237,239,0.06)" }} />
+              <span style={{ fontSize: 12, color: "rgba(237,237,239,0.25)", fontFamily: "var(--font-mono)" }}>or</span>
+              <div style={{ flex: 1, height: 1, background: "rgba(237,237,239,0.06)" }} />
             </div>
 
             {/* Email form */}
@@ -214,9 +214,9 @@ export default function SignupPage() {
                   width: "100%",
                   padding: "13px 16px",
                   borderRadius: 12,
-                  background: "#1A1918",
-                  border: "1px solid rgba(243,240,236,0.08)",
-                  color: "#F3F0EC",
+                  background: "#09090B",
+                  border: "1px solid rgba(237,237,239,0.08)",
+                  color: "#EDEDEF",
                   fontSize: 14,
                   outline: "none",
                   fontFamily: "var(--font-body)",
@@ -225,11 +225,11 @@ export default function SignupPage() {
                   boxSizing: "border-box",
                 }}
                 onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(212,175,55,0.35)";
-                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(212,175,55,0.06)";
+                  e.currentTarget.style.borderColor = "rgba(200,168,78,0.35)";
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(200,168,78,0.06)";
                 }}
                 onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(243,240,236,0.08)";
+                  e.currentTarget.style.borderColor = "rgba(237,237,239,0.08)";
                   e.currentTarget.style.boxShadow = "none";
                 }}
               />
@@ -248,7 +248,7 @@ export default function SignupPage() {
                   width: "100%",
                   padding: "13px 0",
                   borderRadius: 12,
-                  background: loading ? "rgba(212,175,55,0.3)" : "#D4AF37",
+                  background: loading ? "rgba(200,168,78,0.3)" : "#C8A84E",
                   border: "none",
                   color: "#000",
                   fontSize: 14,
@@ -258,7 +258,7 @@ export default function SignupPage() {
                   letterSpacing: 0.3,
                 }}
                 onMouseEnter={(e) => {
-                  if (!loading) e.currentTarget.style.boxShadow = "0 0 20px rgba(212,175,55,0.25)";
+                  if (!loading) e.currentTarget.style.boxShadow = "0 0 20px rgba(200,168,78,0.25)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.boxShadow = "none";
@@ -276,12 +276,12 @@ export default function SignupPage() {
               flexDirection: "column",
               gap: 10,
             }}>
-              <p style={{ fontSize: 13, color: "rgba(243,240,236,0.35)" }}>
+              <p style={{ fontSize: 13, color: "rgba(237,237,239,0.35)" }}>
                 Already have an account?{" "}
                 <a
                   href="/login"
                   style={{
-                    color: "#D4AF37",
+                    color: "#C8A84E",
                     textDecoration: "none",
                     fontWeight: 600,
                     transition: "opacity 200ms",
@@ -294,12 +294,12 @@ export default function SignupPage() {
                 href="/chat"
                 style={{
                   fontSize: 12,
-                  color: "rgba(243,240,236,0.2)",
+                  color: "rgba(237,237,239,0.2)",
                   textDecoration: "none",
                   transition: "color 200ms",
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(243,240,236,0.4)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(243,240,236,0.2)"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(237,237,239,0.4)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(237,237,239,0.2)"; }}
               >Continue without account &#8594;</a>
             </div>
 
@@ -307,14 +307,14 @@ export default function SignupPage() {
             <p style={{
               textAlign: "center",
               fontSize: 11,
-              color: "rgba(243,240,236,0.15)",
+              color: "rgba(237,237,239,0.15)",
               marginTop: 32,
               lineHeight: 1.6,
             }}>
               By continuing, you agree to our{" "}
-              <a href="/terms" style={{ color: "rgba(243,240,236,0.25)", textDecoration: "underline" }}>Terms</a>{" "}
+              <a href="/terms" style={{ color: "rgba(237,237,239,0.25)", textDecoration: "underline" }}>Terms</a>{" "}
               and{" "}
-              <a href="/terms" style={{ color: "rgba(243,240,236,0.25)", textDecoration: "underline" }}>Privacy Policy</a>
+              <a href="/terms" style={{ color: "rgba(237,237,239,0.25)", textDecoration: "underline" }}>Privacy Policy</a>
             </p>
           </>
         )}

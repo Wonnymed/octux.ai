@@ -468,15 +468,15 @@ Actions must be SPECIFIC (not "research the market" but "survey 20 potential cus
                   <div style={{
                     display: "flex", alignItems: "center", gap: 0,
                     padding: "8px 12px", borderRadius: 10, marginBottom: 14,
-                    background: "rgba(212,175,55,0.03)",
-                    border: "1px solid rgba(212,175,55,0.08)",
+                    background: "rgba(255,255,255,0.015)",
+                    border: "1px solid rgba(255,255,255,0.04)",
                     overflowX: "auto", fontSize: 10,
                   }}>
                     {workflow.map((step, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center" }}>
                         <span style={{
                           padding: "3px 8px", borderRadius: 4, whiteSpace: "nowrap",
-                          background: i === workflow.length - 1 ? "rgba(212,175,55,0.12)" : "transparent",
+                          background: i === workflow.length - 1 ? "rgba(255,255,255,0.06)" : "transparent",
                           color: i === workflow.length - 1 ? "var(--accent)" : "var(--text-tertiary)",
                           fontWeight: i === workflow.length - 1 ? 600 : 400,
                         }}>
@@ -494,8 +494,8 @@ Actions must be SPECIFIC (not "research the market" but "survey 20 potential cus
                 {hasPlan && !isStreaming && (
                   <div style={{
                     padding: "12px 16px", borderRadius: 10, marginBottom: 16,
-                    background: "rgba(212,175,55,0.04)",
-                    border: "1px solid rgba(212,175,55,0.12)",
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px solid rgba(255,255,255,0.06)",
                   }}>
                     <div style={{
                       display: "flex", alignItems: "center", gap: 6, marginBottom: 8,
@@ -587,11 +587,11 @@ Actions must be SPECIFIC (not "research the market" but "survey 20 potential cus
                       style={{
                         display: "inline-flex", alignItems: "center", gap: 5,
                         padding: "4px 10px", borderRadius: 6,
-                        background: "rgba(212,175,55,0.06)",
-                        border: "1px solid rgba(212,175,55,0.15)",
+                        background: "rgba(255,255,255,0.03)",
+                        border: "1px solid rgba(255,255,255,0.07)",
                         cursor: "pointer", fontSize: 10,
                         fontFamily: "var(--font-mono)", letterSpacing: 0.5,
-                        color: "#D4AF37", transition: "all 150ms",
+                        color: "#EDEDEF", transition: "all 150ms",
                       }}
                     >
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
@@ -612,9 +612,9 @@ Actions must be SPECIFIC (not "research the market" but "survey 20 potential cus
                             padding: "2px 8px", borderRadius: 4,
                             fontSize: 9, fontFamily: "var(--font-mono)",
                             letterSpacing: 0.3,
-                            background: "rgba(212,175,55,0.08)",
-                            border: "1px solid rgba(212,175,55,0.12)",
-                            color: "#D4AF37",
+                            background: "rgba(255,255,255,0.04)",
+                            border: "1px solid rgba(255,255,255,0.06)",
+                            color: "#EDEDEF",
                           }}>
                             {d.replace(/_/g, " ")}
                           </span>
@@ -787,7 +787,7 @@ Actions must be SPECIFIC (not "research the market" but "survey 20 potential cus
                       }}>
                         <span style={{
                           width: 18, height: 18, borderRadius: "50%",
-                          background: "rgba(212,175,55,0.1)",
+                          background: "rgba(255,255,255,0.05)",
                           color: "var(--accent)", fontSize: 9, fontWeight: 600,
                           display: "flex", alignItems: "center", justifyContent: "center",
                           flexShrink: 0, marginTop: 1,
@@ -1056,7 +1056,7 @@ Actions must be SPECIFIC (not "research the market" but "survey 20 potential cus
                       <span style={{
                         padding: "1px 5px", borderRadius: 3, fontSize: 9,
                         fontFamily: "var(--font-mono)", letterSpacing: 0.3,
-                        background: src.type === "web" ? "rgba(59,130,246,0.1)" : src.type === "kb" ? "rgba(212,175,55,0.1)" : src.type === "framework" ? "rgba(168,85,247,0.1)" : "rgba(148,163,184,0.1)",
+                        background: src.type === "web" ? "rgba(59,130,246,0.1)" : src.type === "kb" ? "rgba(255,255,255,0.05)" : src.type === "framework" ? "rgba(168,85,247,0.1)" : "rgba(148,163,184,0.1)",
                         color: src.type === "web" ? "#3b82f6" : src.type === "kb" ? "var(--accent)" : src.type === "framework" ? "#a855f7" : "#94a3b8",
                         flexShrink: 0, marginTop: 1,
                       }}>
@@ -1104,8 +1104,8 @@ Actions must be SPECIFIC (not "research the market" but "survey 20 potential cus
                       <div key={i} style={{
                         display: "flex", alignItems: "center", gap: 4,
                         padding: "4px 10px", borderRadius: 50,
-                        background: "rgba(212,175,55,0.08)",
-                        border: "1px solid rgba(212,175,55,0.15)",
+                        background: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.07)",
                         fontSize: 11,
                         fontWeight: node.weight >= 3 ? 700 : node.weight >= 2 ? 600 : 400,
                         color: node.weight >= 3 ? "var(--accent)" : "var(--text-secondary)",
@@ -1284,8 +1284,8 @@ Actions must be SPECIFIC (not "research the market" but "survey 20 potential cus
                   style={{
                     display: "flex", alignItems: "center", gap: 4,
                     padding: "4px 10px", borderRadius: 6,
-                    border: "1px solid rgba(212,175,55,0.2)",
-                    background: "rgba(212,175,55,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(255,255,255,0.02)",
                     cursor: "pointer",
                     fontSize: 11, color: "var(--accent)",
                     transition: "all 200ms",
@@ -1353,7 +1353,7 @@ Actions must be SPECIFIC (not "research the market" but "survey 20 potential cus
           {showUpgradePrompt && (
             <div style={{
               padding: "10px 14px", borderRadius: 8, marginTop: 8,
-              background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.2)",
+              background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
               fontSize: 12, display: "flex", alignItems: "center", gap: 8,
             }}>
               <span style={{ color: "var(--text-secondary)" }}>

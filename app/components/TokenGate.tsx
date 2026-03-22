@@ -23,13 +23,13 @@ export function TokenCostConfirm({
     <div style={{
       display: "flex", alignItems: "center", gap: 8,
       padding: "8px 14px", borderRadius: 10,
-      background: canAfford ? "rgba(212,175,55,0.06)" : "rgba(239,68,68,0.06)",
-      border: `1px solid ${canAfford ? "rgba(212,175,55,0.12)" : "rgba(239,68,68,0.12)"}`,
+      background: canAfford ? "rgba(255,255,255,0.04)" : "rgba(239,68,68,0.06)",
+      border: `1px solid ${canAfford ? "rgba(255,255,255,0.08)" : "rgba(239,68,68,0.12)"}`,
       fontSize: 12,
     }}>
-      <Zap size={14} style={{ color: canAfford ? "#D4AF37" : "#EF4444", flexShrink: 0 }} />
+      <Zap size={14} style={{ color: canAfford ? "#EDEDEF" : "#EF4444", flexShrink: 0 }} />
       <span style={{ color: "var(--text-secondary)" }}>
-        <strong>{label}</strong> costs <strong style={{ color: canAfford ? "#D4AF37" : "#EF4444" }}>{cost} ST</strong>.
+        <strong>{label}</strong> costs <strong style={{ color: canAfford ? "#EDEDEF" : "#EF4444" }}>{cost} ST</strong>.
         {" "}You have <strong>{available} ST</strong>.
       </span>
       {canAfford ? (

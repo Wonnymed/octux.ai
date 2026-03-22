@@ -22,7 +22,7 @@ export default function UserMenu({ user, onSignOut }: { user: AuthUser; onSignOu
         onClick={() => setOpen(!open)}
         style={{
           width: 32, height: 32, borderRadius: "50%", overflow: "hidden",
-          background: "rgba(212,175,55,0.1)", border: "none", cursor: "pointer",
+          background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center",
           padding: 0,
         }}
@@ -45,7 +45,7 @@ export default function UserMenu({ user, onSignOut }: { user: AuthUser; onSignOu
             {user.avatar ? (
               <img src={user.avatar} alt="" width={36} height={36} style={{ borderRadius: "50%", objectFit: "cover" }} referrerPolicy="no-referrer" />
             ) : (
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(212,175,55,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, color: "var(--accent)" }}>{user.initials}</div>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, color: "var(--accent)" }}>{user.initials}</div>
             )}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</div>

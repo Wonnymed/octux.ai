@@ -518,7 +518,7 @@ export default function ResearchView({ lang, onContinueInChat, onSetMode, isLogg
                       display: "inline-flex", alignItems: "center", gap: 6,
                       padding: "6px 14px", borderRadius: 50,
                       border: "1px solid var(--card-border)",
-                      background: wasEnhanced ? "var(--accent-soft, rgba(212,175,55,0.1))" : "none",
+                      background: wasEnhanced ? "var(--accent-soft, rgba(255,255,255,0.08))" : "none",
                       color: wasEnhanced ? "var(--accent)" : "var(--text-tertiary)",
                       fontSize: 11, cursor: enhancing ? "wait" : "pointer",
                       transition: "all 200ms", fontFamily: "var(--font-mono)", letterSpacing: 0.5,

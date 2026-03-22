@@ -183,8 +183,8 @@ export default function EvolutionTracker({
                     key={i}
                     cx={x} cy={y}
                     r={changed ? 3 : isActive ? 2.5 : 2}
-                    fill={changed ? "#D4AF37" : sentimentColor(agent.rounds[i]?.sentiment || "neutral")}
-                    stroke={isActive ? "#D4AF37" : changed ? "#0F0E0D" : "none"}
+                    fill={changed ? "#EDEDEF" : sentimentColor(agent.rounds[i]?.sentiment || "neutral")}
+                    stroke={isActive ? "#EDEDEF" : changed ? "#0F0E0D" : "none"}
                     strokeWidth={isActive ? 1.5 : changed ? 1 : 0}
                     opacity={1}
                     style={{ cursor: onSelectRound ? "pointer" : "default" }}
@@ -224,7 +224,7 @@ export default function EvolutionTracker({
             {anyChanged && (
               <span style={{
                 fontSize: compact ? 7 : 8, padding: "1px 4px", borderRadius: 3,
-                background: "rgba(212,175,55,0.1)", color: "#D4AF37",
+                background: "rgba(255,255,255,0.08)", color: "#EDEDEF",
                 fontWeight: 700, letterSpacing: 0.3,
                 fontFamily: "var(--font-mono)",
               }}>
@@ -242,7 +242,7 @@ export default function EvolutionTracker({
           borderTop: "1px solid var(--border-secondary)",
         }}>
           {[
-            { color: "#D4AF37", label: "Changed mind" },
+            { color: "#EDEDEF", label: "Changed mind" },
             { color: "#10B981", label: "Positive" },
             { color: "#EF4444", label: "Negative" },
           ].map(l => (

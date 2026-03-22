@@ -20,8 +20,8 @@ export default function TokenCounter({ available, monthlyTotal, plan, compact, o
       style={{
         display: "flex", alignItems: "center", gap: compact ? 4 : 6,
         padding: compact ? "3px 8px" : "4px 10px", borderRadius: 8,
-        background: isEmpty ? "rgba(239,68,68,0.08)" : isLow ? "rgba(239,68,68,0.06)" : "rgba(212,175,55,0.06)",
-        border: `1px solid ${isEmpty ? "rgba(239,68,68,0.2)" : isLow ? "rgba(239,68,68,0.15)" : "rgba(212,175,55,0.1)"}`,
+        background: isEmpty ? "rgba(239,68,68,0.08)" : isLow ? "rgba(239,68,68,0.06)" : "rgba(255,255,255,0.04)",
+        border: `1px solid ${isEmpty ? "rgba(239,68,68,0.2)" : isLow ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.08)"}`,
         cursor: onClick ? "pointer" : "default",
         transition: "all 200ms",
       }}
@@ -29,7 +29,7 @@ export default function TokenCounter({ available, monthlyTotal, plan, compact, o
       <Zap size={compact ? 10 : 12} style={{ color: isEmpty || isLow ? "#EF4444" : "#D4AF37" }} />
       <span style={{
         fontSize: compact ? 10 : 11, fontWeight: 600, fontFamily: "var(--font-mono)",
-        color: isEmpty || isLow ? "#EF4444" : "#D4AF37",
+        color: isEmpty || isLow ? "#EF4444" : "#EDEDEF",
       }}>
         {available.toLocaleString()}
       </span>

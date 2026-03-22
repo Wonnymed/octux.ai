@@ -110,7 +110,7 @@ function SimulatePreview() {
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, paddingTop: 10, borderTop: "1px solid var(--card-hover-bg)" }}>
         <div>
           <div style={{ fontSize: 9, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: 1 }}>Viability</div>
-          <div style={{ fontSize: 22, fontFamily: "var(--font-brand)", fontWeight: 700, color: "#D4AF37" }}>7.3</div>
+          <div style={{ fontSize: 22, fontFamily: "var(--font-brand)", fontWeight: 700, color: "#EDEDEF" }}>7.3</div>
         </div>
         <div style={{ textAlign: "right" }}>
           <div style={{ fontSize: 9, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: 1 }}>Est. ROI</div>
@@ -216,7 +216,7 @@ function InvestPreview() {
 
 /* ═══ Tools data ═══ */
 const TOOLS = [
-  { name: "Pitch Deck Builder", command: "/pitch", color: "#D4AF37" },
+  { name: "Pitch Deck Builder", command: "/pitch", color: "#EDEDEF" },
   { name: "Financial Model", command: "/financial", color: "#22c55e" },
   { name: "Business Plan Writer", command: "/plan", color: "#6B8AFF" },
   { name: "Pricing Strategy", command: "/pricing", color: "#F97316" },
@@ -261,7 +261,7 @@ export default function LandingSections() {
           <div key={`lp-${i}`} style={{
             position: "absolute", top: p.top, left: p.left,
             width: 1.5, height: 1.5, borderRadius: "50%",
-            background: "rgba(212,175,55,0.15)", pointerEvents: "none",
+            background: "rgba(255,255,255,0.06)", pointerEvents: "none",
             animation: `float1 ${p.dur} ease-in-out infinite`,
             animationDelay: p.delay,
           }} />
@@ -321,7 +321,7 @@ export default function LandingSections() {
               {["NV","SK","AR","PT","LC","JM","RK"].map((initials, i) => (
                 <div key={i} style={{
                   width: 28, height: 28, borderRadius: "50%",
-                  background: ["#D4AF37","#DC2626","#14B8A6","#22C55E","#8B5CF6","#F59E0B","#06B6D4"][i],
+                  background: ["#EDEDEF","#DC2626","#14B8A6","#22C55E","#8B5CF6","#F59E0B","#06B6D4"][i],
                   border: "2px solid var(--bg-primary)",
                   marginLeft: i > 0 ? -8 : 0,
                   display: "flex", alignItems: "center", justifyContent: "center",
@@ -414,7 +414,7 @@ export default function LandingSections() {
                   <thead>
                     <tr style={{ borderBottom: "1px solid var(--border-secondary)" }}>
                       <th style={{ padding: "14px 20px", textAlign: "left", fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 1.5, textTransform: "uppercase", color: "var(--text-tertiary)", fontWeight: 400, width: "30%" }}>Capability</th>
-                      <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 700, color: "var(--accent)", fontSize: 14, background: "rgba(212,175,55,0.04)" }}>Signux AI</th>
+                      <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 700, color: "var(--accent)", fontSize: 14, background: "rgba(255,255,255,0.02)" }}>Signux AI</th>
                       <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--text-tertiary)", fontSize: 13 }}>ChatGPT</th>
                       <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--text-tertiary)", fontSize: 13 }}>Claude</th>
                       <th style={{ padding: "14px 16px", textAlign: "center", fontWeight: 500, color: "var(--text-tertiary)", fontSize: 13 }}>Consultant</th>
@@ -433,7 +433,7 @@ export default function LandingSections() {
                     ] as const).map((row, i, arr) => (
                       <tr key={i} style={{ borderBottom: i < arr.length - 1 ? "1px solid var(--border-secondary)" : "none" }}>
                         <td style={{ padding: "14px 20px", color: "var(--text-primary)", fontSize: 13, fontWeight: 500 }}>{row.feature}</td>
-                        <td style={{ padding: "14px 16px", textAlign: "center", background: "rgba(212,175,55,0.04)" }}>
+                        <td style={{ padding: "14px 16px", textAlign: "center", background: "rgba(255,255,255,0.02)" }}>
                           <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 6, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.15)", fontSize: 12, fontWeight: 600, color: "#22c55e" }}>
                             ✓ {row.signux}
                           </span>
@@ -584,7 +584,7 @@ export default function LandingSections() {
             {[
               { name: "Protecting your deals", domains: "Spot lies, detect threats, verify claims, stay secure", color: "#DC2626" },
               { name: "Outsmarting competitors", domains: "Predict moves, find advantages, win markets", color: "#8B5CF6" },
-              { name: "Growing your revenue", domains: "Price right, spend smart, scale profitably", color: "#D4AF37" },
+              { name: "Growing your revenue", domains: "Price right, spend smart, scale profitably", color: "#EDEDEF" },
               { name: "Running your business", domains: "Build systems, delegate, scale without chaos", color: "#14B8A6" },
               { name: "Going international", domains: "Navigate regulations, optimize taxes, expand safely", color: "#22C55E" },
               { name: "Making better decisions", domains: "Separate fact from noise, predict outcomes", color: "#06B6D4" },
@@ -608,9 +608,9 @@ export default function LandingSections() {
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 8,
             padding: "8px 16px", borderRadius: 50,
-            background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.15)",
+            background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
           }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#D4AF37", animation: "pulse 2s ease-in-out infinite" }} />
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#EDEDEF", animation: "pulse 2s ease-in-out infinite" }} />
             <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>
               New domains added weekly
             </span>
@@ -824,12 +824,12 @@ export default function LandingSections() {
           }}>
             {/* Pro card */}
             <div style={{
-              padding: 24, borderRadius: 14, border: "2px solid #D4AF37",
+              padding: 24, borderRadius: 14, border: "2px solid #EDEDEF",
               background: "var(--bg-secondary, rgba(20,20,20,0.6))",
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                <Zap size={16} style={{ color: "#D4AF37" }} />
-                <span style={{ fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 600, color: "#D4AF37", letterSpacing: 1 }}>PRO</span>
+                <Zap size={16} style={{ color: "#EDEDEF" }} />
+                <span style={{ fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 600, color: "#EDEDEF", letterSpacing: 1 }}>PRO</span>
               </div>
               <div style={{ marginBottom: 12 }}>
                 <span style={{ fontSize: 32, fontWeight: 700 }}>$29</span>
@@ -837,14 +837,14 @@ export default function LandingSections() {
               </div>
               {["All 6 modes", "20 simulations/month", "10 deep researches", "5 Global Ops & Invest"].map(f => (
                 <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                  <Check size={12} style={{ color: "#D4AF37" }} />
+                  <Check size={12} style={{ color: "#EDEDEF" }} />
                   <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{f}</span>
                 </div>
               ))}
               <Link href="/pricing" style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                 marginTop: 16, padding: "10px 20px", borderRadius: 8,
-                background: "#D4AF37", color: "#000", fontWeight: 600,
+                background: "#C8A84E", color: "#000", fontWeight: 600,
                 fontSize: 13, textDecoration: "none", fontFamily: "var(--font-brand)", letterSpacing: 0.5,
               }}>
                 Get Pro <ArrowRight size={12} />

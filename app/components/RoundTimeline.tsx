@@ -78,21 +78,21 @@ export default function RoundTimeline({
                 style={{
                   borderRadius: "50%",
                   background: isActive
-                    ? "#D4AF37"
+                    ? "#EDEDEF"
                     : isCurrent
                     ? "transparent"
                     : isComplete
                     ? (roundNum <= 5 ? "#3B82F6" : "#8B5CF6")
                     : "var(--border-secondary)",
                   border: isCurrent
-                    ? "2px solid #D4AF37"
+                    ? "2px solid #EDEDEF"
                     : isActive
                     ? "none"
                     : "none",
                   boxShadow: isActive
-                    ? "0 0 10px rgba(212,175,55,0.5)"
+                    ? "0 0 10px rgba(255,255,255,0.3)"
                     : isCurrent
-                    ? "0 0 8px rgba(212,175,55,0.3)"
+                    ? "0 0 8px rgba(255,255,255,0.2)"
                     : "none",
                   transition: "all 200ms ease",
                   position: "relative",
@@ -109,7 +109,7 @@ export default function RoundTimeline({
                       width: 6,
                       height: 6,
                       borderRadius: "50%",
-                      border: "1.5px solid #D4AF37",
+                      border: "1.5px solid #EDEDEF",
                       borderTopColor: "transparent",
                     }}
                   />
@@ -118,7 +118,7 @@ export default function RoundTimeline({
               <span style={{
                 fontSize: 8,
                 fontFamily: "var(--font-mono)",
-                color: isActive ? "#D4AF37" : isComplete ? "var(--text-tertiary)" : "var(--border-secondary)",
+                color: isActive ? "#EDEDEF" : isComplete ? "var(--text-tertiary)" : "var(--border-secondary)",
                 fontWeight: isActive ? 700 : 400,
               }}>
                 {roundNum}
@@ -141,11 +141,11 @@ export default function RoundTimeline({
       }}>
         {currentRoundLoading ? (
           <>
-            <Loader2 size={11} style={{ color: "#D4AF37", animation: "spin 1s linear infinite" }} />
+            <Loader2 size={11} style={{ color: "#EDEDEF", animation: "spin 1s linear infinite" }} />
             <span style={{
               fontSize: 11,
               fontWeight: 600,
-              color: "#D4AF37",
+              color: "#EDEDEF",
               fontFamily: "var(--font-mono)",
             }}>
               Round {currentRoundLoading.round}: {currentRoundLoading.label}

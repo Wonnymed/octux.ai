@@ -73,8 +73,8 @@ export default function ProjectsPage() {
             }}>
               <div style={{
                 width: 56, height: 56, borderRadius: 16,
-                background: "rgba(212,175,55,0.06)",
-                border: "1px solid rgba(212,175,55,0.12)",
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.06)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 marginBottom: 20,
               }}>
@@ -100,7 +100,7 @@ export default function ProjectsPage() {
                   fontSize: 14, fontWeight: 600, color: "#000",
                   transition: "all 150ms",
                 }}
-                onMouseEnter={e => e.currentTarget.style.boxShadow = "0 0 20px rgba(212,175,55,0.25)"}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = "0 0 20px rgba(255,255,255,0.1)"}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
               >
                 Sign in
@@ -133,7 +133,7 @@ export default function ProjectsPage() {
                   fontSize: 13, fontWeight: 600, color: "#000",
                   transition: "all 150ms",
                 }}
-                onMouseEnter={e => e.currentTarget.style.boxShadow = "0 0 16px rgba(212,175,55,0.2)"}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = "0 0 16px rgba(255,255,255,0.1)"}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
               >
                 <Plus size={14} />
@@ -148,7 +148,7 @@ export default function ProjectsPage() {
               display: "flex", alignItems: "center", gap: 10,
               padding: "12px 16px", borderRadius: 12,
               background: "var(--card-bg)",
-              border: "1px solid rgba(212,175,55,0.2)",
+              border: "1px solid rgba(255,255,255,0.1)",
               marginBottom: 20,
             }}>
               <input
@@ -234,8 +234,8 @@ export default function ProjectsPage() {
                 style={{
                   display: "flex", alignItems: "center", gap: 6,
                   padding: "10px 20px", borderRadius: 8,
-                  background: "rgba(212,175,55,0.08)",
-                  border: "1px solid rgba(212,175,55,0.2)",
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.1)",
                   color: "var(--accent)",
                   fontSize: 13, fontWeight: 600, cursor: "pointer",
                 }}
@@ -270,7 +270,7 @@ export default function ProjectsPage() {
                     transition: "all 150ms",
                   }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)";
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
                     e.currentTarget.style.background = "rgba(255,255,255,0.02)";
                   }}
                   onMouseLeave={e => {
@@ -281,7 +281,7 @@ export default function ProjectsPage() {
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
                     <div style={{
                       width: 32, height: 32, borderRadius: 8,
-                      background: `${project.color || "#D4AF37"}10`,
+                      background: `${project.color || "#C8A84E"}10`,
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
                       <Folder size={16} style={{ color: project.color || "var(--accent)" }} />

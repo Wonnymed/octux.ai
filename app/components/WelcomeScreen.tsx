@@ -27,7 +27,7 @@ type WelcomeScreenProps = {
 };
 
 const MODE_ICONS: { mode: Mode; icon: typeof Zap; color: string; tooltip: string }[] = [
-  { mode: "simulate", icon: Zap, color: "#D4AF37", tooltip: "Simulate" },
+  { mode: "simulate", icon: Zap, color: "#C8A84E", tooltip: "Simulate" },
   { mode: "intel", icon: Shield, color: "#EF4444", tooltip: "Intel" },
   { mode: "launchpad", icon: Rocket, color: "#3B82F6", tooltip: "Launchpad" },
   { mode: "globalops", icon: Globe, color: "#10B981", tooltip: "Global Ops" },
@@ -189,7 +189,7 @@ export default function WelcomeScreen({
           height={isMobile ? 18 : 20}
           viewBox="0 0 24 24"
           fill="none"
-          stroke="rgba(212,175,55,0.35)"
+          stroke="rgba(255,255,255,0.25)"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"

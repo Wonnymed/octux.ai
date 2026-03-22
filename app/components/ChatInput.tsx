@@ -87,7 +87,7 @@ function PaperclipPopover({ onFileClick, isMobile }: { onFileClick: () => void; 
         onClick={() => setIsOpen(!isOpen)}
         style={{
           width: btnSize, height: btnSize, borderRadius: 8,
-          background: isOpen ? "rgba(212,175,55,0.08)" : "transparent",
+          background: isOpen ? "rgba(255,255,255,0.04)" : "transparent",
           border: "none",
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer",
@@ -362,7 +362,7 @@ export default function ChatInput({
       { keywords: ["caused", "because of", "led to", "resulted in", "why did", "correlation", "impact of", "dropped after", "increased when"], tool: "Causal Map", label: "Map with Causal Map?", color: "#06B6D4", command: "/causal" },
       { keywords: ["negotiat", "meeting tomorrow", "pitch to", "asking for", "salary", "raise", "contract", "close the deal", "convince"], tool: "Negotiation War Room", label: "Prepare with War Room?", color: "#F97316", command: "/negotiate" },
       { keywords: ["what if", "next year", "future", "scenario", "12 months", "what could happen", "plan for", "prepare for"], tool: "Scenario Planner", label: "Plan with Scenarios?", color: "#22C55E", command: "/scenarios" },
-      { keywords: ["simulate", "stress test", "what would happen", "test my idea", "agents", "debate"], tool: "Simulate", label: "Run Simulation?", color: "#D4AF37", command: "" },
+      { keywords: ["simulate", "stress test", "what would happen", "test my idea", "agents", "debate"], tool: "Simulate", label: "Run Simulation?", color: "#C8A84E", command: "" },
       { keywords: ["start a business", "startup", "launch", "side project", "business idea", "validate", "mvp"], tool: "Launchpad", label: "Start with Launchpad?", color: "#14B8A6", command: "" },
     ];
     for (const pattern of patterns) {
@@ -432,11 +432,11 @@ export default function ChatInput({
       <div
         style={{
           borderRadius: radius,
-          border: `1px solid ${focused ? "rgba(212,175,55,0.4)" : "rgba(212,175,55,0.2)"}`,
+          border: `1px solid ${focused ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.08)"}`,
           background: "var(--card-bg)",
           boxShadow: focused
-            ? "0 0 0 1px rgba(212,175,55,0.12), 0 2px 24px rgba(212,175,55,0.06)"
-            : "0 0 0 1px rgba(212,175,55,0.06), 0 2px 12px rgba(0,0,0,0.06)",
+            ? "0 0 0 1px rgba(255,255,255,0.06), 0 2px 24px rgba(255,255,255,0.03)"
+            : "0 0 0 1px rgba(255,255,255,0.03), 0 2px 12px rgba(0,0,0,0.06)",
           transition: "border-color 200ms ease, box-shadow 200ms ease",
           ...(isListening ? { borderColor: "var(--error)", boxShadow: "none" } : {}),
         }}
@@ -581,7 +581,7 @@ export default function ChatInput({
               style={{
                 width: isMobile ? 40 : 32, height: isMobile ? 40 : 32, borderRadius: 8,
                 border: "none",
-                background: wasEnhanced ? "rgba(212,175,55,0.1)" : enhancing ? "var(--bg-tertiary)" : "transparent",
+                background: wasEnhanced ? "rgba(255,255,255,0.05)" : enhancing ? "var(--bg-tertiary)" : "transparent",
                 cursor: enhancing ? "wait" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: wasEnhanced ? "var(--accent)" : enhancing ? "var(--text-tertiary)" : "var(--text-tertiary)",

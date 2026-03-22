@@ -103,7 +103,7 @@ export default function WarGame({ lang }: { lang: string }) {
     return (
       <div style={{ padding: "20px 16px", maxWidth: 700, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-          <Swords size={18} style={{ color: "#D4AF37" }} />
+          <Swords size={18} style={{ color: "#EDEDEF" }} />
           <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>War Game</span>
           <span style={{ fontSize: 11, color: "var(--text-tertiary)", marginLeft: "auto" }}>
             Round {currentRound}/3
@@ -114,9 +114,9 @@ export default function WarGame({ lang }: { lang: string }) {
         <div style={{
           display: "flex", alignItems: "center", gap: 8, padding: "10px 14px",
           borderRadius: 8, marginBottom: 16,
-          background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.12)",
+          background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
         }}>
-          <Loader2 size={14} style={{ color: "#D4AF37", animation: "spin 1s linear infinite" }} />
+          <Loader2 size={14} style={{ color: "#EDEDEF", animation: "spin 1s linear infinite" }} />
           <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{status}</span>
         </div>
 
@@ -125,7 +125,7 @@ export default function WarGame({ lang }: { lang: string }) {
           {[1, 2, 3].map(r => (
             <div key={r} style={{
               flex: 1, height: 4, borderRadius: 2,
-              background: r < currentRound ? "#D4AF37" : r === currentRound ? "rgba(212,175,55,0.4)" : "var(--bg-tertiary)",
+              background: r < currentRound ? "#EDEDEF" : r === currentRound ? "rgba(255,255,255,0.3)" : "var(--bg-tertiary)",
               transition: "background 300ms",
             }} />
           ))}
@@ -161,7 +161,7 @@ export default function WarGame({ lang }: { lang: string }) {
       <div style={{ padding: "20px 16px", maxWidth: 700, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Swords size={18} style={{ color: "#D4AF37" }} />
+            <Swords size={18} style={{ color: "#EDEDEF" }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>War Game Report</span>
           </div>
           <button onClick={reset} style={{
@@ -176,9 +176,9 @@ export default function WarGame({ lang }: { lang: string }) {
         {/* Key Insight */}
         <div style={{
           padding: "14px 16px", borderRadius: 10, marginBottom: 16,
-          background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.15)",
+          background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
         }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "#D4AF37", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>Key Insight</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#EDEDEF", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>Key Insight</div>
           <div style={{ fontSize: 13, color: "var(--text-primary)", lineHeight: 1.5, fontWeight: 500 }}>{report.key_insight}</div>
         </div>
 
@@ -303,7 +303,7 @@ export default function WarGame({ lang }: { lang: string }) {
   return (
     <div style={{ padding: "24px 16px", maxWidth: 600, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-        <Swords size={20} style={{ color: "#D4AF37" }} />
+        <Swords size={20} style={{ color: "#EDEDEF" }} />
         <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>War Game</span>
       </div>
       <p style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 16, lineHeight: 1.5 }}>
@@ -327,7 +327,7 @@ export default function WarGame({ lang }: { lang: string }) {
         {PRESETS.map(p => (
           <button key={p} onClick={() => run(p)} style={{
             padding: "5px 10px", borderRadius: 6, fontSize: 11,
-            border: "1px solid rgba(212,175,55,0.12)", background: "rgba(212,175,55,0.03)",
+            border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)",
             color: "var(--text-secondary)", cursor: "pointer",
           }}>
             {p.length > 40 ? p.slice(0, 40) + "..." : p}

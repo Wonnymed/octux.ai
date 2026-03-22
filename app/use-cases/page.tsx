@@ -8,7 +8,7 @@ const USE_CASES = [
     problem: "You're making 50 decisions a week with incomplete information and no board to consult.",
     solution: "Use Chat for daily decisions, Simulate to test scenarios before committing, and /pitch to create investor-ready decks in minutes.",
     commands: ["/pitch", "/plan", "/financial"],
-    color: "#D4AF37",
+    color: "#C8A84E",
   },
   {
     title: "Freelancers & consultants",

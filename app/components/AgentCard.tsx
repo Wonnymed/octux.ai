@@ -52,7 +52,7 @@ export default function AgentCard({ agent, index, expanded, onToggle, isMobile }
         border: agent.failed
           ? "1px solid rgba(107,114,128,0.2)"
           : agent.changedMind
-            ? "1px solid rgba(212,175,55,0.3)"
+            ? "1px solid rgba(255,255,255,0.2)"
             : `1px solid ${agent.color}18`,
         cursor: "pointer",
         transition: "border-color 200ms, box-shadow 200ms",
@@ -119,8 +119,8 @@ export default function AgentCard({ agent, index, expanded, onToggle, isMobile }
             fontSize: 9,
             padding: "2px 6px",
             borderRadius: 4,
-            background: "rgba(212,175,55,0.1)",
-            color: "#D4AF37",
+            background: "rgba(255,255,255,0.08)",
+            color: "#EDEDEF",
             fontWeight: 600,
             flexShrink: 0,
           }}>
