@@ -85,7 +85,7 @@ function StepLanguage({ onSelect }: { onSelect: (code: string) => void }) {
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
                 padding: "12px 8px", borderRadius: "var(--radius-sm)",
-                border: isHovered ? "1px solid var(--accent)" : "1px solid transparent",
+                border: isHovered ? "1px solid var(--border-hover)" : "1px solid transparent",
                 background: isHovered ? "var(--bg-hover)" : "transparent",
                 cursor: "pointer", fontSize: 14, color: "var(--text-primary)",
                 transition: "all 0.15s", fontWeight: 400,
@@ -149,7 +149,7 @@ function StepProfile({ langCode, onSubmit }: { langCode: string; onSubmit: (data
             type="email" required value={email}
             onChange={e => setEmail(e.target.value)}
             onFocus={() => setFocusedField("email")} onBlur={() => setFocusedField(null)}
-            style={{ ...inputStyle, borderColor: focusedField === "email" ? "var(--accent)" : "var(--border-primary)" }}
+            style={{ ...inputStyle, borderColor: focusedField === "email" ? "var(--text-tertiary)" : "var(--border-primary)" }}
             placeholder="you@company.com"
           />
         </div>
@@ -162,7 +162,7 @@ function StepProfile({ langCode, onSubmit }: { langCode: string; onSubmit: (data
             type="text" required value={name}
             onChange={e => setName(e.target.value)}
             onFocus={() => setFocusedField("name")} onBlur={() => setFocusedField(null)}
-            style={{ ...inputStyle, borderColor: focusedField === "name" ? "var(--accent)" : "var(--border-primary)" }}
+            style={{ ...inputStyle, borderColor: focusedField === "name" ? "var(--text-tertiary)" : "var(--border-primary)" }}
           />
         </div>
 
@@ -174,7 +174,7 @@ function StepProfile({ langCode, onSubmit }: { langCode: string; onSubmit: (data
             type="text" value={taxResidence}
             onChange={e => setTaxResidence(e.target.value)}
             onFocus={() => setFocusedField("country")} onBlur={() => setFocusedField(null)}
-            style={{ ...inputStyle, borderColor: focusedField === "country" ? "var(--accent)" : "var(--border-primary)" }}
+            style={{ ...inputStyle, borderColor: focusedField === "country" ? "var(--text-tertiary)" : "var(--border-primary)" }}
             placeholder={t("onboarding.country_placeholder")}
           />
         </div>
@@ -191,9 +191,9 @@ function StepProfile({ langCode, onSubmit }: { langCode: string; onSubmit: (data
                   key={key} type="button" onClick={() => toggleOp(key)}
                   style={{
                     padding: "8px 14px", borderRadius: 20, fontSize: 13,
-                    border: selected ? "1px solid var(--accent)" : "1px solid var(--border-primary)",
+                    border: selected ? "1px solid var(--text-tertiary)" : "1px solid var(--border-primary)",
                     background: selected ? "var(--accent-bg)" : "transparent",
-                    color: selected ? "var(--accent)" : "var(--text-secondary)",
+                    color: selected ? "var(--text-primary)" : "var(--text-secondary)",
                     cursor: "pointer", transition: "all 0.15s", fontWeight: selected ? 500 : 400,
                   }}
                 >

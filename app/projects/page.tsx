@@ -78,7 +78,7 @@ export default function ProjectsPage() {
                 display: "flex", alignItems: "center", justifyContent: "center",
                 marginBottom: 20,
               }}>
-                <Lock size={24} strokeWidth={1.5} style={{ color: "var(--accent)" }} />
+                <Lock size={24} strokeWidth={1.5} style={{ color: "var(--text-tertiary)" }} />
               </div>
               <h3 style={{
                 fontSize: 20, fontWeight: 600, color: "var(--text-primary)",
@@ -236,7 +236,7 @@ export default function ProjectsPage() {
                   padding: "10px 20px", borderRadius: 8,
                   background: "rgba(255,255,255,0.04)",
                   border: "1px solid rgba(255,255,255,0.1)",
-                  color: "var(--accent)",
+                  color: "var(--text-secondary)",
                   fontSize: 13, fontWeight: 600, cursor: "pointer",
                 }}
               >

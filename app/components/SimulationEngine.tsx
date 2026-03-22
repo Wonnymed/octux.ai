@@ -700,7 +700,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                     padding: "3px 8px", borderRadius: 4,
                     background: "rgba(255,255,255,0.06)",
                     border: "1px solid rgba(255,255,255,0.07)",
-                    fontSize: 10, color: "var(--accent)",
+                    fontSize: 10, color: "var(--text-tertiary)",
                     maxWidth: 120, overflow: "hidden",
                   }}>
                     <FileText size={10} style={{ flexShrink: 0 }} />
@@ -727,7 +727,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                       padding: "5px 10px", borderRadius: 6,
                       border: "1px solid var(--border-secondary)",
                       background: wasEnhanced ? "rgba(255,255,255,0.06)" : "transparent",
-                      color: wasEnhanced ? "var(--accent)" : "var(--text-tertiary)",
+                      color: wasEnhanced ? "var(--positive)" : "var(--text-tertiary)",
                       fontSize: 11, cursor: enhancing ? "wait" : "pointer",
                     }}
                   >
@@ -1051,10 +1051,10 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             color: "var(--text-tertiary)", fontSize: 10,
             cursor: "pointer", transition: "all 200ms",
           }}
-            onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = "var(--accent)"; }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = "var(--text-primary)"; }}
             onMouseLeave={e => { e.currentTarget.style.opacity = "0.7"; e.currentTarget.style.color = "var(--text-tertiary)"; }}
           >
-            <Play size={10} style={{ color: "var(--accent)" }} />
+            <Play size={10} style={{ color: "var(--text-secondary)" }} />
             Watch a demo simulation
           </button>
           <div style={{ fontSize: 9, color: "var(--text-tertiary)", marginTop: 4, opacity: 0.5 }}>
@@ -1086,7 +1086,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               border: "1px solid var(--border-secondary)",
               textAlign: "center",
             }}>
-              <Lock size={32} style={{ color: "var(--accent)", marginBottom: 12 }} />
+              <Lock size={32} style={{ color: "var(--text-tertiary)", marginBottom: 12 }} />
               <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: "var(--text-primary)" }}>
                 Upgrade to Pro
               </h3>
@@ -2939,7 +2939,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               padding: "8px 16px", borderRadius: 50,
               border: "1px solid var(--border-secondary)",
               background: shareUrl ? "var(--accent-soft, rgba(255,255,255,0.06))" : "transparent",
-              color: shareUrl ? "var(--accent)" : "var(--text-secondary)",
+              color: shareUrl ? "var(--positive)" : "var(--text-secondary)",
               fontSize: 12, cursor: "pointer", transition: "all 200ms",
             }}>
               <Share2 size={14} />
@@ -3305,7 +3305,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
               <MessageSquare size={14} style={{ color: "var(--accent)" }} />
               <span style={{
                 fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
-                textTransform: "uppercase", color: "var(--accent)",
+                textTransform: "uppercase", color: "var(--text-tertiary)",
               }}>
                 Talk to Agents
               </span>
@@ -3607,7 +3607,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                     <tbody>
                       {reportTimeline.map((evt, i) => (
                         <tr key={i} style={{ borderBottom: i < reportTimeline.length - 1 ? "1px solid var(--border-secondary)" : "none" }}>
-                          <td style={{ padding: "8px 12px", color: "var(--accent)", fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 11, whiteSpace: "nowrap" }}>{evt.period}</td>
+                          <td style={{ padding: "8px 12px", color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 11, whiteSpace: "nowrap" }}>{evt.period}</td>
                           <td style={{ padding: "8px 12px", color: "var(--text-primary)" }}>{evt.event}</td>
                           <td style={{ padding: "8px 12px", color: "var(--text-secondary)" }}>{evt.impact}</td>
                           <td style={{ padding: "8px 12px", textAlign: "center" }}>
@@ -3686,7 +3686,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                         padding: "1px 4px", borderRadius: 3, fontSize: 8,
                         fontFamily: "var(--font-mono)",
                         background: src.type === "web" ? "rgba(59,130,246,0.1)" : src.type === "kb" ? "rgba(255,255,255,0.06)" : "rgba(168,85,247,0.1)",
-                        color: src.type === "web" ? "#3b82f6" : src.type === "kb" ? "var(--accent)" : "#a855f7",
+                        color: src.type === "web" ? "#3b82f6" : src.type === "kb" ? "#6E9AFF" : "#a855f7",
                       }}>
                         {src.type}
                       </span>
@@ -3803,7 +3803,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                         transition: "all 150ms",
                       }}
                       onMouseEnter={e => {
-                        (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)";
+                        (e.currentTarget as HTMLElement).style.borderColor = "var(--border-hover)";
                       }}
                       onMouseLeave={e => {
                         (e.currentTarget as HTMLElement).style.borderColor = "var(--card-border)";
@@ -3823,7 +3823,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
         {resultTab === "simulation" && (
           <div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-              <button onClick={() => setAgentFilter(null)} style={{ padding: "6px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", border: "none", background: !agentFilter ? "var(--accent-bg)" : "var(--bg-secondary)", color: !agentFilter ? "var(--accent)" : "var(--text-tertiary)" }}>{t("sim.filter_all")}</button>
+              <button onClick={() => setAgentFilter(null)} style={{ padding: "6px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", border: "none", background: !agentFilter ? "rgba(255,255,255,0.06)" : "var(--bg-secondary)", color: !agentFilter ? "var(--text-primary)" : "var(--text-tertiary)" }}>{t("sim.filter_all")}</button>
               {uniqueCategories.map(cat => {
                 const cc = AGENT_CATEGORY_COLORS[cat] || DEFAULT_CATEGORY_COLOR;
                 return (
@@ -3835,7 +3835,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
               {uniqueAgentNames.map(name => (
-                <button key={name} onClick={() => setAgentFilter(agentFilter === name ? null : name)} style={{ padding: "4px 10px", borderRadius: 20, fontSize: 10, cursor: "pointer", border: "none", background: agentFilter === name ? "var(--accent-bg)" : "var(--bg-secondary)", color: agentFilter === name ? "var(--accent)" : "var(--text-tertiary)" }}>{name}</button>
+                <button key={name} onClick={() => setAgentFilter(agentFilter === name ? null : name)} style={{ padding: "4px 10px", borderRadius: 20, fontSize: 10, cursor: "pointer", border: "none", background: agentFilter === name ? "rgba(255,255,255,0.06)" : "var(--bg-secondary)", color: agentFilter === name ? "var(--text-primary)" : "var(--text-tertiary)" }}>{name}</button>
               ))}
             </div>
             {uniqueRounds.map((round: any) => {
@@ -4192,7 +4192,7 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           zIndex: 50, borderRadius: 16,
         }}>
           <div style={{ textAlign: "center", padding: 32, maxWidth: 400 }}>
-            <div style={{ fontSize: 32, fontWeight: 700, color: "var(--accent)", fontFamily: "var(--font-brand)", marginBottom: 8 }}>
+            <div style={{ fontSize: 32, fontWeight: 700, color: "var(--text-primary)", fontFamily: "var(--font-brand)", marginBottom: 8 }}>
               Your scenario is ready to analyze
             </div>
             <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 20, lineHeight: 1.6 }}>

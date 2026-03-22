@@ -141,12 +141,12 @@ export default function TemplateLibrary({ onSelectTemplate }: { onSelectTemplate
           )} style={{
             display: "flex", alignItems: "center", gap: 4,
             padding: "6px 12px", borderRadius: 50,
-            border: `1px solid ${selectedCategory === cat.category ? "var(--accent)" : "var(--border-secondary)"}`,
+            border: `1px solid ${selectedCategory === cat.category ? "var(--text-tertiary)" : "var(--border-secondary)"}`,
             background: selectedCategory === cat.category ? "rgba(255,255,255,0.04)" : "transparent",
-            color: selectedCategory === cat.category ? "var(--accent)" : "var(--text-secondary)",
+            color: selectedCategory === cat.category ? "var(--text-primary)" : "var(--text-secondary)",
             fontSize: 12, cursor: "pointer", transition: "all 150ms",
           }}
-          onMouseEnter={e => { if (selectedCategory !== cat.category) e.currentTarget.style.borderColor = "var(--accent)"; }}
+          onMouseEnter={e => { if (selectedCategory !== cat.category) e.currentTarget.style.borderColor = "var(--text-tertiary)"; }}
           onMouseLeave={e => { if (selectedCategory !== cat.category) e.currentTarget.style.borderColor = "var(--border-secondary)"; }}
           >
             {CATEGORY_ICONS[cat.category] || null} {cat.category}
@@ -162,7 +162,7 @@ export default function TemplateLibrary({ onSelectTemplate }: { onSelectTemplate
               border: "1px solid var(--border-secondary)", background: "var(--card-bg)",
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.borderColor = "var(--accent)";
+              e.currentTarget.style.borderColor = "var(--text-tertiary)";
               e.currentTarget.style.background = "var(--card-hover-bg)";
             }}
             onMouseLeave={e => {

@@ -96,9 +96,9 @@ export default function ChangelogPage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
           {ENTRIES.map((entry, i) => (
-            <div key={i} style={{ borderLeft: "2px solid var(--accent)", paddingLeft: 20 }}>
+            <div key={i} style={{ borderLeft: "2px solid var(--border-primary)", paddingLeft: 20 }}>
               <div style={{
-                fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--accent)",
+                fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text-tertiary)",
                 letterSpacing: 1, marginBottom: 4,
               }}>
                 {entry.date}

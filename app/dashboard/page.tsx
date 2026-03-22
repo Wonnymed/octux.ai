@@ -102,7 +102,7 @@ export default function DashboardPage() {
           fontFamily: "var(--font-brand)", fontSize: isMobile ? 20 : 24, fontWeight: 700,
           marginBottom: 4, display: "flex", alignItems: "center", gap: 10,
         }}>
-          <LayoutDashboard size={22} style={{ color: "var(--accent)" }} />
+          <LayoutDashboard size={22} style={{ color: "var(--text-secondary)" }} />
           Intelligence Dashboard
         </h1>
         <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>

@@ -16,6 +16,9 @@
   --bg-sidebar: #07070A;
   --sidebar-bg: #07070A;
   --sidebar-border: #1E1E24;
+  --bg-card: #141418;
+  --bg-card-hover: #1A1A1F;
+  --bg-elevated: #1E1E24;
   --bg-input: #141418;
   --bg-hover: #1A1A1F;
   --bg-active: #222228;
@@ -29,12 +32,15 @@
   /* Borders — COOL, not warm */
   --border-primary: rgba(255, 255, 255, 0.07);
   --border-secondary: rgba(255, 255, 255, 0.04);
+  --border-hover: rgba(255, 255, 255, 0.12);
 
   /* Accent — gold ONLY for CTAs and logo */
   --accent: #C8A84E;
   --accent-hover: #D4AF37;
   --accent-light: #D4AF37;
   --accent-bg: rgba(200, 168, 78, 0.06);
+  --accent-subtle: rgba(200, 168, 78, 0.06);
+  --accent-border: rgba(200, 168, 78, 0.12);
 
   /* Status — muted, not saturated */
   --success: #3ECF8E;
@@ -315,7 +321,7 @@ textarea, input, button {
   width: 16px;
   height: 16px;
   border: 2px solid var(--border-primary);
-  border-top-color: var(--accent);
+  border-top-color: var(--text-secondary);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
@@ -545,7 +551,7 @@ textarea, input, button {
 .prose li::marker { color: var(--text-tertiary); }
 .prose strong { color: var(--text-primary); font-weight: 700; }
 .prose blockquote {
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid var(--border-primary);
   padding-left: 16px;
   margin: 16px 0;
   color: var(--text-secondary);
@@ -600,12 +606,12 @@ textarea, input, button {
   font-size: 14px;
 }
 .prose a {
-  color: var(--accent);
+  color: var(--info);
   text-decoration: none;
   border-bottom: 1px solid rgba(110,154,255,0.2);
   transition: border-color 0.15s;
 }
-.prose a:hover { border-bottom-color: var(--accent); }
+.prose a:hover { border-bottom-color: var(--info); }
 .prose hr { border: none; border-top: 1px solid var(--border-secondary); margin: 24px 0; }
 
 /* ═══ Streaming Prose ═══ */

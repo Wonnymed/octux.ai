@@ -228,7 +228,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
           flexShrink: 0,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Settings size={18} style={{ color: "var(--accent)" }} />
+            <Settings size={18} style={{ color: "var(--text-secondary)" }} />
             <span style={{
               fontSize: 16, fontWeight: 700,
               fontFamily: "var(--font-brand)",
@@ -264,7 +264,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
               display: "flex", alignItems: "center", gap: 5,
               padding: "10px 16px",
               background: "transparent", border: "none",
-              borderBottom: `2px solid ${tab === tb.id ? "var(--accent)" : "transparent"}`,
+              borderBottom: `2px solid ${tab === tb.id ? "var(--text-primary)" : "transparent"}`,
               color: tab === tb.id ? "var(--text-primary)" : "var(--text-tertiary)",
               fontSize: 12, fontWeight: tab === tb.id ? 600 : 400,
               cursor: "pointer", transition: "all 150ms",
@@ -321,9 +321,9 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
                     <button key={opt.id} onClick={() => handleThemeChange(opt.id)} style={{
                       display: "flex", alignItems: "center", gap: 5,
                       padding: "7px 14px", borderRadius: 8,
-                      border: `1px solid ${theme === opt.id ? "var(--accent)" : "var(--border-secondary)"}`,
+                      border: `1px solid ${theme === opt.id ? "var(--text-tertiary)" : "var(--border-secondary)"}`,
                       background: theme === opt.id ? "rgba(255,255,255,0.04)" : "transparent",
-                      color: theme === opt.id ? "var(--accent)" : "var(--text-secondary)",
+                      color: theme === opt.id ? "var(--text-primary)" : "var(--text-secondary)",
                       fontSize: 12, fontWeight: 500, cursor: "pointer",
                       transition: "all 150ms",
                     }}>
@@ -377,7 +377,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
               {/* Your context */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                  <User size={14} style={{ color: "var(--accent)" }} />
+                  <User size={14} style={{ color: "var(--text-secondary)" }} />
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Your context</span>
                 </div>
                 <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginBottom: 8, marginTop: 0 }}>
@@ -407,7 +407,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
               {/* Response preferences */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                  <MessageSquare size={14} style={{ color: "var(--accent)" }} />
+                  <MessageSquare size={14} style={{ color: "var(--text-secondary)" }} />
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Response preferences</span>
                 </div>
                 <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginBottom: 8, marginTop: 0 }}>
@@ -438,7 +438,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
               <SettingRow
                 label="Memory"
                 description="Remember information from your conversations"
-                icon={<Brain size={14} style={{ color: "var(--accent)" }} />}
+                icon={<Brain size={14} style={{ color: "var(--text-secondary)" }} />}
               >
                 <ToggleSwitch checked={memoryEnabled} onChange={handleMemoryToggle} />
               </SettingRow>
@@ -447,7 +447,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
               <SettingRow
                 label="Reference chat history"
                 description="Use previous conversations for context"
-                icon={<History size={14} style={{ color: "var(--accent)" }} />}
+                icon={<History size={14} style={{ color: "var(--text-secondary)" }} />}
               >
                 <ToggleSwitch checked={referenceHistory} onChange={handleReferenceHistoryToggle} />
               </SettingRow>
@@ -473,7 +473,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
               {/* Profile */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                  <User size={14} style={{ color: "var(--accent)" }} />
+                  <User size={14} style={{ color: "var(--text-secondary)" }} />
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Profile</span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -508,7 +508,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
               {/* Subscription */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                  <CreditCard size={14} style={{ color: "var(--accent)" }} />
+                  <CreditCard size={14} style={{ color: "var(--text-secondary)" }} />
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Subscription</span>
                 </div>
                 <div style={{
@@ -562,7 +562,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
               {/* Data & Privacy */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                  <Shield size={14} style={{ color: "var(--accent)" }} />
+                  <Shield size={14} style={{ color: "var(--text-secondary)" }} />
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Data & Privacy</span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -651,7 +651,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
               {/* Usage this month */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                  <BarChart3 size={14} style={{ color: "var(--accent)" }} />
+                  <BarChart3 size={14} style={{ color: "var(--text-secondary)" }} />
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Usage this period</span>
                 </div>
 
@@ -740,7 +740,7 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
               {/* Plan details */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                  <Target size={14} style={{ color: "var(--accent)" }} />
+                  <Target size={14} style={{ color: "var(--text-secondary)" }} />
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Your plan</span>
                 </div>
                 <div style={{
