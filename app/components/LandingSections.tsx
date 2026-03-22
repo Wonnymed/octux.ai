@@ -38,8 +38,8 @@ function Fade({ children, style }: { children: React.ReactNode; style?: React.CS
 }
 
 /* ═══ Shared styles ═══ */
-const SECTION_PAD = { padding: "80px 24px", maxWidth: 960, margin: "0 auto" } as const;
-const SECTION_PAD_M = { padding: "48px 16px", maxWidth: 960, margin: "0 auto" } as const;
+const SECTION_PAD = { padding: "96px 24px", maxWidth: 1120, margin: "0 auto" } as const;
+const SECTION_PAD_M = { padding: "72px 16px", maxWidth: 1120, margin: "0 auto" } as const;
 const LABEL: React.CSSProperties = {
   fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 2,
   textTransform: "uppercase", color: "var(--mk-text-tertiary)", marginBottom: 12,
@@ -51,8 +51,8 @@ const BODY: React.CSSProperties = {
   fontSize: 16, lineHeight: 1.7, color: "var(--mk-text-secondary)", maxWidth: 600, margin: "0 auto 40px",
 };
 const CARD: React.CSSProperties = {
-  background: "var(--mk-card)", border: "1px solid var(--mk-border)",
-  borderRadius: 12, padding: "24px 20px", boxShadow: "var(--mk-shadow)",
+  background: "#FFFFFF", border: "1px solid #E8E8E3",
+  borderRadius: 14, padding: 28, boxShadow: "0 4px 18px rgba(0,0,0,0.04)",
 };
 
 const ICON_MAP: Record<string, typeof Zap> = { Zap, Hammer, TrendingUp, UserCheck, Shield, Swords };
@@ -93,40 +93,132 @@ export default function LandingSections() {
       {/* ═══ 1. HOW IT WORKS ═══ */}
       <section id="how-it-works" style={sp}>
         <Fade>
+          {/* Header */}
           <div style={{ textAlign: "center" }}>
-            <div style={LABEL}>How it works</div>
-            <h2 style={{ ...H2, fontSize: isMobile ? 26 : 36, color: "var(--mk-text)" }}>
-              Describe the decision. Get a structured answer.
+            <div style={{
+              fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 2,
+              textTransform: "uppercase", fontWeight: 600, color: "#B8941F", marginBottom: 14,
+            }}>
+              HOW IT WORKS
+            </div>
+            <h2 style={{
+              fontFamily: "var(--font-brand)", fontWeight: 300, lineHeight: 1.25,
+              fontSize: isMobile ? 26 : 34, color: "var(--mk-text)", marginBottom: 14,
+            }}>
+              One question. Ten perspectives. One clear decision.
             </h2>
-            <p style={BODY}>
-              Signux routes your question to the right engine. Each engine is built for a specific type of business decision — with its own prompt architecture, output format, and domain knowledge.
+            <p style={{
+              fontSize: 16, lineHeight: 1.7, color: "var(--mk-text-secondary)",
+              maxWidth: 600, margin: "0 auto 48px",
+            }}>
+              You describe what you&apos;re deciding. Signux pressure-tests it through specialist AI agents — and returns a structured result you can act on in under a minute.
             </p>
           </div>
+
+          {/* 3-step cards */}
           <div style={{
             display: "grid",
             gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
-            gap: 16, maxWidth: 720, margin: "0 auto",
+            gap: 16, maxWidth: 780, margin: "0 auto",
           }}>
             {[
-              { step: "01", title: "Ask your question", desc: "Describe the decision, idea, hire, risk, or competitive situation." },
-              { step: "02", title: "Signux routes it", desc: "Your question is matched to the right engine with the right domain context." },
-              { step: "03", title: "Get a structured answer", desc: "Not a wall of text. A visual, structured result you can act on immediately." },
+              {
+                num: "01",
+                label: "Ask",
+                body: "Describe the decision you\u2019re facing — a new product, a hire, a market move, a risk you\u2019re unsure about. Plain language, no setup required.",
+              },
+              {
+                num: "02",
+                label: "Simulate",
+                body: "Signux routes your question to the right engine. Each one runs a specialized analysis with its own prompt architecture, domain knowledge, and output schema.",
+              },
+              {
+                num: "03",
+                label: "Decide",
+                body: "You get a structured result — scores, risks, actions, trade-offs — not a wall of text. Ready to share, ready to act on.",
+              },
             ].map((s) => (
-              <div key={s.step} style={CARD}>
+              <div key={s.num} style={CARD}>
                 <div style={{
-                  fontSize: 24, fontFamily: "var(--font-mono)", fontWeight: 600,
-                  color: "var(--mk-accent-gold)", marginBottom: 12, opacity: 0.6,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600,
+                  color: "#1F3A5F", background: "rgba(31,58,95,0.07)",
+                  padding: "4px 12px", borderRadius: 20, marginBottom: 14,
+                  letterSpacing: 0.5,
                 }}>
-                  {s.step}
+                  {s.num}
                 </div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--mk-text)", marginBottom: 6 }}>
-                  {s.title}
+                <div style={{
+                  fontSize: 18, fontWeight: 600, color: "var(--mk-text)", marginBottom: 8,
+                }}>
+                  {s.label}
                 </div>
-                <div style={{ fontSize: 13, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>
-                  {s.desc}
+                <div style={{
+                  fontSize: 14, color: "var(--mk-text-secondary)", lineHeight: 1.65,
+                }}>
+                  {s.body}
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Screenshot / demo stage */}
+          <div id="demo" style={{
+            maxWidth: 840, margin: "56px auto 0", textAlign: "center",
+          }}>
+            <div style={{
+              borderRadius: 16, overflow: "hidden",
+              border: "1px solid var(--mk-border)",
+              boxShadow: "0 8px 40px rgba(0,0,0,0.06)",
+              background: "#0A0A0C",
+              aspectRatio: "16/9",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {/* Placeholder — replace with actual screenshot/video */}
+              <div style={{
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
+                color: "rgba(255,255,255,0.3)",
+              }}>
+                <SignuxIcon size={28} variant="gold" />
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: 1 }}>
+                  SIGNUX SIMULATION
+                </span>
+              </div>
+            </div>
+
+            {/* Caption row */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              maxWidth: 840, margin: "14px auto 0", padding: "0 4px",
+            }}>
+              <span style={{
+                fontSize: 12, color: "var(--mk-text-tertiary)", fontFamily: "var(--font-mono)",
+                letterSpacing: 0.3,
+              }}>
+                Actual Signux simulation
+              </span>
+              <button
+                onClick={() => {
+                  const el = document.getElementById("demo");
+                  el?.scrollIntoView({ behavior: "smooth" });
+                }}
+                style={{
+                  fontSize: 12, color: "var(--mk-accent)", fontWeight: 500,
+                  background: "none", border: "none", cursor: "pointer",
+                  padding: 0, display: "flex", alignItems: "center", gap: 4,
+                }}
+              >
+                Watch demo <ArrowRight size={12} />
+              </button>
+            </div>
+
+            {/* Micro trust line */}
+            <div style={{
+              fontSize: 12, color: "var(--mk-text-tertiary)",
+              marginTop: 20, fontFamily: "var(--font-mono)", letterSpacing: 0.3,
+            }}>
+              Structured output in under a minute.
+            </div>
           </div>
         </Fade>
       </section>
