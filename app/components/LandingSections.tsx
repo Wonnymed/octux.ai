@@ -839,32 +839,106 @@ export default function LandingSections() {
       </section>
 
       {/* ═══ 7. USE CASES ═══ */}
-      <section style={sp}>
+      <section id="use-cases" style={{ ...sp, background: "#FAFAF7" }}>
         <Fade>
-          <div style={{ textAlign: "center" }}>
-            <div style={LABEL}>Use cases</div>
-            <h2 style={{ ...H2, fontSize: isMobile ? 26 : 36, color: "var(--mk-text)" }}>
-              Built for real decisions
+          {/* Header */}
+          <div style={{ textAlign: "center", marginBottom: isMobile ? 32 : 40 }}>
+            <div style={{
+              fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 2,
+              textTransform: "uppercase", fontWeight: 600, color: "#B8941F", marginBottom: 14,
+            }}>
+              USE CASES
+            </div>
+            <h2 style={{
+              fontFamily: "var(--font-brand)", fontWeight: 300,
+              lineHeight: 1.18, fontSize: isMobile ? 24 : 34,
+              color: "#111111", maxWidth: 760, margin: "0 auto", marginBottom: 16,
+            }}>
+              Built for decisions that actually matter.
             </h2>
+            <p style={{
+              fontSize: 16, lineHeight: 1.6, color: "#5B5B5B",
+              maxWidth: 760, margin: "0 auto",
+            }}>
+              The same engine can support launches, growth bets, hiring decisions, risk scans, and competitive moves.
+            </p>
           </div>
+
+          {/* Grid */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
-            gap: 14,
+            gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
+            gap: 20,
           }}>
-            {[
-              { title: "Founders", desc: "Validate ideas, plan execution, evaluate hires, and scan risks before committing resources." },
-              { title: "Operators", desc: "Find growth levers, detect operational fragilities, and build execution plans for the next quarter." },
-              { title: "Investors", desc: "Evaluate competitive landscapes, stress-test business models, and identify deal red flags." },
-              { title: "Product teams", desc: "Pressure-test feature decisions, map competitive positioning, and prioritize with structured analysis." },
-              { title: "Consultants", desc: "Deliver client-ready competitive analysis, risk assessments, and growth strategies in minutes." },
-              { title: "Solo operators", desc: "Get the strategic analysis that used to require a team of analysts. All six engines, one subscription." },
-            ].map((uc, i) => (
-              <div key={i} style={CARD}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--mk-text)", marginBottom: 4 }}>{uc.title}</div>
-                <div style={{ fontSize: 13, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>{uc.desc}</div>
+            {([
+              { label: "LAUNCH", title: "Launching a premium brand in Gangnam", body: "Pressure-test whether a high-visibility launch is attractive, fragile, or premature.", tag: "Simulate" },
+              { label: "MARKET ENTRY", title: "Choosing between Korea and Brazil expansion", body: "Compare where to move first, what changes the odds, and what could slow execution.", tag: "Build / Simulate" },
+              { label: "HIRING", title: "Hiring a VP Sales at the right time", body: "Evaluate role timing, likely upside, hidden downside, and the cost of waiting.", tag: "Hire" },
+              { label: "GROWTH", title: "Choosing between performance ads and creators", body: "Decide where the next budget should go and what lever is most likely to move revenue.", tag: "Grow" },
+              { label: "RISK", title: "Stress-testing a new product rollout", body: "Find what could break the launch before it becomes expensive to fix.", tag: "Protect" },
+              { label: "COMPETITION", title: "Mapping competitor response before launch", body: "See how rivals are likely to react and where the real strategic opening is.", tag: "Compete" },
+            ] as const).map((tile) => (
+              <div
+                key={tile.label}
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                style={{
+                  background: "#FFFFFF", border: "1px solid #E8E8E3",
+                  borderRadius: 14, padding: 24, cursor: "pointer",
+                  boxShadow: "0 4px 18px rgba(0,0,0,0.04)",
+                  display: "flex", flexDirection: "column",
+                  transition: "border-color 200ms ease, box-shadow 200ms ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "#D0D0C8";
+                  e.currentTarget.style.boxShadow = "0 6px 24px rgba(0,0,0,0.06)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "#E8E8E3";
+                  e.currentTarget.style.boxShadow = "0 4px 18px rgba(0,0,0,0.04)";
+                }}
+              >
+                <span style={{
+                  fontSize: 11, textTransform: "uppercase", letterSpacing: 1.5,
+                  color: "#5B5B5B", fontWeight: 600,
+                }}>
+                  {tile.label}
+                </span>
+                <div style={{
+                  fontSize: 16, fontWeight: 600, color: "#111111",
+                  lineHeight: 1.35, marginTop: 10,
+                }}>
+                  {tile.title}
+                </div>
+                <div style={{
+                  fontSize: 14, lineHeight: 1.7, color: "#5B5B5B", marginTop: 10,
+                }}>
+                  {tile.body}
+                </div>
+                <div style={{ marginTop: 16 }}>
+                  <span style={{
+                    fontSize: 11, color: "#5B5B5B",
+                    border: "1px solid #E8E8E3", background: "#F8F8F5",
+                    borderRadius: 100, padding: "4px 12px",
+                  }}>
+                    {tile.tag}
+                  </span>
+                </div>
               </div>
             ))}
+          </div>
+
+          {/* Bottom line */}
+          <div style={{
+            fontSize: 14, color: "#5B5B5B", fontStyle: "italic",
+            marginTop: 26, textAlign: "center", lineHeight: 1.6,
+          }}>
+            One interface. Six engines. Endless decision surfaces.
+          </div>
+          <div style={{
+            fontSize: 13, color: "#777777",
+            marginTop: 8, textAlign: "center",
+          }}>
+            From launch decisions to growth, hiring, risk, and competitive strategy.
           </div>
         </Fade>
       </section>
