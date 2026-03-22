@@ -4,8 +4,8 @@ import { createPortal } from "react-dom";
 import { useRouter, usePathname } from "next/navigation";
 import {
   MessageSquare, Zap, Swords, Hammer, TrendingUp, UserCheck, Shield,
-  Settings, LogIn, LogOut, Trash2, FolderOpen, Plus, ChevronDown,
-  X, Upload, LayoutDashboard, PanelLeft, Crown, Monitor, Sun, Moon,
+  Settings, LogIn, LogOut, Trash2, ChevronDown,
+  LayoutDashboard, PanelLeft, Monitor, Sun, Moon,
   BookOpen, Clock, CreditCard, HelpCircle, BarChart3, GitCompareArrows, FlaskConical,
 } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
@@ -50,8 +50,18 @@ type SidebarProps = {
   tokenStatus?: { available: number; monthlyTotal: number; plan: string };
 };
 
-const ICON_IDLE = "#52525B";
-const ICON_ACTIVE = "#EDEDEF";
+/* ═══ Zinc palette — premium neutral hierarchy ═══ */
+const Z950 = "#09090B";  // deepest
+const Z800 = "#27272A";
+const Z700 = "#3F3F46";  // section labels, plan badge
+const Z600 = "#52525B";  // Zone B idle icons
+const Z500 = "#71717A";  // Zone A idle text, Zone B hover
+const Z400 = "#A1A1AA";  // Zone A hover text
+const Z300 = "#D4D4D8";  // active icons
+const Z200 = "#E4E4E7";  // active text
+
+const ICON_IDLE = Z600;
+const ICON_ACTIVE = Z200;
 
 const ICON_MAP: Record<string, any> = {
   Zap, Hammer, TrendingUp, UserCheck, Shield, Swords,
@@ -125,33 +135,26 @@ function SidebarTooltip({ show, text, anchorRef }: {
 }
 
 /* ═══ Sidebar Icon Button with Portal Tooltip ═══ */
-function SidebarIconButton({ icon, tooltip, active, activeColor, modeColor, onClick, isPrimary, suppressTooltip, size = 40 }: {
+function SidebarIconButton({ icon, tooltip, active, modeColor, onClick, suppressTooltip, size = 38 }: {
   icon: React.ReactNode;
   tooltip: string;
   active?: boolean;
-  activeColor?: string;
   modeColor?: string;
   onClick: () => void;
-  isPrimary?: boolean;
   suppressTooltip?: boolean;
   size?: number;
 }) {
   const [hovered, setHovered] = useState(false);
   const btnRef = useRef<HTMLDivElement>(null);
 
-  // Neutral scheme: idle=#6B6B6B, hover=lighter, active=white
   const iconColor = active
-    ? ICON_ACTIVE
-    : isPrimary
-      ? (hovered ? "var(--text-primary)" : "var(--text-secondary)")
-      : hovered
-        ? "#9A9A9A"
-        : (modeColor || "var(--text-tertiary)");
+    ? Z300
+    : hovered ? Z400 : (modeColor || Z600);
 
   const bgColor = active
-    ? "var(--bg-hover)"
+    ? "rgba(255,255,255,0.06)"
     : hovered
-      ? "var(--bg-hover)"
+      ? "rgba(255,255,255,0.035)"
       : "transparent";
 
   return (
@@ -164,17 +167,16 @@ function SidebarIconButton({ icon, tooltip, active, activeColor, modeColor, onCl
       <button onClick={onClick} style={{
         width: size,
         height: size,
-        borderRadius: 6,
+        borderRadius: 8,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         cursor: "pointer",
         border: "none",
-        borderLeft: active ? "2px solid var(--accent)" : "2px solid transparent",
         padding: 0,
         background: bgColor,
         color: iconColor,
-        transition: "all 150ms ease",
+        transition: "background 180ms ease-out, color 180ms ease-out",
       }}>
         {icon}
       </button>
@@ -497,23 +499,53 @@ export default function Sidebar({
   const iconSW = 1.5;
   const sidebarWidth = open ? 260 : 56;
 
-  // Shared utility item style
-  const utilItem = (icon: React.ReactNode, label: string, onClick: () => void) => (
+  // Zone B — workspace item (quieter than engines)
+  const workspaceItem = (icon: React.ReactNode, label: string, onClick: () => void) => (
     <button
       key={label}
       onClick={onClick}
       style={{
         display: "flex", alignItems: "center", gap: 10,
-        width: "100%", padding: "7px 14px", border: "none",
-        borderRadius: 6, cursor: "pointer",
-        fontSize: 12, textAlign: "left", background: "transparent",
-        color: "#52525B", fontWeight: 400, transition: "all 150ms",
+        width: "100%", padding: "7px 10px 7px 12px", border: "none",
+        borderRadius: 7, cursor: "pointer",
+        fontSize: 12.5, textAlign: "left", background: "transparent",
+        color: Z600, fontWeight: 400, letterSpacing: 0.05,
+        transition: "background 180ms ease-out, color 180ms ease-out",
       }}
-      onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text-secondary)"; }}
-      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#52525B"; }}
+      onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.color = Z400; }}
+      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = Z600; }}
     >
       {icon}
       <span>{label}</span>
+    </button>
+  );
+
+  // Zone B — expandable item (with chevron + optional count)
+  const workspaceExpandableItem = (icon: React.ReactNode, label: string, isOpen: boolean, onClick: () => void, count?: number) => (
+    <button
+      key={label}
+      onClick={onClick}
+      style={{
+        display: "flex", alignItems: "center", gap: 10,
+        width: "100%", padding: "7px 10px 7px 12px", border: "none",
+        borderRadius: 7, cursor: "pointer",
+        fontSize: 12.5, textAlign: "left", background: "transparent",
+        color: Z600, fontWeight: 400, letterSpacing: 0.05,
+        transition: "background 180ms ease-out, color 180ms ease-out",
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.color = Z400; }}
+      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = Z600; }}
+    >
+      {icon}
+      <span style={{ flex: 1 }}>{label}</span>
+      {count !== undefined && (
+        <span style={{ fontSize: 10, fontFamily: "var(--font-mono)", color: Z700, fontWeight: 500 }}>{count}</span>
+      )}
+      <ChevronDown size={11} style={{
+        color: Z700, opacity: 0.6,
+        transform: isOpen ? "rotate(0deg)" : "rotate(-90deg)",
+        transition: "transform 200ms ease-out",
+      }} />
     </button>
   );
 
@@ -605,16 +637,16 @@ export default function Sidebar({
 
     return (
       <>
-        {/* ═══ TOP — Mark ═══ */}
+        {/* ═══ TOP — Wordmark ═══ */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "14px 14px 14px 18px", height: 56,
+          padding: "0 16px 0 20px", height: 52, flexShrink: 0,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <SignuxIcon variant="gold" size={18} />
+            <SignuxIcon variant="gold" size={17} />
             <span style={{
-              fontFamily: "var(--font-brand)", fontSize: 13, fontWeight: 600,
-              letterSpacing: 3, color: "var(--text-primary)",
+              fontFamily: "var(--font-brand)", fontSize: 12.5, fontWeight: 500,
+              letterSpacing: 4, color: Z200,
             }}>
               SIGNUX
             </span>
@@ -623,110 +655,88 @@ export default function Sidebar({
         </div>
 
         {/* ═══ ZONE A — DECISION ENGINES ═══ */}
-        <div style={{ padding: "4px 10px 0" }}>
+        <div style={{ padding: "6px 12px 0", flexShrink: 0 }}>
           <div style={{
-            fontSize: 9, fontFamily: "var(--font-mono)", fontWeight: 600,
-            letterSpacing: 2, color: "#3F3F46",
-            padding: "0 8px 8px", textTransform: "uppercase",
+            fontSize: 9.5, fontFamily: "var(--font-mono)", fontWeight: 500,
+            letterSpacing: 1.8, color: Z700,
+            padding: "0 10px 10px", textTransform: "uppercase",
           }}>
-            DECISION ENGINES
+            Engines
           </div>
-          {ENGINE_MODES.map(({ key, icon: Icon, name }) => {
-            const isActive = mode === key;
-            return (
-              <button
-                key={key}
-                onClick={() => handleMode(key)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  width: "100%", padding: "10px 8px 10px 12px",
-                  border: "none",
-                  borderLeft: isActive ? "2px solid var(--accent)" : "2px solid transparent",
-                  borderRadius: 6,
-                  cursor: "pointer", fontSize: 13, textAlign: "left",
-                  background: isActive ? "rgba(255,255,255,0.04)" : "transparent",
-                  color: isActive ? ICON_ACTIVE : "#71717A",
-                  fontWeight: isActive ? 500 : 400,
-                  transition: "all 120ms ease",
-                  marginBottom: 1,
-                }}
-                onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.color = "#A1A1AA"; } }}
-                onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#71717A"; } }}
-              >
-                <Icon size={17} strokeWidth={1.5} style={{ color: isActive ? ICON_ACTIVE : "#52525B", flexShrink: 0 }} />
-                <span>{name}</span>
-              </button>
-            );
-          })}
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {ENGINE_MODES.map(({ key, icon: Icon, name }) => {
+              const isActive = mode === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => handleMode(key)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    width: "100%", padding: "10px 10px 10px 12px",
+                    border: "none",
+                    borderLeft: isActive ? `2px solid ${Z400}` : "2px solid transparent",
+                    borderRadius: 8,
+                    cursor: "pointer", fontSize: 13.5, textAlign: "left",
+                    background: isActive ? "rgba(255,255,255,0.055)" : "transparent",
+                    color: isActive ? Z200 : Z500,
+                    fontWeight: isActive ? 500 : 420,
+                    letterSpacing: 0.1,
+                    transition: "background 180ms ease-out, color 180ms ease-out",
+                  }}
+                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.color = Z400; } }}
+                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = Z500; } }}
+                >
+                  <Icon size={18} strokeWidth={1.5} style={{ color: isActive ? Z300 : Z600, flexShrink: 0, transition: "color 180ms ease-out" }} />
+                  <span>{name}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* ═══ DIVIDER ═══ */}
-        <div style={{ height: 1, background: "var(--border-secondary)", margin: "10px 18px 6px", opacity: 0.6 }} />
+        {/* ═══ STRUCTURAL DIVIDER ═══ */}
+        <div style={{ height: 1, background: Z800, margin: "14px 22px 10px", flexShrink: 0 }} />
 
         {/* ═══ ZONE B — WORKSPACE ═══ */}
-        <div style={{ padding: "0 10px" }}>
+        <div style={{ padding: "0 12px", flexShrink: 0 }}>
           <div style={{
-            fontSize: 9, fontFamily: "var(--font-mono)", fontWeight: 600,
-            letterSpacing: 2, color: "#3F3F46",
-            padding: "0 8px 6px", textTransform: "uppercase",
+            fontSize: 9.5, fontFamily: "var(--font-mono)", fontWeight: 500,
+            letterSpacing: 1.8, color: Z700,
+            padding: "0 10px 8px", textTransform: "uppercase",
           }}>
-            WORKSPACE
+            Workspace
           </div>
-
-          {/* Recent — expandable conversation history */}
-          <button
-            onClick={() => { setRecentOpen(!recentOpen); setSavedOpen(false); }}
-            style={{
-              display: "flex", alignItems: "center", gap: 10,
-              width: "100%", padding: "7px 14px", border: "none",
-              borderRadius: 6, cursor: "pointer",
-              fontSize: 12, textAlign: "left", background: "transparent",
-              color: "#52525B", fontWeight: 400, transition: "all 150ms",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text-secondary)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#52525B"; }}
-          >
-            <Clock size={14} strokeWidth={1.5} />
-            <span style={{ flex: 1 }}>Recent</span>
-            <ChevronDown size={11} style={{ opacity: 0.3, transform: recentOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 150ms" }} />
-          </button>
-
-          {/* Saved — expandable saved simulations */}
-          <button
-            onClick={() => { setSavedOpen(!savedOpen); setRecentOpen(false); }}
-            style={{
-              display: "flex", alignItems: "center", gap: 10,
-              width: "100%", padding: "7px 14px", border: "none",
-              borderRadius: 6, cursor: "pointer",
-              fontSize: 12, textAlign: "left", background: "transparent",
-              color: "#52525B", fontWeight: 400, transition: "all 150ms",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text-secondary)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#52525B"; }}
-          >
-            <BookOpen size={14} strokeWidth={1.5} />
-            <span style={{ flex: 1 }}>Saved</span>
-            {savedSimulations.length > 0 && (
-              <span style={{ fontSize: 10, fontFamily: "var(--font-mono)", color: "#3F3F46" }}>{savedSimulations.length}</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            {/* Recent — expandable */}
+            {workspaceExpandableItem(
+              <Clock size={15} strokeWidth={1.5} />, "Recent",
+              recentOpen,
+              () => { setRecentOpen(!recentOpen); setSavedOpen(false); },
             )}
-            <ChevronDown size={11} style={{ opacity: 0.3, transform: savedOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 150ms" }} />
-          </button>
-
-          {utilItem(<GitCompareArrows size={14} strokeWidth={1.5} />, "Compare", () => { handleMode("simulate" as Mode); })}
-          {utilItem(<FlaskConical size={14} strokeWidth={1.5} />, "What-if", () => { handleMode("simulate" as Mode); })}
-          {utilItem(<BarChart3 size={14} strokeWidth={1.5} />, "Usage", () => { router.push("/dashboard"); onClose(); })}
-          {utilItem(<CreditCard size={14} strokeWidth={1.5} />, "Billing", () => { router.push("/pricing"); onClose(); })}
-          {utilItem(<Settings size={14} strokeWidth={1.5} />, "Settings", () => { onOpenSettings(); onClose(); })}
-          {utilItem(<HelpCircle size={14} strokeWidth={1.5} />, "Help", () => { window.open("https://github.com/anthropics/claude-code/issues", "_blank"); onClose(); })}
+            {/* Saved — expandable */}
+            {workspaceExpandableItem(
+              <BookOpen size={15} strokeWidth={1.5} />, "Saved",
+              savedOpen,
+              () => { setSavedOpen(!savedOpen); setRecentOpen(false); },
+              savedSimulations.length > 0 ? savedSimulations.length : undefined,
+            )}
+            {workspaceItem(<GitCompareArrows size={15} strokeWidth={1.5} />, "Compare", () => { handleMode("simulate" as Mode); })}
+            {workspaceItem(<FlaskConical size={15} strokeWidth={1.5} />, "What-if", () => { handleMode("simulate" as Mode); })}
+            {workspaceItem(<BarChart3 size={15} strokeWidth={1.5} />, "Usage", () => { router.push("/dashboard"); onClose(); })}
+            {workspaceItem(<CreditCard size={15} strokeWidth={1.5} />, "Billing", () => { router.push("/pricing"); onClose(); })}
+            {workspaceItem(<Settings size={15} strokeWidth={1.5} />, "Settings", () => { onOpenSettings(); onClose(); })}
+            {workspaceItem(<HelpCircle size={15} strokeWidth={1.5} />, "Help", () => { window.open("https://github.com/anthropics/claude-code/issues", "_blank"); onClose(); })}
+          </div>
         </div>
 
         {/* ═══ EXPANDABLE: Recent conversations ═══ */}
         {recentOpen && (
-          <div style={{ flex: 1, overflowY: "auto", padding: "4px 10px 0", borderTop: "1px solid var(--border-secondary)", marginTop: 4 }}>
+          <div style={{ flex: 1, overflowY: "auto", padding: "6px 12px 0", flexShrink: 1, minHeight: 0 }}>
+            <div style={{ height: 1, background: Z800, marginBottom: 6 }} />
             {isLoading ? (
               <HistorySkeleton />
             ) : convList && convList.length === 0 ? (
-              <div style={{ padding: "16px 8px", fontSize: 11, color: "#3F3F46", textAlign: "center" }}>
+              <div style={{ padding: "20px 10px", fontSize: 11, color: Z700, textAlign: "center" }}>
                 No conversations yet
               </div>
             ) : convList ? (
@@ -734,8 +744,9 @@ export default function Sidebar({
                 {groupByDate(convList).map(group => (
                   <div key={group.label}>
                     <div style={{
-                      padding: "8px 12px 4px", fontSize: 10, fontWeight: 600,
-                      color: "#3F3F46", textTransform: "uppercase", letterSpacing: 0.8,
+                      padding: "10px 12px 4px", fontSize: 9.5, fontWeight: 500,
+                      color: Z700, textTransform: "uppercase", letterSpacing: 1,
+                      fontFamily: "var(--font-mono)",
                     }}>
                       {group.label}
                     </div>
@@ -756,33 +767,34 @@ export default function Sidebar({
 
         {/* ═══ EXPANDABLE: Saved simulations ═══ */}
         {savedOpen && (
-          <div style={{ flex: 1, overflowY: "auto", padding: "4px 10px 0", borderTop: "1px solid var(--border-secondary)", marginTop: 4 }}>
+          <div style={{ flex: 1, overflowY: "auto", padding: "6px 12px 0", flexShrink: 1, minHeight: 0 }}>
+            <div style={{ height: 1, background: Z800, marginBottom: 6 }} />
             {savedSimulations.length === 0 ? (
-              <div style={{ padding: "16px 8px", fontSize: 11, color: "#3F3F46", textAlign: "center" }}>
+              <div style={{ padding: "20px 10px", fontSize: 11, color: Z700, textAlign: "center" }}>
                 No saved simulations yet
               </div>
             ) : (
-              <div style={{ maxHeight: 280, overflowY: "auto" }}>
+              <div style={{ display: "flex", flexDirection: "column" }}>
                 {savedSimulations.slice(0, 20).map((sim: any) => (
                   <div key={sim.id}
                     onClick={() => { onLoadSimulation?.(sim.id); onClose(); }}
                     style={{
-                      padding: "8px 12px", borderRadius: 6, cursor: "pointer",
-                      transition: "background 150ms", fontSize: 12, color: "var(--text-secondary)",
+                      padding: "9px 12px", borderRadius: 8, cursor: "pointer",
+                      transition: "background 180ms ease-out", fontSize: 12.5, color: Z500,
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                   >
                     <div style={{
                       overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                      fontWeight: 500, color: "var(--text-primary)", marginBottom: 2,
+                      fontWeight: 500, color: Z200, marginBottom: 3,
                     }}>
                       {sim.scenario?.slice(0, 60) || "Untitled"}
                     </div>
-                    <div style={{ fontSize: 10, color: "#3F3F46", display: "flex", gap: 8 }}>
+                    <div style={{ fontSize: 10, color: Z700, display: "flex", gap: 8, fontFamily: "var(--font-mono)" }}>
                       <span>{new Date(sim.created_at).toLocaleDateString()}</span>
                       {sim.verdict?.viability != null && (
-                        <span style={{ color: "var(--text-secondary)" }}>{sim.verdict.viability}/10</span>
+                        <span style={{ color: Z500 }}>{sim.verdict.viability}/10</span>
                       )}
                     </div>
                   </div>
@@ -795,14 +807,16 @@ export default function Sidebar({
         {/* Spacer when nothing expanded */}
         {!recentOpen && !savedOpen && <div style={{ flex: 1 }} />}
 
-        {/* ═══ BOTTOM ═══ */}
-        <div style={{ padding: "6px 10px 10px" }}>
-          {/* Theme toggle — compact */}
-          <div style={{ padding: "0 4px 6px" }}>
+        {/* ═══ BOTTOM — Account Surface ═══ */}
+        <div style={{ padding: "0 12px 12px", flexShrink: 0 }}>
+          <div style={{ height: 1, background: Z800, marginBottom: 10 }} />
+
+          {/* Theme toggle */}
+          <div style={{ padding: "0 6px 8px" }}>
             <div style={{
               display: "flex", alignItems: "center", gap: 1,
-              padding: 2, borderRadius: 6,
-              background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-secondary)",
+              padding: 2, borderRadius: 8,
+              background: "rgba(255,255,255,0.02)",
             }}>
               {([
                 { value: "auto" as Theme, icon: Monitor, tip: "Auto" },
@@ -813,10 +827,10 @@ export default function Sidebar({
                 return (
                   <button key={value} title={tip} onClick={() => setTheme(value)} style={{
                     flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-                    padding: "4px 0", border: "none", borderRadius: 4, cursor: "pointer",
+                    padding: "5px 0", border: "none", borderRadius: 6, cursor: "pointer",
                     background: active ? "rgba(255,255,255,0.06)" : "transparent",
-                    color: active ? ICON_ACTIVE : "#3F3F46",
-                    transition: "all 120ms",
+                    color: active ? Z300 : Z700,
+                    transition: "background 180ms ease-out, color 180ms ease-out",
                   }}>
                     <ThIcon size={13} strokeWidth={1.5} />
                   </button>
@@ -827,58 +841,60 @@ export default function Sidebar({
 
           {/* Token counter */}
           {tokenStatus && (
-            <div style={{ padding: "0 8px 6px", display: "flex", alignItems: "center" }}>
+            <div style={{ padding: "0 10px 8px", display: "flex", alignItems: "center" }}>
               <span style={{
-                fontSize: 11, fontFamily: "var(--font-mono)", fontWeight: 500,
-                color: tokenStatus.available <= 0 ? "#F75B5B" : "#52525B",
+                fontSize: 10.5, fontFamily: "var(--font-mono)", fontWeight: 500, letterSpacing: 0.3,
+                color: tokenStatus.available <= 0 ? "#EF4444" : Z600,
               }}>
                 {tokenStatus.available >= 1000 ? `${(tokenStatus.available / 1000).toFixed(1)}K` : tokenStatus.available} ST
               </span>
             </div>
           )}
 
-          {/* Profile + plan badge */}
+          {/* Profile row */}
           {isLoggedIn && displayName ? (
             <button
               ref={avatarRef}
               onClick={() => setProfilePopoverOpen(!profilePopoverOpen)}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
-                width: "100%", padding: "8px 8px", border: "none",
-                borderRadius: 8, background: profilePopoverOpen ? "var(--bg-hover)" : "transparent",
-                cursor: "pointer", transition: "background 120ms",
+                width: "100%", padding: "8px 10px", border: "none",
+                borderRadius: 8,
+                background: profilePopoverOpen ? "rgba(255,255,255,0.04)" : "transparent",
+                cursor: "pointer",
+                transition: "background 180ms ease-out",
               }}
-              onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.035)"}
               onMouseLeave={e => { if (!profilePopoverOpen) e.currentTarget.style.background = "transparent"; }}
             >
               {authUser?.avatar ? (
-                <img src={authUser.avatar} alt={displayName} width={26} height={26}
+                <img src={authUser.avatar} alt={displayName} width={24} height={24}
                   style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} referrerPolicy="no-referrer" />
               ) : (
                 <div style={{
-                  width: 26, height: 26, borderRadius: "50%",
-                  background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-primary)",
+                  width: 24, height: 24, borderRadius: "50%",
+                  background: "rgba(255,255,255,0.04)", border: `1px solid ${Z800}`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 10, fontWeight: 600, color: "var(--text-primary)",
+                  fontSize: 9.5, fontWeight: 600, color: Z400,
                 }}>
                   {userInitials}
                 </div>
               )}
               <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
                 <div style={{
-                  fontSize: 12, fontWeight: 500, color: "#A1A1AA",
+                  fontSize: 12, fontWeight: 450, color: Z400,
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                 }}>
                   {displayName}
                 </div>
               </div>
               <span style={{
-                fontSize: 9, fontFamily: "var(--font-mono)", fontWeight: 600,
-                padding: "2px 6px", borderRadius: 50, letterSpacing: 0.5,
-                background: tier === "max" || tier === "founding" ? "rgba(168,85,247,0.08)" :
-                            tier === "pro" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.02)",
+                fontSize: 9, fontFamily: "var(--font-mono)", fontWeight: 500,
+                padding: "2px 7px", borderRadius: 4, letterSpacing: 0.8,
+                background: tier === "max" || tier === "founding" ? "rgba(168,85,247,0.1)" :
+                            tier === "pro" ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
                 color: tier === "max" || tier === "founding" ? "#A855F7" :
-                       tier === "pro" ? "#71717A" : "#3F3F46",
+                       tier === "pro" ? Z500 : Z700,
               }}>
                 {tier === "max" || tier === "founding" ? "MAX" : tier === "pro" ? "PRO" : "FREE"}
               </span>
@@ -886,11 +902,12 @@ export default function Sidebar({
           ) : !isLoggedIn ? (
             <button onClick={() => { window.location.href = "/login"; }} style={{
               display: "flex", alignItems: "center", gap: 10, width: "100%",
-              padding: "8px 8px", border: "none", background: "transparent",
-              borderRadius: 8, cursor: "pointer", color: "#71717A", fontSize: 12, textAlign: "left",
+              padding: "8px 10px", border: "none", background: "transparent",
+              borderRadius: 8, cursor: "pointer", color: Z500, fontSize: 12, textAlign: "left",
+              transition: "background 180ms ease-out, color 180ms ease-out",
             }}
-              onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
-              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.035)"; e.currentTarget.style.color = Z400; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = Z500; }}>
               <LogIn size={15} strokeWidth={1.5} />
               <span>{t("auth.sign_in")}</span>
             </button>
@@ -905,15 +922,15 @@ export default function Sidebar({
     return (
       <div style={{
         display: "flex", flexDirection: "column", alignItems: "center",
-        height: "100%", padding: "16px 0",
+        height: "100%", padding: "7px 0 12px",
       }}>
         {/* Logo */}
         <CollapsedLogoButton onClick={onOpen} />
 
-        <div style={{ height: 12 }} />
+        <div style={{ height: 10 }} />
 
-        {/* ═══ MAIN ZONE — 6 engine icons ═══ */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+        {/* ═══ ZONE A — 6 engine icons ═══ */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
           {ENGINE_MODES.map(({ key, icon: Icon, name }) => (
             <SidebarIconButton
               key={key}
@@ -927,27 +944,32 @@ export default function Sidebar({
         </div>
 
         {/* ═══ DIVIDER ═══ */}
-        <div style={{ width: 24, height: 1, background: "var(--border-secondary)", margin: "8px 0", opacity: 0.5 }} />
+        <div style={{ width: 22, height: 1, background: Z800, margin: "10px 0 8px" }} />
 
-        {/* ═══ UTILITY — workspace shortcuts ═══ */}
-        <SidebarIconButton
-          icon={<Clock size={iconSize} strokeWidth={iconSW} />}
-          tooltip="Recent"
-          modeColor={ICON_IDLE}
-          onClick={onOpen}
-        />
-        <SidebarIconButton
-          icon={<BookOpen size={iconSize} strokeWidth={iconSW} />}
-          tooltip="Saved"
-          modeColor={ICON_IDLE}
-          onClick={onOpen}
-        />
-        <SidebarIconButton
-          icon={<Settings size={iconSize} strokeWidth={iconSW} />}
-          tooltip="Settings"
-          modeColor={ICON_IDLE}
-          onClick={() => onOpenSettings()}
-        />
+        {/* ═══ ZONE B — workspace shortcuts ═══ */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          <SidebarIconButton
+            icon={<Clock size={16} strokeWidth={iconSW} />}
+            tooltip="Recent"
+            modeColor={Z600}
+            onClick={onOpen}
+            size={34}
+          />
+          <SidebarIconButton
+            icon={<BookOpen size={16} strokeWidth={iconSW} />}
+            tooltip="Saved"
+            modeColor={Z600}
+            onClick={onOpen}
+            size={34}
+          />
+          <SidebarIconButton
+            icon={<Settings size={16} strokeWidth={iconSW} />}
+            tooltip="Settings"
+            modeColor={Z600}
+            onClick={() => onOpenSettings()}
+            size={34}
+          />
+        </div>
 
         <div style={{ flex: 1 }} />
 
@@ -956,13 +978,13 @@ export default function Sidebar({
           <SidebarIconButton
             icon={
               authUser?.avatar ? (
-                <img src={authUser.avatar} alt={displayName} width={28} height={28} style={{ borderRadius: "50%", objectFit: "cover", display: "block" }} referrerPolicy="no-referrer" />
+                <img src={authUser.avatar} alt={displayName} width={26} height={26} style={{ borderRadius: "50%", objectFit: "cover", display: "block" }} referrerPolicy="no-referrer" />
               ) : (
                 <div style={{
-                  width: 28, height: 28, borderRadius: "50%",
-                  background: "var(--bg-hover)", border: "1px solid var(--border-primary)",
+                  width: 26, height: 26, borderRadius: "50%",
+                  background: "rgba(255,255,255,0.04)", border: `1px solid ${Z800}`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 11, fontWeight: 600, color: "var(--text-primary)",
+                  fontSize: 9.5, fontWeight: 600, color: Z400,
                 }}>
                   {userInitials}
                 </div>
@@ -970,12 +992,14 @@ export default function Sidebar({
             }
             tooltip={displayName || "Profile"}
             onClick={() => setProfilePopoverOpen(!profilePopoverOpen)}
+            size={38}
           />
         ) : (
           <SidebarIconButton
             icon={<LogIn size={iconSize} strokeWidth={iconSW} />}
             tooltip={t("auth.sign_in")}
             onClick={() => { window.location.href = "/login"; }}
+            size={38}
           />
         )}
       </div>
@@ -1001,16 +1025,16 @@ function CloseButtonWithTooltip({ hovered, setHovered, onClick }: {
       <button
         onClick={onClick}
         style={{
-          width: 32, height: 32, borderRadius: 6,
+          width: 30, height: 30, borderRadius: 8,
           border: "none", padding: 0,
           background: hovered ? "rgba(255,255,255,0.06)" : "transparent",
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer",
-          color: hovered ? "var(--text-primary)" : "var(--text-tertiary)",
-          transition: "all 150ms ease",
+          color: hovered ? Z300 : Z600,
+          transition: "background 180ms ease-out, color 180ms ease-out",
         }}
       >
-        <PanelLeft size={16} strokeWidth={1.5} />
+        <PanelLeft size={15} strokeWidth={1.5} />
       </button>
 
       <SidebarTooltip show={hovered} text="Close Sidebar" anchorRef={btnRef} />
@@ -1033,51 +1057,40 @@ function CollapsedLogoButton({ onClick }: { onClick: () => void }) {
       <button
         onClick={onClick}
         style={{
-          width: 40,
-          height: 40,
-          borderRadius: 6,
+          width: 38,
+          height: 38,
+          borderRadius: 8,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           cursor: "pointer",
           border: "none",
           padding: 0,
-          background: hovered ? "rgba(255,255,255,0.06)" : "transparent",
-          transition: "background 150ms ease",
+          background: hovered ? "rgba(255,255,255,0.05)" : "transparent",
+          transition: "background 200ms ease-out",
         }}
       >
-        {/* Container for cross-fade substitution */}
-        <div style={{ position: "relative", width: 24, height: 24 }}>
-          {/* Logo — visible when NOT hovered */}
+        <div style={{ position: "relative", width: 22, height: 22 }}>
           <div style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            position: "absolute", inset: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
             opacity: hovered ? 0 : 1,
-            transition: "opacity 200ms ease",
+            transition: "opacity 220ms ease-out",
           }}>
-            <SignuxIcon variant="gold" size={24} />
+            <SignuxIcon variant="gold" size={22} />
           </div>
-
-          {/* PanelLeft — visible when hovered */}
           <div style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            position: "absolute", inset: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
             opacity: hovered ? 1 : 0,
-            transition: "opacity 200ms ease",
-            color: "var(--text-primary)",
+            transition: "opacity 220ms ease-out",
+            color: Z300,
           }}>
-            <PanelLeft size={18} strokeWidth={1.5} />
+            <PanelLeft size={17} strokeWidth={1.5} />
           </div>
         </div>
       </button>
 
-      {/* Tooltip "Open Sidebar" — portal-based */}
       <SidebarTooltip show={hovered} text="Open Sidebar" anchorRef={btnRef} />
     </div>
   );
