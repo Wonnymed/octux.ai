@@ -49,6 +49,7 @@ const ProjectKnowledge = dynamic(() => import("../components/ProjectKnowledge"),
 const SimulationEngine = dynamic(() => import("../components/SimulationEngine"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
 const CompeteView = dynamic(() => import("../components/IntelView"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
 const BuildView = dynamic(() => import("../components/BuildEngine"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
+const GrowView = dynamic(() => import("../components/GrowEngine"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
 const ProtectView = dynamic(() => import("../components/GlobalOpsView"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
 const HireView = dynamic(() => import("../components/InvestView"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
 const ThreatRadar = dynamic(() => import("../components/ThreatRadar"), { ssr: false });
@@ -1256,6 +1257,17 @@ function ChatPage() {
               style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
               <BuildView lang={lang} userId={authUser?.id} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} />
+            </motion.div>
+          ) : mode === "grow" ? (
+            <motion.div
+              key="grow"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
+              style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
+            >
+              <GrowView lang={lang} />
             </motion.div>
           ) : mode === "protect" ? (
             <motion.div
