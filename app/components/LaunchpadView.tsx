@@ -840,28 +840,39 @@ How to make your first $1,000:
         {showPaywall && (
           <div style={{
             position: "fixed", inset: 0, zIndex: 999,
-            background: "rgba(0,0,0,0.6)", display: "flex",
-            alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            animation: "fadeIn 200ms ease",
           }} onClick={() => setShowPaywall(false)}>
             <div onClick={e => e.stopPropagation()} style={{
-              background: "var(--bg-primary)", borderRadius: 16,
-              padding: 32, maxWidth: 400, width: "90%",
-              border: "1px solid var(--border-secondary)",
+              background: "var(--bg-card)", borderRadius: 16,
+              padding: 32, maxWidth: 420, width: "90%",
+              border: "1px solid var(--border-primary)",
               textAlign: "center",
+              animation: "modalIn 200ms ease",
             }}>
-              <Lock size={32} style={{ color: TEAL, marginBottom: 12 }} />
-              <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: "var(--text-primary)" }}>
+              <Lock size={28} style={{ color: "var(--negative)", marginBottom: 16 }} />
+              <h3 style={{ fontSize: 18, fontWeight: 500, marginBottom: 8, color: "var(--text-primary)" }}>
                 Upgrade to Pro
               </h3>
-              <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 20 }}>
+              <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 24 }}>
                 Launchpad validation requires a Pro plan.
               </p>
               <button onClick={() => { window.location.href = "/pricing"; }} style={{
-                padding: "10px 24px", borderRadius: 50,
-                background: TEAL, color: "#000",
+                width: "100%", padding: "12px", borderRadius: 10,
+                background: "var(--accent)", color: "#09090B",
                 fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer",
+                marginBottom: 8,
               }}>
-                View Plans
+                Upgrade to Pro
+              </button>
+              <button onClick={() => setShowPaywall(false)} style={{
+                width: "100%", padding: "10px", borderRadius: 10,
+                background: "transparent", border: "none",
+                color: "var(--text-tertiary)", fontSize: 13, cursor: "pointer",
+              }}>
+                Maybe later
               </button>
             </div>
           </div>

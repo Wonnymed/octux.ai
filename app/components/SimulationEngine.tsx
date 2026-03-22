@@ -1077,28 +1077,39 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
         {showPaywall && (
           <div style={{
             position: "fixed", inset: 0, zIndex: 999,
-            background: "rgba(0,0,0,0.6)", display: "flex",
-            alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            animation: "fadeIn 200ms ease",
           }} onClick={() => setShowPaywall(false)}>
             <div onClick={e => e.stopPropagation()} style={{
-              background: "var(--bg-primary)", borderRadius: 16,
-              padding: 32, maxWidth: 400, width: "90%",
-              border: "1px solid var(--border-secondary)",
+              background: "var(--bg-card)", borderRadius: 16,
+              padding: 32, maxWidth: 420, width: "90%",
+              border: "1px solid var(--border-primary)",
               textAlign: "center",
+              animation: "modalIn 200ms ease",
             }}>
-              <Lock size={32} style={{ color: "var(--text-tertiary)", marginBottom: 12 }} />
-              <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: "var(--text-primary)" }}>
-                Upgrade to Pro
+              <Lock size={28} style={{ color: "var(--negative)", marginBottom: 16 }} />
+              <h3 style={{ fontSize: 18, fontWeight: 500, marginBottom: 8, color: "var(--text-primary)" }}>
+                Not enough tokens
               </h3>
-              <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 20 }}>
-                You've used all your free simulations this month. Upgrade to Pro for 20/month.
+              <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 24 }}>
+                You&apos;ve used all your free simulations this month.
               </p>
               <button onClick={() => { window.location.href = "/pricing"; }} style={{
-                padding: "10px 24px", borderRadius: 50,
-                background: "var(--accent)", color: "#000",
+                width: "100%", padding: "12px", borderRadius: 10,
+                background: "var(--accent)", color: "#09090B",
                 fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer",
+                marginBottom: 8,
               }}>
-                View Plans
+                Upgrade to Pro
+              </button>
+              <button onClick={() => setShowPaywall(false)} style={{
+                width: "100%", padding: "10px", borderRadius: 10,
+                background: "transparent", border: "none",
+                color: "var(--text-tertiary)", fontSize: 13, cursor: "pointer",
+              }}>
+                Maybe later
               </button>
             </div>
           </div>
@@ -4188,34 +4199,36 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
         <div style={{
           position: "absolute", inset: 0, display: "flex",
           alignItems: "center", justifyContent: "center",
-          background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+          background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
           zIndex: 50, borderRadius: 16,
-        }}>
-          <div style={{ textAlign: "center", padding: 32, maxWidth: 400 }}>
-            <div style={{ fontSize: 32, fontWeight: 700, color: "var(--text-primary)", fontFamily: "var(--font-brand)", marginBottom: 8 }}>
-              Your scenario is ready to analyze
-            </div>
-            <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 20, lineHeight: 1.6 }}>
-              AI specialists are ready to debate your idea, find hidden risks, and predict outcomes. Unlock to see what they find.
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 20, textAlign: "left", padding: "12px 16px", borderRadius: 10, background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-              {["Risks you haven't considered", "How competitors might respond", "Real projections and numbers", "A clear verdict: go or no-go"].map((item, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-secondary)" }}>
-                  <span style={{ color: "#22c55e", fontSize: 14 }}>✓</span>
-                  {item}
-                </div>
-              ))}
-            </div>
-            <a href="/pricing" style={{
-              display: "inline-flex", padding: "12px 28px", borderRadius: 50,
-              background: "var(--accent)", color: "#000", fontWeight: 600,
-              fontSize: 14, textDecoration: "none",
+          animation: "fadeIn 200ms ease",
+        }} onClick={() => setShowPaywall(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            textAlign: "center", padding: 32, maxWidth: 420, width: "90%",
+            background: "var(--bg-card)", borderRadius: 16,
+            border: "1px solid var(--border-primary)",
+            animation: "modalIn 200ms ease",
+          }}>
+            <Lock size={28} style={{ color: "var(--negative)", marginBottom: 16 }} />
+            <h3 style={{ fontSize: 18, fontWeight: 500, color: "var(--text-primary)", marginBottom: 8 }}>
+              Sign up to unlock
+            </h3>
+            <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 24, lineHeight: 1.5 }}>
+              AI specialists are ready to debate your idea and find hidden risks. Sign up free to see what they find.
+            </p>
+            <button onClick={() => { window.location.href = "/signup"; }} style={{
+              width: "100%", padding: "12px", borderRadius: 10,
+              background: "var(--accent)", color: "#09090B",
+              fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer",
+              marginBottom: 8,
             }}>
-              See what the AI finds →
-            </a>
+              Sign up free
+            </button>
             <button onClick={() => setShowPaywall(false)} style={{
-              display: "block", margin: "12px auto 0", background: "none",
-              border: "none", color: "var(--text-tertiary)", fontSize: 12, cursor: "pointer",
+              width: "100%", padding: "10px", borderRadius: 10,
+              background: "transparent", border: "none",
+              color: "var(--text-tertiary)", fontSize: 13, cursor: "pointer",
             }}>
               Maybe later
             </button>

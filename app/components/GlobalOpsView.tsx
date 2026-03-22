@@ -528,27 +528,36 @@ export default function GlobalOpsView({ lang, onSetMode, isLoggedIn, tier }: { l
         <div style={{
           position: "fixed", inset: 0, display: "flex",
           alignItems: "center", justifyContent: "center",
-          background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+          background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
           zIndex: 100,
-        }}>
-          <div style={{ textAlign: "center", padding: 32, maxWidth: 400 }}>
-            <Lock size={32} style={{ color: PURPLE, marginBottom: 16 }} />
-            <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>
-              Unlock Global Ops intelligence
-            </div>
-            <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 20, lineHeight: 1.6 }}>
+          animation: "fadeIn 200ms ease",
+        }} onClick={() => setShowPaywall(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            textAlign: "center", padding: 32, maxWidth: 420, width: "90%",
+            background: "var(--bg-card)", borderRadius: 16,
+            border: "1px solid var(--border-primary)",
+            animation: "modalIn 200ms ease",
+          }}>
+            <Lock size={28} style={{ color: "var(--negative)", marginBottom: 16 }} />
+            <h3 style={{ fontSize: 18, fontWeight: 500, color: "var(--text-primary)", marginBottom: 8 }}>
+              Unlock Global Ops
+            </h3>
+            <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 24, lineHeight: 1.5 }}>
               Market entry strategies, regulatory scans, and cultural intelligence for 100+ countries.
-            </div>
-            <a href="/pricing" style={{
-              display: "inline-flex", padding: "12px 28px", borderRadius: 50,
-              background: PURPLE, color: "#fff", fontWeight: 600,
-              fontSize: 14, textDecoration: "none",
+            </p>
+            <button onClick={() => { window.location.href = "/pricing"; }} style={{
+              width: "100%", padding: "12px", borderRadius: 10,
+              background: "var(--accent)", color: "#09090B",
+              fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer",
+              marginBottom: 8,
             }}>
-              {"Upgrade now \u2192"}
-            </a>
+              Upgrade to Pro
+            </button>
             <button onClick={() => setShowPaywall(false)} style={{
-              display: "block", margin: "12px auto 0", background: "none",
-              border: "none", color: "var(--text-tertiary)", fontSize: 12, cursor: "pointer",
+              width: "100%", padding: "10px", borderRadius: 10,
+              background: "transparent", border: "none",
+              color: "var(--text-tertiary)", fontSize: 13, cursor: "pointer",
             }}>
               Maybe later
             </button>
