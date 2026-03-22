@@ -2125,98 +2125,89 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           </div>
         )}
 
-        {/* Footer bar — voting + actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
+        {/* Footer bar — actions */}
+        <div
           style={{
             position: "absolute", bottom: 0, left: 0, right: 0,
-            display: "flex", alignItems: isMobile ? "stretch" : "center",
-            flexDirection: isMobile ? "column" : "row",
-            gap: isMobile ? 6 : 10,
+            display: "flex", alignItems: "center",
+            gap: 8,
             padding: isMobile ? "10px 12px" : "12px 20px",
-            background: "linear-gradient(180deg, rgba(10,10,10,0.75) 0%, rgba(10,10,10,0.95) 100%)",
-            backdropFilter: "blur(16px)",
-            borderTop: "1px solid var(--border-secondary)",
+            background: "var(--bg-secondary)",
+            borderTop: "1px solid var(--border-primary)",
             flexWrap: "wrap",
             zIndex: 10,
           }}
         >
-          {/* Voting indicator with animated bar */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: 10,
-            padding: "6px 14px", borderRadius: 50,
-            background: `${winningColor}08`,
-            border: `1px solid ${winningColor}20`,
+          {/* What if? — accent */}
+          <button onClick={() => setGodEyeOpen(!godEyeOpen)} style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "7px 16px", borderRadius: 50, fontSize: 12,
+            border: "1px solid var(--accent-border)",
+            background: "transparent", color: "var(--accent)",
+            fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap",
           }}>
-            <BarChart3 size={13} style={{ color: winningColor }} />
-            <span style={{ fontSize: 12, color: winningColor, fontWeight: 700, fontFamily: "var(--font-mono)" }}>
-              {votePercent}%
-            </span>
-            <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
-              favor Universe {winningUniverse}
-            </span>
-            {/* Mini vote bar */}
-            <div style={{
-              width: 60, height: 4, borderRadius: 2,
-              background: "rgba(255,255,255,0.05)", overflow: "hidden",
-            }}>
-              <motion.div
-                animate={{ width: `${votePercent}%` }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                style={{
-                  height: "100%", borderRadius: 2,
-                  background: winningColor,
-                }}
-              />
-            </div>
-          </div>
+            <Eye size={12} /> What if?
+          </button>
 
-          {!isMobile && <div style={{ flex: 1 }} />}
-
-          {/* Action buttons */}
-          <div style={{
-            display: "flex", gap: isMobile ? 6 : 0,
-            flexWrap: "wrap",
-            ...(isMobile ? { width: "100%" } : {}),
+          {/* New simulation */}
+          <button onClick={onReset} style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "7px 16px", borderRadius: 50, fontSize: 12,
+            border: "1px solid var(--border-primary)",
+            background: "transparent", color: "var(--text-secondary)",
+            cursor: "pointer", whiteSpace: "nowrap",
           }}>
-          {[
-            { label: isMobile ? "Variable" : "Mudar variável ao vivo", icon: <Eye size={12} />, onClick: () => setGodEyeOpen(!godEyeOpen) },
-            { label: isMobile ? "Compare" : "Comparar A vs B", icon: <Columns size={12} />, onClick: () => {
-              setCompareSnapshot({
-                scenario: simScenario,
-                rounds: engineRounds || [],
-                verdict: engineVerdict,
-                evolution: engineEvolution || [],
-              });
-              onReset();
-            }},
-            { label: simulationSaved ? "Saved!" : isMobile ? "Save" : "Salvar Simulação", icon: simulationSaved ? <Check size={12} /> : <Save size={12} />, onClick: () => onSaveSimulation?.(), disabled: simulationSaved },
-            { label: isMobile ? "PDF" : "Export PDF", icon: <FileDown size={12} />, onClick: () => {
-              import("../lib/exportPdf").then(({ exportSimulationPdf }) => {
-                exportSimulationPdf({ scenario: simScenario, rounds: engineRounds || [], verdict: engineVerdict, evolution: engineEvolution || [] });
-              });
-            }},
-          ].map((btn: any, i: number) => (
-            <button key={i} onClick={btn.onClick} disabled={btn.disabled} style={{
-              display: "flex", alignItems: "center", gap: 6,
-              padding: isMobile ? "6px 10px" : "7px 16px", borderRadius: 50,
-              border: btn.disabled ? "1px solid rgba(16,185,129,0.3)" : i === 1 ? "1px solid rgba(255,255,255,0.12)" : "1px solid var(--border-secondary)",
-              background: btn.disabled ? "rgba(16,185,129,0.08)" : i === 1 ? "rgba(255,255,255,0.06)" : "transparent",
-              color: btn.disabled ? "#10B981" : i === 1 ? "#EDEDEF" : "var(--text-tertiary)",
-              fontSize: 11, fontWeight: i === 1 || btn.disabled ? 600 : 400,
-              cursor: btn.disabled ? "default" : "pointer", transition: "all 150ms",
-              whiteSpace: "nowrap", opacity: btn.disabled ? 0.8 : 1,
-            }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.color = "#EDEDEF"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = i === 1 ? "rgba(255,255,255,0.12)" : "var(--border-secondary)"; e.currentTarget.style.color = i === 1 ? "#EDEDEF" : "var(--text-tertiary)"; e.currentTarget.style.background = i === 1 ? "rgba(255,255,255,0.06)" : "transparent"; }}
-            >
-              {btn.icon} {btn.label}
-            </button>
-          ))}
-          </div>
-        </motion.div>
+            <RotateCcw size={12} /> New simulation
+          </button>
+
+          <div style={{ flex: 1 }} />
+
+          {/* Save */}
+          <button onClick={() => onSaveSimulation?.()} disabled={simulationSaved} style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "7px 14px", borderRadius: 50, fontSize: 12,
+            border: "1px solid var(--border-primary)",
+            background: "transparent",
+            color: simulationSaved ? "var(--positive, #3ECF8E)" : "var(--text-tertiary)",
+            cursor: simulationSaved ? "default" : "pointer", whiteSpace: "nowrap",
+          }}>
+            {simulationSaved ? <Check size={12} /> : <Save size={12} />} {simulationSaved ? "Saved" : "Save"}
+          </button>
+
+          {/* Export PDF */}
+          <button onClick={() => {
+            import("../lib/exportPdf").then(({ exportSimulationPdf }) => {
+              exportSimulationPdf({ scenario: simScenario, rounds: engineRounds || [], verdict: engineVerdict, evolution: engineEvolution || [] });
+            });
+          }} style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "7px 14px", borderRadius: 50, fontSize: 12,
+            border: "1px solid var(--border-primary)",
+            background: "transparent", color: "var(--text-tertiary)",
+            cursor: "pointer", whiteSpace: "nowrap",
+          }}>
+            <FileDown size={12} /> Export PDF
+          </button>
+
+          {/* Compare A vs B */}
+          <button onClick={() => {
+            setCompareSnapshot({
+              scenario: simScenario,
+              rounds: engineRounds || [],
+              verdict: engineVerdict,
+              evolution: engineEvolution || [],
+            });
+            onReset();
+          }} style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "7px 14px", borderRadius: 50, fontSize: 12,
+            border: "1px solid var(--border-primary)",
+            background: "transparent", color: "var(--text-tertiary)",
+            cursor: "pointer", whiteSpace: "nowrap",
+          }}>
+            <Columns size={12} /> Compare A vs B
+          </button>
+        </div>
       </div>
     );
   }
@@ -2458,31 +2449,24 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           padding: isMobile ? "16px 16px 0" : "20px 24px 0",
           flexWrap: "wrap", gap: 12,
         }}>
-          <div>
-            <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", fontFamily: "var(--font-brand)", letterSpacing: 1 }}>
-              {t("sim.complete")}
-            </div>
-            <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
-              {String(meta.agents_count || 10)} agents · {String(meta.rounds || 10)} rounds · {String(meta.total_interactions || 100)} interactions · {duration > 60 ? `${Math.floor(duration / 60)}m ${duration % 60}s` : `${duration}s`}
-            </div>
-          </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button onClick={() => setGodEyeOpen(true)} style={{
               display: "flex", alignItems: "center", gap: 6,
-              padding: isMobile ? "6px 12px" : "8px 18px", borderRadius: "var(--radius-sm)",
-              border: "1px solid var(--mode-sim-border)",
-              background: "var(--mode-sim-bg)", color: "var(--mode-sim)",
-              fontSize: isMobile ? 11 : 13, fontWeight: 600, cursor: "pointer",
-              fontFamily: "var(--font-brand)", letterSpacing: 1,
+              padding: "7px 16px", borderRadius: 50, fontSize: 12,
+              border: "1px solid var(--accent-border)",
+              background: "transparent", color: "var(--accent)",
+              fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap",
             }}>
-              <Eye size={isMobile ? 12 : 14} /> What if?
+              <Eye size={12} /> What if?
             </button>
             <button onClick={onReset} style={{
-              fontSize: isMobile ? 11 : 13, color: "var(--text-secondary)", background: "transparent",
-              border: "1px solid var(--border-primary)", padding: isMobile ? "6px 12px" : "8px 16px",
-              borderRadius: "var(--radius-sm)", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "7px 16px", borderRadius: 50, fontSize: 12,
+              border: "1px solid var(--border-primary)",
+              background: "transparent", color: "var(--text-secondary)",
+              cursor: "pointer", whiteSpace: "nowrap",
             }}>
-              {t("sim.new_simulation")}
+              <RotateCcw size={12} /> New simulation
             </button>
           </div>
         </div>
@@ -2555,42 +2539,42 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           {/* Full debate transcript — collapsible */}
           {engineRounds && engineRounds.length > 0 && (
             <div style={{
-              padding: "16px 20px", borderRadius: 12, marginBottom: 20,
-              background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
+              padding: "20px", borderRadius: 12, marginBottom: 20,
+              background: "var(--bg-card)", border: "1px solid var(--border-primary)",
             }}>
               <div style={{
                 fontSize: 10, fontFamily: "var(--font-mono)",
-                color: "var(--text-tertiary)", textTransform: "uppercase" as const,
-                letterSpacing: 1, marginBottom: 12,
+                color: "var(--text-tertiary)",
+                letterSpacing: 2, marginBottom: 14,
               }}>
-                Full Debate Transcript
+                FULL DEBATE TRANSCRIPT
               </div>
-              {engineRounds.map((round: any) => {
+              {engineRounds.map((round: any, ri: number) => {
                 const isCollapsed = collapsedSections[`er-${round.round}`] !== false;
                 return (
-                  <div key={round.round} style={{ marginBottom: 4 }}>
+                  <div key={round.round}>
                     <button
                       onClick={() => toggleSection(`er-${round.round}`)}
                       style={{
                         width: "100%", display: "flex", alignItems: "center", gap: 8,
-                        padding: "8px 0", background: "none", border: "none",
+                        padding: "10px 0", background: "none", border: "none",
                         cursor: "pointer", color: "var(--text-primary)",
-                        borderBottom: "1px solid var(--border-secondary)",
+                        borderTop: ri > 0 ? "1px solid var(--border-primary)" : "none",
                       }}
                     >
-                      {isCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
+                      {isCollapsed ? <ChevronRight size={12} style={{ color: "var(--text-tertiary)" }} /> : <ChevronDown size={12} style={{ color: "var(--text-tertiary)" }} />}
                       <span style={{
-                        fontSize: 11, fontWeight: 700,
-                        color: round.round <= 5 ? "#3B82F6" : "#8B5CF6",
+                        fontSize: 12, fontWeight: 500,
+                        color: "var(--accent)",
                         fontFamily: "var(--font-mono)",
                       }}>Round {round.round}</span>
-                      <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{typeof round.label === "string" ? round.label : String(round.label ?? "")}</span>
+                      <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{typeof round.label === "string" ? round.label : String(round.label ?? "")}</span>
                     </button>
                     {!isCollapsed && (
                       <div style={{
                         display: "grid",
                         gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-                        gap: 8, padding: "10px 0",
+                        gap: 8, padding: "8px 0 12px",
                       }}>
                         {(round.agents || []).map((agent: any, ai: number) => (
                           <AgentCard
@@ -2610,28 +2594,28 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
             </div>
           )}
 
-          {/* Variable Editor for re-simulation */}
+          {/* Re-simulate with changes */}
           <div style={{
-            padding: "16px 20px", borderRadius: 12,
-            background: "var(--card-bg)", border: "1px solid var(--border-secondary)",
+            padding: "20px", borderRadius: 12,
+            background: "var(--bg-card)", border: "1px solid var(--border-primary)",
           }}>
             <div style={{
               fontSize: 10, fontFamily: "var(--font-mono)",
-              color: "var(--text-tertiary)", textTransform: "uppercase" as const,
-              letterSpacing: 1, marginBottom: 10,
+              color: "var(--text-tertiary)",
+              letterSpacing: 2, marginBottom: 12,
             }}>
-              Re-simulate with changes
+              RE-SIMULATE WITH CHANGES
             </div>
             <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
               <input
                 type="text"
-                placeholder="Change a variable... e.g. 'Budget doubled' or 'Competitor launches first'"
+                placeholder="Describe what to change..."
                 value={whatIfInput}
                 onChange={e => setWhatIfInput(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && whatIfInput.trim()) handleWhatIf(whatIfInput); }}
                 style={{
                   flex: 1, padding: "10px 14px", borderRadius: 8,
-                  border: "1px solid var(--border-secondary)", background: "var(--bg-secondary)",
+                  border: "1px solid var(--border-primary)", background: "var(--bg-secondary)",
                   color: "var(--text-primary)", fontSize: 13, outline: "none",
                 }}
               />
@@ -2641,21 +2625,24 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
                 style={{
                   display: "flex", alignItems: "center", gap: 6,
                   padding: "10px 20px", borderRadius: 8,
-                  background: whatIfInput.trim() ? "var(--accent)" : "rgba(255,255,255,0.05)",
-                  color: whatIfInput.trim() ? "#000" : "var(--text-tertiary)",
-                  fontSize: 13, fontWeight: 600, border: "none",
+                  background: "transparent",
+                  color: whatIfInput.trim() ? "var(--text-primary)" : "var(--text-tertiary)",
+                  fontSize: 13, fontWeight: 500,
+                  border: "1px solid var(--border-primary)",
                   cursor: whatIfInput.trim() ? "pointer" : "default",
+                  transition: "border-color 150ms, color 150ms",
                 }}
               >
-                <Zap size={14} /> Re-simulate
+                <RotateCcw size={13} /> Re-simulate
               </button>
             </div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {["Budget doubled", "Timeline cut in half", "Competitor launches first", "Market downturn 20%"].map(chip => (
                 <button key={chip} onClick={() => handleWhatIf(chip)} style={{
                   padding: "5px 12px", borderRadius: 50, fontSize: 11,
-                  background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.07)",
-                  color: "#EDEDEF", cursor: "pointer",
+                  background: "transparent", border: "1px solid var(--border-primary)",
+                  color: "var(--text-tertiary)", cursor: "pointer",
+                  transition: "border-color 150ms, color 150ms",
                 }}>
                   {chip}
                 </button>
