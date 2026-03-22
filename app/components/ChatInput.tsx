@@ -362,7 +362,7 @@ export default function ChatInput({
       { keywords: ["caused", "because of", "led to", "resulted in", "why did", "correlation", "impact of", "dropped after", "increased when"], tool: "Causal Map", label: "Map with Causal Map?", color: "#06B6D4", command: "/causal" },
       { keywords: ["negotiat", "meeting tomorrow", "pitch to", "asking for", "salary", "raise", "contract", "close the deal", "convince"], tool: "Negotiation War Room", label: "Prepare with War Room?", color: "#F97316", command: "/negotiate" },
       { keywords: ["what if", "next year", "future", "scenario", "12 months", "what could happen", "plan for", "prepare for"], tool: "Scenario Planner", label: "Plan with Scenarios?", color: "#22C55E", command: "/scenarios" },
-      { keywords: ["simulate", "stress test", "what would happen", "test my idea", "agents", "debate"], tool: "Simulate", label: "Run Simulation?", color: "#C8A84E", command: "" },
+      { keywords: ["simulate", "stress test", "what would happen", "test my idea", "agents", "debate"], tool: "Simulate", label: "Run Simulation?", color: "#3B82F6", command: "" },
       { keywords: ["start a business", "startup", "launch", "side project", "business idea", "validate", "mvp"], tool: "Launchpad", label: "Start with Launchpad?", color: "#14B8A6", command: "" },
     ];
     for (const pattern of patterns) {

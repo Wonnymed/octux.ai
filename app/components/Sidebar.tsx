@@ -5,13 +5,13 @@ import { useRouter, usePathname } from "next/navigation";
 import {
   MessageSquare, Zap, Swords, Hammer, TrendingUp, UserCheck, Shield,
   Settings, LogIn, LogOut, Trash2, ChevronDown,
-  LayoutDashboard, PanelLeft, Monitor, Sun, Moon,
+  LayoutDashboard, PanelLeft, Monitor, Sun, Moon, Home,
   BookOpen, Clock, CreditCard, HelpCircle, BarChart3, GitCompareArrows, FlaskConical,
 } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
 import { t } from "../lib/i18n";
 import type { Mode } from "../lib/types";
-import { ENGINES, type EngineId } from "../lib/engines";
+import { ENGINES, SIGNUX_GOLD, type EngineId } from "../lib/engines";
 import { useTheme, type Theme } from "../lib/useTheme";
 import type { AuthUser } from "../lib/auth";
 import type { Conversation } from "../lib/database-client";
@@ -135,10 +135,11 @@ function SidebarTooltip({ show, text, anchorRef }: {
 }
 
 /* ═══ Sidebar Icon Button with Portal Tooltip ═══ */
-function SidebarIconButton({ icon, tooltip, active, modeColor, onClick, suppressTooltip, size = 38 }: {
+function SidebarIconButton({ icon, tooltip, active, activeColor, modeColor, onClick, suppressTooltip, size = 38 }: {
   icon: React.ReactNode;
   tooltip: string;
   active?: boolean;
+  activeColor?: string;
   modeColor?: string;
   onClick: () => void;
   suppressTooltip?: boolean;
@@ -148,11 +149,11 @@ function SidebarIconButton({ icon, tooltip, active, modeColor, onClick, suppress
   const btnRef = useRef<HTMLDivElement>(null);
 
   const iconColor = active
-    ? Z300
+    ? (activeColor || Z300)
     : hovered ? Z400 : (modeColor || Z600);
 
   const bgColor = active
-    ? "rgba(255,255,255,0.06)"
+    ? (activeColor ? `${activeColor}0F` : "rgba(255,255,255,0.06)")
     : hovered
       ? "rgba(255,255,255,0.035)"
       : "transparent";
@@ -439,7 +440,7 @@ export default function Sidebar({
   // Navigate to /chat with mode as query param if on a different route
   const handleMode = (m: Mode) => {
     if (pathname !== "/chat") {
-      router.push(`/chat?mode=${m}`);
+      router.push(m === "chat" ? "/chat" : `/chat?mode=${m}`);
     } else {
       setMode(m);
     }
@@ -654,18 +655,51 @@ export default function Sidebar({
           <CloseButtonWithTooltip hovered={closeHovered} setHovered={setCloseHovered} onClick={onClose} />
         </div>
 
-        {/* ═══ ZONE A — DECISION ENGINES ═══ */}
+        {/* ═══ HOME ═══ */}
         <div style={{ padding: "6px 12px 0", flexShrink: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {(() => {
+              const isHomeActive = mode === "chat";
+              return (
+                <button
+                  onClick={() => handleMode("chat" as Mode)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    width: "100%", padding: "10px 10px 10px 12px",
+                    border: "none",
+                    borderLeft: isHomeActive ? `3px solid ${SIGNUX_GOLD}` : "3px solid transparent",
+                    borderRadius: 8,
+                    cursor: "pointer", fontSize: 13.5, textAlign: "left",
+                    background: isHomeActive ? `rgba(200,168,78,0.06)` : "transparent",
+                    color: isHomeActive ? Z200 : Z500,
+                    fontWeight: isHomeActive ? 500 : 420,
+                    letterSpacing: 0.1,
+                    transition: "background 180ms ease-out, color 180ms ease-out",
+                  }}
+                  onMouseEnter={e => { if (!isHomeActive) { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.color = Z400; } }}
+                  onMouseLeave={e => { if (!isHomeActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = Z500; } }}
+                >
+                  <Home size={18} strokeWidth={1.5} style={{ color: isHomeActive ? SIGNUX_GOLD : Z600, flexShrink: 0, transition: "color 180ms ease-out" }} />
+                  <span>Home</span>
+                </button>
+              );
+            })()}
+          </div>
+        </div>
+
+        {/* ═══ ZONE A — DECISION ENGINES ═══ */}
+        <div style={{ padding: "8px 12px 0", flexShrink: 0 }}>
           <div style={{
             fontSize: 9.5, fontFamily: "var(--font-mono)", fontWeight: 500,
             letterSpacing: 1.8, color: Z700,
             padding: "0 10px 10px", textTransform: "uppercase",
           }}>
-            Engines
+            Decision Engines
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {ENGINE_MODES.map(({ key, icon: Icon, name }) => {
               const isActive = mode === key;
+              const engineColor = ENGINES[key as EngineId]?.color || Z400;
               return (
                 <button
                   key={key}
@@ -674,10 +708,10 @@ export default function Sidebar({
                     display: "flex", alignItems: "center", gap: 12,
                     width: "100%", padding: "10px 10px 10px 12px",
                     border: "none",
-                    borderLeft: isActive ? `2px solid ${Z400}` : "2px solid transparent",
+                    borderLeft: isActive ? `3px solid ${engineColor}` : "3px solid transparent",
                     borderRadius: 8,
                     cursor: "pointer", fontSize: 13.5, textAlign: "left",
-                    background: isActive ? "rgba(255,255,255,0.055)" : "transparent",
+                    background: isActive ? `${engineColor}0F` : "transparent",
                     color: isActive ? Z200 : Z500,
                     fontWeight: isActive ? 500 : 420,
                     letterSpacing: 0.1,
@@ -686,7 +720,7 @@ export default function Sidebar({
                   onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.color = Z400; } }}
                   onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = Z500; } }}
                 >
-                  <Icon size={18} strokeWidth={1.5} style={{ color: isActive ? Z300 : Z600, flexShrink: 0, transition: "color 180ms ease-out" }} />
+                  <Icon size={18} strokeWidth={1.5} style={{ color: isActive ? engineColor : Z600, flexShrink: 0, transition: "color 180ms ease-out" }} />
                   <span>{name}</span>
                 </button>
               );
@@ -929,6 +963,18 @@ export default function Sidebar({
 
         <div style={{ height: 10 }} />
 
+        {/* ═══ HOME icon ═══ */}
+        <SidebarIconButton
+          icon={<Home size={iconSize} strokeWidth={iconSW} />}
+          tooltip="Home"
+          active={mode === "chat"}
+          activeColor={SIGNUX_GOLD}
+          modeColor={ICON_IDLE}
+          onClick={() => handleMode("chat" as Mode)}
+        />
+
+        <div style={{ height: 6 }} />
+
         {/* ═══ ZONE A — 6 engine icons ═══ */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
           {ENGINE_MODES.map(({ key, icon: Icon, name }) => (
@@ -937,6 +983,7 @@ export default function Sidebar({
               icon={<Icon size={iconSize} strokeWidth={iconSW} />}
               tooltip={name}
               active={mode === key}
+              activeColor={ENGINES[key as EngineId]?.color}
               modeColor={ICON_IDLE}
               onClick={() => handleMode(key)}
             />

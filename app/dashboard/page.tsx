@@ -8,6 +8,7 @@ import {
   EmptyState, BackLink, ListItem, Badge,
   Z800, Z600, Z500, Z200,
 } from "../components/PageShell";
+import { ENGINES } from "../lib/engines";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -80,7 +81,7 @@ export default function DashboardPage() {
   };
 
   const STAT_CARDS = [
-    { label: "Simulations", value: stats.simulations, color: "#C8A84E", icon: Zap },
+    { label: "Simulations", value: stats.simulations, color: ENGINES.simulate.color, icon: Zap },
     { label: "Intel Reports", value: stats.intelReports, color: "#DC2626", icon: Shield },
     { label: "Active Watches", value: stats.activeWatches, color: "#22C55E", icon: Eye },
     { label: "Decisions", value: stats.decisions, color: "#8B5CF6", icon: FileText },
@@ -202,12 +203,12 @@ export default function DashboardPage() {
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <div style={{
                       width: 32, height: 32, borderRadius: 8,
-                      background: item.context_type === "simulation" ? "rgba(200,168,78,0.06)" : "rgba(220,38,38,0.06)",
+                      background: item.context_type === "simulation" ? `${ENGINES.simulate.color}0F` : "rgba(220,38,38,0.06)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       flexShrink: 0,
                     }}>
                       {item.context_type === "simulation" ? (
-                        <Zap size={14} style={{ color: "#C8A84E" }} />
+                        <Zap size={14} style={{ color: ENGINES.simulate.color }} />
                       ) : (
                         <Shield size={14} style={{ color: "#DC2626" }} />
                       )}

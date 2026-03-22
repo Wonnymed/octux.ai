@@ -1,5 +1,8 @@
 import type { Mode } from "./types";
 
+/** Signux accent gold — used for Home, brand elements, NOT engines */
+export const SIGNUX_GOLD = "#C8A84E";
+
 export const ENGINES = {
   simulate: {
     id: "simulate",
@@ -9,7 +12,7 @@ export const ENGINES = {
     cta: "Run Simulation",
     placeholder: "Describe the decision you want to pressure-test...",
     icon: "Zap",
-    color: "#C8A84E",
+    color: "#3B82F6",
     chips: ["10 expert agents", "10 structured rounds", "Success probability", "Key disagreement", "Best next action"],
   },
   build: {
@@ -20,7 +23,7 @@ export const ENGINES = {
     cta: "Build Plan",
     placeholder: "Describe what you want to build, launch, or execute...",
     icon: "Hammer",
-    color: "#3ECF8E",
+    color: "#10B981",
     chips: ["Execution roadmap", "30/60/90-day plan", "Bottleneck detection", "Resource sequencing", "Fastest path to proof"],
   },
   grow: {
@@ -31,7 +34,7 @@ export const ENGINES = {
     cta: "Find Growth Levers",
     placeholder: "Describe the business, current traction, and growth challenge...",
     icon: "TrendingUp",
-    color: "#6E9AFF",
+    color: "#8B5CF6",
     chips: ["Growth levers", "Revenue bottlenecks", "Channel prioritization", "Pricing opportunities", "Experiment roadmap"],
   },
   hire: {
@@ -42,7 +45,7 @@ export const ENGINES = {
     cta: "Evaluate Hire",
     placeholder: "Paste the role, candidate, or hiring decision you want to assess...",
     icon: "UserCheck",
-    color: "#F9A8D4",
+    color: "#F59E0B",
     chips: ["Candidate-role fit", "Red flag detection", "Timing of hire", "ROI of the role", "Interview focus points"],
   },
   protect: {
@@ -53,7 +56,7 @@ export const ENGINES = {
     cta: "Scan Risks",
     placeholder: "Describe the business, decision, or operation you want to stress-test...",
     icon: "Shield",
-    color: "#F75B5B",
+    color: "#EF4444",
     chips: ["Threat scan", "Downside mapping", "Compliance exposure", "Fragility detection", "Mitigation actions"],
   },
   compete: {
@@ -64,7 +67,7 @@ export const ENGINES = {
     cta: "Map Competitors",
     placeholder: "Describe your market, competitors, and the position you want to win...",
     icon: "Swords",
-    color: "#FDBA74",
+    color: "#F97316",
     chips: ["Competitor mapping", "Response simulation", "Weakness detection", "Positioning gaps", "Counter-move strategy"],
   },
 } as const;

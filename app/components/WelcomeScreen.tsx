@@ -252,6 +252,7 @@ export default function WelcomeScreen({
             {ENGINE_LIST.map((engine) => {
               const Icon = ICON_MAP[engine.icon] || Zap;
               const isHovered = hoveredEngine === engine.id;
+              const eColor = engine.color;
 
               return (
                 <button
@@ -266,14 +267,15 @@ export default function WelcomeScreen({
                     gap: 7,
                     padding: isMobile ? "12px 12px" : "14px 16px",
                     borderRadius: 10,
-                    border: `1px solid ${isHovered ? Z600 : Z800}`,
-                    background: isHovered ? "rgba(255,255,255,0.03)" : "transparent",
+                    border: `1px solid ${isHovered ? `${eColor}4D` : Z800}`,
+                    borderBottom: `2px solid ${eColor}33`,
+                    background: isHovered ? `${eColor}08` : "transparent",
                     cursor: "pointer",
                     transition: "border-color 180ms ease-out, background 180ms ease-out",
                     textAlign: "left",
                   }}
                 >
-                  <Icon size={18} color={Z500} strokeWidth={1.5} />
+                  <Icon size={18} color={eColor} strokeWidth={1.5} />
                   <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     <span style={{ fontSize: 13.5, fontWeight: 500, color: Z200 }}>
                       {engine.name}

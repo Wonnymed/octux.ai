@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Menu, Plus, LogIn } from "lucide-react";
-import { ENGINES, type EngineId } from "../lib/engines";
+import { ENGINES, SIGNUX_GOLD, type EngineId } from "../lib/engines";
 import type { Mode } from "../lib/types";
 import type { AuthUser } from "../lib/auth";
 
@@ -29,12 +29,17 @@ export default function TopBar({
   mode, isMobile, authUser, onOpenSidebar, onNewConversation,
   tokenStatus, sidebarOpen,
 }: TopBarProps) {
-  const engineName = ENGINES[mode as EngineId]?.name || (mode === "chat" ? "Home" : mode);
-  const engineSubtitle = ENGINES[mode as EngineId]?.subtitle || (mode === "chat" ? "Your AI business advisor." : "");
+  const isHome = mode === "chat";
+  const engineConfig = ENGINES[mode as EngineId];
+  const engineName = engineConfig?.name || (isHome ? "Home" : mode);
+  const engineSubtitle = engineConfig?.subtitle || (isHome ? "Your AI business advisor." : "");
+  const contextColor = engineConfig?.color || (isHome ? SIGNUX_GOLD : Z400);
 
   if (isMobile) {
     return <MobileTopBar
       engineName={engineName}
+      contextColor={contextColor}
+      isHome={isHome}
       authUser={authUser}
       onOpenSidebar={onOpenSidebar}
     />;
@@ -43,6 +48,8 @@ export default function TopBar({
   return <DesktopTopBar
     engineName={engineName}
     engineSubtitle={engineSubtitle}
+    contextColor={contextColor}
+    isHome={isHome}
     authUser={authUser}
     onNewConversation={onNewConversation}
     tokenStatus={tokenStatus}
@@ -52,10 +59,12 @@ export default function TopBar({
 
 /* ═══ DESKTOP — slim context bar ═══ */
 function DesktopTopBar({
-  engineName, engineSubtitle, authUser, onNewConversation, tokenStatus, sidebarOpen,
+  engineName, engineSubtitle, contextColor, isHome, authUser, onNewConversation, tokenStatus, sidebarOpen,
 }: {
   engineName: string;
   engineSubtitle: string;
+  contextColor: string;
+  isHome: boolean;
   authUser?: AuthUser | null;
   onNewConversation: () => void;
   tokenStatus?: { available: number; monthlyTotal: number; plan: string };
@@ -79,12 +88,19 @@ function DesktopTopBar({
       borderBottom: `1px solid ${Z800}`,
       flexShrink: 0,
     }}>
-      {/* LEFT — Context */}
-      <div style={{ display: "flex", alignItems: "baseline", gap: 10, minWidth: 0 }}>
+      {/* LEFT — Context with colored dot */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+        <div style={{
+          width: 8,
+          height: 8,
+          borderRadius: "50%",
+          background: contextColor,
+          flexShrink: 0,
+        }} />
         <span style={{
           fontSize: 13.5,
           fontWeight: 500,
-          color: Z200,
+          color: contextColor,
           letterSpacing: 0.2,
         }}>
           {engineName}
@@ -103,7 +119,7 @@ function DesktopTopBar({
       </div>
 
       {/* RIGHT — Actions */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
         {/* Token counter */}
         {tokenStatus && authUser && (
           <div style={{
@@ -169,6 +185,7 @@ function DesktopTopBar({
                 fontWeight: 450,
                 cursor: "pointer",
                 transition: "border-color 180ms ease-out, color 180ms ease-out",
+                whiteSpace: "nowrap",
               }}
             >
               Log in
@@ -187,6 +204,7 @@ function DesktopTopBar({
                 fontWeight: 500,
                 cursor: "pointer",
                 transition: "background 180ms ease-out",
+                whiteSpace: "nowrap",
               }}
             >
               Start free
@@ -200,9 +218,11 @@ function DesktopTopBar({
 
 /* ═══ MOBILE — refined header ═══ */
 function MobileTopBar({
-  engineName, authUser, onOpenSidebar,
+  engineName, contextColor, isHome, authUser, onOpenSidebar,
 }: {
   engineName: string;
+  contextColor: string;
+  isHome: boolean;
   authUser?: AuthUser | null;
   onOpenSidebar: () => void;
 }) {
@@ -235,18 +255,31 @@ function MobileTopBar({
         <Menu size={18} strokeWidth={1.5} />
       </button>
 
-      {/* CENTER — context */}
-      <span style={{
-        fontSize: 13,
-        fontWeight: 500,
-        color: Z300,
-        letterSpacing: 0.3,
+      {/* CENTER — context with colored dot */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 7,
         position: "absolute",
         left: "50%",
         transform: "translateX(-50%)",
       }}>
-        {engineName}
-      </span>
+        <div style={{
+          width: 7,
+          height: 7,
+          borderRadius: "50%",
+          background: contextColor,
+          flexShrink: 0,
+        }} />
+        <span style={{
+          fontSize: 13,
+          fontWeight: 500,
+          color: contextColor,
+          letterSpacing: 0.3,
+        }}>
+          {engineName}
+        </span>
+      </div>
 
       {/* RIGHT — auth or avatar */}
       {!authUser ? (

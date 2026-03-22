@@ -155,11 +155,12 @@ export default function BuildEngine({ lang, initialQuestion }: { lang?: string; 
               <Hammer size={20} strokeWidth={1.5} style={{ color: ENGINE.color }} />
               <span style={{
                 fontSize: 24, fontWeight: 300, letterSpacing: 6,
-                color: "var(--text-primary)", fontFamily: "var(--font-brand)",
+                color: ENGINE.color, fontFamily: "var(--font-brand)",
               }}>
                 {ENGINE.name.toUpperCase()}
               </span>
             </div>
+            <div style={{ width: 40, height: 2, background: ENGINE.color, margin: "0 auto 12px", borderRadius: 1 }} />
             <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0 }}>
               {ENGINE.subtitle}
             </p>

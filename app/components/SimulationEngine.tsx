@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { cleanAgentResponse } from "../lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { ENGINES } from "../lib/engines";
 
 /* ═══ Error Boundary — prevents black screen on render crash ═══ */
 class SimulationErrorBoundary extends Component<
@@ -559,20 +560,24 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           gap: 6,
           marginBottom: isMobile ? 16 : 24,
         }}>
-          <span style={{
-            fontFamily: "var(--font-brand)",
-            fontSize: 24,
-            fontWeight: 300,
-            letterSpacing: 6,
-            color: "var(--text-primary)",
-          }}>
-            SIMULATE
-          </span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+            <Zap size={20} strokeWidth={1.5} style={{ color: ENGINES.simulate.color }} />
+            <span style={{
+              fontFamily: "var(--font-brand)",
+              fontSize: 24,
+              fontWeight: 300,
+              letterSpacing: 6,
+              color: ENGINES.simulate.color,
+            }}>
+              SIMULATE
+            </span>
+          </div>
+          <div style={{ width: 40, height: 2, background: ENGINES.simulate.color, margin: "8px auto 0", borderRadius: 1 }} />
           <p style={{
             textAlign: "center",
             fontSize: 13,
             color: "var(--text-tertiary)",
-            marginTop: 8,
+            marginTop: 12,
           }}>
             Pressure-test a decision before you commit.
           </p>

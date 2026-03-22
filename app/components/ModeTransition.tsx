@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import {
-  MessageSquare, Zap, Shield, Rocket, Globe, TrendingUp, Settings,
+  MessageSquare, Zap, Shield, Hammer, TrendingUp, UserCheck, Swords, Home,
 } from "lucide-react";
+import { ENGINES, SIGNUX_GOLD, type EngineId } from "../lib/engines";
 
 interface ModeTransitionProps {
   mode: string;
@@ -10,19 +11,28 @@ interface ModeTransitionProps {
   onComplete: () => void;
 }
 
+const ICON_MAP: Record<string, React.ComponentType<any>> = {
+  Zap, Hammer, TrendingUp, UserCheck, Shield, Swords,
+};
+
 const MODE_CONFIG: Record<string, {
   icon: React.ComponentType<any>;
   color: string;
   label: string;
   animClass: string;
 }> = {
-  chat: { icon: MessageSquare, color: "#D4AF37", label: "CHAT", animClass: "anim-draw" },
-  simulate: { icon: Zap, color: "#D4AF37", label: "SIMULATE", animClass: "anim-flash" },
-  intel: { icon: Shield, color: "#EF4444", label: "INTEL", animClass: "anim-assemble" },
-  launchpad: { icon: Rocket, color: "#14B8A6", label: "LAUNCHPAD", animClass: "anim-launch" },
-  globalops: { icon: Globe, color: "#8B5CF6", label: "GLOBAL OPS", animClass: "anim-spin" },
-  invest: { icon: TrendingUp, color: "#3B82F6", label: "INVEST", animClass: "anim-trace" },
-  settings: { icon: Settings, color: "#666666", label: "SETTINGS", animClass: "anim-gear" },
+  chat: { icon: Home, color: SIGNUX_GOLD, label: "HOME", animClass: "anim-draw" },
+  ...Object.fromEntries(
+    (Object.keys(ENGINES) as EngineId[]).map((id) => [
+      id,
+      {
+        icon: ICON_MAP[ENGINES[id].icon] || Zap,
+        color: ENGINES[id].color,
+        label: ENGINES[id].name.toUpperCase(),
+        animClass: "anim-flash",
+      },
+    ])
+  ),
 };
 
 function hexToRgb(hex: string): string {

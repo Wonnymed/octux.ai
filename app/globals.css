@@ -79,25 +79,25 @@
   --sidebar-collapsed: 52px;
   --sidebar-expanded: 280px;
 
-  /* Mode accent colors */
-  --mode-sim: #C8A84E;
-  --mode-sim-bg: rgba(200,168,78,0.06);
-  --mode-sim-border: rgba(200,168,78,0.1);
-  --mode-res: #6E9AFF;
-  --mode-res-bg: rgba(110,154,255,0.06);
-  --mode-res-border: rgba(110,154,255,0.1);
-  --mode-intel: #F75B5B;
-  --mode-intel-bg: rgba(247,91,91,0.04);
-  --mode-intel-border: rgba(247,91,91,0.12);
-  --mode-lp: #14B8A6;
-  --mode-lp-bg: rgba(20,184,166,0.06);
-  --mode-lp-border: rgba(20,184,166,0.1);
-  --mode-go: #3ECF8E;
-  --mode-go-bg: rgba(62,207,142,0.06);
-  --mode-go-border: rgba(62,207,142,0.1);
-  --mode-inv: #A855F7;
-  --mode-inv-bg: rgba(168,85,247,0.06);
-  --mode-inv-border: rgba(168,85,247,0.1);
+  /* Mode accent colors — synced with engines.ts */
+  --mode-sim: #3B82F6;
+  --mode-sim-bg: rgba(59,130,246,0.06);
+  --mode-sim-border: rgba(59,130,246,0.1);
+  --mode-res: #8B5CF6;
+  --mode-res-bg: rgba(139,92,246,0.06);
+  --mode-res-border: rgba(139,92,246,0.1);
+  --mode-intel: #EF4444;
+  --mode-intel-bg: rgba(239,68,68,0.04);
+  --mode-intel-border: rgba(239,68,68,0.12);
+  --mode-lp: #10B981;
+  --mode-lp-bg: rgba(16,185,129,0.06);
+  --mode-lp-border: rgba(16,185,129,0.1);
+  --mode-go: #10B981;
+  --mode-go-bg: rgba(16,185,129,0.06);
+  --mode-go-border: rgba(16,185,129,0.1);
+  --mode-inv: #8B5CF6;
+  --mode-inv-bg: rgba(139,92,246,0.06);
+  --mode-inv-border: rgba(139,92,246,0.1);
 
   /* Shared surface tokens */
   --card-bg: #141418;
