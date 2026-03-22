@@ -1847,11 +1847,16 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
 
                 {/* ZONA 4: Verdict Panel — after Round 10 */}
                 <AnimatePresence>
-                  {engineVerdict && (
-                    <div style={{ marginBottom: 16 }}>
-                      <VerdictPanel verdict={engineVerdict} isMobile={isMobile} />
-                    </div>
-                  )}
+                  {engineVerdict && (() => {
+                    const totalInteractions = (engineRounds || []).reduce((sum: number, r: any) => sum + (r.agents?.length || 0), 0);
+                    const dur = simStartTime ? Math.floor((Date.now() - simStartTime) / 1000) : 0;
+                    const durStr = `${Math.floor(dur / 60)}m ${String(dur % 60).padStart(2, "0")}s`;
+                    return (
+                      <div style={{ marginBottom: 16 }}>
+                        <VerdictPanel verdict={engineVerdict} isMobile={isMobile} stats={{ agents: (engineAgents || []).length || 10, rounds: (engineRounds || []).length || 10, interactions: totalInteractions, elapsed: durStr }} />
+                      </div>
+                    );
+                  })()}
                 </AnimatePresence>
               </div>
             </div>
@@ -2498,11 +2503,16 @@ Stay in character. Answer questions from YOUR perspective as this specialist. Be
           <div style={{ maxWidth: 900, margin: "0 auto" }}>
 
           {/* ZONA 4: Verdict Panel */}
-          {engineVerdict && (
-            <div style={{ marginBottom: 20 }}>
-              <VerdictPanel verdict={engineVerdict} isMobile={isMobile} />
-            </div>
-          )}
+          {engineVerdict && (() => {
+            const totalInteractions = (engineRounds || []).reduce((sum: number, r: any) => sum + (r.agents?.length || 0), 0);
+            const dur = simStartTime ? Math.floor((Date.now() - simStartTime) / 1000) : 0;
+            const durStr = `${Math.floor(dur / 60)}m ${String(dur % 60).padStart(2, "0")}s`;
+            return (
+              <div style={{ marginBottom: 20 }}>
+                <VerdictPanel verdict={engineVerdict} isMobile={isMobile} stats={{ agents: (engineAgents || []).length || 10, rounds: (engineRounds || []).length || 10, interactions: totalInteractions, elapsed: durStr }} />
+              </div>
+            );
+          })()}
 
           {/* ZONA 2: Agent Grid — browseable by round */}
           {(() => {
