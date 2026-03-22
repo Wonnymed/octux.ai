@@ -17,6 +17,8 @@ export type TierModels = {
   build: string;
   hire: string;
   protect: string;
+  grow: string;
+  compete: string;
   gods_eye: string;
   threat_radar: string;
   deal_xray: string;
@@ -38,6 +40,8 @@ export function getModelsForTier(tier: string): TierModels {
         build: MODELS.fast,
         hire: MODELS.fast,
         protect: MODELS.fast,
+        grow: MODELS.fast,
+        compete: MODELS.fast,
         gods_eye: MODELS.fast,
         threat_radar: MODELS.fast,
         deal_xray: MODELS.fast,
@@ -56,6 +60,8 @@ export function getModelsForTier(tier: string): TierModels {
         build: MODELS.balanced,
         hire: MODELS.balanced,
         protect: MODELS.balanced,
+        grow: MODELS.balanced,
+        compete: MODELS.balanced,
         gods_eye: MODELS.balanced,
         threat_radar: MODELS.balanced,
         deal_xray: MODELS.balanced,
@@ -75,6 +81,8 @@ export function getModelsForTier(tier: string): TierModels {
         build: MODELS.balanced,
         hire: MODELS.powerful,
         protect: MODELS.balanced,
+        grow: MODELS.balanced,
+        compete: MODELS.balanced,
         gods_eye: MODELS.powerful,
         threat_radar: MODELS.balanced,
         deal_xray: MODELS.powerful,

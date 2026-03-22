@@ -68,7 +68,32 @@ Return ONLY valid JSON in this exact format:
   "key_opportunities": ["opportunity 1", "opportunity 2"],
   "next_actions": ["action 1", "action 2", "action 3"],
   "notes": ["any additional insights"]
-}`;
+}
+
+CRITICAL: Return ONLY valid JSON. No markdown. No code blocks. No text before or after the JSON object. Just the raw JSON.`;
+
+function tryParseJSON(text: string): any | null {
+  const clean = text.replace(/```json\n?|```\n?/g, "").trim();
+  try { return JSON.parse(clean); } catch {}
+  const match = clean.match(/\{[\s\S]*\}/);
+  if (match) { try { return JSON.parse(match[0]); } catch {} }
+  return null;
+}
+
+function makeFallback(text: string): any {
+  return {
+    engine: "protect",
+    title: "Risk Analysis",
+    executive_summary: text.slice(0, 500),
+    confidence: "medium",
+    status: "mixed",
+    main_recommendation: "Review the analysis above and extract actionable items.",
+    key_risks: [],
+    key_opportunities: [],
+    next_actions: [],
+    notes: ["Response was returned as text — structured parsing failed."],
+  };
+}
 
 export async function POST(req: NextRequest) {
   const tokenError = verifyClientToken(req);
@@ -97,15 +122,10 @@ export async function POST(req: NextRequest) {
       .map((c: any) => c.text)
       .join("");
 
-    const clean = text.replace(/```json\n?|```\n?/g, "").trim();
-    const match = clean.match(/\{[\s\S]*\}/);
+    const result = tryParseJSON(text);
+    if (result) return NextResponse.json(result);
 
-    if (!match) {
-      return NextResponse.json({ error: "Failed to generate risk analysis. Please try again." }, { status: 500 });
-    }
-
-    const result = JSON.parse(match[0]);
-    return NextResponse.json(result);
+    return NextResponse.json(makeFallback(text));
   } catch (err: any) {
     console.error("[PROTECT ENGINE]", err);
     return NextResponse.json({ error: err.message || "Internal error" }, { status: 500 });
