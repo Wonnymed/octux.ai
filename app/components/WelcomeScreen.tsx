@@ -74,7 +74,7 @@ export default function WelcomeScreen({
         <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
           <span style={{
             fontFamily: "var(--font-brand)",
-            fontSize: isMobile ? 28 : 36,
+            fontSize: isMobile ? 26 : 32,
             fontWeight: 300,
             letterSpacing: 8,
             color: "var(--text-primary)",
@@ -83,7 +83,7 @@ export default function WelcomeScreen({
           </span>
           <span style={{
             fontFamily: "var(--font-brand)",
-            fontSize: isMobile ? 28 : 36,
+            fontSize: isMobile ? 26 : 32,
             fontWeight: 300,
             letterSpacing: 8,
             color: "var(--text-tertiary)",
@@ -137,14 +137,12 @@ export default function WelcomeScreen({
               whiteSpace: "nowrap",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+              e.currentTarget.style.borderColor = "var(--border-hover)";
               e.currentTarget.style.color = "var(--text-secondary)";
-              e.currentTarget.style.background = "rgba(255,255,255,0.03)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = "var(--border-primary)";
               e.currentTarget.style.color = "var(--text-tertiary)";
-              e.currentTarget.style.background = "transparent";
             }}
           >
             {label}

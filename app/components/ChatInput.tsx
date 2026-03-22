@@ -431,9 +431,9 @@ export default function ChatInput({
       {/* ═══ Composer Shell ═══ */}
       <div
         style={{
-          borderRadius: "var(--radius-lg)",
-          border: `1px solid ${focused ? "var(--accent-border, rgba(200,168,78,0.12))" : "var(--border-primary)"}`,
-          background: "var(--card-bg)",
+          borderRadius: 12,
+          border: `1px solid ${focused ? "var(--accent-border)" : "var(--border-primary)"}`,
+          background: "var(--bg-card)",
           transition: "border-color 200ms ease",
           ...(isListening ? { borderColor: "var(--error)" } : {}),
         }}
@@ -612,7 +612,7 @@ export default function ChatInput({
             style={{
               width: 36, height: 36,
               borderRadius: "50%",
-              background: canSend ? "var(--accent)" : "var(--bg-tertiary)",
+              background: canSend ? "var(--accent)" : "transparent",
               border: "none",
               cursor: canSend ? "pointer" : "default",
               display: "flex", alignItems: "center", justifyContent: "center",
