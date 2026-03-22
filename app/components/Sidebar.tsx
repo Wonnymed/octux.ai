@@ -5,12 +5,13 @@ import { useRouter, usePathname } from "next/navigation";
 import {
   MessageSquare, Zap, Swords, Hammer, TrendingUp, UserCheck, Shield,
   Settings, LogIn, LogOut, Trash2, FolderOpen, Plus, ChevronDown,
-  X, Upload, LayoutDashboard, PanelLeft, Crown,
+  X, Upload, LayoutDashboard, PanelLeft, Crown, Monitor, Sun, Moon,
 } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
 import { t } from "../lib/i18n";
 import type { Mode } from "../lib/types";
 import { ENGINES, type EngineId } from "../lib/engines";
+import { useTheme, type Theme } from "../lib/useTheme";
 import type { AuthUser } from "../lib/auth";
 import type { Conversation } from "../lib/database-client";
 import { createSupabaseBrowser } from "../lib/supabase-browser";
@@ -48,8 +49,8 @@ type SidebarProps = {
   tokenStatus?: { available: number; monthlyTotal: number; plan: string };
 };
 
-const ICON_IDLE = "#52525B";
-const ICON_ACTIVE = "#EDEDEF";
+const ICON_IDLE = "var(--text-tertiary)";
+const ICON_ACTIVE = "var(--text-primary)";
 
 const ICON_MAP: Record<string, any> = {
   Zap, Hammer, TrendingUp, UserCheck, Shield, Swords,
@@ -107,15 +108,15 @@ function SidebarTooltip({ show, text, anchorRef }: {
       transform: "translateY(-50%)",
       padding: "6px 12px",
       borderRadius: 8,
-      background: "#141418",
+      background: "var(--bg-card)",
       border: "1px solid var(--border-secondary)",
-      boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+      boxShadow: "var(--shadow-md)",
       whiteSpace: "nowrap",
       zIndex: 10000,
       pointerEvents: "none",
       animation: "tooltipFadeIn 150ms ease-out forwards",
     }}>
-      <span style={{ fontSize: 12, fontWeight: 500, color: "#EDEDEF" }}>
+      <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-primary)" }}>
         {text}
       </span>
     </div>,
@@ -148,9 +149,9 @@ function SidebarIconButton({ icon, tooltip, active, activeColor, modeColor, onCl
         : (modeColor || "var(--text-tertiary)");
 
   const bgColor = active
-    ? "rgba(255,255,255,0.04)"
+    ? "var(--bg-hover)"
     : hovered
-      ? "rgba(255,255,255,0.03)"
+      ? "var(--bg-hover)"
       : "transparent";
 
   return (
@@ -218,7 +219,7 @@ function ProfilePopover({
         fontSize: 13, fontWeight: 400,
         transition: "background 150ms",
       }}
-      onMouseEnter={(e) => e.currentTarget.style.background = danger ? "rgba(239,68,68,0.06)" : "rgba(255,255,255,0.04)"}
+      onMouseEnter={(e) => e.currentTarget.style.background = danger ? "rgba(239,68,68,0.06)" : "var(--bg-hover)"}
       onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
     >
       {icon}
@@ -277,7 +278,7 @@ function ProfilePopover({
               {tier === "max" || tier === "founding" ? (
                 <span style={{ color: "#A855F7" }}>Max plan</span>
               ) : tier === "pro" ? (
-                <span style={{ color: "#EDEDEF" }}>Pro plan</span>
+                <span style={{ color: "var(--text-primary)" }}>Pro plan</span>
               ) : (
                 "Free plan"
               )}
@@ -426,6 +427,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
   const sidebarRef = useRef<HTMLElement>(null);
   const avatarRef = useRef<HTMLButtonElement>(null);
   const avatarCollapsedRef = useRef<HTMLButtonElement>(null);
@@ -616,7 +618,7 @@ export default function Sidebar({
             cursor: "pointer", color: "var(--text-primary)", fontSize: 13,
             transition: "all 200ms ease",
           }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
+            onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "var(--border-secondary)"; }}>
             <Plus size={16} strokeWidth={2} />
             <span>New chat</span>
@@ -656,10 +658,10 @@ export default function Sidebar({
                 display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "8px 12px",
                 border: "none", borderLeft: isActive ? "2px solid var(--accent)" : "2px solid transparent",
                 borderRadius: "var(--radius-xs)", cursor: "pointer", fontSize: 13, transition: "all 150ms", textAlign: "left",
-                background: isActive ? "rgba(255,255,255,0.04)" : "none",
+                background: isActive ? "var(--bg-hover)" : "none",
                 color: isActive ? ICON_ACTIVE : "var(--text-secondary)",
                 fontWeight: isActive ? 500 : 400,
-              }} onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
+              }} onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "var(--bg-hover)"; }}
                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}>
                 <Icon size={16} strokeWidth={1.5} style={{ color: isActive ? ICON_ACTIVE : ICON_IDLE }} />
                 <span style={{ flex: 1 }}>{t(label)}</span>
@@ -672,7 +674,40 @@ export default function Sidebar({
           })}
         </div>
 
-        {/* BUG 4 FIX: Settings button in expanded sidebar */}
+        {/* Theme toggle */}
+        <div style={{ padding: "0 12px 4px" }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 2,
+            padding: 2, borderRadius: 8,
+            background: "var(--bg-secondary)", border: "1px solid var(--border-secondary)",
+          }}>
+            {([
+              { value: "auto" as Theme, icon: Monitor, tip: "Auto" },
+              { value: "light" as Theme, icon: Sun, tip: "Light" },
+              { value: "dark" as Theme, icon: Moon, tip: "Dark" },
+            ]).map(({ value, icon: ThIcon, tip }) => {
+              const active = theme === value;
+              return (
+                <button
+                  key={value}
+                  title={tip}
+                  onClick={() => setTheme(value)}
+                  style={{
+                    flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+                    padding: "5px 0", border: "none", borderRadius: 6, cursor: "pointer",
+                    background: active ? "var(--bg-hover)" : "transparent",
+                    color: active ? "var(--text-primary)" : "var(--text-tertiary)",
+                    transition: "all 150ms",
+                  }}
+                >
+                  <ThIcon size={14} strokeWidth={1.5} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Settings button */}
         <div style={{ padding: "0 8px 8px" }}>
           <button
             onClick={() => { onOpenSettings(); onClose(); }}
@@ -802,7 +837,7 @@ export default function Sidebar({
                     transition: "background 150ms", fontSize: 12,
                     color: "var(--text-secondary)",
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
+                  onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >
                   <div style={{
@@ -874,7 +909,7 @@ export default function Sidebar({
                 cursor: "pointer", transition: "background 150ms",
                 fontSize: 12, color: "var(--text-tertiary)", textAlign: "left",
               }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
+              onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
               <Crown size={13} strokeWidth={1.5} style={{ color: "#C8A84E" }} />
@@ -890,10 +925,10 @@ export default function Sidebar({
               style={{
                 display: "flex", alignItems: "center", gap: 10,
                 width: "100%", padding: "8px 10px", border: "none",
-                borderRadius: 8, background: profilePopoverOpen ? "rgba(255,255,255,0.04)" : "transparent",
+                borderRadius: 8, background: profilePopoverOpen ? "var(--bg-hover)" : "transparent",
                 cursor: "pointer", transition: "background 150ms",
               }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
+              onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
               onMouseLeave={e => { if (!profilePopoverOpen) e.currentTarget.style.background = "transparent"; }}
             >
               {authUser?.avatar ? (
@@ -902,7 +937,7 @@ export default function Sidebar({
               ) : (
                 <div style={{
                   width: 28, height: 28, borderRadius: "50%",
-                  background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
+                  background: "var(--bg-hover)", border: "1px solid var(--border-primary)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 11, fontWeight: 600, color: "var(--text-primary)",
                 }}>
@@ -921,7 +956,7 @@ export default function Sidebar({
               padding: "8px 10px", border: "none", background: "transparent",
               borderRadius: 8, cursor: "pointer", color: "var(--text-secondary)", fontSize: 13, textAlign: "left",
             }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
+              onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
               <LogIn size={16} strokeWidth={1.5} />
               <span>{t("auth.sign_in")}</span>
@@ -1006,8 +1041,8 @@ export default function Sidebar({
               ) : (
                 <div style={{
                   width: 28, height: 28, borderRadius: "50%",
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.07)",
+                  background: "var(--bg-hover)",
+                  border: "1px solid var(--border-primary)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 11, fontWeight: 600, color: "var(--text-primary)",
                 }}>

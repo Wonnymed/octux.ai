@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" dir="ltr" data-theme="dark" style={{ colorScheme: "dark" }}>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -47,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var p=localStorage.getItem("signux_profile");var t=p?JSON.parse(p).theme:null;if(t==="light"){document.documentElement.setAttribute("data-theme","light");document.documentElement.style.colorScheme="light"}else{document.documentElement.setAttribute("data-theme","dark");document.documentElement.style.colorScheme="dark"}}catch(e){document.documentElement.setAttribute("data-theme","dark");document.documentElement.style.colorScheme="dark"}})()` }} />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem("signux-theme");if(t==="light"){document.documentElement.setAttribute("data-theme","light");document.documentElement.style.colorScheme="light"}else if(t==="dark"){document.documentElement.setAttribute("data-theme","dark");document.documentElement.style.colorScheme="dark"}else{var m=window.matchMedia("(prefers-color-scheme:light)").matches;document.documentElement.style.colorScheme=m?"light":"dark"}}catch(e){document.documentElement.style.colorScheme="dark"}})()` }} />
         {children}
         <ServiceWorkerRegister />
         <InstallPrompt />
