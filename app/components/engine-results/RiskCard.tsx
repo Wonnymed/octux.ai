@@ -6,7 +6,8 @@ interface RiskCardProps {
   risk: string;
   likelihood: string;
   impact: string;
-  mitigation: string;
+  description?: string;
+  mitigation?: string;
 }
 
 const LEVEL_COLOR: Record<string, string> = {
@@ -17,36 +18,41 @@ const LEVEL_COLOR: Record<string, string> = {
 };
 
 function levelColor(v: string): string {
-  return LEVEL_COLOR[v?.toLowerCase()] || "var(--neutral)";
+  return LEVEL_COLOR[v?.toLowerCase()] || "var(--text-tertiary)";
 }
 
-function cellBg(likelihood: string, impact: string): string {
+function riskScore(likelihood: string, impact: string): number {
   const w: Record<string, number> = { low: 1, medium: 2, high: 3, catastrophic: 4 };
-  const score = (w[likelihood?.toLowerCase()] || 1) * (w[impact?.toLowerCase()] || 1);
-  if (score >= 6) return "rgba(239,68,68,0.04)";
-  if (score >= 3) return "rgba(245,158,11,0.04)";
-  return "rgba(113,113,122,0.04)";
+  return (w[likelihood?.toLowerCase()] || 1) * (w[impact?.toLowerCase()] || 1);
 }
 
-function cellBorder(likelihood: string, impact: string): string {
-  const w: Record<string, number> = { low: 1, medium: 2, high: 3, catastrophic: 4 };
-  const score = (w[likelihood?.toLowerCase()] || 1) * (w[impact?.toLowerCase()] || 1);
-  if (score >= 6) return "1px solid rgba(239,68,68,0.12)";
-  if (score >= 3) return "1px solid rgba(245,158,11,0.12)";
-  return "1px solid var(--border-primary)";
+function cellBg(score: number): string {
+  if (score >= 9) return "rgba(239,68,68,0.06)";
+  if (score >= 6) return "rgba(249,115,22,0.06)";
+  if (score >= 4) return "rgba(245,158,11,0.06)";
+  return "var(--bg-card)";
 }
 
-export default function RiskCard({ risk, likelihood, impact, mitigation }: RiskCardProps) {
+function cellBorder(score: number): string {
+  if (score >= 9) return "rgba(239,68,68,0.15)";
+  if (score >= 6) return "rgba(249,115,22,0.15)";
+  if (score >= 4) return "rgba(245,158,11,0.15)";
+  return "var(--border-primary)";
+}
+
+export default function RiskCard({ risk, likelihood, impact, description, mitigation }: RiskCardProps) {
+  const score = riskScore(likelihood, impact);
+
   return (
     <div
       style={{
-        background: cellBg(likelihood, impact),
-        border: cellBorder(likelihood, impact),
+        background: cellBg(score),
+        border: `1px solid ${cellBorder(score)}`,
         borderRadius: 10,
         padding: "14px 16px",
         display: "flex",
         flexDirection: "column",
-        gap: 10,
+        gap: 8,
       }}
     >
       <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
@@ -56,7 +62,7 @@ export default function RiskCard({ risk, likelihood, impact, mitigation }: RiskC
         </span>
       </div>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
         <span
           style={{
             fontSize: 10,
@@ -65,8 +71,7 @@ export default function RiskCard({ risk, likelihood, impact, mitigation }: RiskC
             padding: "2px 8px",
             borderRadius: 100,
             color: levelColor(likelihood),
-            border: `1px solid ${levelColor(likelihood)}22`,
-            background: "rgba(0,0,0,0.2)",
+            border: `1px solid var(--border-secondary)`,
           }}
         >
           {likelihood} likelihood
@@ -79,20 +84,22 @@ export default function RiskCard({ risk, likelihood, impact, mitigation }: RiskC
             padding: "2px 8px",
             borderRadius: 100,
             color: levelColor(impact),
-            border: `1px solid ${levelColor(impact)}22`,
-            background: "rgba(0,0,0,0.2)",
+            border: `1px solid var(--border-secondary)`,
           }}
         >
           {impact} impact
         </span>
       </div>
 
-      {mitigation && (
+      {description && (
         <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>
-          <span style={{ color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", fontSize: 10 }}>
-            MITIGATION{" "}
-          </span>
-          {mitigation}
+          {description}
+        </div>
+      )}
+
+      {mitigation && (
+        <div style={{ fontSize: 11, color: "var(--text-tertiary)", lineHeight: 1.5 }}>
+          Mitigation: {mitigation}
         </div>
       )}
     </div>

@@ -6,9 +6,10 @@ interface MetricCardProps {
   value: string | number;
   sublabel?: string;
   accent?: string;
+  icon?: React.ReactNode;
 }
 
-export default function MetricCard({ label, value, sublabel, accent }: MetricCardProps) {
+export default function MetricCard({ label, value, sublabel, accent, icon }: MetricCardProps) {
   const accentColor = accent || "var(--text-primary)";
 
   return (
@@ -23,17 +24,20 @@ export default function MetricCard({ label, value, sublabel, accent }: MetricCar
         gap: 4,
       }}
     >
-      <span
-        style={{
-          fontSize: 10,
-          fontFamily: "var(--font-mono)",
-          letterSpacing: 1.5,
-          textTransform: "uppercase",
-          color: "var(--text-tertiary)",
-        }}
-      >
-        {label}
-      </span>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        {icon}
+        <span
+          style={{
+            fontSize: 10,
+            fontFamily: "var(--font-mono)",
+            letterSpacing: 1.5,
+            textTransform: "uppercase",
+            color: "var(--text-tertiary)",
+          }}
+        >
+          {label}
+        </span>
+      </div>
       <span
         style={{
           fontSize: 22,
