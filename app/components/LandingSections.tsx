@@ -1,13 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Zap, Hammer, TrendingUp, UserCheck, Shield, Swords, Check, ArrowRight, ChevronDown, Lock, Layers, Brain, BarChart3 } from "lucide-react";
+import { Check, ArrowRight, ChevronDown } from "lucide-react";
 import { SignuxIcon } from "./SignuxIcon";
-import SignuxFooter from "./SignuxFooter";
-import { ENGINES } from "../lib/engines";
 
-/* ═══ Fade-in on scroll ═══ */
-function useFadeIn() {
+/* ═══ Fade-in on scroll (with optional stagger delay) ═══ */
+function Fade({ children, style, delay = 0 }: { children: React.ReactNode; style?: React.CSSProperties; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current;
@@ -15,23 +13,20 @@ function useFadeIn() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          el.style.opacity = "1";
-          el.style.transform = "translateY(0)";
+          setTimeout(() => {
+            el.style.opacity = "1";
+            el.style.transform = "translateY(0)";
+          }, delay);
           observer.unobserve(el);
         }
       },
-      { threshold: 0.12 },
+      { threshold: 0.1 },
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
-  return ref;
-}
-
-function Fade({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  const ref = useFadeIn();
+  }, [delay]);
   return (
-    <div ref={ref} style={{ opacity: 0, transform: "translateY(16px)", transition: "opacity 0.6s ease, transform 0.6s ease", ...style }}>
+    <div ref={ref} style={{ opacity: 0, transform: "translateY(16px)", transition: "opacity 0.5s ease-out, transform 0.5s ease-out", willChange: "opacity, transform", ...style }}>
       {children}
     </div>
   );
@@ -40,31 +35,11 @@ function Fade({ children, style }: { children: React.ReactNode; style?: React.CS
 /* ═══ Shared styles ═══ */
 const SECTION_PAD = { padding: "96px 24px", maxWidth: 1120, margin: "0 auto" } as const;
 const SECTION_PAD_M = { padding: "72px 16px", maxWidth: 1120, margin: "0 auto" } as const;
-const LABEL: React.CSSProperties = {
-  fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: 2,
-  textTransform: "uppercase", color: "var(--mk-text-tertiary)", marginBottom: 12,
-};
-const H2: React.CSSProperties = {
-  fontFamily: "var(--font-brand)", fontWeight: 600, lineHeight: 1.2, marginBottom: 12,
-};
-const BODY: React.CSSProperties = {
-  fontSize: 16, lineHeight: 1.7, color: "var(--mk-text-secondary)", maxWidth: 600, margin: "0 auto 40px",
-};
 const CARD: React.CSSProperties = {
   background: "#FFFFFF", border: "1px solid #E8E8E3",
   borderRadius: 14, padding: 28, boxShadow: "0 4px 18px rgba(0,0,0,0.04)",
 };
 
-const ICON_MAP: Record<string, typeof Zap> = { Zap, Hammer, TrendingUp, UserCheck, Shield, Swords };
-
-const ENGINES_LIST = [
-  { ...ENGINES.simulate, id: "simulate" },
-  { ...ENGINES.build, id: "build" },
-  { ...ENGINES.grow, id: "grow" },
-  { ...ENGINES.hire, id: "hire" },
-  { ...ENGINES.protect, id: "protect" },
-  { ...ENGINES.compete, id: "compete" },
-];
 
 /* ═══ MAIN ═══ */
 export default function LandingSections() {
@@ -86,8 +61,12 @@ export default function LandingSections() {
 
       {/* ═══ SCROLL BRIDGE ═══ */}
       <div style={{
-        height: 64,
-        background: "linear-gradient(to bottom, var(--bg-primary), var(--mk-bg))",
+        height: 56,
+        background: "linear-gradient(to bottom, var(--bg-primary) 0%, #111113 35%, #EEEEE9 70%, #FAFAF7 100%)",
+      }} />
+      <div style={{
+        maxWidth: 1120, margin: "0 auto",
+        borderTop: "1px solid #E8E8E3",
       }} />
 
       {/* ═══ 1. HOW IT WORKS ═══ */}
@@ -137,8 +116,9 @@ export default function LandingSections() {
                 label: "Decide",
                 body: "You get a structured result — scores, risks, actions, trade-offs — not a wall of text. Ready to share, ready to act on.",
               },
-            ].map((s) => (
-              <div key={s.num} style={CARD}>
+            ].map((s, idx) => (
+              <Fade key={s.num} delay={idx * 80}>
+              <div style={{ ...CARD, height: "100%" }}>
                 <div style={{
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
                   fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600,
@@ -159,6 +139,7 @@ export default function LandingSections() {
                   {s.body}
                 </div>
               </div>
+              </Fade>
             ))}
           </div>
 
@@ -168,22 +149,24 @@ export default function LandingSections() {
           }}>
             <div style={{
               borderRadius: 16, overflow: "hidden",
-              border: "1px solid var(--mk-border)",
+              border: "1px solid #E8E8E3",
               boxShadow: "0 8px 40px rgba(0,0,0,0.06)",
-              background: "#0A0A0C",
+              background: "#FFFFFF",
               aspectRatio: "16/9",
               display: "flex", alignItems: "center", justifyContent: "center",
+              flexDirection: "column", gap: 12,
             }}>
               {/* Placeholder — replace with actual screenshot/video */}
-              <div style={{
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
-                color: "rgba(255,255,255,0.3)",
+              <SignuxIcon size={28} variant="gold" />
+              <span style={{
+                fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: 1,
+                color: "#8A8A84",
               }}>
-                <SignuxIcon size={28} variant="gold" />
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: 1 }}>
-                  SIGNUX SIMULATION
-                </span>
-              </div>
+                Live product preview
+              </span>
+              <span style={{ fontSize: 13, color: "#5B5B5B" }}>
+                A real Signux screenshot will appear here.
+              </span>
             </div>
 
             {/* Caption row */}
@@ -262,15 +245,16 @@ export default function LandingSections() {
               { num: "04", name: "Hire", question: "Should I hire this person?", desc: "Decide who to hire, and when.", chips: ["Fit", "Timing"] },
               { num: "05", name: "Protect", question: "What could kill this?", desc: "Find what could break the business next.", chips: ["Risk", "Fragility"] },
               { num: "06", name: "Compete", question: "How do I beat them?", desc: "See how rivals move, and where you can win.", chips: ["Rivals", "Moat"] },
-            ] as const).map((engine) => (
+            ] as const).map((engine, idx) => (
+              <Fade key={engine.num} delay={idx * 70}>
               <div
-                key={engine.num}
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 style={{
                   ...CARD,
                   cursor: "pointer",
                   display: "flex", flexDirection: "column",
                   transition: "border-color 200ms ease, box-shadow 200ms ease",
+                  height: "100%",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = "#D0D0C8";
@@ -325,6 +309,7 @@ export default function LandingSections() {
                   ))}
                 </div>
               </div>
+              </Fade>
             ))}
           </div>
 
@@ -877,15 +862,15 @@ export default function LandingSections() {
               { label: "GROWTH", title: "Choosing between performance ads and creators", body: "Decide where the next budget should go and what lever is most likely to move revenue.", tag: "Grow" },
               { label: "RISK", title: "Stress-testing a new product rollout", body: "Find what could break the launch before it becomes expensive to fix.", tag: "Protect" },
               { label: "COMPETITION", title: "Mapping competitor response before launch", body: "See how rivals are likely to react and where the real strategic opening is.", tag: "Compete" },
-            ] as const).map((tile) => (
+            ] as const).map((tile, idx) => (
+              <Fade key={tile.label} delay={idx * 70}>
               <div
-                key={tile.label}
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 style={{
                   background: "#FFFFFF", border: "1px solid #E8E8E3",
                   borderRadius: 14, padding: 24, cursor: "pointer",
                   boxShadow: "0 4px 18px rgba(0,0,0,0.04)",
-                  display: "flex", flexDirection: "column",
+                  display: "flex", flexDirection: "column", height: "100%",
                   transition: "border-color 200ms ease, box-shadow 200ms ease",
                 }}
                 onMouseEnter={(e) => {
@@ -924,6 +909,7 @@ export default function LandingSections() {
                   </span>
                 </div>
               </div>
+              </Fade>
             ))}
           </div>
 
@@ -1142,9 +1128,45 @@ export default function LandingSections() {
       </section>
 
       {/* ═══ 9. FOOTER ═══ */}
-      <div style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
-        <SignuxFooter />
-      </div>
+      <footer style={{
+        background: "#FFFFFF", borderTop: "1px solid #E8E8E3",
+        padding: isMobile ? "32px 16px" : "40px 24px",
+      }}>
+        <div style={{
+          maxWidth: 1120, margin: "0 auto",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          flexWrap: "wrap", gap: 16,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <SignuxIcon size={18} variant="gold" />
+              <span style={{ fontSize: 13, color: "#777777" }}>
+                &copy; 2026 Signux AI. Built in Seoul.
+              </span>
+            </div>
+            <span style={{ fontSize: 12, color: "#8A8A84" }}>
+              Turn uncertainty into structured decisions.
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            {[
+              { text: "Privacy", href: "/terms" },
+              { text: "Terms", href: "/terms" },
+              { text: "Contact", href: "mailto:hello@signux.ai" },
+            ].map((link) => (
+              <Link key={link.text} href={link.href} style={{
+                fontSize: 13, color: "#5B5B5B", textDecoration: "none",
+                transition: "color 150ms",
+              }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#111111"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#5B5B5B"; }}
+              >
+                {link.text}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

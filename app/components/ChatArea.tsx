@@ -83,9 +83,19 @@ export default function ChatArea({
 
   /* ═══ Floating navbar for welcome/landing scroll ═══ */
   const [navScrolled, setNavScrolled] = useState(false);
+  const [navOnLight, setNavOnLight] = useState(false);
   useEffect(() => {
     if (messages.length > 0) return;
-    const handleNavScroll = () => setNavScrolled(window.scrollY > 60);
+    const handleNavScroll = () => {
+      const y = window.scrollY;
+      setNavScrolled(y > 60);
+      // Detect when navbar is over the light below-fold surface
+      const belowFold = document.querySelector("[data-surface='below-fold']") as HTMLElement | null;
+      if (belowFold) {
+        const rect = belowFold.getBoundingClientRect();
+        setNavOnLight(rect.top < 50);
+      }
+    };
     window.addEventListener("scroll", handleNavScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleNavScroll);
   }, [messages.length]);
@@ -99,10 +109,14 @@ export default function ChatArea({
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: isMobile ? "10px 16px" : "10px 24px",
-          background: navScrolled ? "rgba(9,9,11,0.85)" : "transparent",
+          background: navScrolled
+            ? (navOnLight ? "rgba(250,250,247,0.92)" : "rgba(9,9,11,0.85)")
+            : "transparent",
           backdropFilter: navScrolled ? "blur(12px)" : "none",
           WebkitBackdropFilter: navScrolled ? "blur(12px)" : "none",
-          borderBottom: navScrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
+          borderBottom: navScrolled
+            ? (navOnLight ? "1px solid #E8E8E3" : "1px solid rgba(255,255,255,0.06)")
+            : "1px solid transparent",
           transition: "all 300ms ease",
         }}>
           <button
@@ -115,23 +129,29 @@ export default function ChatArea({
             <SignuxIcon size={22} variant="gold" />
             <span style={{
               fontFamily: "var(--font-brand)", fontSize: 14, fontWeight: 300,
-              letterSpacing: 4, color: "var(--text-primary)",
-              opacity: navScrolled ? 1 : 0, transition: "opacity 300ms",
+              letterSpacing: 4,
+              color: navOnLight ? "#111111" : "var(--text-primary)",
+              opacity: navScrolled ? 1 : 0, transition: "opacity 300ms, color 300ms",
             }}>
               SIGNUX
             </span>
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <Link href="/login" style={{
-              fontSize: 13, color: "var(--text-secondary)", textDecoration: "none",
+              fontSize: 13,
+              color: navOnLight ? "#5B5B5B" : "var(--text-secondary)",
+              textDecoration: "none",
               padding: "6px 12px",
+              transition: "color 300ms",
             }}>
               Log in
             </Link>
             <Link href="/signup" style={{
-              fontSize: 13, color: "#09090B", textDecoration: "none",
-              padding: "6px 16px", borderRadius: 6,
-              background: "var(--accent)", fontWeight: 500,
+              fontSize: 13, textDecoration: "none",
+              padding: "6px 16px", borderRadius: 6, fontWeight: 500,
+              background: navOnLight ? "#1F3A5F" : "var(--accent)",
+              color: navOnLight ? "#FFFFFF" : "#09090B",
+              transition: "background 300ms, color 300ms",
             }}>
               Start free
             </Link>
