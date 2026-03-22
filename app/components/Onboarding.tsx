@@ -11,12 +11,12 @@ type OnboardingProps = {
 };
 
 const GOALS = [
-  { label: "I'm starting a business", icon: Rocket, mode: "launchpad" as Mode, color: "#14B8A6", challenge: "validation" },
+  { label: "I'm starting a business", icon: Rocket, mode: "build" as Mode, color: "#14B8A6", challenge: "validation" },
   { label: "I need to make a decision", icon: Zap, mode: "simulate" as Mode, color: "#D4AF37", challenge: "decision" },
-  { label: "I'm researching a market", icon: Search, mode: "intel" as Mode, color: "#DC2626", challenge: "research" },
-  { label: "I'm evaluating an investment", icon: TrendingUp, mode: "invest" as Mode, color: "#A855F7", challenge: "evaluation" },
-  { label: "I operate internationally", icon: Globe, mode: "globalops" as Mode, color: "#22C55E", challenge: "expansion" },
-  { label: "Beating competitors", icon: Shield, mode: "intel" as Mode, color: "#DC2626", challenge: "competition" },
+  { label: "I'm researching a market", icon: Search, mode: "compete" as Mode, color: "#DC2626", challenge: "research" },
+  { label: "I'm evaluating an investment", icon: TrendingUp, mode: "hire" as Mode, color: "#A855F7", challenge: "evaluation" },
+  { label: "I operate internationally", icon: Globe, mode: "protect" as Mode, color: "#22C55E", challenge: "expansion" },
+  { label: "Beating competitors", icon: Shield, mode: "compete" as Mode, color: "#DC2626", challenge: "competition" },
   { label: "Just exploring", icon: MessageSquare, mode: "chat" as Mode, color: "var(--text-tertiary)", challenge: "exploring" },
 ];
 
@@ -37,20 +37,20 @@ const LEVELS = [
 ];
 
 const MODE_DESCRIPTIONS: Record<string, string> = {
-  launchpad: "Launchpad will find the right business for your skills, validate it, and build a 90-day blueprint.",
+  build: "Build will find the right business for your skills, validate it, and build a 90-day blueprint.",
   simulate: "Simulate will stress-test your decision with AI agents debating from every angle.",
-  intel: "Intel will search multiple sources and compile a structured report with citations.",
-  invest: "Invest will evaluate your deal with quantitative formulas — expected value, Kelly, Bayesian updates.",
-  globalops: "Global Ops will analyze cross-border structures, compliance, and tax optimization across multiple jurisdictions.",
+  compete: "Compete will search multiple sources and compile a structured report with citations.",
+  hire: "Hire will evaluate your deal with quantitative formulas — expected value, Kelly, Bayesian updates.",
+  protect: "Protect will analyze cross-border structures, compliance, and tax optimization across multiple jurisdictions.",
   chat: "Chat is your open canvas — ask anything about business, strategy, or operations.",
 };
 
 const MODE_LABELS: Record<string, string> = {
-  launchpad: "Launchpad",
+  build: "Build",
   simulate: "Simulate",
-  intel: "Intel",
-  invest: "Invest",
-  globalops: "Global Ops",
+  compete: "Compete",
+  hire: "Hire",
+  protect: "Protect",
   chat: "Chat",
 };
 

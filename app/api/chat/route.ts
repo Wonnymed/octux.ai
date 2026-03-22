@@ -1085,9 +1085,9 @@ export async function POST(req: NextRequest) {
     }
 
     let baseSystemPrompt: string;
-    if (mode === "globalops") {
+    if (mode === "protect") {
       baseSystemPrompt = buildGlobalOpsSystemPrompt();
-    } else if (mode === "invest") {
+    } else if (mode === "hire") {
       baseSystemPrompt = buildInvestSystemPrompt();
     } else {
       baseSystemPrompt = buildSystemPrompt();
@@ -1181,8 +1181,8 @@ End with a section: "## What to do next" with numbered action items.` : "";
             const lastUserMsg = messages[messages.length - 1]?.content || "";
             const complexity = detectComplexity(typeof lastUserMsg === "string" ? lastUserMsg : "");
             const smartModel = getModelForComplexity(complexity, tier);
-            const chatModel = mode === "invest" ? models.invest
-              : mode === "globalops" ? models.globalops
+            const chatModel = mode === "hire" ? models.hire
+              : mode === "protect" ? models.protect
               : smartModel;
             const response = await client.messages.create({
               model: chatModel,

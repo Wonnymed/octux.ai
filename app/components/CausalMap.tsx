@@ -125,7 +125,7 @@ export default function CausalMap({ lang }: { lang: string }) {
   const reset = () => { setResult(null); setSituation(""); setError(""); };
 
   if (loading) {
-    return <LoadingOracle mode="intel" />;
+    return <LoadingOracle mode="compete" />;
   }
 
   if (result) {

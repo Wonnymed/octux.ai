@@ -136,7 +136,7 @@ export default function ScenarioPlanner({ lang }: { lang?: string }) {
 
   /* ═══ LOADING STATE ═══ */
   if (loading) {
-    return <LoadingOracle mode="intel" />;
+    return <LoadingOracle mode="compete" />;
   }
 
   /* ═══ RESULT STATE ═══ */

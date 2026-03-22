@@ -3,7 +3,7 @@ import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  MessageSquare, Zap, Shield, Rocket, Globe, TrendingUp,
+  MessageSquare, Zap, Swords, Hammer, TrendingUp, UserCheck, Shield,
   Settings, LogIn, LogOut, Trash2, FolderOpen, Plus, ChevronDown,
   X, Upload, LayoutDashboard, PanelLeft, Crown,
 } from "lucide-react";
@@ -40,8 +40,8 @@ type SidebarProps = {
   onCreateProject?: (name: string) => void;
   onOpenKnowledge?: () => void;
   tier?: string;
-  usage?: { simulations_month: number; researches_month: number; globalops_month: number; invest_month: number };
-  limits?: { simulate_monthly: number; research_monthly: number; globalops_monthly: number; invest_monthly: number };
+  usage?: { simulations_month: number; researches_month: number; protect_month: number; hire_month: number };
+  limits?: { simulate_monthly: number; research_monthly: number; protect_monthly: number; hire_monthly: number };
   savedSimulations?: any[];
   onLoadSimulation?: (id: string) => void;
   tokenStatus?: { available: number; monthlyTotal: number; plan: string };
@@ -53,10 +53,11 @@ const ICON_ACTIVE = "#EDEDEF";
 const MODES: { key: Mode; icon: any; label: string; color: string }[] = [
   { key: "chat", icon: MessageSquare, label: "sidebar.mode_chat", color: ICON_IDLE },
   { key: "simulate", icon: Zap, label: "sidebar.mode_simulate", color: ICON_IDLE },
-  { key: "intel", icon: Shield, label: "sidebar.mode_intel", color: ICON_IDLE },
-  { key: "launchpad", icon: Rocket, label: "sidebar.mode_launchpad", color: ICON_IDLE },
-  { key: "globalops", icon: Globe, label: "sidebar.mode_globalops", color: ICON_IDLE },
-  { key: "invest", icon: TrendingUp, label: "sidebar.mode_invest", color: ICON_IDLE },
+  { key: "build", icon: Hammer, label: "sidebar.mode_build", color: ICON_IDLE },
+  { key: "grow", icon: TrendingUp, label: "sidebar.mode_grow", color: ICON_IDLE },
+  { key: "hire", icon: UserCheck, label: "sidebar.mode_hire", color: ICON_IDLE },
+  { key: "protect", icon: Shield, label: "sidebar.mode_protect", color: ICON_IDLE },
+  { key: "compete", icon: Swords, label: "sidebar.mode_compete", color: ICON_IDLE },
 ];
 
 /* ═══ Portal-based Sidebar Tooltip — renders in <body>, outside overflow:hidden ═══ */
@@ -694,8 +695,8 @@ export default function Sidebar({
             {[
               { label: "Simulations", used: usage.simulations_month, total: limits.simulate_monthly, color: "#71717A" },
               { label: "Research", used: usage.researches_month, total: limits.research_monthly, color: "#71717A" },
-              { label: "Global Ops", used: usage.globalops_month, total: limits.globalops_monthly, color: "#71717A" },
-              { label: "Invest", used: usage.invest_month, total: limits.invest_monthly, color: "#71717A" },
+              { label: "Protect", used: usage.protect_month, total: limits.protect_monthly, color: "#71717A" },
+              { label: "Hire", used: usage.hire_month, total: limits.hire_monthly, color: "#71717A" },
             ].filter(u => u.total > 0 && u.total < Infinity).map(u => (
               <div key={u.label} style={{ padding: "3px 12px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 3 }}>

@@ -71,7 +71,7 @@ export default function InvestView({ lang, onSetMode, isLoggedIn, tier }: { lang
   const [userScrolledUp, setUserScrolledUp] = useState(false);
   const [investType, setInvestType] = useState<string | null>(null);
   const isMobile = useIsMobile();
-  const { enhance, enhancing, wasEnhanced } = useEnhance("invest");
+  const { enhance, enhancing, wasEnhanced } = useEnhance("hire");
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
@@ -137,7 +137,7 @@ export default function InvestView({ lang, onSetMode, isLoggedIn, tier }: { lang
       const res = await signuxFetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages, profile: getProfile(), mode: "invest" }),
+        body: JSON.stringify({ messages: apiMessages, profile: getProfile(), mode: "hire" }),
       });
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
@@ -542,7 +542,7 @@ export default function InvestView({ lang, onSetMode, isLoggedIn, tier }: { lang
             loading={loading}
             attachments={attachments}
             onAttachmentsChange={setAttachments}
-            mode="invest"
+            mode="hire"
           />
         </div>
       </div>

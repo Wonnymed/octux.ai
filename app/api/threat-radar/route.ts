@@ -6,7 +6,7 @@ import { getModelsForTier } from "../../lib/models";
 import { getKnowledgeForMode } from "../../lib/knowledge-base";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const KNOWLEDGE = getKnowledgeForMode("globalops");
+const KNOWLEDGE = getKnowledgeForMode("protect");
 
 export const maxDuration = 45;
 

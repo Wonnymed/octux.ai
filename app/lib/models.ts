@@ -14,9 +14,9 @@ export type TierModels = {
   title: string;
   reality_check: string;
   negotiate: string;
-  launchpad: string;
-  invest: string;
-  globalops: string;
+  build: string;
+  hire: string;
+  protect: string;
   gods_eye: string;
   threat_radar: string;
   deal_xray: string;
@@ -35,9 +35,9 @@ export function getModelsForTier(tier: string): TierModels {
         title: MODELS.fast,
         reality_check: MODELS.fast,
         negotiate: MODELS.fast,
-        launchpad: MODELS.fast,
-        invest: MODELS.fast,
-        globalops: MODELS.fast,
+        build: MODELS.fast,
+        hire: MODELS.fast,
+        protect: MODELS.fast,
         gods_eye: MODELS.fast,
         threat_radar: MODELS.fast,
         deal_xray: MODELS.fast,
@@ -53,9 +53,9 @@ export function getModelsForTier(tier: string): TierModels {
         title: MODELS.fast,
         reality_check: MODELS.balanced,
         negotiate: MODELS.balanced,
-        launchpad: MODELS.balanced,
-        invest: MODELS.balanced,
-        globalops: MODELS.balanced,
+        build: MODELS.balanced,
+        hire: MODELS.balanced,
+        protect: MODELS.balanced,
         gods_eye: MODELS.balanced,
         threat_radar: MODELS.balanced,
         deal_xray: MODELS.balanced,
@@ -72,9 +72,9 @@ export function getModelsForTier(tier: string): TierModels {
         title: MODELS.fast,
         reality_check: MODELS.balanced,
         negotiate: MODELS.balanced,
-        launchpad: MODELS.balanced,
-        invest: MODELS.powerful,
-        globalops: MODELS.balanced,
+        build: MODELS.balanced,
+        hire: MODELS.powerful,
+        protect: MODELS.balanced,
         gods_eye: MODELS.powerful,
         threat_radar: MODELS.balanced,
         deal_xray: MODELS.powerful,

@@ -7,7 +7,7 @@ import { getKnowledgeForMode } from "../../lib/knowledge-base";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const CHAT_KB = getKnowledgeForMode("chat");
-const INVEST_KB = getKnowledgeForMode("invest");
+const INVEST_KB = getKnowledgeForMode("hire");
 
 export const maxDuration = 45;
 

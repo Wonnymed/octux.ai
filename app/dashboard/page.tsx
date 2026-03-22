@@ -53,7 +53,7 @@ export default function DashboardPage() {
       setRecentActivity(contexts.slice(0, 10));
       setStats({
         simulations: contexts.filter(c => c.context_type === "simulation").length,
-        intelReports: contexts.filter(c => ["chat", "intel", "research"].includes(c.context_type)).length,
+        intelReports: contexts.filter(c => ["chat", "compete", "research"].includes(c.context_type)).length,
         activeWatches: watchRes.data?.length || 0,
         decisions: decisionRes.data?.length || 0,
         sharedResults: sharedRes.data?.length || 0,

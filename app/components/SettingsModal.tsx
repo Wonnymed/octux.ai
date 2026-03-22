@@ -73,8 +73,8 @@ type SettingsModalProps = {
   onLanguageChange: (lang: Language) => void;
   onNameChange: (name: string) => void;
   tier?: string;
-  usage?: { chat_today: number; simulations_month: number; researches_month: number; globalops_month: number; invest_month: number };
-  limits?: { chat_daily: number; simulate_monthly: number; research_monthly: number; globalops_monthly: number; invest_monthly: number };
+  usage?: { chat_today: number; simulations_month: number; researches_month: number; protect_month: number; hire_month: number };
+  limits?: { chat_daily: number; simulate_monthly: number; research_monthly: number; protect_monthly: number; hire_monthly: number };
 };
 
 /* ═══ Main Component ═══ */
@@ -670,21 +670,21 @@ export default function SettingsModal({ onClose, onLanguageChange, onNameChange,
                       color: "#EDEDEF",
                     },
                     {
-                      label: "Intel reports this month",
+                      label: "Compete reports this month",
                       used: usage?.researches_month || 0,
                       limit: limits?.research_monthly || 0,
                       color: "#ef4444",
                     },
                     {
-                      label: "Global Ops this month",
-                      used: usage?.globalops_month || 0,
-                      limit: limits?.globalops_monthly || 0,
+                      label: "Protect this month",
+                      used: usage?.protect_month || 0,
+                      limit: limits?.protect_monthly || 0,
                       color: "#8B5CF6",
                     },
                     {
-                      label: "Invest this month",
-                      used: usage?.invest_month || 0,
-                      limit: limits?.invest_monthly || 0,
+                      label: "Hire this month",
+                      used: usage?.hire_month || 0,
+                      limit: limits?.hire_monthly || 0,
                       color: "#3B82F6",
                     },
                   ].filter(item => item.limit > 0 || item.used > 0).map((item, i) => (

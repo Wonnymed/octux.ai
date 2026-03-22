@@ -71,7 +71,7 @@ export type SimResult = {
   engineData?: { done: boolean };
 };
 
-export type Mode = "chat" | "simulate" | "intel" | "launchpad" | "globalops" | "invest";
+export type Mode = "chat" | "simulate" | "compete" | "build" | "grow" | "hire" | "protect";
 
 export const AGENT_CATEGORY_COLORS: Record<string, { bg: string; color: string; border: string }> = {
   supply: { bg: "rgba(59,130,246,0.08)", color: "#3B82F6", border: "rgba(59,130,246,0.25)" },

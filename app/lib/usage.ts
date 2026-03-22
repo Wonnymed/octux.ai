@@ -53,14 +53,14 @@ export async function getUserTier(userId: string): Promise<Tier> {
 }
 
 /**
- * Get usage for today (chat) or this month (simulate/research/globalops/invest).
+ * Get usage for today (chat) or this month (simulate/research/protect/hire).
  */
 export async function getUsage(userId: string): Promise<{
   chat_today: number;
   simulations_month: number;
   researches_month: number;
-  globalops_month: number;
-  invest_month: number;
+  protect_month: number;
+  hire_month: number;
 }> {
   const { createServerClient: createSC } = await import("../lib/supabase");
   const supabase = createSC();
@@ -87,15 +87,15 @@ export async function getUsage(userId: string): Promise<{
 
   const simMonth = monthData?.reduce((s, d) => s + (d.simulations || 0), 0) || 0;
   const resMonth = monthData?.reduce((s, d) => s + (d.researches || 0), 0) || 0;
-  const globalopsMonth = monthData?.reduce((s, d) => s + (d.globalops || 0), 0) || 0;
-  const investMonth = monthData?.reduce((s, d) => s + (d.invest || 0), 0) || 0;
+  const protectMonth = monthData?.reduce((s, d) => s + (d.globalops || 0), 0) || 0;
+  const hireMonth = monthData?.reduce((s, d) => s + (d.invest || 0), 0) || 0;
 
   return {
     chat_today: todayData?.chat_messages || 0,
     simulations_month: simMonth,
     researches_month: resMonth,
-    globalops_month: globalopsMonth,
-    invest_month: investMonth,
+    protect_month: protectMonth,
+    hire_month: hireMonth,
   };
 }
 
@@ -145,7 +145,7 @@ export async function getTierFromRequest(req: NextRequest): Promise<Tier> {
  */
 export async function checkUsageLimit(
   userId: string | null,
-  action: "chat" | "simulate" | "research" | "globalops" | "invest"
+  action: "chat" | "simulate" | "research" | "protect" | "hire"
 ): Promise<NextResponse | null> {
   // No user = treat as free with no tracking
   if (!userId) {
@@ -189,22 +189,22 @@ export async function checkUsageLimit(
     );
   }
 
-  if (action === "globalops" && usage.globalops_month >= limits.globalops_monthly) {
+  if (action === "protect" && usage.protect_month >= limits.protect_monthly) {
     return NextResponse.json(
       { error: tier === "pro"
-        ? `You've used ${usage.globalops_month}/${limits.globalops_monthly} Global Ops analyses this month. Upgrade to Max for unlimited.`
-        : "Global Ops is available for Pro users. See what you're missing.",
-        upgrade: true, tier, usage: usage.globalops_month, limit: limits.globalops_monthly },
+        ? `You've used ${usage.protect_month}/${limits.protect_monthly} Protect analyses this month. Upgrade to Max for unlimited.`
+        : "Protect is available for Pro users. See what you're missing.",
+        upgrade: true, tier, usage: usage.protect_month, limit: limits.protect_monthly },
       { status: 403 }
     );
   }
 
-  if (action === "invest" && usage.invest_month >= limits.invest_monthly) {
+  if (action === "hire" && usage.hire_month >= limits.hire_monthly) {
     return NextResponse.json(
       { error: tier === "pro"
-        ? `You've used ${usage.invest_month}/${limits.invest_monthly} investment analyses this month. Upgrade to Max for unlimited.`
-        : "Invest mode is available for Pro users. See what you're missing.",
-        upgrade: true, tier, usage: usage.invest_month, limit: limits.invest_monthly },
+        ? `You've used ${usage.hire_month}/${limits.hire_monthly} Hire analyses this month. Upgrade to Max for unlimited.`
+        : "Hire mode is available for Pro users. See what you're missing.",
+        upgrade: true, tier, usage: usage.hire_month, limit: limits.hire_monthly },
       { status: 403 }
     );
   }

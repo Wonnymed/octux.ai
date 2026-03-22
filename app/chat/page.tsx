@@ -46,10 +46,10 @@ const TokenCounter = dynamic(() => import("../components/TokenCounter"), { ssr: 
 const ProjectKnowledge = dynamic(() => import("../components/ProjectKnowledge"), { ssr: false });
 
 const SimulationEngine = dynamic(() => import("../components/SimulationEngine"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
-const IntelView = dynamic(() => import("../components/IntelView"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
-const LaunchpadView = dynamic(() => import("../components/LaunchpadView"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
-const GlobalOpsView = dynamic(() => import("../components/GlobalOpsView"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
-const InvestView = dynamic(() => import("../components/InvestView"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
+const CompeteView = dynamic(() => import("../components/IntelView"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
+const BuildView = dynamic(() => import("../components/LaunchpadView"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
+const ProtectView = dynamic(() => import("../components/GlobalOpsView"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
+const HireView = dynamic(() => import("../components/InvestView"), { ssr: false, loading: () => <div style={{ flex: 1 }} /> });
 const ThreatRadar = dynamic(() => import("../components/ThreatRadar"), { ssr: false });
 const DealXRay = dynamic(() => import("../components/DealXRay"), { ssr: false });
 const WarGame = dynamic(() => import("../components/WarGame"), { ssr: false });
@@ -258,7 +258,7 @@ function ChatPage() {
   /* Read mode from URL query param (e.g. /chat?mode=simulate from /projects navigation) */
   useEffect(() => {
     const modeParam = searchParams.get("mode");
-    const validModes = ["chat", "simulate", "intel", "launchpad", "globalops", "invest"];
+    const validModes = ["chat", "simulate", "compete", "build", "protect", "hire", "grow"];
     if (modeParam && validModes.includes(modeParam)) {
       setMode(modeParam as Mode);
       // Clean URL without reload
@@ -501,7 +501,7 @@ function ChatPage() {
         e.preventDefault();
         setActiveTool(null);
         setMode(prev => {
-          const cycle: Mode[] = ["chat", "simulate", "intel", "launchpad", "globalops", "invest"];
+          const cycle: Mode[] = ["chat", "simulate", "compete", "build", "protect", "hire", "grow"];
           const idx = cycle.indexOf(prev);
           return cycle[(idx + 1) % cycle.length];
         });
@@ -545,7 +545,7 @@ function ChatPage() {
     if (msg.toLowerCase() === "/wargame") { setInput(""); setActiveTool("wargame"); setMode("chat"); return; }
     if (msg.toLowerCase() === "/causal") { setInput(""); setActiveTool("causal-map"); setMode("chat"); return; }
     if (msg.toLowerCase() === "/scenarios") { setInput(""); setActiveTool("scenarios"); setMode("chat"); return; }
-    if (msg.toLowerCase() === "/autopsy") { setInput(""); setMode("intel"); return; }
+    if (msg.toLowerCase() === "/autopsy") { setInput(""); setMode("compete"); return; }
 
     // Build the API content (string or array)
     let apiContent: string | any[];
@@ -1164,7 +1164,7 @@ function ChatPage() {
         {/* Launchpad check-in reminder */}
         {showCheckinReminder && (
           <div
-            onClick={() => { setMode("launchpad"); setShowCheckinReminder(false); }}
+            onClick={() => { setMode("build"); setShowCheckinReminder(false); }}
             style={{
               display: "flex", alignItems: "center", gap: 10,
               padding: "10px 16px", margin: "8px 16px",
@@ -1186,16 +1186,16 @@ function ChatPage() {
           </div>
         )}
         <AnimatePresence mode="wait">
-          {mode === "intel" ? (
+          {mode === "compete" ? (
             <motion.div
-              key="intel"
+              key="compete"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
               style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
-              <IntelView
+              <CompeteView
                 lang={lang}
                 onContinueInChat={continueResearchInChat}
                 onSetMode={setMode}
@@ -1245,38 +1245,38 @@ function ChatPage() {
                 onRefreshTokens={tokens.refresh}
               />
             </motion.div>
-          ) : mode === "launchpad" ? (
+          ) : mode === "build" ? (
             <motion.div
-              key="launchpad"
+              key="build"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
               style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
-              <LaunchpadView lang={lang} userId={authUser?.id} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} />
+              <BuildView lang={lang} userId={authUser?.id} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} />
             </motion.div>
-          ) : mode === "globalops" ? (
+          ) : mode === "protect" ? (
             <motion.div
-              key="globalops"
+              key="protect"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
               style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
-              <GlobalOpsView lang={lang} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} />
+              <ProtectView lang={lang} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} />
             </motion.div>
-          ) : mode === "invest" ? (
+          ) : mode === "hire" ? (
             <motion.div
-              key="invest"
+              key="hire"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
               style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
             >
-              <InvestView lang={lang} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} />
+              <HireView lang={lang} onSetMode={setMode} isLoggedIn={isLoggedIn} tier={tier} />
             </motion.div>
           ) : (
             <motion.div
@@ -1377,7 +1377,7 @@ function ChatPage() {
                 onAttachmentsChange={setAttachments}
                 onToast={addToast}
                 onSwitchToSimulate={() => setMode("simulate")}
-                onSwitchToResearch={() => setMode("intel")}
+                onSwitchToResearch={() => setMode("compete")}
                 onSwitchMode={setMode}
                 onOpenThreatRadar={() => setActiveTool("threat-radar")}
                 onOpenDealXRay={() => setActiveTool("deal-xray")}

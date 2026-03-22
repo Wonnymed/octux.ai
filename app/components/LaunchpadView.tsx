@@ -110,7 +110,7 @@ const AGENT_NAMES = ["Base Rate Archivist", "Unit Economics Auditor", "Demand Si
 /* ═══ Component ═══ */
 export default function LaunchpadView({ lang, userId, onSetMode, isLoggedIn, tier }: { lang: string; userId?: string; onSetMode?: (m: Mode) => void; isLoggedIn?: boolean; tier?: string }) {
   const isMobile = useIsMobile();
-  const { enhance, enhancing, wasEnhanced } = useEnhance("launchpad");
+  const { enhance, enhancing, wasEnhanced } = useEnhance("build");
   const [phase, setPhase] = useState<LaunchpadPhase>("welcome");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [showPaywall, setShowPaywall] = useState(false);
@@ -540,7 +540,7 @@ How to make your first $1,000:
             </button>
           </div>
 
-          {validating && !validationResult && <LoadingOracle mode="launchpad" />}
+          {validating && !validationResult && <LoadingOracle mode="build" />}
 
           {validationResult && (
             <div style={{ width: "100%" }}>
@@ -889,12 +889,12 @@ How to make your first $1,000:
           return (
             <div style={{ animation: "fadeIn 0.3s ease-out" }}>
               <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", marginBottom: 24, lineHeight: 1.4 }}>
-                {t("launchpad.q1")}
+                {t("build.q1")}
               </div>
               <textarea
                 value={skills}
                 onChange={e => setSkills(e.target.value)}
-                placeholder={t("launchpad.q1_placeholder")}
+                placeholder={t("build.q1_placeholder")}
                 autoFocus
                 style={{
                   width: "100%", minHeight: 80, padding: 16,
@@ -945,7 +945,7 @@ How to make your first $1,000:
           return (
             <div style={{ animation: "fadeIn 0.3s ease-out" }}>
               <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", marginBottom: 24, lineHeight: 1.4 }}>
-                {t("launchpad.q2")}
+                {t("build.q2")}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {TIME_OPTIONS.map(opt => (
@@ -975,7 +975,7 @@ How to make your first $1,000:
           return (
             <div style={{ animation: "fadeIn 0.3s ease-out" }}>
               <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", marginBottom: 24, lineHeight: 1.4 }}>
-                {t("launchpad.q3")}
+                {t("build.q3")}
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                 {CAPITAL_OPTIONS.map(opt => (
@@ -996,7 +996,7 @@ How to make your first $1,000:
           return (
             <div style={{ animation: "fadeIn 0.3s ease-out" }}>
               <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", marginBottom: 24, lineHeight: 1.4 }}>
-                {t("launchpad.q4")}
+                {t("build.q4")}
               </div>
               <div style={{ padding: "0 8px" }}>
                 <input
@@ -1005,9 +1005,9 @@ How to make your first $1,000:
                   style={{ width: "100%", accentColor: TEAL }}
                 />
                 <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{t("launchpad.conservative")}</span>
+                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{t("build.conservative")}</span>
                   <span style={{ fontSize: 16, fontWeight: 600, color: TEAL }}>{riskTolerance}/10</span>
-                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{t("launchpad.aggressive")}</span>
+                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{t("build.aggressive")}</span>
                 </div>
               </div>
             </div>
@@ -1016,7 +1016,7 @@ How to make your first $1,000:
           return (
             <div style={{ animation: "fadeIn 0.3s ease-out" }}>
               <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", marginBottom: 24, lineHeight: 1.4 }}>
-                {t("launchpad.q5")}
+                {t("build.q5")}
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {PRIORITY_OPTIONS.map(p => (
@@ -1033,7 +1033,7 @@ How to make your first $1,000:
                 ))}
               </div>
               <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 12 }}>
-                {t("launchpad.select_multiple")}
+                {t("build.select_multiple")}
               </div>
             </div>
           );
@@ -1063,7 +1063,7 @@ How to make your first $1,000:
             fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 2,
             textTransform: "uppercase", color: tealAlpha(0.5), marginBottom: 24,
           }}>
-            {t("launchpad.step")} {questionIndex + 1} / 5
+            {t("build.step")} {questionIndex + 1} / 5
           </div>
 
           {renderQuestion()}
@@ -1076,7 +1076,7 @@ How to make your first $1,000:
               onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border-secondary)"}
             >
               <ChevronLeft size={14} />
-              {questionIndex === 0 ? t("launchpad.back") : t("launchpad.previous")}
+              {questionIndex === 0 ? t("build.back") : t("build.previous")}
             </button>
 
             <button
@@ -1084,7 +1084,7 @@ How to make your first $1,000:
               disabled={!canProceed()}
               style={tealBtn(!canProceed())}
             >
-              {questionIndex === 4 ? t("launchpad.analyze") : t("launchpad.next")}
+              {questionIndex === 4 ? t("build.analyze") : t("build.next")}
               <ChevronRight size={14} />
             </button>
           </div>
@@ -1118,10 +1118,10 @@ How to make your first $1,000:
             fontFamily: "var(--font-brand)", fontSize: 20, fontWeight: 600,
             letterSpacing: 2, color: "var(--text-primary)", marginBottom: 8,
           }}>
-            {t("launchpad.analyzing")}
+            {t("build.analyzing")}
           </div>
           <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-            {t("launchpad.analyzing_desc")}
+            {t("build.analyzing_desc")}
           </div>
         </div>
       </div>
@@ -1152,7 +1152,7 @@ How to make your first $1,000:
               fontFamily: "var(--font-brand)", fontSize: 20, fontWeight: 600,
               letterSpacing: 2, color: "var(--text-primary)",
             }}>
-              {t("launchpad.results_title")}
+              {t("build.results_title")}
             </span>
           </div>
 
@@ -1166,7 +1166,7 @@ How to make your first $1,000:
             </div>
           ) : (
             <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 28 }}>
-              {t("launchpad.results_desc")}
+              {t("build.results_desc")}
             </div>
           )}
 
@@ -1299,7 +1299,7 @@ How to make your first $1,000:
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button onClick={reset} style={ghostBtn}>
-              <Rocket size={14} /> {t("launchpad.start_over")}
+              <Rocket size={14} /> {t("build.start_over")}
             </button>
           </div>
         </div>

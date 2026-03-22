@@ -144,7 +144,7 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
         background: "none", border: "none", cursor: "pointer",
         fontSize: 13, color: "var(--text-tertiary)",
       }}>
-        <ChevronLeft size={16} /> Back to Intel
+        <ChevronLeft size={16} /> Back to Compete
       </button>
     );
 
@@ -211,7 +211,7 @@ export default function IntelView({ lang, onContinueInChat, onSetMode, isLoggedI
           letterSpacing: "clamp(6px, 0.6vw, 10px)",
           color: "var(--text-primary)",
         }}>
-          INTEL ENGINE
+          COMPETE ENGINE
         </span>
       </div>
       <p style={{

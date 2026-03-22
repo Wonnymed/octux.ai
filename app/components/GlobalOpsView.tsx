@@ -64,7 +64,7 @@ export default function GlobalOpsView({ lang, onSetMode, isLoggedIn, tier }: { l
   const [userScrolledUp, setUserScrolledUp] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const isMobile = useIsMobile();
-  const { enhance, enhancing, wasEnhanced } = useEnhance("globalops");
+  const { enhance, enhancing, wasEnhanced } = useEnhance("protect");
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
@@ -130,7 +130,7 @@ export default function GlobalOpsView({ lang, onSetMode, isLoggedIn, tier }: { l
       const res = await signuxFetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages, profile: getProfile(), mode: "globalops" }),
+        body: JSON.stringify({ messages: apiMessages, profile: getProfile(), mode: "protect" }),
       });
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
@@ -520,7 +520,7 @@ export default function GlobalOpsView({ lang, onSetMode, isLoggedIn, tier }: { l
             loading={loading}
             attachments={attachments}
             onAttachmentsChange={setAttachments}
-            mode="globalops"
+            mode="protect"
           />
         </div>
       </div>

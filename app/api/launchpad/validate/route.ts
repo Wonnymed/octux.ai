@@ -6,7 +6,7 @@ import { getModelsForTier } from "../../../lib/models";
 import { getKnowledgeForMode } from "../../../lib/knowledge-base";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const LP_KNOWLEDGE = getKnowledgeForMode("launchpad");
+const LP_KNOWLEDGE = getKnowledgeForMode("build");
 
 export const maxDuration = 60;
 

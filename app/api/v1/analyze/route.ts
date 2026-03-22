@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing 'query' field" }, { status: 400 });
     }
 
-    const validModes = ["chat", "simulate", "intel", "invest", "launchpad", "globalops"];
+    const validModes = ["chat", "simulate", "compete", "hire", "build", "protect", "grow"];
     const selectedMode = validModes.includes(mode) ? mode : "chat";
 
     const systemPrompt = `You are Signux AI, a decision intelligence platform. Mode: ${selectedMode}.${context ? ` Additional context: ${context}` : ""} Provide structured analysis with actionable insights. Include positive factors and key concerns.`;

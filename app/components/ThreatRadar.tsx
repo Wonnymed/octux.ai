@@ -146,7 +146,7 @@ export default function ThreatRadar({ lang }: { lang: string }) {
   const reset = () => { setResult(null); setDescription(""); setError(""); setExpandedAxis(null); };
 
   if (loading) {
-    return <LoadingOracle mode="intel" />;
+    return <LoadingOracle mode="compete" />;
   }
 
   if (result) {

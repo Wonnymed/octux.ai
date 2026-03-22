@@ -170,7 +170,7 @@ INSTITUTIONAL ANALYSIS:
 - Banks and payment processors often act as privatized enforcers with their own risk thresholds independent of law
 - Distinguish compliance theater (paper-perfect) from substantive compliance — regulators increasingly can tell the difference`;
 
-const LAUNCHPAD_KNOWLEDGE = `STARTUP LAUNCH FRAMEWORKS:
+const BUILD_KNOWLEDGE = `STARTUP LAUNCH FRAMEWORKS:
 
 VALIDATION BEFORE BUILD:
 - MVP tests ONE hypothesis with minimum build. If testable without code, do that first
@@ -225,7 +225,7 @@ FINANCIAL DISCIPLINE:
 - Budget: 40% product, 30% acquisition, 20% ops, 10% buffer (early stage)
 - Pay yourself market rate ×0.6 — enough to focus, not enough to lose urgency`;
 
-const GLOBALOPS_KNOWLEDGE = `CROSS-BORDER OPERATIONS INTELLIGENCE:
+const PROTECT_KNOWLEDGE = `CROSS-BORDER OPERATIONS INTELLIGENCE:
 
 JURISDICTION SELECTION:
 - Start with business model, NOT the tax rate. Map: owner residence, revenue source, counterparties, banking need
@@ -304,7 +304,7 @@ GEOPOLITICS & SANCTIONS:
 - Sensitive sectors: semiconductors, telecom, AI hardware, batteries, dual-use, critical minerals
 - Maritime chokepoints (Suez, Hormuz, Panama, Taiwan Strait) reshape cost and inventory policy across industries`;
 
-const INVEST_KNOWLEDGE = `INVESTMENT & DEAL EVALUATION FRAMEWORKS:
+const HIRE_KNOWLEDGE = `INVESTMENT & DEAL EVALUATION FRAMEWORKS:
 
 MACRO REGIME RECOGNITION:
 - Core axes: growth, inflation, liquidity, policy stance — regimes change correlations between assets
@@ -383,9 +383,9 @@ export function getKnowledgeForMode(mode: string): string {
     chat: CHAT_KNOWLEDGE,
     simulate: SIMULATE_KNOWLEDGE,
     research: RESEARCH_KNOWLEDGE,
-    launchpad: LAUNCHPAD_KNOWLEDGE,
-    globalops: GLOBALOPS_KNOWLEDGE,
-    invest: INVEST_KNOWLEDGE,
+    build: BUILD_KNOWLEDGE,
+    protect: PROTECT_KNOWLEDGE,
+    hire: HIRE_KNOWLEDGE,
   };
 
   const knowledge = blocks[mode] || blocks.chat;

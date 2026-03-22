@@ -27,10 +27,11 @@ type WelcomeScreenProps = {
 
 const MODE_PILLS: { mode: Mode; label: string }[] = [
   { mode: "simulate", label: "Simulate" },
-  { mode: "intel", label: "Intel" },
-  { mode: "launchpad", label: "Launchpad" },
-  { mode: "globalops", label: "Global Ops" },
-  { mode: "invest", label: "Invest" },
+  { mode: "build", label: "Build" },
+  { mode: "grow", label: "Grow" },
+  { mode: "hire", label: "Hire" },
+  { mode: "protect", label: "Protect" },
+  { mode: "compete", label: "Compete" },
 ];
 
 export default function WelcomeScreen({

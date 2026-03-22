@@ -7,10 +7,11 @@ import type { Mode } from "../lib/types";
 const MODE_MAP: Record<string, Mode> = {
   "Chat": "chat",
   "Simulate": "simulate",
-  "Intel": "intel",
-  "Launchpad": "launchpad",
-  "Global Ops": "globalops",
-  "Invest": "invest",
+  "Compete": "compete",
+  "Build": "build",
+  "Protect": "protect",
+  "Hire": "hire",
+  "Grow": "grow",
 };
 
 type FooterLink = { text: string; href?: string; mode?: string; badge?: string };
@@ -19,10 +20,11 @@ const FOOTER_COLS: { header: string; links: FooterLink[] }[] = [
   { header: "PRODUCT", links: [
     { text: "Chat", mode: "Chat" },
     { text: "Simulate", mode: "Simulate" },
-    { text: "Intel", mode: "Intel" },
-    { text: "Launchpad", mode: "Launchpad" },
-    { text: "Global Ops", mode: "Global Ops" },
-    { text: "Invest", mode: "Invest" },
+    { text: "Compete", mode: "Compete" },
+    { text: "Build", mode: "Build" },
+    { text: "Protect", mode: "Protect" },
+    { text: "Hire", mode: "Hire" },
+    { text: "Grow", mode: "Grow" },
     { text: "Pricing", href: "/pricing" },
   ]},
   { header: "LEARN", links: [

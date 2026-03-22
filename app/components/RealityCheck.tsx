@@ -161,7 +161,7 @@ export default function RealityCheck({ lang }: { lang: string }) {
       )}
 
       {/* Loading */}
-      {loading && <LoadingOracle mode="intel" />}
+      {loading && <LoadingOracle mode="compete" />}
 
       {/* Result */}
       {result && !loading && (
