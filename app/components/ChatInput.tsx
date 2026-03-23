@@ -256,7 +256,7 @@ export default function ChatInput({
     }
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      onSend();
+      if (!loading) onSend();
     }
   };
 

@@ -59,6 +59,14 @@ export default function WhatIfPage() {
   const canUse = tier === "pro" || tier === "max" || tier === "founding";
   const hasInput = !!baseline && variable.trim().length > 5;
 
+  /* ═══ Cmd+Enter to run ═══ */
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      handleRun();
+    }
+  }
+
   /* ═══ Load saved simulations for picker ═══ */
   useEffect(() => {
     if (!authUser || !canUse) return;
@@ -573,6 +581,7 @@ Analyze how this single change affects the decision. Return ONLY valid JSON:
                       fontSize: 14, lineHeight: 1.6, resize: "vertical", outline: "none",
                       fontFamily: "inherit", transition: "border-color 180ms ease-out", boxSizing: "border-box",
                     }}
+                    onKeyDown={handleKeyDown}
                     onFocus={e => e.currentTarget.style.borderColor = SIGNUX_GOLD}
                     onBlur={e => e.currentTarget.style.borderColor = "var(--border-primary, #E8E8E3)"}
                   />
@@ -602,6 +611,11 @@ Analyze how this single change affects the decision. Return ONLY valid JSON:
                       <><FlaskConical size={16} strokeWidth={1.5} /> Run What-if</>
                     )}
                   </button>
+                  {hasInput && !running && (
+                    <span style={{ fontSize: 10.5, color: "var(--text-tertiary)" }}>
+                      &#8984;+Enter to run
+                    </span>
+                  )}
                   {running && (
                     <span style={{ fontSize: 11.5, color: "var(--text-secondary)" }}>
                       Signux is analyzing how the change affects the decision...

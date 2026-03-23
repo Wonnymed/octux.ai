@@ -488,16 +488,19 @@ export default function BillingPage() {
             {(currentTier === "pro" || currentTier === "max") && tier !== "founding" && (
               <button
                 onClick={handleManageBilling}
+                disabled={portalLoading}
                 style={{
                   display: "flex", alignItems: "center", gap: 5,
                   padding: 0, border: "none", background: "transparent",
-                  color: "var(--text-secondary)", fontSize: 12, cursor: "pointer",
+                  color: "var(--text-secondary)", fontSize: 12,
+                  cursor: portalLoading ? "default" : "pointer",
                   transition: "color 180ms ease-out",
+                  opacity: portalLoading ? 0.6 : 1,
                 }}
-                onMouseEnter={e => e.currentTarget.style.color = "var(--text-primary)"}
+                onMouseEnter={e => { if (!portalLoading) e.currentTarget.style.color = "var(--text-primary)"; }}
                 onMouseLeave={e => e.currentTarget.style.color = "var(--text-secondary)"}
               >
-                View invoices <ExternalLink size={11} strokeWidth={1.5} />
+                {portalLoading ? "Loading..." : "View invoices"} <ExternalLink size={11} strokeWidth={1.5} />
               </button>
             )}
           </div>

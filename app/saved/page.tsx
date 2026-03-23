@@ -106,6 +106,7 @@ export default function SavedPage() {
   };
 
   const handleDelete = async (id: string) => {
+    if (deleting) return; // prevent double-submit
     setDeleting(id);
     try {
       await signuxFetch(`/api/simulations/${id}`, { method: "DELETE" });

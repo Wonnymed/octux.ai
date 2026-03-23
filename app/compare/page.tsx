@@ -48,6 +48,14 @@ export default function ComparePage() {
   const canCompare = tier === "pro" || tier === "max" || tier === "founding";
   const hasInput = scenarioA.trim().length > 10 && scenarioB.trim().length > 10;
 
+  /* ═══ Cmd+Enter to run ═══ */
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      handleCompare();
+    }
+  }
+
   /* ═══ Run comparison ═══ */
   async function handleCompare() {
     if (!hasInput || running) return;
@@ -398,6 +406,7 @@ Return ONLY valid JSON with this exact structure:
                     onChange={e => setScenarioA(e.target.value)}
                     placeholder="Describe the first option you're considering..."
                     style={textarea}
+                    onKeyDown={handleKeyDown}
                     onFocus={e => e.currentTarget.style.borderColor = SIGNUX_GOLD}
                     onBlur={e => e.currentTarget.style.borderColor = "var(--border-primary, #E8E8E3)"}
                   />
@@ -429,6 +438,7 @@ Return ONLY valid JSON with this exact structure:
                     onChange={e => setScenarioB(e.target.value)}
                     placeholder="Describe the second option you're considering..."
                     style={textarea}
+                    onKeyDown={handleKeyDown}
                     onFocus={e => e.currentTarget.style.borderColor = SIGNUX_GOLD}
                     onBlur={e => e.currentTarget.style.borderColor = "var(--border-primary, #E8E8E3)"}
                   />
@@ -476,6 +486,7 @@ Return ONLY valid JSON with this exact structure:
                     transition: "border-color 180ms ease-out",
                     boxSizing: "border-box",
                   }}
+                  onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); handleCompare(); } }}
                   onFocus={e => e.currentTarget.style.borderColor = SIGNUX_GOLD}
                   onBlur={e => e.currentTarget.style.borderColor = "var(--border-primary, #E8E8E3)"}
                 />
@@ -521,9 +532,14 @@ Return ONLY valid JSON with this exact structure:
                   </>
                 )}
               </button>
-              {!hasInput && (
+              {!hasInput && !running && (
                 <span style={{ fontSize: 11.5, color: "var(--text-tertiary, #9CA3AF)" }}>
                   Describe both scenarios to compare
+                </span>
+              )}
+              {hasInput && !running && (
+                <span style={{ fontSize: 10.5, color: "var(--text-tertiary, #9CA3AF)" }}>
+                  &#8984;+Enter to run
                 </span>
               )}
               {running && (
