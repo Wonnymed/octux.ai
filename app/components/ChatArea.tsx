@@ -179,6 +179,7 @@ export default function ChatArea({
             onOpenScenarios={onOpenScenarios}
             onRouteAndSwitch={onRouteAndSwitch}
             lang={lang}
+            isLoggedIn={!!profileName}
           />
           <LandingSections />
         </div>

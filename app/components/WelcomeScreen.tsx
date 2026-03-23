@@ -1,11 +1,12 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useIsMobile } from "../lib/useIsMobile";
 import ChatInput, { type FileAttachment } from "./ChatInput";
 import { SignuxIcon } from "./SignuxIcon";
 import type { Mode } from "../lib/types";
-import { ENGINES, type EngineId } from "../lib/engines";
-import { Zap, Hammer, TrendingUp, UserCheck, Shield, Swords, ArrowRight, RefreshCw } from "lucide-react";
+import { ENGINES, SIGNUX_GOLD, type EngineId } from "../lib/engines";
+import { Zap, Hammer, TrendingUp, UserCheck, Shield, Swords, ArrowRight, RefreshCw, Clock } from "lucide-react";
+import { signuxFetch } from "../lib/api-client";
 
 const GOLD = "#C8A84E";
 
@@ -45,17 +46,33 @@ type WelcomeScreenProps = {
   onOpenScenarios?: () => void;
   onRouteAndSwitch?: (question: string, engine: Mode) => void;
   lang?: string;
+  isLoggedIn?: boolean;
 };
 
 export default function WelcomeScreen({
   input, setInput, loading, attachments, onAttachmentsChange,
-  onToast, onSwitchMode, onRouteAndSwitch,
+  onToast, onSwitchMode, onRouteAndSwitch, isLoggedIn,
 }: WelcomeScreenProps) {
   const isMobile = useIsMobile();
   const [hoveredEngine, setHoveredEngine] = useState<string | null>(null);
   const [routing, setRouting] = useState(false);
   const [routeResult, setRouteResult] = useState<RoutingResult | null>(null);
   const [routedQuestion, setRoutedQuestion] = useState("");
+  const [recentItems, setRecentItems] = useState<any[]>([]);
+
+  /* ═══ Fetch recent items for continue strip ═══ */
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    signuxFetch("/api/simulations/list")
+      .then(r => r.ok ? r.json() : [])
+      .then((data: any[]) => {
+        const sorted = data
+          .sort((a: any, b: any) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())
+          .slice(0, 2);
+        setRecentItems(sorted);
+      })
+      .catch(() => {});
+  }, [isLoggedIn]);
 
   const handleAskSignux = useCallback(async () => {
     const q = input.trim();
@@ -220,6 +237,72 @@ export default function WelcomeScreen({
               );
             })}
           </div>
+
+          {/* ═══ CONTINUE STRIP ═══ */}
+          {recentItems.length > 0 && (
+            <div style={{
+              marginTop: isMobile ? 32 : 40,
+              width: "100%",
+              maxWidth: isMobile ? 400 : 560,
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}>
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+              }}>
+                <span style={{
+                  fontSize: 11, fontWeight: 500, letterSpacing: 0.5,
+                  color: "var(--text-tertiary)", textTransform: "uppercase",
+                }}>Continue</span>
+                <a
+                  href="/recent"
+                  style={{
+                    fontSize: 11, color: "var(--text-tertiary)", textDecoration: "none",
+                    transition: "color 180ms ease-out",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = "var(--text-secondary)"}
+                  onMouseLeave={e => e.currentTarget.style.color = "var(--text-tertiary)"}
+                >View all</a>
+              </div>
+              {recentItems.map((item: any) => {
+                const engine = (item.engine || "simulate") as string;
+                const engineData = ENGINES[engine as EngineId];
+                const Icon = ICON_MAP[engineData?.icon] || Zap;
+                const eColor = engineData?.color || GOLD;
+                return (
+                  <a
+                    key={item.id}
+                    href={`/chat?load=${item.id}`}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      padding: "10px 14px", borderRadius: 10,
+                      border: "1px solid var(--border-primary)",
+                      background: "transparent",
+                      textDecoration: "none",
+                      transition: "border-color 180ms ease-out, background 180ms ease-out",
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = `${eColor}40`;
+                      e.currentTarget.style.background = `${eColor}06`;
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = "var(--border-primary)";
+                      e.currentTarget.style.background = "transparent";
+                    }}
+                  >
+                    <Icon size={14} strokeWidth={1.5} style={{ color: eColor, flexShrink: 0 }} />
+                    <span style={{
+                      flex: 1, minWidth: 0, fontSize: 13, fontWeight: 450,
+                      color: "var(--text-primary)",
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    }}>{item.scenario || "Untitled decision"}</span>
+                    <ArrowRight size={13} strokeWidth={1.5} style={{ color: "var(--text-tertiary)", flexShrink: 0 }} />
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </>
       )}
     </div>
