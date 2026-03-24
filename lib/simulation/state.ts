@@ -14,7 +14,6 @@ export type PhaseId =
   | 'adversarial'
   | 'convergence'
   | 'verdict'
-  | 'crowd_wisdom'
   | 'complete'
   | 'error';
 
@@ -66,8 +65,7 @@ const LEGAL_TRANSITIONS: Record<PhaseId, PhaseId[]> = {
   quick_takes:  ['adversarial', 'error'],
   adversarial:  ['convergence', 'verdict', 'error'],
   convergence:  ['verdict', 'error'],
-  verdict:      ['crowd_wisdom', 'complete', 'error'],
-  crowd_wisdom: ['complete', 'error'],
+  verdict:      ['complete', 'error'],
   error:        ['complete'],
   complete:     [],
 };
@@ -134,7 +132,7 @@ export function transitionPhase(
   // Mark skipped phases (opening → adversarial skips quick_takes, etc.)
   const allPhases: PhaseId[] = [
     'input', 'planning', 'opening', 'quick_takes',
-    'adversarial', 'convergence', 'verdict', 'crowd_wisdom', 'complete',
+    'adversarial', 'convergence', 'verdict', 'complete',
   ];
   const currentIdx = allPhases.indexOf(state.current_phase);
   const nextIdx = allPhases.indexOf(nextPhase);

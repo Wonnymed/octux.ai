@@ -10,9 +10,9 @@ import DecisionObjectCard from "@/app/components/sim/DecisionObject";
 import FollowUpChips from "@/app/components/sim/FollowUpChips";
 import { AgentCardSkeleton, VerdictSkeleton } from "@/app/components/sim/Skeleton";
 import AuthWallBanner from "@/app/components/sim/AuthWallBanner";
-import CrowdWisdomPanel from "@/app/components/sim/CrowdWisdomPanel";
+import FieldIntelligenceBar from "@/app/components/sim/FieldIntelligenceBar";
 import { useSimulationStream } from "@/app/lib/hooks/useSimulationStream";
-import { TIERS, getModelLabel } from "@/lib/config/tiers";
+import { TIERS, ADVISOR_OPTIONS, getModelLabel } from "@/lib/config/tiers";
 
 export default function SimulationPage() {
   return (
@@ -31,6 +31,7 @@ function SimulationPageInner() {
 
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
   const [enableCrowdWisdom, setEnableCrowdWisdom] = useState(false);
+  const [advisorCount, setAdvisorCount] = useState(0);
   const [advisorGuidance, setAdvisorGuidance] = useState("");
   const verdictRef = useRef<HTMLDivElement>(null);
   const hasScrolledRef = useRef(false);
@@ -46,23 +47,25 @@ function SimulationPageInner() {
     followups,
     isRunning,
     error,
-    crowdPersonas,
-    crowdResult,
-    crowdLoading,
+    fieldPersonas,
+    fieldScans,
     startSimulation,
   } = useSimulationStream();
 
   // Read crowd wisdom preference from URL
   const crowdParam = searchParams.get("crowd") === "1";
   const guidanceParam = searchParams.get("advisorGuidance") || "";
+  const advisorCountParam = Number(searchParams.get("advisorCount")) || 0;
 
   // Auto-start simulation on mount
   useEffect(() => {
     if (question) {
       const useCrowd = crowdParam || enableCrowdWisdom;
+      const count = advisorCountParam || advisorCount;
       if (useCrowd) setEnableCrowdWisdom(true);
+      if (count > 0) { setAdvisorCount(count); setEnableCrowdWisdom(true); }
       if (guidanceParam) setAdvisorGuidance(guidanceParam);
-      startSimulation(question, engine, useCrowd, guidanceParam || undefined);
+      startSimulation(question, engine, useCrowd || count > 0, guidanceParam || undefined, count || undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -201,34 +204,52 @@ function SimulationPageInner() {
           >
             <span>
               {isRunning && currentRound > 0
-                ? `10 specialists · Round ${currentRound}/10 · analyzing...`
-                : enableCrowdWisdom
-                  ? `${TIERS.free.agents} specialists + 20 advisors · 10 rounds`
+                ? enableCrowdWisdom && advisorCount > 0
+                  ? `10 specialists + ${advisorCount} field researchers · Round ${currentRound}/10 · analyzing...`
+                  : `10 specialists · Round ${currentRound}/10 · analyzing...`
+                : enableCrowdWisdom && advisorCount > 0
+                  ? `${TIERS.free.agents} specialists + ${advisorCount} field researchers · 10 rounds`
                   : `${TIERS.free.agents} specialists · 10 rounds · ${getModelLabel(TIERS.free.model)}`}
             </span>
-            {/* Crowd Wisdom toggle — disabled once running */}
-            <button
-              onClick={() => setEnableCrowdWisdom((v) => !v)}
-              disabled={isRunning}
-              title="MAX tier · Adds 20 contextual local perspectives"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "3px 10px",
-                borderRadius: "var(--radius-full)",
-                border: `1px solid ${enableCrowdWisdom ? "var(--accent)" : "var(--border-default)"}`,
-                background: enableCrowdWisdom ? "var(--accent-muted)" : "transparent",
-                color: enableCrowdWisdom ? "var(--accent)" : "var(--text-tertiary)",
-                fontSize: 11,
-                fontWeight: 500,
-                cursor: isRunning ? "default" : "pointer",
-                opacity: isRunning ? 0.5 : 1,
-                transition: "all var(--transition-normal)",
-              }}
-            >
-              🧠 + 20 Local Voices
-            </button>
+            {/* Crowd Wisdom tier selector — disabled once running */}
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              {ADVISOR_OPTIONS.map((opt) => {
+                const isActive = enableCrowdWisdom && advisorCount === opt.count;
+                return (
+                  <button
+                    key={opt.count}
+                    onClick={() => {
+                      if (isActive) {
+                        setEnableCrowdWisdom(false);
+                        setAdvisorCount(0);
+                      } else {
+                        setEnableCrowdWisdom(true);
+                        setAdvisorCount(opt.count);
+                      }
+                    }}
+                    disabled={isRunning}
+                    title={`${TIERS[opt.tier].name} tier · Adds ${opt.count} contextual local perspectives`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                      padding: "3px 10px",
+                      borderRadius: "var(--radius-full)",
+                      border: `1px solid ${isActive ? "var(--accent)" : "var(--border-default)"}`,
+                      background: isActive ? "var(--accent-muted)" : "transparent",
+                      color: isActive ? "var(--accent)" : "var(--text-tertiary)",
+                      fontSize: 11,
+                      fontWeight: 500,
+                      cursor: isRunning ? "default" : "pointer",
+                      opacity: isRunning ? 0.5 : 1,
+                      transition: "all var(--transition-normal)",
+                    }}
+                  >
+                    🧠 {opt.label}
+                  </button>
+                );
+              })}
+            </div>
             <span style={{ color: isRunning ? "var(--accent)" : "#10B981", fontWeight: 500 }}>
               {isRunning ? "Running..." : "Complete"}
             </span>
@@ -456,13 +477,12 @@ function SimulationPageInner() {
               </div>
             ) : null}
 
-            {/* Crowd Wisdom Panel — after verdict, before follow-ups */}
-            {(crowdResult || crowdLoading) && (
+            {/* Field Intelligence — shows inline as scans complete */}
+            {fieldScans.length > 0 && (
               <div style={{ marginTop: 8 }}>
-                <CrowdWisdomPanel
-                  crowdResult={crowdResult}
-                  personas={crowdPersonas}
-                  isLoading={crowdLoading}
+                <FieldIntelligenceBar
+                  fieldScans={fieldScans}
+                  personaCount={fieldPersonas?.length || 0}
                 />
               </div>
             )}
