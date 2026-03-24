@@ -2,9 +2,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { useIsMobile } from "../lib/useIsMobile";
 import ChatInput, { type FileAttachment } from "./ChatInput";
-import { SignuxIcon } from "./SignuxIcon";
 import type { Mode } from "../lib/types";
-import { ENGINES, SIGNUX_GOLD, type EngineId } from "../lib/engines";
+import { ENGINES, type EngineId } from "../lib/engines";
 import { Zap, Hammer, TrendingUp, UserCheck, Shield, Swords, ArrowRight, RefreshCw, Sparkles } from "lucide-react";
 import { signuxFetch } from "../lib/api-client";
 
@@ -13,11 +12,6 @@ const GOLD = "#C8A84E";
 const ICON_MAP: Record<string, typeof Zap> = {
   Zap, Hammer, TrendingUp, UserCheck, Shield, Swords,
 };
-
-const ENGINE_LIST = (Object.keys(ENGINES) as EngineId[]).map((id) => ({
-  id,
-  ...ENGINES[id],
-}));
 
 /* ═══ Homepage featured scenarios (curated slice) ═══ */
 const HOMEPAGE_SCENARIOS: {
@@ -79,10 +73,9 @@ type WelcomeScreenProps = {
 
 export default function WelcomeScreen({
   input, setInput, loading, attachments, onAttachmentsChange,
-  onToast, onSwitchMode, onRouteAndSwitch, isLoggedIn,
+  onToast, onRouteAndSwitch, isLoggedIn,
 }: WelcomeScreenProps) {
   const isMobile = useIsMobile();
-  const [hoveredEngine, setHoveredEngine] = useState<string | null>(null);
   const [hoveredScenario, setHoveredScenario] = useState<number | null>(null);
   const [routing, setRouting] = useState(false);
   const [routeResult, setRouteResult] = useState<RoutingResult | null>(null);
@@ -159,7 +152,8 @@ export default function WelcomeScreen({
       flexDirection: "column",
       alignItems: "center",
       width: "100%",
-      minHeight: "100%",
+      flex: 1,
+      minHeight: 0,
     }}>
 
       {/* ═══════════════════════════════════════════
@@ -171,7 +165,8 @@ export default function WelcomeScreen({
         alignItems: "center",
         justifyContent: "center",
         width: "100%",
-        minHeight: isMobile ? "calc(100vh - 48px)" : "100vh",
+        flex: 1,
+        minHeight: 0,
         padding: isMobile ? "0 20px" : "0 40px",
       }}>
         <div style={{
@@ -182,40 +177,19 @@ export default function WelcomeScreen({
           maxWidth: isMobile ? "100%" : 600,
         }}>
 
-          {/* ─── 1. Large Signux mark ─── */}
-          <div style={{ marginBottom: isMobile ? 14 : 18 }}>
-            <SignuxIcon size={isMobile ? 52 : 64} variant="gold" />
-          </div>
-
-          {/* ─── 2. SIGNUX AI wordmark ─── */}
+          {/* ─── Greeting line ─── */}
           <div style={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: 6,
-            marginBottom: isMobile ? 36 : 48,
+            fontSize: isMobile ? 20 : 24,
+            fontWeight: 400,
+            color: "var(--text-primary)",
+            marginBottom: isMobile ? 28 : 36,
+            textAlign: "center",
+            letterSpacing: -0.3,
           }}>
-            <span style={{
-              fontFamily: "var(--font-brand)",
-              fontSize: isMobile ? 18 : 22,
-              fontWeight: 500,
-              letterSpacing: 8,
-              color: "var(--text-primary)",
-            }}>
-              SIGNUX
-            </span>
-            <span style={{
-              fontFamily: "var(--font-brand)",
-              fontSize: isMobile ? 18 : 22,
-              fontWeight: 300,
-              letterSpacing: 4,
-              color: "var(--text-tertiary)",
-              opacity: 0.5,
-            }}>
-              AI
-            </span>
+            What decision are you facing?
           </div>
 
-          {/* ─── 3. Main premium input ─── */}
+          {/* ─── Main premium input ─── */}
           {!showRoutingState && (
             <div style={{
               width: "100%",
@@ -247,21 +221,6 @@ export default function WelcomeScreen({
               onRefine={handleReset}
               isMobile={isMobile}
             />
-          )}
-
-          {/* ─── 4. Micro support line ─── */}
-          {!showRoutingState && (
-            <div style={{
-              fontSize: 11,
-              color: "var(--text-tertiary)",
-              letterSpacing: 0.8,
-              fontFamily: "var(--font-mono)",
-              textTransform: "uppercase" as const,
-              marginBottom: isMobile ? 28 : 36,
-              opacity: 0.6,
-            }}>
-              Six engines · One decision layer
-            </div>
           )}
 
           {/* ─── Continue strip (returning users only) ─── */}
