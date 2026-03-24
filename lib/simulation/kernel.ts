@@ -136,9 +136,10 @@ const agentResponseFilter: AgentFilter = {
       needsPatch = true;
     }
 
-    // Ensure key_argument isn't empty
+    // Patch empty key_argument instead of rejecting the entire report
     if (!patched.key_argument || patched.key_argument.trim().length === 0) {
-      return { pass: false, reason: 'Agent returned empty key_argument' };
+      patched.key_argument = patched.recommendation || `${patched.position} (no detailed argument provided)`;
+      needsPatch = true;
     }
 
     return needsPatch
