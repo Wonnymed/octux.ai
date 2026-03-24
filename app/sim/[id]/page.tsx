@@ -11,6 +11,7 @@ import FollowUpChips from "@/app/components/sim/FollowUpChips";
 import { AgentCardSkeleton, VerdictSkeleton } from "@/app/components/sim/Skeleton";
 import AuthWallBanner from "@/app/components/sim/AuthWallBanner";
 import { useSimulationStream } from "@/app/lib/hooks/useSimulationStream";
+import { TIERS, getModelLabel } from "@/lib/config/tiers";
 
 export default function SimulationPage() {
   return (
@@ -109,10 +110,23 @@ function SimulationPageInner() {
     );
   }
 
+  // Deduplicate agents — show only latest report per agent_id
+  // Group all reports by agent_id, keep full history for expanded view
+  const agentHistoryMap = new Map<string, typeof agents>();
+  for (const agent of agents) {
+    const existing = agentHistoryMap.get(agent.agent_id) || [];
+    existing.push(agent);
+    agentHistoryMap.set(agent.agent_id, existing);
+  }
+  const latestAgents = Array.from(agentHistoryMap.entries()).map(
+    ([, reports]) => reports[reports.length - 1],
+  );
+  const uniqueAgentCount = latestAgents.length;
+
   // How many agents are expected based on plan
   const expectedAgents = plan ? plan.tasks.length : 0;
   const pendingAgentSkeletons = isRunning && plan
-    ? Math.max(0, Math.min(expectedAgents, 4) - agents.length)
+    ? Math.max(0, Math.min(expectedAgents, 4) - uniqueAgentCount)
     : 0;
 
   return (
@@ -170,7 +184,7 @@ function SimulationPageInner() {
               gap: 8,
             }}
           >
-            <span>10 specialists · 10 rounds · Sonnet</span>
+            <span>{TIERS.free.agents} specialists · 10 rounds · {getModelLabel(TIERS.free.model)}</span>
             <span style={{ color: isRunning ? "var(--accent)" : "#10B981", fontWeight: 500 }}>
               {isRunning ? "Running..." : "Complete"}
             </span>
@@ -284,8 +298,8 @@ function SimulationPageInner() {
               gap: 16,
             }}
           >
-            {/* Agent cards — appear one by one */}
-            {(agents.length > 0 || pendingAgentSkeletons > 0) && (
+            {/* Agent cards — deduplicated, latest report per agent */}
+            {(latestAgents.length > 0 || pendingAgentSkeletons > 0) && (
               <div>
                 <p
                   style={{
@@ -297,7 +311,7 @@ function SimulationPageInner() {
                     margin: "0 0 12px",
                   }}
                 >
-                  Agent Reports ({agents.length}{isRunning && plan ? `/${Math.min(expectedAgents, 4)}` : ""})
+                  Agent Reports ({uniqueAgentCount}{isRunning && plan ? `/${Math.min(expectedAgents, 9)}` : ""})
                 </p>
                 <div
                   style={{
@@ -306,13 +320,14 @@ function SimulationPageInner() {
                     gap: 12,
                   }}
                 >
-                  {agents.map((agent, i) => (
+                  {latestAgents.map((agent, i) => (
                     <AgentCard
-                      key={agent.agent_id}
+                      key={`${agent.agent_id}_${i}`}
                       agent={agent}
                       index={i}
                       expanded={expandedAgent === agent.agent_id}
                       onToggle={() => handleToggleAgent(agent.agent_id)}
+                      history={agentHistoryMap.get(agent.agent_id) || []}
                     />
                   ))}
                   {/* Skeleton placeholders for pending agents */}

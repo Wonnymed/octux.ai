@@ -1,3 +1,13 @@
+export const MODEL_LABELS: Record<string, string> = {
+  'claude-sonnet-4-20250514': 'Sonnet',
+  'claude-haiku-4-5-20251001': 'Haiku',
+  'claude-opus-4-6': 'Opus',
+};
+
+export function getModelLabel(modelId: string): string {
+  return MODEL_LABELS[modelId] || modelId;
+}
+
 export const TIERS = {
   free: {
     name: 'Free',

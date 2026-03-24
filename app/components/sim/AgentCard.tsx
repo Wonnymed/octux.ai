@@ -5,6 +5,17 @@ import { ChevronDown } from "lucide-react";
 import type { AgentReport } from "@/app/lib/types/simulation";
 
 const AGENT_COLORS: Record<string, string> = {
+  decision_chair: "#7C3AED",
+  base_rate_archivist: "#6366F1",
+  demand_signal_analyst: "#F59E0B",
+  unit_economics_auditor: "#10B981",
+  regulatory_gatekeeper: "#F43F5E",
+  competitive_intel: "#F97316",
+  execution_operator: "#8B5CF6",
+  capital_allocator: "#06B6D4",
+  scenario_planner: "#EC4899",
+  intervention_optimizer: "#14B8A6",
+  // Legacy mock IDs
   "base-rate": "#6366F1",
   "demand-signal": "#F59E0B",
   "unit-econ": "#10B981",
@@ -45,9 +56,10 @@ type AgentCardProps = {
   index: number;
   expanded: boolean;
   onToggle: () => void;
+  history?: AgentReport[];
 };
 
-export default function AgentCard({ agent, index, expanded, onToggle }: AgentCardProps) {
+export default function AgentCard({ agent, index, expanded, onToggle, history = [] }: AgentCardProps) {
   const color = getAgentColor(agent.agent_id);
   const pos = getPositionStyle(agent.position);
   const confColor = getConfidenceColor(agent.confidence);
@@ -253,6 +265,63 @@ export default function AgentCard({ agent, index, expanded, onToggle }: AgentCar
                 >
                   Changed position: {agent.change_reason}
                 </p>
+              )}
+              {/* Previous rounds */}
+              {history.length > 1 && (
+                <div style={{ marginTop: 4 }}>
+                  <p
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 500,
+                      color: "var(--text-tertiary)",
+                      marginBottom: 6,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    Previous Rounds ({history.length - 1})
+                  </p>
+                  {history.slice(0, -1).map((prev, i) => {
+                    const prevPos = getPositionStyle(prev.position);
+                    return (
+                      <div
+                        key={i}
+                        style={{
+                          padding: "8px 10px",
+                          borderRadius: "var(--radius-sm)",
+                          background: "var(--surface-1)",
+                          marginBottom: 4,
+                          fontSize: 12,
+                          color: "var(--text-secondary)",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        <span
+                          style={{
+                            display: "inline-block",
+                            padding: "1px 6px",
+                            borderRadius: "var(--radius-full)",
+                            background: prevPos.bg,
+                            color: prevPos.color,
+                            fontSize: 10,
+                            fontWeight: 600,
+                            letterSpacing: 0.3,
+                            marginRight: 6,
+                          }}
+                        >
+                          {prevPos.label}
+                        </span>
+                        <span style={{ color: getConfidenceColor(prev.confidence), fontWeight: 500 }}>
+                          {prev.confidence}/10
+                        </span>
+                        {" — "}
+                        {prev.key_argument.length > 120
+                          ? prev.key_argument.slice(0, 120) + "…"
+                          : prev.key_argument}
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           </motion.div>

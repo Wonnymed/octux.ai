@@ -219,7 +219,7 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
     try {
       const challengeReport = await callAgent(
         challengerAgent,
-        `You said "${challengerReport?.key_argument || 'your position'}". The ${defenderAgent.name} said "${defenderReport?.key_argument || 'their position'}". The debate topic: ${debate.topic}. Challenge the defender's position directly. Respond with valid JSON only.`,
+        `Original question: ${question}\n\nYou said "${challengerReport?.key_argument || 'your position'}". The ${defenderAgent.name} said "${defenderReport?.key_argument || 'their position'}". The debate topic: ${debate.topic}. Challenge the defender's position directly. Respond with valid JSON only.`,
       );
       allReports.push(challengeReport);
       yield { event: 'agent_complete', data: challengeReport };
@@ -231,7 +231,7 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
     try {
       const defenseReport = await callAgent(
         defenderAgent,
-        `The ${challengerAgent.name} challenged your position on: ${debate.topic}. Their argument: "${challengerReport?.key_argument || 'disagreement'}". Defend or update your position. If you changed your mind, say so. Respond with valid JSON only.`,
+        `Original question: ${question}\n\nThe ${challengerAgent.name} challenged your position on: ${debate.topic}. Their argument: "${challengerReport?.key_argument || 'disagreement'}". Defend or update your position. If you changed your mind, say so. Respond with valid JSON only.`,
       );
       allReports.push(defenseReport);
       yield { event: 'agent_complete', data: defenseReport };
@@ -251,7 +251,7 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
     const lastReport = [...allReports].reverse().find((r) => r.agent_id === agent.id);
     return callAgent(
       agent,
-      `The debate is concluding. Your original position was "${lastReport?.position || 'unknown'}" with confidence ${lastReport?.confidence || 5}. After hearing all arguments, declare your FINAL position. If you changed your mind, explain why in one sentence. Respond with valid JSON only.`,
+      `Original question: ${question}\n\nThe debate is concluding. Your original position was "${lastReport?.position || 'unknown'}" with confidence ${lastReport?.confidence || 5}. After hearing all arguments, declare your FINAL position. If you changed your mind, explain why in one sentence. Respond with valid JSON only.`,
       256,
     ).catch((err) => {
       console.error(`[${agent.id}] convergence failed:`, err);
