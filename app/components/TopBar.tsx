@@ -12,13 +12,14 @@ type TopBarProps = {
   authUser?: AuthUser | null;
   onOpenSidebar: () => void;
   sidebarOpen: boolean;
+  onOpenAuth?: () => void;
 };
 
 /**
  * TopBar — ONLY visible when NOT logged in.
  * Shows Log in + Sign up for free + help icon, right-aligned.
  */
-export default function TopBar({ authUser, isMobile }: TopBarProps) {
+export default function TopBar({ authUser, isMobile, onOpenAuth }: TopBarProps) {
   const [loginHovered, setLoginHovered] = useState(false);
   const [signupHovered, setSignupHovered] = useState(false);
   const [helpHovered, setHelpHovered] = useState(false);
@@ -42,7 +43,7 @@ export default function TopBar({ authUser, isMobile }: TopBarProps) {
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
         <button
-          onClick={() => { window.location.href = "/login"; }}
+          onClick={() => { onOpenAuth ? onOpenAuth() : window.location.href = "/login"; }}
           onMouseEnter={() => setLoginHovered(true)}
           onMouseLeave={() => setLoginHovered(false)}
           style={{
@@ -61,7 +62,7 @@ export default function TopBar({ authUser, isMobile }: TopBarProps) {
           Log in
         </button>
         <button
-          onClick={() => { window.location.href = "/signup"; }}
+          onClick={() => { onOpenAuth ? onOpenAuth() : window.location.href = "/signup"; }}
           onMouseEnter={() => setSignupHovered(true)}
           onMouseLeave={() => setSignupHovered(false)}
           style={{

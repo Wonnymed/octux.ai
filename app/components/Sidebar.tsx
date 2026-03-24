@@ -49,6 +49,7 @@ type SidebarProps = {
   savedSimulations?: any[];
   onLoadSimulation?: (id: string) => void;
   tokenStatus?: { available: number; monthlyTotal: number; plan: string };
+  onOpenAuth?: () => void;
 };
 
 /* ═══ Zinc palette — premium neutral hierarchy ═══ */
@@ -429,6 +430,7 @@ export default function Sidebar({
   conversations, loadingHistory = false, activeConversationId, onLoadConversation, onDeleteConversation,
   projects = [], activeProject, onSelectProject, onCreateProject, onOpenKnowledge,
   tier, usage, limits, savedSimulations = [], onLoadSimulation, tokenStatus,
+  onOpenAuth,
 }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -821,7 +823,7 @@ export default function Sidebar({
                 Log in to save decisions, continue work, and unlock all engines.
               </div>
               <button
-                onClick={() => { window.location.href = "/login"; }}
+                onClick={() => { onOpenAuth ? onOpenAuth() : window.location.href = "/login"; }}
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "center",
                   gap: 8, width: "100%", padding: "10px 0",

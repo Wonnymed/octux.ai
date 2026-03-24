@@ -59,6 +59,7 @@ const SettingsModal = dynamic(() => import("../components/SettingsModal"), { ssr
 const Onboarding = dynamic(() => import("../components/Onboarding"), { ssr: false });
 const ModeTransition = dynamic(() => import("../components/ModeTransition"), { ssr: false });
 const EngineIntro = dynamic(() => import("../components/EngineIntro"), { ssr: false });
+const AuthModal = dynamic(() => import("../components/AuthModal"), { ssr: false });
 
 /* ═══ File Helpers ═══ */
 async function fileToBase64(file: File): Promise<string> {
@@ -259,6 +260,7 @@ function ChatPage() {
   const [showSettings, setShowSettings] = useState(false);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [showCheckinReminder, setShowCheckinReminder] = useState(false);
   const [showKnowledge, setShowKnowledge] = useState(false);
   const isMobile = useIsMobile();
@@ -1058,6 +1060,7 @@ function ChatPage() {
           authUser={authUser}
           onOpenSidebar={() => setSidebarOpen(true)}
           sidebarOpen={sidebarOpen}
+          onOpenAuth={() => setAuthModalOpen(true)}
         />
       )}
 
@@ -1116,6 +1119,7 @@ function ChatPage() {
         savedSimulations={savedSimulations}
         onLoadSimulation={loadSimulation}
         tokenStatus={{ available: tokens.available, monthlyTotal: tokens.monthlyTotal, plan: tokens.plan }}
+        onOpenAuth={() => setAuthModalOpen(true)}
       />
 
       <main style={{
@@ -1134,6 +1138,7 @@ function ChatPage() {
             authUser={authUser}
             onOpenSidebar={() => setSidebarOpen(true)}
             sidebarOpen={sidebarOpen}
+            onOpenAuth={() => setAuthModalOpen(true)}
           />
         )}
         {/* Launchpad check-in reminder */}
@@ -1409,6 +1414,8 @@ function ChatPage() {
           onClose={() => setShowKnowledge(false)}
         />
       )}
+
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </div>
   );
 }
