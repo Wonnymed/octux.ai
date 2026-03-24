@@ -1,31 +1,44 @@
 import { NextRequest } from "next/server";
 import { runSimulation } from "@/lib/simulation/engine";
-import { runMockSimulation } from "@/lib/simulation/mock";
 
 /* ═══════════════════════════════════════
    POST /api/simulate/stream
    Returns: text/event-stream (SSE)
 
-   If ANTHROPIC_API_KEY exists → real Claude engine
-   If no API key → mock data fallback
+   Octux AI — 10-agent adversarial debate engine
+   Uses Claude Sonnet for specialist agents,
+   Claude Haiku for crowd wisdom advisors.
    ═══════════════════════════════════════ */
 
-export async function POST(req: NextRequest) {
-  const { question, engine, enableCrowdWisdom } = (await req.json()) as {
-    question: string;
-    engine: string;
-    enableCrowdWisdom?: boolean;
-  };
+// Allow up to 5 minutes for full 10-round simulation
+export const maxDuration = 300;
 
-  if (!question || !engine) {
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => null);
+
+  if (!body || !body.question || !body.engine) {
     return new Response(
       JSON.stringify({ error: "question and engine are required" }),
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
 
-  const useRealEngine = !!process.env.ANTHROPIC_API_KEY;
-  console.log(`[simulate/stream] engine=${engine}, real=${useRealEngine}, crowd=${!!enableCrowdWisdom}, question="${question.slice(0, 80)}"`);
+  const { question, engine, enableCrowdWisdom } = body as {
+    question: string;
+    engine: string;
+    enableCrowdWisdom?: boolean;
+  };
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return new Response(
+      JSON.stringify({ error: "ANTHROPIC_API_KEY is not configured" }),
+      { status: 503, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  console.log(
+    `[simulate/stream] engine=${engine}, crowd=${!!enableCrowdWisdom}, question="${question.slice(0, 80)}"`,
+  );
 
   const encoder = new TextEncoder();
 
@@ -45,9 +58,9 @@ export async function POST(req: NextRequest) {
       };
 
       try {
-        const generator = useRealEngine
-          ? runSimulation(question, engine, { enableCrowdWisdom: !!enableCrowdWisdom })
-          : runMockSimulation(question, engine);
+        const generator = runSimulation(question, engine, {
+          enableCrowdWisdom: !!enableCrowdWisdom,
+        });
 
         for await (const sse of generator) {
           send(sse.event, sse.data);
@@ -59,7 +72,11 @@ export async function POST(req: NextRequest) {
         });
       } finally {
         if (!closed) {
-          try { controller.close(); } catch { /* already closed */ }
+          try {
+            controller.close();
+          } catch {
+            /* already closed */
+          }
         }
       }
     },
