@@ -8,7 +8,8 @@ import type {
   SimulationPlan,
   SimulationPhase,
 } from "@/app/lib/types/simulation";
-import type { AdvisorPersona, CrowdWisdomResult } from "@/lib/agents/advisors";
+import type { AdvisorPersona } from "@/lib/agents/advisors";
+import type { FieldScan } from "@/lib/simulation/field-intelligence";
 
 export type PhaseState = {
   phase: SimulationPhase;
@@ -34,10 +35,9 @@ type SimulationStreamState = {
   simulationId: string | null;
   isRunning: boolean;
   error: string | null;
-  // Crowd wisdom
-  crowdPersonas: AdvisorPersona[] | null;
-  crowdResult: CrowdWisdomResult | null;
-  crowdLoading: boolean;
+  // Field Intelligence Network
+  fieldPersonas: AdvisorPersona[] | null;
+  fieldScans: FieldScan[];
 };
 
 const BASE_PHASES: SimulationPhase[] = [
@@ -50,14 +50,12 @@ const BASE_PHASES: SimulationPhase[] = [
 
 const TIMEOUT_MS = 60_000;
 
-function buildPhases(enableCrowdWisdom: boolean): PhaseState[] {
-  const phases = [...BASE_PHASES];
-  if (enableCrowdWisdom) phases.push("crowd_wisdom");
-  return phases.map((p) => ({ phase: p, status: "pending" as const }));
+function buildPhases(): PhaseState[] {
+  return BASE_PHASES.map((p) => ({ phase: p, status: "pending" as const }));
 }
 
 const initialState: SimulationStreamState = {
-  phases: buildPhases(false),
+  phases: buildPhases(),
   rounds: [],
   currentRound: 0,
   agents: [],
@@ -68,9 +66,8 @@ const initialState: SimulationStreamState = {
   simulationId: null,
   isRunning: false,
   error: null,
-  crowdPersonas: null,
-  crowdResult: null,
-  crowdLoading: false,
+  fieldPersonas: null,
+  fieldScans: [],
 };
 
 export function useSimulationStream() {
@@ -99,10 +96,10 @@ export function useSimulationStream() {
 
   const startSimulation = useCallback(
     async (question: string, engine: string, enableCrowdWisdom = false, advisorGuidance?: string, advisorCount?: number) => {
-      // Reset state with correct phases
+      // Reset state
       setState({
         ...initialState,
-        phases: buildPhases(enableCrowdWisdom),
+        phases: buildPhases(),
         isRunning: true,
       });
 
@@ -219,7 +216,6 @@ function processEvent(
     case "phase_start": {
       const { phase } = data as { phase: SimulationPhase };
       setState((s) => {
-        // If crowd_wisdom phase arrives but wasn't in initial phases, add it
         const hasPhase = s.phases.some((p) => p.phase === phase);
         const phases = hasPhase
           ? s.phases
@@ -251,7 +247,6 @@ function processEvent(
         ...s,
         currentRound: round,
         rounds: [
-          // Mark all previous active rounds as complete
           ...s.rounds.map((r) =>
             r.status === "active" ? { ...r, status: "complete" as const } : r,
           ),
@@ -302,24 +297,18 @@ function processEvent(
       setState((s) => ({ ...s, followups: data as string[] }));
       break;
 
-    // Crowd wisdom events
-    case "crowd_personas":
+    // Field Intelligence Network events
+    case "field_personas":
       setState((s) => ({
         ...s,
-        crowdPersonas: data as AdvisorPersona[],
-        crowdLoading: true,
+        fieldPersonas: data as AdvisorPersona[],
       }));
       break;
 
-    case "crowd_advisor_complete":
-      // Progressive — individual advisors arriving (tracked via crowdResult)
-      break;
-
-    case "crowd_complete":
+    case "field_scan":
       setState((s) => ({
         ...s,
-        crowdResult: data as CrowdWisdomResult,
-        crowdLoading: false,
+        fieldScans: [...s.fieldScans, data as FieldScan],
       }));
       break;
 
@@ -328,7 +317,6 @@ function processEvent(
       setState((s) => ({
         ...s,
         simulationId: simulation_id,
-        crowdLoading: false,
         phases: s.phases.map((p) =>
           p.status === "active" ? { ...p, status: "complete" } : p,
         ),

@@ -10,7 +10,7 @@ import DecisionObjectCard from "@/app/components/sim/DecisionObject";
 import FollowUpChips from "@/app/components/sim/FollowUpChips";
 import { AgentCardSkeleton, VerdictSkeleton } from "@/app/components/sim/Skeleton";
 import AuthWallBanner from "@/app/components/sim/AuthWallBanner";
-import CrowdWisdomPanel from "@/app/components/sim/CrowdWisdomPanel";
+import FieldIntelligenceBar from "@/app/components/sim/FieldIntelligenceBar";
 import { useSimulationStream } from "@/app/lib/hooks/useSimulationStream";
 import { TIERS, ADVISOR_OPTIONS, getModelLabel } from "@/lib/config/tiers";
 
@@ -47,9 +47,8 @@ function SimulationPageInner() {
     followups,
     isRunning,
     error,
-    crowdPersonas,
-    crowdResult,
-    crowdLoading,
+    fieldPersonas,
+    fieldScans,
     startSimulation,
   } = useSimulationStream();
 
@@ -207,7 +206,7 @@ function SimulationPageInner() {
               {isRunning && currentRound > 0
                 ? `10 specialists · Round ${currentRound}/10 · analyzing...`
                 : enableCrowdWisdom && advisorCount > 0
-                  ? `${TIERS.free.agents} specialists + ${advisorCount} advisors · 10 rounds`
+                  ? `${TIERS.free.agents} specialists + ${advisorCount} field voices · 10 rounds`
                   : `${TIERS.free.agents} specialists · 10 rounds · ${getModelLabel(TIERS.free.model)}`}
             </span>
             {/* Crowd Wisdom tier selector — disabled once running */}
@@ -476,13 +475,12 @@ function SimulationPageInner() {
               </div>
             ) : null}
 
-            {/* Crowd Wisdom Panel — after verdict, before follow-ups */}
-            {(crowdResult || crowdLoading) && (
+            {/* Field Intelligence — shows inline as scans complete */}
+            {fieldScans.length > 0 && (
               <div style={{ marginTop: 8 }}>
-                <CrowdWisdomPanel
-                  crowdResult={crowdResult}
-                  personas={crowdPersonas}
-                  isLoading={crowdLoading}
+                <FieldIntelligenceBar
+                  fieldScans={fieldScans}
+                  personaCount={fieldPersonas?.length || 0}
                 />
               </div>
             )}
