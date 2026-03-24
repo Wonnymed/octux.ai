@@ -62,7 +62,7 @@ const Z400 = "#A1A1AA";  // Zone A hover text
 const Z300 = "#D4D4D8";  // active icons
 const Z200 = "#E4E4E7";  // active text
 
-const ICON_IDLE = Z600;
+const ICON_IDLE = Z700;
 const ICON_ACTIVE = Z200;
 
 const ICON_MAP: Record<string, any> = {
@@ -608,7 +608,7 @@ export default function Sidebar({
         height: "100vh",
         width: sidebarWidth,
         zIndex: 45,
-        background: "var(--sidebar-bg, var(--bg-primary))",
+        background: "var(--bg-primary)",
         borderRight: "1px solid var(--border-secondary, rgba(255,255,255,0.04))",
         display: "flex",
         flexDirection: "column",
@@ -641,20 +641,11 @@ export default function Sidebar({
 
     return (
       <>
-        {/* ═══ TOP — Wordmark ═══ */}
+        {/* ═══ TOP — Toggle only ═══ */}
         <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "0 12px 0 16px", height: 48, flexShrink: 0,
+          display: "flex", alignItems: "center", justifyContent: "flex-end",
+          padding: "0 10px", height: 48, flexShrink: 0,
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-            <SignuxIcon variant="gold" size={15} />
-            <span style={{
-              fontFamily: "var(--font-brand)", fontSize: 11.5, fontWeight: 500,
-              letterSpacing: 3.5, color: "var(--text-secondary)",
-            }}>
-              SIGNUX
-            </span>
-          </div>
           <CloseButtonWithTooltip hovered={closeHovered} setHovered={setCloseHovered} onClick={onClose} />
         </div>
 
@@ -673,14 +664,14 @@ export default function Sidebar({
                     borderRadius: 7,
                     cursor: "pointer", fontSize: 13, textAlign: "left",
                     background: isHomeActive ? "var(--bg-hover, rgba(255,255,255,0.04))" : "transparent",
-                    color: isHomeActive ? "var(--text-primary)" : "var(--text-secondary)",
+                    color: isHomeActive ? "var(--text-secondary)" : "var(--text-tertiary)",
                     fontWeight: isHomeActive ? 500 : 400,
                     transition: "background 180ms ease-out, color 180ms ease-out",
                   }}
-                  onMouseEnter={e => { if (!isHomeActive) { e.currentTarget.style.background = "var(--bg-hover, rgba(255,255,255,0.03))"; } }}
-                  onMouseLeave={e => { if (!isHomeActive) { e.currentTarget.style.background = "transparent"; } }}
+                  onMouseEnter={e => { if (!isHomeActive) { e.currentTarget.style.background = "var(--bg-hover, rgba(255,255,255,0.03))"; e.currentTarget.style.color = "var(--text-secondary)"; } }}
+                  onMouseLeave={e => { if (!isHomeActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-tertiary)"; } }}
                 >
-                  <Home size={16} strokeWidth={1.5} style={{ color: isHomeActive ? "var(--text-primary)" : Z600, flexShrink: 0, transition: "color 180ms ease-out" }} />
+                  <Home size={16} strokeWidth={1.5} style={{ color: isHomeActive ? "var(--text-secondary)" : Z700, flexShrink: 0, transition: "color 180ms ease-out" }} />
                   <span>Home</span>
                 </button>
               );
@@ -705,14 +696,14 @@ export default function Sidebar({
                     borderRadius: 7,
                     cursor: "pointer", fontSize: 13, textAlign: "left",
                     background: isActive ? "var(--bg-hover, rgba(255,255,255,0.04))" : "transparent",
-                    color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
+                    color: isActive ? "var(--text-secondary)" : "var(--text-tertiary)",
                     fontWeight: isActive ? 500 : 400,
                     transition: "background 180ms ease-out, color 180ms ease-out",
                   }}
-                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "var(--bg-hover, rgba(255,255,255,0.03))"; } }}
-                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; } }}
+                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "var(--bg-hover, rgba(255,255,255,0.03))"; e.currentTarget.style.color = "var(--text-secondary)"; } }}
+                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-tertiary)"; } }}
                 >
-                  <Icon size={16} strokeWidth={1.5} style={{ color: isActive ? engineColor : Z600, flexShrink: 0, transition: "color 180ms ease-out" }} />
+                  <Icon size={16} strokeWidth={1.5} style={{ color: isActive ? engineColor : Z700, flexShrink: 0, transition: "color 180ms ease-out" }} />
                   <span>{name}</span>
                 </button>
               );
@@ -810,18 +801,18 @@ export default function Sidebar({
                   display: "flex", alignItems: "center", justifyContent: "center",
                   gap: 7, width: "100%", padding: "8px 0",
                   borderRadius: 7, border: "none",
-                  background: "var(--bg-hover, rgba(255,255,255,0.04))",
-                  color: "var(--text-secondary)",
-                  fontSize: 12.5, fontWeight: 500, cursor: "pointer",
+                  background: "rgba(255,255,255,0.03)",
+                  color: "var(--text-tertiary)",
+                  fontSize: 12, fontWeight: 500, cursor: "pointer",
                   transition: "all 180ms ease-out",
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.06)";
-                  e.currentTarget.style.color = "var(--text-primary)";
+                  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                  e.currentTarget.style.color = "var(--text-secondary)";
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = "var(--bg-hover, rgba(255,255,255,0.04))";
-                  e.currentTarget.style.color = "var(--text-secondary)";
+                  e.currentTarget.style.background = "rgba(255,255,255,0.03)";
+                  e.currentTarget.style.color = "var(--text-tertiary)";
                 }}
               >
                 <LogIn size={14} strokeWidth={1.5} />
