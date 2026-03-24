@@ -9,6 +9,7 @@ import { scoreAllAgents, type AgentPerformance } from './performance';
 import { critiqueVerdict, refineVerdict, type VerdictCritique } from './self-refine';
 import { createTaskLedger, createProgressLedger, updateTaskLedger, assessProgress, replanDebate, type TaskLedger, type ProgressLedger } from './ledger';
 import { processDelegations, type DelegationResponse } from './delegation';
+import { generateCounterFactualFlip, detectBlindSpots, type CounterFactualFlip, type BlindSpotAnalysis } from './verdict-insights';
 import type { AdvisorPersona, AdvisorReport as CrowdAdvisorReport, CrowdWisdomResult } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
 
@@ -31,6 +32,8 @@ export type SimulationSSEEvent =
   | { event: 'ledger_update'; data: { task_ledger: TaskLedger; progress_ledger: ProgressLedger } }
   | { event: 'stall_replan'; data: { stall_counter: number; directives: string[] } }
   | { event: 'delegation'; data: DelegationResponse }
+  | { event: 'counter_factual'; data: CounterFactualFlip }
+  | { event: 'blind_spots'; data: BlindSpotAnalysis }
   | { event: 'state_summary'; data: any }
   | { event: 'complete'; data: { simulation_id: string } };
 
@@ -816,6 +819,20 @@ DEBATE PROGRESS:
   } catch (err) {
     console.error('[self-refine] critique/refine failed (non-fatal):', err);
     // Non-fatal — original verdict is still valid
+  }
+
+  // ━━ Verdict Insights: Counter-Factual Flip + Blind Spot Detector ━━
+  try {
+    const [counterFactual, blindSpots] = await Promise.all([
+      generateCounterFactualFlip(question, verdict, state, taskLedger),
+      detectBlindSpots(question, verdict, state, taskLedger),
+    ]);
+    yield { event: 'counter_factual', data: counterFactual };
+    yield { event: 'blind_spots', data: blindSpots };
+    console.log(`[verdict-insights] Counter-factual: biggest lever = "${counterFactual.single_biggest_lever}"`);
+    console.log(`[verdict-insights] Blind spots: ${blindSpots.blind_spots.length} found, risk: ${blindSpots.overall_blind_spot_risk}`);
+  } catch (err) {
+    console.error('[verdict-insights] Counter-factual/blind-spots failed (non-fatal):', err);
   }
 
   // Palantir #4: Build traceable citations from state
