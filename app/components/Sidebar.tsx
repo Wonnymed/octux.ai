@@ -151,14 +151,12 @@ function SidebarIconButton({ icon, tooltip, active, activeColor, modeColor, onCl
   const btnRef = useRef<HTMLDivElement>(null);
 
   const iconColor = active
-    ? (activeColor || Z300)
-    : hovered ? Z400 : (modeColor || Z600);
+    ? (activeColor || Z400)
+    : hovered ? Z500 : (modeColor || Z700);
 
-  const bgColor = active
-    ? (activeColor ? `${activeColor}0F` : "rgba(255,255,255,0.06)")
-    : hovered
-      ? "rgba(255,255,255,0.035)"
-      : "transparent";
+  const bgColor = hovered
+    ? "rgba(255,255,255,0.035)"
+    : "transparent";
 
   return (
     <div
@@ -651,36 +649,34 @@ export default function Sidebar({
 
         {/* ═══ HOME ═══ */}
         <div style={{ padding: "4px 8px 0", flexShrink: 0 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {(() => {
-              const isHomeActive = mode === "chat";
-              return (
-                <button
-                  onClick={() => handleMode("chat" as Mode)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 10,
-                    width: "100%", padding: "8px 10px",
-                    border: "none",
-                    borderRadius: 7,
-                    cursor: "pointer", fontSize: 13, textAlign: "left",
-                    background: isHomeActive ? "var(--bg-hover, rgba(255,255,255,0.04))" : "transparent",
-                    color: isHomeActive ? "var(--text-secondary)" : "var(--text-tertiary)",
-                    fontWeight: isHomeActive ? 500 : 400,
-                    transition: "background 180ms ease-out, color 180ms ease-out",
-                  }}
-                  onMouseEnter={e => { if (!isHomeActive) { e.currentTarget.style.background = "var(--bg-hover, rgba(255,255,255,0.03))"; e.currentTarget.style.color = "var(--text-secondary)"; } }}
-                  onMouseLeave={e => { if (!isHomeActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-tertiary)"; } }}
-                >
-                  <Home size={16} strokeWidth={1.5} style={{ color: isHomeActive ? "var(--text-secondary)" : Z700, flexShrink: 0, transition: "color 180ms ease-out" }} />
-                  <span>Home</span>
-                </button>
-              );
-            })()}
-          </div>
+          {(() => {
+            const isHomeActive = mode === "chat";
+            return (
+              <button
+                onClick={() => handleMode("chat" as Mode)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  width: "100%", padding: "8px 10px",
+                  border: "none",
+                  borderRadius: 7,
+                  cursor: "pointer", fontSize: 13, textAlign: "left",
+                  background: "transparent",
+                  color: isHomeActive ? "var(--text-secondary)" : "var(--text-tertiary)",
+                  fontWeight: isHomeActive ? 500 : 400,
+                  transition: "background 180ms ease-out, color 180ms ease-out",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; if (!isHomeActive) e.currentTarget.style.color = "var(--text-secondary)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; if (!isHomeActive) e.currentTarget.style.color = "var(--text-tertiary)"; }}
+              >
+                <Home size={16} strokeWidth={1.5} style={{ color: isHomeActive ? SIGNUX_GOLD : Z700, opacity: isHomeActive ? 0.7 : 1, flexShrink: 0, transition: "color 180ms ease-out, opacity 180ms ease-out" }} />
+                <span>Home</span>
+              </button>
+            );
+          })()}
         </div>
 
         {/* ═══ ZONE A — DECISION ENGINES ═══ */}
-        <div style={{ padding: "4px 8px 0", flexShrink: 0 }}>
+        <div style={{ padding: "2px 8px 0", flexShrink: 0 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {ENGINE_MODES.map(({ key, icon: Icon, name }) => {
               const isActive = mode === key;
@@ -695,15 +691,15 @@ export default function Sidebar({
                     border: "none",
                     borderRadius: 7,
                     cursor: "pointer", fontSize: 13, textAlign: "left",
-                    background: isActive ? "var(--bg-hover, rgba(255,255,255,0.04))" : "transparent",
+                    background: "transparent",
                     color: isActive ? "var(--text-secondary)" : "var(--text-tertiary)",
                     fontWeight: isActive ? 500 : 400,
                     transition: "background 180ms ease-out, color 180ms ease-out",
                   }}
-                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "var(--bg-hover, rgba(255,255,255,0.03))"; e.currentTarget.style.color = "var(--text-secondary)"; } }}
-                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-tertiary)"; } }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; if (!isActive) e.currentTarget.style.color = "var(--text-secondary)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; if (!isActive) e.currentTarget.style.color = "var(--text-tertiary)"; }}
                 >
-                  <Icon size={16} strokeWidth={1.5} style={{ color: isActive ? engineColor : Z700, flexShrink: 0, transition: "color 180ms ease-out" }} />
+                  <Icon size={16} strokeWidth={1.5} style={{ color: isActive ? engineColor : Z700, opacity: isActive ? 0.65 : 1, flexShrink: 0, transition: "color 180ms ease-out, opacity 180ms ease-out" }} />
                   <span>{name}</span>
                 </button>
               );
