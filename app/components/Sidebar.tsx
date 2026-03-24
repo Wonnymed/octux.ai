@@ -440,20 +440,23 @@ export default function Sidebar({
   const displayName = profileName || authUser?.name || "";
 
   // Navigate to /chat with mode as query param if on a different route
+  // Auto-close sidebar on nav only for mobile or logged-in desktop (overlay mode)
+  const shouldAutoClose = isMobile || isLoggedIn;
+
   const handleMode = (m: Mode) => {
     if (pathname !== "/chat") {
       router.push(m === "chat" ? "/chat" : `/chat?mode=${m}`);
     } else {
       setMode(m);
     }
-    if (open) onClose();
+    if (open && shouldAutoClose) onClose();
   };
   const handleNew = () => {
     if (pathname !== "/chat") {
       router.push("/chat");
     }
     onNewConversation();
-    if (open) onClose();
+    if (open && shouldAutoClose) onClose();
   };
 
   /* ═══ Profile Popover State ═══ */
