@@ -11,9 +11,10 @@ import { runMockSimulation } from "@/lib/simulation/mock";
    ═══════════════════════════════════════ */
 
 export async function POST(req: NextRequest) {
-  const { question, engine } = (await req.json()) as {
+  const { question, engine, enableCrowdWisdom } = (await req.json()) as {
     question: string;
     engine: string;
+    enableCrowdWisdom?: boolean;
   };
 
   if (!question || !engine) {
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
   }
 
   const useRealEngine = !!process.env.ANTHROPIC_API_KEY;
-  console.log(`[simulate/stream] engine=${engine}, real=${useRealEngine}, question="${question.slice(0, 80)}"`);
+  console.log(`[simulate/stream] engine=${engine}, real=${useRealEngine}, crowd=${!!enableCrowdWisdom}, question="${question.slice(0, 80)}"`);
 
   const encoder = new TextEncoder();
 
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
 
       try {
         const generator = useRealEngine
-          ? runSimulation(question, engine)
+          ? runSimulation(question, engine, { enableCrowdWisdom: !!enableCrowdWisdom })
           : runMockSimulation(question, engine);
 
         for await (const sse of generator) {

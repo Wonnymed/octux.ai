@@ -8,6 +8,7 @@ import type {
   SimulationPlan,
   SimulationPhase,
 } from "@/app/lib/types/simulation";
+import type { AdvisorPersona, CrowdWisdomResult } from "@/lib/agents/advisors";
 
 export type PhaseState = {
   phase: SimulationPhase;
@@ -24,9 +25,13 @@ type SimulationStreamState = {
   simulationId: string | null;
   isRunning: boolean;
   error: string | null;
+  // Crowd wisdom
+  crowdPersonas: AdvisorPersona[] | null;
+  crowdResult: CrowdWisdomResult | null;
+  crowdLoading: boolean;
 };
 
-const PHASE_ORDER: SimulationPhase[] = [
+const BASE_PHASES: SimulationPhase[] = [
   "planning",
   "opening",
   "adversarial",
@@ -36,8 +41,14 @@ const PHASE_ORDER: SimulationPhase[] = [
 
 const TIMEOUT_MS = 60_000;
 
+function buildPhases(enableCrowdWisdom: boolean): PhaseState[] {
+  const phases = [...BASE_PHASES];
+  if (enableCrowdWisdom) phases.push("crowd_wisdom");
+  return phases.map((p) => ({ phase: p, status: "pending" as const }));
+}
+
 const initialState: SimulationStreamState = {
-  phases: PHASE_ORDER.map((p) => ({ phase: p, status: "pending" as const })),
+  phases: buildPhases(false),
   agents: [],
   plan: null,
   consensus: null,
@@ -46,6 +57,9 @@ const initialState: SimulationStreamState = {
   simulationId: null,
   isRunning: false,
   error: null,
+  crowdPersonas: null,
+  crowdResult: null,
+  crowdLoading: false,
 };
 
 export function useSimulationStream() {
@@ -63,7 +77,6 @@ export function useSimulationStream() {
   const resetTimeout = () => {
     clearTimeout_();
     timeoutRef.current = setTimeout(() => {
-      // No events received for 60s — timeout
       if (abortRef.current) abortRef.current.abort();
       setState((s) => ({
         ...s,
@@ -74,10 +87,11 @@ export function useSimulationStream() {
   };
 
   const startSimulation = useCallback(
-    async (question: string, engine: string) => {
-      // Reset state
+    async (question: string, engine: string, enableCrowdWisdom = false) => {
+      // Reset state with correct phases
       setState({
         ...initialState,
+        phases: buildPhases(enableCrowdWisdom),
         isRunning: true,
       });
 
@@ -93,7 +107,7 @@ export function useSimulationStream() {
         const res = await fetch("/api/simulate/stream", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question, engine }),
+          body: JSON.stringify({ question, engine, enableCrowdWisdom }),
           signal: abort.signal,
         });
 
@@ -133,17 +147,14 @@ export function useSimulationStream() {
             } else if (line.startsWith("data: ")) {
               currentData = line.slice(6).trim();
             } else if (line === "" && currentEvent && currentData) {
-              // Complete event — process it
               processEvent(currentEvent, currentData, setState);
               currentEvent = "";
               currentData = "";
             } else if (line !== "") {
-              // Incomplete — put back in buffer
               buffer += line + "\n";
             }
           }
 
-          // If we have an incomplete event, put it back
           if (currentEvent || currentData) {
             if (currentEvent) buffer += `event: ${currentEvent}\n`;
             if (currentData) buffer += `data: ${currentData}\n`;
@@ -196,18 +207,25 @@ function processEvent(
   switch (event) {
     case "phase_start": {
       const { phase } = data as { phase: SimulationPhase };
-      setState((s) => ({
-        ...s,
-        phases: s.phases.map((p) => {
-          if (p.phase === phase) return { ...p, status: "active" };
-          // Mark previous phases as complete
-          const phaseIdx = PHASE_ORDER.indexOf(phase);
-          const thisIdx = PHASE_ORDER.indexOf(p.phase);
-          if (thisIdx < phaseIdx && p.status === "active")
-            return { ...p, status: "complete" };
-          return p;
-        }),
-      }));
+      setState((s) => {
+        // If crowd_wisdom phase arrives but wasn't in initial phases, add it
+        const hasPhase = s.phases.some((p) => p.phase === phase);
+        const phases = hasPhase
+          ? s.phases
+          : [...s.phases, { phase, status: "pending" as const }];
+        return {
+          ...s,
+          phases: phases.map((p) => {
+            if (p.phase === phase) return { ...p, status: "active" };
+            const allPhases = phases.map((pp) => pp.phase);
+            const phaseIdx = allPhases.indexOf(phase);
+            const thisIdx = allPhases.indexOf(p.phase);
+            if (thisIdx < phaseIdx && p.status === "active")
+              return { ...p, status: "complete" };
+            return p;
+          }),
+        };
+      });
       break;
     }
 
@@ -234,11 +252,33 @@ function processEvent(
       setState((s) => ({ ...s, followups: data as string[] }));
       break;
 
+    // Crowd wisdom events
+    case "crowd_personas":
+      setState((s) => ({
+        ...s,
+        crowdPersonas: data as AdvisorPersona[],
+        crowdLoading: true,
+      }));
+      break;
+
+    case "crowd_advisor_complete":
+      // Progressive — individual advisors arriving (tracked via crowdResult)
+      break;
+
+    case "crowd_complete":
+      setState((s) => ({
+        ...s,
+        crowdResult: data as CrowdWisdomResult,
+        crowdLoading: false,
+      }));
+      break;
+
     case "complete": {
       const { simulation_id } = data as { simulation_id: string };
       setState((s) => ({
         ...s,
         simulationId: simulation_id,
+        crowdLoading: false,
         phases: s.phases.map((p) =>
           p.status === "active" ? { ...p, status: "complete" } : p,
         ),

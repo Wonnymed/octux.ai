@@ -7,7 +7,8 @@ export type SimulationPhase =
   | "opening"
   | "adversarial"
   | "convergence"
-  | "verdict";
+  | "verdict"
+  | "crowd_wisdom";
 
 export type Position = "proceed" | "proceed_with_conditions" | "delay" | "abandon";
 

@@ -16,6 +16,10 @@ export type AgentConfig = {
   role: string;
   icon: string;
   color: string;
+  goal: string;
+  backstory: string;
+  constraints: string[];
+  sop: string[];
   systemPrompt: string;
 };
 

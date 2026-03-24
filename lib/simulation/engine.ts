@@ -1,5 +1,9 @@
 import { callClaude, parseJSON } from './claude';
 import { AGENTS, getAgentById } from '../agents/prompts';
+import { generateAdvisorPersonas, runCrowdWisdom } from '../agents/advisors';
+import { createKernel, type OctuxKernel } from './kernel';
+import { createAudit, addRound, finalizeAudit, type SimulationAudit, type AuditRound } from './audit';
+import type { AdvisorPersona, AdvisorReport as CrowdAdvisorReport, CrowdWisdomResult } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
 
 export type SimulationSSEEvent =
@@ -9,6 +13,10 @@ export type SimulationSSEEvent =
   | { event: 'consensus_update'; data: { proceed: number; delay: number; abandon: number; avg_confidence: number } }
   | { event: 'verdict_artifact'; data: DecisionObject }
   | { event: 'followup_suggestions'; data: string[] }
+  | { event: 'crowd_personas'; data: AdvisorPersona[] }
+  | { event: 'crowd_advisor_complete'; data: CrowdAdvisorReport }
+  | { event: 'crowd_complete'; data: CrowdWisdomResult }
+  | { event: 'audit_complete'; data: SimulationAudit }
   | { event: 'complete'; data: { simulation_id: string } };
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -50,14 +58,69 @@ function summarizeReports(reports: AgentReport[]): string {
   return `Of ${reports.length} agents, ${positions.proceed} recommend proceed, ${positions.delay} recommend delay, ${positions.abandon} recommend abandon. Key risks: ${topRisks.join('; ') || 'none flagged yet'}.`;
 }
 
-async function callAgent(agent: AgentConfig, userMessage: string, maxTokens = 1024): Promise<AgentReport> {
-  const raw = await callClaude({
-    systemPrompt: agent.systemPrompt,
-    userMessage,
-    maxTokens,
-  });
-  console.log(`[${agent.id}] response: ${raw.length} chars`);
-  const parsed = parseJSON<Partial<AgentReport>>(raw);
+// ── AutoGen #9 — Termination Conditions ────────────────────
+
+function shouldTerminate(reports: AgentReport[], kernel: OctuxKernel): boolean {
+  if (reports.length < kernel.config.minAgentsForVerdict) return false;
+
+  // Check convergence: if enough agents agree, we can skip remaining rounds
+  const total = reports.length;
+  const positions = { proceed: 0, delay: 0, abandon: 0 };
+  for (const r of reports) {
+    if (r.position in positions) positions[r.position as keyof typeof positions]++;
+  }
+  const maxAgreement = Math.max(positions.proceed, positions.delay, positions.abandon) / total;
+  return maxAgreement >= kernel.config.convergenceThreshold;
+}
+
+// ── Audited callAgent wrapper ──────────────────────────────
+
+async function callAgent(
+  agent: AgentConfig,
+  userMessage: string,
+  maxTokens = 1024,
+  audit?: SimulationAudit,
+  roundNum?: number,
+  phase?: string,
+): Promise<AgentReport> {
+  const start = Date.now();
+  let success = true;
+  let error: string | undefined;
+  let raw: string;
+
+  try {
+    raw = await callClaude({
+      systemPrompt: agent.systemPrompt,
+      userMessage,
+      maxTokens,
+    });
+  } catch (err) {
+    success = false;
+    error = err instanceof Error ? err.message : 'Unknown error';
+    throw err;
+  } finally {
+    if (audit && roundNum !== undefined && phase) {
+      const latency = Date.now() - start;
+      // Estimate tokens (rough: 4 chars ≈ 1 token)
+      const inputTokens = Math.ceil((agent.systemPrompt.length + userMessage.length) / 4);
+      const outputTokens = success ? Math.ceil((raw!?.length || 0) / 4) : 0;
+      addRound(audit, {
+        round: roundNum,
+        phase,
+        agent_id: agent.id,
+        model: 'claude-sonnet-4-20250514',
+        input_tokens: inputTokens,
+        output_tokens: outputTokens,
+        latency_ms: latency,
+        success,
+        error,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  console.log(`[${agent.id}] response: ${raw!.length} chars`);
+  const parsed = parseJSON<Partial<AgentReport>>(raw!);
   return {
     agent_id: agent.id,
     agent_name: agent.name,
@@ -72,7 +135,41 @@ async function callAgent(agent: AgentConfig, userMessage: string, maxTokens = 10
 
 // ── Main Orchestrator ────────────────────────────────────────
 
-export async function* runSimulation(question: string, engine: string): AsyncGenerator<SimulationSSEEvent> {
+export async function* runSimulation(
+  question: string,
+  engine: string,
+  options?: { enableCrowdWisdom?: boolean },
+): AsyncGenerator<SimulationSSEEvent> {
+  const kernel = createKernel();
+  const simId = `sim_${Date.now()}`;
+  const audit = createAudit(simId, question, engine);
+
+  // ━━ INPUT GUARDRAILS (OpenAI Agents SDK #8) ━━━━━━━━━━━━━━
+  for (const filter of kernel.inputFilters) {
+    const result = filter.run(question);
+    if (!result.pass) {
+      console.warn(`[guardrail:${filter.name}] blocked: ${result.reason}`);
+      yield { event: 'phase_start', data: { phase: 'verdict', status: 'active' } };
+      yield {
+        event: 'verdict_artifact',
+        data: {
+          recommendation: 'abandon',
+          probability: 0,
+          main_risk: result.reason || 'Input validation failed',
+          leverage_point: 'Rephrase your question',
+          next_action: 'Submit a clearer, more specific question',
+          grade: 'F',
+          grade_score: 0,
+          citations: [],
+        },
+      };
+      finalizeAudit(audit);
+      yield { event: 'audit_complete', data: audit };
+      yield { event: 'complete', data: { simulation_id: simId } };
+      return;
+    }
+  }
+
   const chair = getAgentById('decision_chair');
   const allReports: AgentReport[] = [];
 
@@ -82,9 +179,19 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
 
   let plan: SimulationPlan;
   try {
+    const planStart = Date.now();
+    const planPrompt = `QUESTION: ${question}\n\nENGINE: ${engine}\n\nDecompose this decision into 5-8 specific sub-tasks. For each task, assign the most relevant agent from this list:\n${agentListForChair()}\n\nReturn valid JSON only:\n{ "tasks": [{ "description": "...", "assigned_agent": "agent_id" }], "estimated_rounds": 10 }`;
     const planRaw = await callClaude({
       systemPrompt: chair.systemPrompt,
-      userMessage: `QUESTION: ${question}\n\nENGINE: ${engine}\n\nDecompose this decision into 5-8 specific sub-tasks. For each task, assign the most relevant agent from this list:\n${agentListForChair()}\n\nReturn valid JSON only:\n{ "tasks": [{ "description": "...", "assigned_agent": "agent_id" }], "estimated_rounds": 10 }`,
+      userMessage: planPrompt,
+    });
+    addRound(audit, {
+      round: 1, phase: 'planning', agent_id: 'decision_chair',
+      model: 'claude-sonnet-4-20250514',
+      input_tokens: Math.ceil((chair.systemPrompt.length + planPrompt.length) / 4),
+      output_tokens: Math.ceil(planRaw.length / 4),
+      latency_ms: Date.now() - planStart, success: true,
+      timestamp: new Date().toISOString(),
     });
     console.log(`[decision_chair] plan: ${planRaw.length} chars`);
     plan = parseJSON<SimulationPlan>(planRaw);
@@ -139,6 +246,8 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
     callAgent(
       agent,
       `Question: ${question}\n\nYour task: ${task}\n\nAnalyze from your perspective as ${agent.role}. Be specific with data. Respond with valid JSON only.`,
+      kernel.config.maxTokensPerAgent,
+      audit, 2, 'opening',
     ).catch((err) => {
       console.error(`[${agent.id}] deep analysis failed:`, err);
       return null;
@@ -148,8 +257,18 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
   const deepResults = await Promise.allSettled(deepPromises);
   for (const result of deepResults) {
     if (result.status === 'fulfilled' && result.value) {
-      allReports.push(result.value);
-      yield { event: 'agent_complete', data: result.value };
+      // Apply agent filters
+      let report = result.value;
+      let filtered = false;
+      for (const filter of kernel.agentFilters) {
+        const check = filter.run(report);
+        if (!check.pass) { filtered = true; console.warn(`[filter:${filter.name}] rejected ${report.agent_id}: ${check.reason}`); break; }
+        if (check.patched) report = check.patched;
+      }
+      if (!filtered) {
+        allReports.push(report);
+        yield { event: 'agent_complete', data: report };
+      }
     }
   }
 
@@ -160,22 +279,37 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
   const quickAgents = specialistAgents().filter((a) => !seenIds.has(a.id));
   const summary = summarizeReports(allReports);
 
-  const quickPromises = quickAgents.map((agent) =>
-    callAgent(
-      agent,
-      `Question: ${question}\n\nOther agents have analyzed this. Here is a brief summary: ${summary}\n\nAs ${agent.role}, add your perspective in under 100 words. Focus on what others MISSED. Respond with valid JSON only.`,
-      512,
-    ).catch((err) => {
-      console.error(`[${agent.id}] quick take failed:`, err);
-      return null;
-    }),
-  );
+  // AutoGen #9: Check early termination before quick takes
+  if (shouldTerminate(allReports, kernel)) {
+    console.log('[autogen] early convergence detected after deep analysis — skipping quick takes');
+  } else {
+    const quickPromises = quickAgents.map((agent) =>
+      callAgent(
+        agent,
+        `Question: ${question}\n\nOther agents have analyzed this. Here is a brief summary: ${summary}\n\nAs ${agent.role}, add your perspective in under 100 words. Focus on what others MISSED. Respond with valid JSON only.`,
+        512,
+        audit, 5, 'opening',
+      ).catch((err) => {
+        console.error(`[${agent.id}] quick take failed:`, err);
+        return null;
+      }),
+    );
 
-  const quickResults = await Promise.allSettled(quickPromises);
-  for (const result of quickResults) {
-    if (result.status === 'fulfilled' && result.value) {
-      allReports.push(result.value);
-      yield { event: 'agent_complete', data: result.value };
+    const quickResults = await Promise.allSettled(quickPromises);
+    for (const result of quickResults) {
+      if (result.status === 'fulfilled' && result.value) {
+        let report = result.value;
+        let filtered = false;
+        for (const filter of kernel.agentFilters) {
+          const check = filter.run(report);
+          if (!check.pass) { filtered = true; console.warn(`[filter:${filter.name}] rejected ${report.agent_id}: ${check.reason}`); break; }
+          if (check.patched) report = check.patched;
+        }
+        if (!filtered) {
+          allReports.push(report);
+          yield { event: 'agent_complete', data: report };
+        }
+      }
     }
   }
 
@@ -191,9 +325,19 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
 
   let debates: { challenger_id: AgentId; defender_id: AgentId; topic: string }[] = [];
   try {
+    const debateStart = Date.now();
+    const debatePrompt = `Here are all 9 agent reports:\n${reportSummaryForChair}\n\nIdentify the 2 biggest disagreements. For each, name the challenger and defender. Return valid JSON only:\n{ "debates": [{ "challenger_id": "agent_id", "defender_id": "agent_id", "topic": "what they disagree on" }] }`;
     const debateRaw = await callClaude({
       systemPrompt: chair.systemPrompt,
-      userMessage: `Here are all 9 agent reports:\n${reportSummaryForChair}\n\nIdentify the 2 biggest disagreements. For each, name the challenger and defender. Return valid JSON only:\n{ "debates": [{ "challenger_id": "agent_id", "defender_id": "agent_id", "topic": "what they disagree on" }] }`,
+      userMessage: debatePrompt,
+    });
+    addRound(audit, {
+      round: 6, phase: 'adversarial', agent_id: 'decision_chair',
+      model: 'claude-sonnet-4-20250514',
+      input_tokens: Math.ceil((chair.systemPrompt.length + debatePrompt.length) / 4),
+      output_tokens: Math.ceil(debateRaw.length / 4),
+      latency_ms: Date.now() - debateStart, success: true,
+      timestamp: new Date().toISOString(),
     });
     console.log(`[decision_chair] debates: ${debateRaw.length} chars`);
     const parsed = parseJSON<{ debates: typeof debates }>(debateRaw);
@@ -220,6 +364,8 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
       const challengeReport = await callAgent(
         challengerAgent,
         `Original question: ${question}\n\nYou said "${challengerReport?.key_argument || 'your position'}". The ${defenderAgent.name} said "${defenderReport?.key_argument || 'their position'}". The debate topic: ${debate.topic}. Challenge the defender's position directly. Respond with valid JSON only.`,
+        kernel.config.maxTokensPerAgent,
+        audit, 7, 'adversarial',
       );
       allReports.push(challengeReport);
       yield { event: 'agent_complete', data: challengeReport };
@@ -232,6 +378,8 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
       const defenseReport = await callAgent(
         defenderAgent,
         `Original question: ${question}\n\nThe ${challengerAgent.name} challenged your position on: ${debate.topic}. Their argument: "${challengerReport?.key_argument || 'disagreement'}". Defend or update your position. If you changed your mind, say so. Respond with valid JSON only.`,
+        kernel.config.maxTokensPerAgent,
+        audit, 8, 'adversarial',
       );
       allReports.push(defenseReport);
       yield { event: 'agent_complete', data: defenseReport };
@@ -253,6 +401,7 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
       agent,
       `Original question: ${question}\n\nThe debate is concluding. Your original position was "${lastReport?.position || 'unknown'}" with confidence ${lastReport?.confidence || 5}. After hearing all arguments, declare your FINAL position. If you changed your mind, explain why in one sentence. Respond with valid JSON only.`,
       256,
+      audit, 9, 'convergence',
     ).catch((err) => {
       console.error(`[${agent.id}] convergence failed:`, err);
       return null;
@@ -262,9 +411,18 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
   const convergenceResults = await Promise.allSettled(convergencePromises);
   for (const result of convergenceResults) {
     if (result.status === 'fulfilled' && result.value) {
-      finalReports.push(result.value);
-      allReports.push(result.value);
-      yield { event: 'agent_complete', data: result.value };
+      let report = result.value;
+      let filtered = false;
+      for (const filter of kernel.agentFilters) {
+        const check = filter.run(report);
+        if (!check.pass) { filtered = true; break; }
+        if (check.patched) report = check.patched;
+      }
+      if (!filtered) {
+        finalReports.push(report);
+        allReports.push(report);
+        yield { event: 'agent_complete', data: report };
+      }
     }
   }
 
@@ -278,38 +436,55 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
     .map((r) => `${r.agent_name} (${r.agent_id}): position=${r.position}, confidence=${r.confidence}, argument="${r.key_argument}", risks=[${r.risks_identified.join(', ')}]`)
     .join('\n');
 
+  let verdict: DecisionObject;
   try {
+    const verdictStart = Date.now();
+    const verdictPrompt = `QUESTION: ${question}\n\nFINAL AGENT POSITIONS:\n${finalSummary}\n\nFULL DEBATE HISTORY (${allReports.length} total reports across all rounds):\n${reportSummaryForChair}\n\nSynthesize ALL agent positions into a final Decision Object. Weight by confidence and evidence quality.\n\nRespond with valid JSON only:\n{\n  "recommendation": "proceed" | "proceed_with_conditions" | "delay" | "abandon",\n  "probability": 0-100,\n  "main_risk": "the single biggest risk",\n  "leverage_point": "the one thing that changes everything",\n  "next_action": "specific, actionable, doable this week",\n  "grade": "A" | "B+" | "B" | "C" | "D" | "F",\n  "grade_score": 0-100,\n  "citations": [{ "id": 1, "agent_id": "agent_id", "agent_name": "name", "claim": "specific claim", "confidence": 1-10 }]\n}`;
     const verdictRaw = await callClaude({
       systemPrompt: chair.systemPrompt,
-      userMessage: `QUESTION: ${question}\n\nFINAL AGENT POSITIONS:\n${finalSummary}\n\nFULL DEBATE HISTORY (${allReports.length} total reports across all rounds):\n${reportSummaryForChair}\n\nSynthesize ALL agent positions into a final Decision Object. Weight by confidence and evidence quality.\n\nRespond with valid JSON only:\n{\n  "recommendation": "proceed" | "proceed_with_conditions" | "delay" | "abandon",\n  "probability": 0-100,\n  "main_risk": "the single biggest risk",\n  "leverage_point": "the one thing that changes everything",\n  "next_action": "specific, actionable, doable this week",\n  "grade": "A" | "B+" | "B" | "C" | "D" | "F",\n  "grade_score": 0-100,\n  "citations": [{ "id": 1, "agent_id": "agent_id", "agent_name": "name", "claim": "specific claim", "confidence": 1-10 }]\n}`,
+      userMessage: verdictPrompt,
       maxTokens: 2048,
     });
+    addRound(audit, {
+      round: 10, phase: 'verdict', agent_id: 'decision_chair',
+      model: 'claude-sonnet-4-20250514',
+      input_tokens: Math.ceil((chair.systemPrompt.length + verdictPrompt.length) / 4),
+      output_tokens: Math.ceil(verdictRaw.length / 4),
+      latency_ms: Date.now() - verdictStart, success: true,
+      timestamp: new Date().toISOString(),
+    });
     console.log(`[decision_chair] verdict: ${verdictRaw.length} chars`);
-    const verdict = parseJSON<DecisionObject>(verdictRaw);
-    yield { event: 'verdict_artifact', data: verdict };
+    verdict = parseJSON<DecisionObject>(verdictRaw);
   } catch (error) {
     console.error('Verdict synthesis failed:', error);
-    // Emit a fallback verdict
-    yield {
-      event: 'verdict_artifact',
-      data: {
-        recommendation: 'delay',
-        probability: 50,
-        main_risk: 'Insufficient data to reach high-confidence decision',
-        leverage_point: 'Gather more specific data on the key unknowns identified by agents',
-        next_action: 'Review the individual agent reports and address their specific concerns',
-        grade: 'C',
-        grade_score: 55,
-        citations: finalReports.slice(0, 3).map((r, i) => ({
-          id: i + 1,
-          agent_id: r.agent_id,
-          agent_name: r.agent_name,
-          claim: r.key_argument,
-          confidence: r.confidence,
-        })),
-      },
+    verdict = {
+      recommendation: 'delay',
+      probability: 50,
+      main_risk: 'Insufficient data to reach high-confidence decision',
+      leverage_point: 'Gather more specific data on the key unknowns identified by agents',
+      next_action: 'Review the individual agent reports and address their specific concerns',
+      grade: 'C',
+      grade_score: 55,
+      citations: finalReports.slice(0, 3).map((r, i) => ({
+        id: i + 1,
+        agent_id: r.agent_id,
+        agent_name: r.agent_name,
+        claim: r.key_argument,
+        confidence: r.confidence,
+      })),
     };
   }
+
+  // Apply output filters (Semantic Kernel #19)
+  for (const filter of kernel.outputFilters) {
+    const check = filter.run(verdict);
+    if (check.patched) {
+      console.log(`[filter:${filter.name}] patched verdict: ${check.reason}`);
+      verdict = check.patched;
+    }
+  }
+
+  yield { event: 'verdict_artifact', data: verdict };
 
   // Follow-up suggestions
   try {
@@ -326,5 +501,42 @@ export async function* runSimulation(question: string, engine: string): AsyncGen
     yield { event: 'followup_suggestions', data: ['What are the key risks I should investigate further?', 'What would change this decision from delay to proceed?', 'What is the minimum viable test I can run this week?', 'Who should I talk to before making this decision?'] };
   }
 
-  yield { event: 'complete', data: { simulation_id: `sim_${Date.now()}` } };
+  // ━━ CROWD WISDOM PHASE (optional, MAX tier only) ━━━━━━━━━━
+
+  if (options?.enableCrowdWisdom) {
+    yield { event: 'phase_start', data: { phase: 'crowd_wisdom', status: 'active' } };
+
+    try {
+      // Step 1: Generate 20 contextual personas
+      console.log('[crowd_wisdom] generating personas...');
+      const personas = await generateAdvisorPersonas(question);
+      yield { event: 'crowd_personas', data: personas };
+
+      // Step 2: Build verdict summary for advisor context
+      const verdictSummary = `The 10 specialist agents recommend "${verdict.recommendation}" with ${verdict.probability}% probability. Main risk: ${verdict.main_risk}. Suggested next action: ${verdict.next_action}`;
+
+      // Step 3: Run all 20 advisors in parallel
+      console.log('[crowd_wisdom] running', personas.length, 'advisors...');
+      const crowdResult = await runCrowdWisdom(question, personas, verdictSummary);
+
+      // Step 4: Stream individual advisor results for progressive UI
+      for (const advisor of crowdResult.advisors) {
+        yield { event: 'crowd_advisor_complete', data: advisor };
+      }
+
+      // Step 5: Final crowd result with sentiment + key insight
+      yield { event: 'crowd_complete', data: crowdResult };
+      console.log(`[crowd_wisdom] complete: ${crowdResult.advisors.length} advisors, quality=${crowdResult.quality_score}/100, ${crowdResult.audit_trail.duration_ms}ms`);
+    } catch (error) {
+      console.error('[crowd_wisdom] failed:', error);
+      // Non-fatal — crowd wisdom failure doesn't break the simulation
+    }
+  }
+
+  // ━━ FINALIZE AUDIT (Palantir #4) ━━━━━━━━━━━━━━━━━━━━━━━━━
+  finalizeAudit(audit);
+  console.log(`[audit] ${audit.rounds.length} calls, ${audit.total_input_tokens}+${audit.total_output_tokens} tokens, $${audit.total_cost_usd.toFixed(4)}, ${audit.total_duration_ms}ms`);
+  yield { event: 'audit_complete', data: audit };
+
+  yield { event: 'complete', data: { simulation_id: simId } };
 }
