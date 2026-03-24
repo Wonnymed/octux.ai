@@ -12,7 +12,7 @@ import { AgentCardSkeleton, VerdictSkeleton } from "@/app/components/sim/Skeleto
 import AuthWallBanner from "@/app/components/sim/AuthWallBanner";
 import FieldIntelligenceBar from "@/app/components/sim/FieldIntelligenceBar";
 import { useSimulationStream } from "@/app/lib/hooks/useSimulationStream";
-import { TIERS, ADVISOR_OPTIONS, getModelLabel } from "@/lib/config/tiers";
+import { TIERS, ADVISOR_OPTIONS } from "@/lib/config/tiers";
 
 export default function SimulationPage() {
   return (
@@ -208,8 +208,8 @@ function SimulationPageInner() {
                   ? `10 specialists + ${advisorCount} field researchers · Round ${currentRound}/10 · analyzing...`
                   : `10 specialists · Round ${currentRound}/10 · analyzing...`
                 : enableCrowdWisdom && advisorCount > 0
-                  ? `${TIERS.free.agents} specialists + ${advisorCount} field researchers · 10 rounds`
-                  : `${TIERS.free.agents} specialists · 10 rounds · ${getModelLabel(TIERS.free.model)}`}
+                  ? `${TIERS.free.features.specialists} specialists + ${advisorCount} field researchers · 10 rounds`
+                  : `${TIERS.free.features.specialists} specialists · 10 rounds · Sonnet`}
             </span>
             {/* Crowd Wisdom tier selector — disabled once running */}
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -228,7 +228,7 @@ function SimulationPageInner() {
                       }
                     }}
                     disabled={isRunning}
-                    title={`${TIERS[opt.tier].name} tier · Adds ${opt.count} contextual local perspectives`}
+                    title={`${TIERS[opt.tier].displayName} tier · Adds ${opt.count} field researchers`}
                     style={{
                       display: "flex",
                       alignItems: "center",
