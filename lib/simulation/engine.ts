@@ -14,6 +14,7 @@ import { generateCounterFactualFlip, detectBlindSpots, type CounterFactualFlip, 
 import { evaluateSimulation, type SimulationEval } from './evals';
 import { saveSimulation } from '../memory/persistence';
 import { extractAndSaveFacts } from '../memory/facts';
+import { maybeRegenerateProfile } from '../memory/profile';
 import type { AdvisorPersona } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
 
@@ -1165,6 +1166,13 @@ DEBATE PROGRESS:
       );
     } catch (err) {
       console.error('[facts] Extraction error (non-fatal):', err);
+    }
+
+    // Memory: Check if Decision Profile needs regeneration (every 3 sims)
+    try {
+      await maybeRegenerateProfile(options.userId);
+    } catch (err) {
+      console.error('[profile] Regeneration error (non-fatal):', err);
     }
   }
 
