@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 
 type HeroInputProps = {
   onSubmit: (query: string) => void;
   placeholder?: string;
   defaultValue?: string;
+  isSubmitting?: boolean;
 };
 
-export default function HeroInput({ onSubmit, placeholder, defaultValue = "" }: HeroInputProps) {
+export default function HeroInput({ onSubmit, placeholder, defaultValue = "", isSubmitting = false }: HeroInputProps) {
   const [value, setValue] = useState(defaultValue);
   const [focused, setFocused] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -66,25 +67,34 @@ export default function HeroInput({ onSubmit, placeholder, defaultValue = "" }: 
         />
         <button
           type="submit"
-          disabled={!value.trim()}
+          disabled={isSubmitting || !value.trim()}
           style={{
             width: 32,
             height: 32,
             borderRadius: "var(--radius-md)",
             border: "none",
-            background: value.trim() ? "var(--accent)" : "var(--surface-2)",
-            color: value.trim() ? "#fff" : "var(--text-disabled)",
+            background: isSubmitting ? "var(--accent)" : value.trim() ? "var(--accent)" : "var(--surface-2)",
+            color: isSubmitting ? "#fff" : value.trim() ? "#fff" : "var(--text-disabled)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            cursor: value.trim() ? "pointer" : "default",
+            cursor: isSubmitting || !value.trim() ? "default" : "pointer",
+            opacity: isSubmitting ? 0.7 : 1,
             transition: "all var(--transition-normal)",
             flexShrink: 0,
           }}
         >
-          <ArrowRight size={16} strokeWidth={2} />
+          {isSubmitting ? (
+            <Loader2 size={16} strokeWidth={2} className="spin-icon" />
+          ) : (
+            <ArrowRight size={16} strokeWidth={2} />
+          )}
         </button>
       </div>
+      <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin-icon { animation: spin 1s linear infinite; }
+      `}</style>
     </form>
   );
 }

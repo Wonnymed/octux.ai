@@ -21,7 +21,7 @@ export type SimulationState = {
   simulation_id: string;
   question: string;
   engine: string;
-  tier: 'free' | 'pro' | 'max';
+  tier: 'free' | 'pro' | 'max' | 'octopus';
 
   // LangGraph #2: Phase state machine
   current_phase: PhaseId;
@@ -82,7 +82,7 @@ export function createInitialState(
     simulation_id: simId,
     question,
     engine,
-    tier: (tier === 'pro' || tier === 'max' ? tier : 'free') as SimulationState['tier'],
+    tier: (['free', 'pro', 'max', 'octopus'].includes(tier) ? tier : 'free') as SimulationState['tier'],
 
     current_phase: 'input',
     phase_history: [{ phase: 'input', started_at: new Date().toISOString() }],
@@ -301,10 +301,4 @@ export function recordHandoff(
   round: number,
 ): void {
   state.handoffs.push({ from_agent: from, to_agent: to, reason, round });
-}
-
-// ── AutoGen #3: Early Consensus Termination ────────────────
-
-export function checkEarlyConsensus(_state: SimulationState): boolean {
-  return false; // DISABLED: All 10 rounds must always execute
 }

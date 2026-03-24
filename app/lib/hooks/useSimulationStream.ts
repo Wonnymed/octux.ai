@@ -38,6 +38,17 @@ type SimulationStreamState = {
   // Field Intelligence Network
   fieldPersonas: AdvisorPersona[] | null;
   fieldScans: FieldScan[];
+  // Post-verdict analytics
+  auditTrail: any | null;
+  enrichedCitations: any[] | null;
+  agentScores: any[] | null;
+  verdictCritique: any | null;
+  ledgerUpdates: any[];
+  delegations: any[];
+  counterFactual: any | null;
+  blindSpots: any | null;
+  stateSummary: any | null;
+  evaluation: any | null;
 };
 
 const BASE_PHASES: SimulationPhase[] = [
@@ -68,6 +79,16 @@ const initialState: SimulationStreamState = {
   error: null,
   fieldPersonas: null,
   fieldScans: [],
+  auditTrail: null,
+  enrichedCitations: null,
+  agentScores: null,
+  verdictCritique: null,
+  ledgerUpdates: [],
+  delegations: [],
+  counterFactual: null,
+  blindSpots: null,
+  stateSummary: null,
+  evaluation: null,
 };
 
 export function useSimulationStream() {
@@ -310,6 +331,48 @@ function processEvent(
         ...s,
         fieldScans: [...s.fieldScans, data as FieldScan],
       }));
+      break;
+
+    // Post-verdict analytics events
+    case "audit_complete":
+      setState((s) => ({ ...s, auditTrail: data }));
+      break;
+
+    case "citations_enriched":
+      setState((s) => ({ ...s, enrichedCitations: data as any[] }));
+      break;
+
+    case "agent_scores":
+      setState((s) => ({ ...s, agentScores: data as any[] }));
+      break;
+
+    case "verdict_critique":
+      setState((s) => ({ ...s, verdictCritique: data }));
+      break;
+
+    case "ledger_update":
+    case "stall_replan":
+      setState((s) => ({ ...s, ledgerUpdates: [...s.ledgerUpdates, data] }));
+      break;
+
+    case "delegation":
+      setState((s) => ({ ...s, delegations: [...s.delegations, data] }));
+      break;
+
+    case "counter_factual":
+      setState((s) => ({ ...s, counterFactual: data }));
+      break;
+
+    case "blind_spots":
+      setState((s) => ({ ...s, blindSpots: data }));
+      break;
+
+    case "state_summary":
+      setState((s) => ({ ...s, stateSummary: data }));
+      break;
+
+    case "evaluation":
+      setState((s) => ({ ...s, evaluation: data }));
       break;
 
     case "complete": {

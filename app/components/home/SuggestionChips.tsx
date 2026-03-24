@@ -63,9 +63,10 @@ const SUGGESTIONS: Record<string, string[][]> = {
 type SuggestionChipsProps = {
   engine: string;
   onSelect: (suggestion: string) => void;
+  disabled?: boolean;
 };
 
-export default function SuggestionChips({ engine, onSelect }: SuggestionChipsProps) {
+export default function SuggestionChips({ engine, onSelect, disabled = false }: SuggestionChipsProps) {
   const [setIndex, setSetIndex] = useState(0);
   const [refreshHovered, setRefreshHovered] = useState(false);
   const [hoveredChip, setHoveredChip] = useState<number | null>(null);
@@ -92,17 +93,19 @@ export default function SuggestionChips({ engine, onSelect }: SuggestionChipsPro
         <button
           key={`${engine}-${setIndex}-${i}`}
           onClick={() => onSelect(chip)}
+          disabled={disabled}
           onMouseEnter={() => setHoveredChip(i)}
           onMouseLeave={() => setHoveredChip(null)}
           style={{
             padding: "6px 14px",
             borderRadius: "var(--radius-full)",
-            border: `1px solid ${hoveredChip === i ? "var(--accent)" : "var(--border-default)"}`,
-            background: hoveredChip === i ? "var(--accent-glow)" : "transparent",
-            color: hoveredChip === i ? "var(--accent)" : "var(--text-secondary)",
+            border: `1px solid ${!disabled && hoveredChip === i ? "var(--accent)" : "var(--border-default)"}`,
+            background: !disabled && hoveredChip === i ? "var(--accent-glow)" : "transparent",
+            color: !disabled && hoveredChip === i ? "var(--accent)" : "var(--text-secondary)",
             fontSize: 12.5,
             fontWeight: 400,
-            cursor: "pointer",
+            cursor: disabled ? "default" : "pointer",
+            opacity: disabled ? 0.5 : 1,
             transition: "all var(--transition-normal)",
             whiteSpace: "nowrap",
             lineHeight: 1.4,

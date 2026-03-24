@@ -11,6 +11,7 @@ import { critiqueVerdict, refineVerdict, type VerdictCritique } from './self-ref
 import { createTaskLedger, createProgressLedger, updateTaskLedger, assessProgress, replanDebate, type TaskLedger, type ProgressLedger } from './ledger';
 import { processDelegations, type DelegationResponse } from './delegation';
 import { generateCounterFactualFlip, detectBlindSpots, type CounterFactualFlip, type BlindSpotAnalysis } from './verdict-insights';
+import { evaluateSimulation, type SimulationEval } from './evals';
 import type { AdvisorPersona } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
 
@@ -34,6 +35,7 @@ export type SimulationSSEEvent =
   | { event: 'delegation'; data: DelegationResponse }
   | { event: 'counter_factual'; data: CounterFactualFlip }
   | { event: 'blind_spots'; data: BlindSpotAnalysis }
+  | { event: 'evaluation'; data: SimulationEval }
   | { event: 'state_summary'; data: any }
   | { event: 'complete'; data: { simulation_id: string } };
 
@@ -207,12 +209,12 @@ async function callAgent(
 export async function* runSimulation(
   question: string,
   engine: string,
-  options?: { enableCrowdWisdom?: boolean; advisorGuidance?: string; advisorCount?: number },
+  options?: { enableCrowdWisdom?: boolean; advisorGuidance?: string; advisorCount?: number; tier?: string },
 ): AsyncGenerator<SimulationSSEEvent> {
   const kernel = createKernel();
   const simId = `sim_${Date.now()}`;
   const audit = createAudit(simId, question, engine);
-  const state = createInitialState(simId, question, engine, 'free');
+  const state = createInitialState(simId, question, engine, options?.tier || 'free');
 
   // ━━ INPUT GUARDRAILS (OpenAI Agents SDK #8) ━━━━━━━━━━━━━━
   for (const filter of kernel.inputFilters) {
@@ -963,6 +965,19 @@ DEBATE PROGRESS:
   finalizeAudit(audit);
   console.log(`[audit] ${audit.rounds.length} calls, ${audit.total_input_tokens}+${audit.total_output_tokens} tokens, $${audit.total_cost_usd.toFixed(4)}, ${audit.total_duration_ms}ms`);
   yield { event: 'audit_complete', data: audit };
+
+  // ━━ DeepEval #12: Algorithmic Simulation Evaluation ━━━━━━━
+  const evaluation = evaluateSimulation(state, audit);
+  yield { event: 'evaluation', data: evaluation };
+
+  // Override verdict grade with algorithmic eval grade (more objective)
+  if (evaluation.grade && evaluation.overall_score) {
+    verdict.grade = evaluation.grade;
+    verdict.grade_score = Math.round(evaluation.overall_score);
+    // Re-yield updated verdict so frontend gets the final grade
+    yield { event: 'verdict_artifact', data: verdict };
+  }
+  console.log(`[eval] ${evaluation.grade} ${evaluation.overall_score.toFixed(0)}/100`);
 
   // ━━ STATE SUMMARY (LangGraph #2) ━━━━━━━━━━━━━━━━━━━━━━━━━
   transitionPhase(state, 'complete');

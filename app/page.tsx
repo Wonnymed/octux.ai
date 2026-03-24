@@ -24,15 +24,20 @@ export default function HomePage() {
 
 function HomePageInner() {
   const [activeEngine, setActiveEngine] = useState<string>("simulate");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const prefill = searchParams.get("q") || "";
 
   const handleSubmit = useCallback((query: string) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const id = `sim_${Date.now()}`;
     const params = new URLSearchParams({ question: query, engine: activeEngine });
     router.push(`/sim/${id}?${params.toString()}`);
-  }, [activeEngine, router]);
+    // Fallback: re-enable after 5s if navigation stalls
+    setTimeout(() => setIsSubmitting(false), 5000);
+  }, [activeEngine, router, isSubmitting]);
 
   const handleChipSelect = useCallback((suggestion: string) => {
     handleSubmit(suggestion);
@@ -154,12 +159,12 @@ function HomePageInner() {
 
             {/* Input */}
             <div style={{ marginTop: 32, width: "100%", display: "flex", justifyContent: "center" }}>
-              <HeroInput onSubmit={handleSubmit} defaultValue={prefill} />
+              <HeroInput onSubmit={handleSubmit} defaultValue={prefill} isSubmitting={isSubmitting} />
             </div>
 
             {/* Suggestion Chips */}
             <div style={{ marginTop: 20 }}>
-              <SuggestionChips engine={activeEngine} onSelect={handleChipSelect} />
+              <SuggestionChips engine={activeEngine} onSelect={handleChipSelect} disabled={isSubmitting} />
             </div>
 
             {/* Trust Strip */}

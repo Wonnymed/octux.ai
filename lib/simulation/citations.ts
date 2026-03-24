@@ -72,15 +72,3 @@ export function buildCitations(state: SimulationState): EnrichedCitation[] {
 
   return citations;
 }
-
-// ── Helpers ────────────────────────────────────────────────
-
-export function generateCitationSummary(citations: EnrichedCitation[]): string {
-  return citations
-    .slice(0, 3)
-    .map(
-      (c) =>
-        `[${c.id}] ${c.agent_name} (${c.confidence}/10, ${c.position}): ${c.claim.substring(0, 100)}`,
-    )
-    .join('\n');
-}

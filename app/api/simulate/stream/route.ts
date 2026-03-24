@@ -23,12 +23,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { question, engine, enableCrowdWisdom, advisorGuidance, advisorCount } = body as {
+  const { question, engine, enableCrowdWisdom, advisorGuidance, advisorCount, tier } = body as {
     question: string;
     engine: string;
     enableCrowdWisdom?: boolean;
     advisorGuidance?: string;
     advisorCount?: number;
+    tier?: string;
   };
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -64,6 +65,7 @@ export async function POST(req: NextRequest) {
           enableCrowdWisdom: !!enableCrowdWisdom,
           advisorGuidance: advisorGuidance || undefined,
           advisorCount: advisorCount || undefined,
+          tier: tier || 'free',
         });
 
         for await (const sse of generator) {

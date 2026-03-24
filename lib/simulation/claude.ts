@@ -47,12 +47,20 @@ export async function callClaude(options: {
   const { systemPrompt, userMessage, maxTokens = 1024, model = DEFAULT_MODEL } = options;
 
   try {
-    const response = await client.messages.create({
-      model,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userMessage }],
-    });
+    const timeoutMs = 30000;
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Claude API timeout after ${timeoutMs}ms`)), timeoutMs)
+    );
+
+    const response = await Promise.race([
+      client.messages.create({
+        model,
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userMessage }],
+      }),
+      timeoutPromise,
+    ]);
     return response.content[0].type === 'text' ? response.content[0].text : '';
   } catch (error) {
     console.error('Claude API error:', error);

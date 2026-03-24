@@ -34,6 +34,7 @@ function SimulationPageInner() {
   const [enableCrowdWisdom, setEnableCrowdWisdom] = useState(false);
   const [advisorCount, setAdvisorCount] = useState(0);
   const [advisorGuidance, setAdvisorGuidance] = useState("");
+  const [isNavigating, setIsNavigating] = useState(false);
   const verdictRef = useRef<HTMLDivElement>(null);
   const hasScrolledRef = useRef(false);
 
@@ -83,11 +84,14 @@ function SimulationPageInner() {
 
   const handleFollowUp = useCallback(
     (suggestion: string) => {
+      if (isNavigating) return;
+      setIsNavigating(true);
       const id = `sim_${Date.now()}`;
       const params = new URLSearchParams({ question: suggestion, engine });
       router.push(`/sim/${id}?${params.toString()}`);
+      setTimeout(() => setIsNavigating(false), 5000);
     },
-    [engine, router],
+    [engine, router, isNavigating],
   );
 
   const handleToggleAgent = useCallback((agentId: string) => {
@@ -506,6 +510,7 @@ function SimulationPageInner() {
                 <FollowUpChips
                   suggestions={followups}
                   onSelect={handleFollowUp}
+                  disabled={isNavigating}
                 />
               </div>
             )}
