@@ -12,6 +12,7 @@ import { createTaskLedger, createProgressLedger, updateTaskLedger, assessProgres
 import { processDelegations, type DelegationResponse } from './delegation';
 import { generateCounterFactualFlip, detectBlindSpots, type CounterFactualFlip, type BlindSpotAnalysis } from './verdict-insights';
 import { evaluateSimulation, type SimulationEval } from './evals';
+import { saveSimulation } from '../memory/persistence';
 import type { AdvisorPersona } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
 
@@ -251,7 +252,7 @@ async function callAgent(
 export async function* runSimulation(
   question: string,
   engine: string,
-  options?: { enableCrowdWisdom?: boolean; advisorGuidance?: string; advisorCount?: number; tier?: string },
+  options?: { enableCrowdWisdom?: boolean; advisorGuidance?: string; advisorCount?: number; tier?: string; userId?: string },
 ): AsyncGenerator<SimulationSSEEvent> {
   const kernel = createKernel();
   const simId = `sim_${Date.now()}`;
@@ -1002,8 +1003,10 @@ DEBATE PROGRESS:
   }
 
   // ━━ Verdict Insights: Counter-Factual Flip + Blind Spot Detector ━━
+  let counterFactual: CounterFactualFlip | null = null;
+  let blindSpots: BlindSpotAnalysis | null = null;
   try {
-    const [counterFactual, blindSpots] = await Promise.all([
+    [counterFactual, blindSpots] = await Promise.all([
       generateCounterFactualFlip(question, verdict, state, taskLedger),
       detectBlindSpots(question, verdict, state, taskLedger),
     ]);
@@ -1042,6 +1045,7 @@ DEBATE PROGRESS:
   console.log('[perf] Agent scores:', agentScores.map((s) => `${s.agent_name}: ${s.overall_score}/100`).join(', '));
 
   // Follow-up suggestions
+  let followUps: string[] = ['What are the key risks I should investigate further?', 'What would change this decision from delay to proceed?', 'What is the minimum viable test I can run this week?', 'Who should I talk to before making this decision?'];
   try {
     const followupRaw = await callClaude({
       systemPrompt: chair.systemPrompt,
@@ -1049,11 +1053,11 @@ DEBATE PROGRESS:
       maxTokens: 512,
     });
     console.log(`[decision_chair] followups: ${followupRaw.length} chars`);
-    const followups = parseJSON<string[]>(followupRaw);
-    yield { event: 'followup_suggestions', data: followups };
+    followUps = parseJSON<string[]>(followupRaw);
+    yield { event: 'followup_suggestions', data: followUps };
   } catch (error) {
     console.error('Follow-up generation failed:', error);
-    yield { event: 'followup_suggestions', data: ['What are the key risks I should investigate further?', 'What would change this decision from delay to proceed?', 'What is the minimum viable test I can run this week?', 'Who should I talk to before making this decision?'] };
+    yield { event: 'followup_suggestions', data: followUps };
   }
 
   // ━━ POST-VERDICT VALIDATION (remaining unqueried advisors) ━━
@@ -1126,4 +1130,27 @@ DEBATE PROGRESS:
   } };
 
   yield { event: 'complete', data: { simulation_id: simId } };
+
+  // ━━ PERSIST TO SUPABASE (async, non-blocking) ━━━━━━━━━━━━
+  saveSimulation({
+    simulationId: simId,
+    userId: options?.userId,
+    engine,
+    question,
+    plan: state.plan,
+    debate: Object.fromEntries(state.agent_reports.entries()),
+    verdict,
+    evaluation,
+    citations: enrichedCitations,
+    followUps,
+    counterFactual,
+    blindSpots,
+    audit,
+    totalTokens: audit.total_input_tokens + audit.total_output_tokens,
+    totalCostUsd: audit.total_cost_usd,
+    durationMs: audit.total_duration_ms || 0,
+  }).then(id => {
+    if (id) console.log(`[persistence] Simulation saved: ${id}`);
+    else console.warn('[persistence] Simulation save returned null');
+  }).catch(err => console.error('[persistence] Save error:', err));
 }
