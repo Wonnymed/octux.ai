@@ -13,7 +13,7 @@ import AuthWallBanner from "@/app/components/sim/AuthWallBanner";
 import FieldIntelligenceBar from "@/app/components/sim/FieldIntelligenceBar";
 import { useSimulationStream } from "@/app/lib/hooks/useSimulationStream";
 import { TIERS, ADVISOR_OPTIONS } from "@/lib/config/tiers";
-import { getDisplayModel } from "@/lib/simulation/claude";
+import { getDisplayModel } from "@/lib/display";
 
 export default function SimulationPage() {
   return (
