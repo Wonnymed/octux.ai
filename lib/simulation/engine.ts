@@ -200,7 +200,7 @@ async function callAgent(
 export async function* runSimulation(
   question: string,
   engine: string,
-  options?: { enableCrowdWisdom?: boolean },
+  options?: { enableCrowdWisdom?: boolean; advisorGuidance?: string },
 ): AsyncGenerator<SimulationSSEEvent> {
   const kernel = createKernel();
   const simId = `sim_${Date.now()}`;
@@ -868,7 +868,7 @@ DEBATE PROGRESS:
     try {
       // Step 1: Generate 20 contextual personas
       console.log('[crowd_wisdom] generating personas...');
-      const personas = await generateAdvisorPersonas(question);
+      const personas = await generateAdvisorPersonas(question, options?.advisorGuidance);
       yield { event: 'crowd_personas', data: personas };
 
       // Step 2: Build verdict summary for advisor context

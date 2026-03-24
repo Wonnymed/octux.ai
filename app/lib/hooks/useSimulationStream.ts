@@ -98,7 +98,7 @@ export function useSimulationStream() {
   };
 
   const startSimulation = useCallback(
-    async (question: string, engine: string, enableCrowdWisdom = false) => {
+    async (question: string, engine: string, enableCrowdWisdom = false, advisorGuidance?: string) => {
       // Reset state with correct phases
       setState({
         ...initialState,
@@ -118,7 +118,7 @@ export function useSimulationStream() {
         const res = await fetch("/api/simulate/stream", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question, engine, enableCrowdWisdom }),
+          body: JSON.stringify({ question, engine, enableCrowdWisdom, advisorGuidance: advisorGuidance || undefined }),
           signal: abort.signal,
         });
 

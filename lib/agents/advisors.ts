@@ -53,7 +53,7 @@ export type CrowdWisdomResult = {
 
 // ── Persona Generator (Semantic Kernel #19 plugin pattern) ───
 
-export async function generateAdvisorPersonas(question: string): Promise<AdvisorPersona[]> {
+export async function generateAdvisorPersonas(question: string, userGuidance?: string): Promise<AdvisorPersona[]> {
   const response = await callClaude({
     systemPrompt: `You are the Crowd Wisdom Architect for Octux AI. You generate hyper-realistic local advisor personas for business decision validation.
 
@@ -73,7 +73,7 @@ CRITICAL RULES:
 6. REALISTIC CONSTRAINTS: Each persona has biases and limitations — acknowledge them. A landlord wants to rent; a competitor wants you to fail; a customer wants low prices. These biases ARE the value.
 7. Return ONLY valid JSON array, nothing else.`,
     userMessage: `Generate 20 advisor personas for this decision: "${question}"
-
+${userGuidance ? `\nUSER GUIDANCE FOR PERSONAS:\nThe user specifically wants these types of perspectives included:\n${userGuidance}\n\nYou MUST incorporate the user's requested personas. Fill remaining slots to reach 20 with your own contextual picks. Prioritize the user's requests — they know their situation better than you do.\n` : ''}
 Return JSON array where each object has:
 {
   "id": "advisor_1",

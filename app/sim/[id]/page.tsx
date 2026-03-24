@@ -31,6 +31,7 @@ function SimulationPageInner() {
 
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
   const [enableCrowdWisdom, setEnableCrowdWisdom] = useState(false);
+  const [advisorGuidance, setAdvisorGuidance] = useState("");
   const verdictRef = useRef<HTMLDivElement>(null);
   const hasScrolledRef = useRef(false);
 
@@ -53,13 +54,15 @@ function SimulationPageInner() {
 
   // Read crowd wisdom preference from URL
   const crowdParam = searchParams.get("crowd") === "1";
+  const guidanceParam = searchParams.get("advisorGuidance") || "";
 
   // Auto-start simulation on mount
   useEffect(() => {
     if (question) {
       const useCrowd = crowdParam || enableCrowdWisdom;
       if (useCrowd) setEnableCrowdWisdom(true);
-      startSimulation(question, engine, useCrowd);
+      if (guidanceParam) setAdvisorGuidance(guidanceParam);
+      startSimulation(question, engine, useCrowd, guidanceParam || undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -231,6 +234,45 @@ function SimulationPageInner() {
             </span>
           </span>
         </header>
+
+        {/* Advisor Guidance — visible when crowd wisdom enabled and not running */}
+        {enableCrowdWisdom && !isRunning && !verdict && (
+          <div
+            style={{
+              padding: "8px 24px 12px",
+              borderBottom: "1px solid var(--border-subtle)",
+              background: "var(--accent-glow)",
+            }}
+          >
+            <textarea
+              value={advisorGuidance}
+              onChange={(e) => setAdvisorGuidance(e.target.value.slice(0, 500))}
+              placeholder="Guide your advisors (optional) — e.g., Include a Korean grandmother, a Gangnam landlord, a Coupang Eats driver..."
+              rows={2}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--border-default)",
+                background: "var(--surface-0)",
+                color: "var(--text-secondary)",
+                fontSize: 12,
+                fontFamily: "inherit",
+                resize: "none",
+                outline: "none",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--accent)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--border-default)";
+              }}
+            />
+            <div style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 4, textAlign: "right" }}>
+              {advisorGuidance.length}/500
+            </div>
+          </div>
+        )}
 
         {/* Workspace */}
         <div

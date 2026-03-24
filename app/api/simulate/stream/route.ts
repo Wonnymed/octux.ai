@@ -23,10 +23,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { question, engine, enableCrowdWisdom } = body as {
+  const { question, engine, enableCrowdWisdom, advisorGuidance } = body as {
     question: string;
     engine: string;
     enableCrowdWisdom?: boolean;
+    advisorGuidance?: string;
   };
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
       try {
         const generator = runSimulation(question, engine, {
           enableCrowdWisdom: !!enableCrowdWisdom,
+          advisorGuidance: advisorGuidance || undefined,
         });
 
         for await (const sse of generator) {
