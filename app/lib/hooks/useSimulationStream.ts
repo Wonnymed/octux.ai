@@ -298,7 +298,7 @@ function processEvent(
       break;
 
     // Field Intelligence Network events
-    case "field_personas":
+    case "crowd_personas":
       setState((s) => ({
         ...s,
         fieldPersonas: data as AdvisorPersona[],

@@ -204,9 +204,11 @@ function SimulationPageInner() {
           >
             <span>
               {isRunning && currentRound > 0
-                ? `10 specialists · Round ${currentRound}/10 · analyzing...`
+                ? enableCrowdWisdom && advisorCount > 0
+                  ? `10 specialists + ${advisorCount} field researchers · Round ${currentRound}/10 · analyzing...`
+                  : `10 specialists · Round ${currentRound}/10 · analyzing...`
                 : enableCrowdWisdom && advisorCount > 0
-                  ? `${TIERS.free.agents} specialists + ${advisorCount} field voices · 10 rounds`
+                  ? `${TIERS.free.agents} specialists + ${advisorCount} field researchers · 10 rounds`
                   : `${TIERS.free.agents} specialists · 10 rounds · ${getModelLabel(TIERS.free.model)}`}
             </span>
             {/* Crowd Wisdom tier selector — disabled once running */}

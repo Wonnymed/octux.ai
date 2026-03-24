@@ -23,7 +23,7 @@ export type SimulationSSEEvent =
   | { event: 'consensus_update'; data: { proceed: number; delay: number; abandon: number; avg_confidence: number } }
   | { event: 'verdict_artifact'; data: DecisionObject }
   | { event: 'followup_suggestions'; data: string[] }
-  | { event: 'field_personas'; data: AdvisorPersona[] }
+  | { event: 'crowd_personas'; data: AdvisorPersona[] }
   | { event: 'field_scan'; data: FieldScan }
   | { event: 'audit_complete'; data: SimulationAudit }
   | { event: 'citations_enriched'; data: EnrichedCitation[] }
@@ -336,7 +336,7 @@ export async function* runSimulation(
     console.log(`[field_intel] generating ${advisorCount} personas during planning...`);
     try {
       fieldPersonas = await generateAdvisorPersonas(question, options?.advisorGuidance, advisorCount);
-      yield { event: 'field_personas', data: fieldPersonas };
+      yield { event: 'crowd_personas', data: fieldPersonas };
       console.log(`[field_intel] ${fieldPersonas.length} field advisors ready`);
     } catch (err) {
       console.error('[field_intel] persona generation failed (non-fatal):', err);
@@ -608,6 +608,21 @@ export async function* runSimulation(
   yield { event: 'phase_start', data: { phase: 'adversarial', status: 'active' } };
 
   const pairs = selectDebatePairs(state, 2);
+
+  // Field scan focused on the CONFLICT area before adversarial debate
+  if (fieldPersonas.length > 0 && pairs.length > 0) {
+    const conflictFocus = pairs[0].topic;
+    const unqueried = fieldPersonas.filter(a => !queriedAdvisors.has(a.id));
+    const conflictAdvisors = unqueried.slice(0, 10);
+
+    if (conflictAdvisors.length > 0) {
+      const conflictScan = await runFieldScan(question, conflictAdvisors, `Ground truth on: ${conflictFocus}`, 7);
+      fieldScans.push(conflictScan);
+      conflictAdvisors.forEach(a => queriedAdvisors.add(a.id));
+      yield { event: 'field_scan', data: conflictScan };
+      console.log(`[field_intel] Conflict scan: ${conflictScan.insights.length} insights on "${conflictFocus}" in ${conflictScan.scan_duration_ms}ms`);
+    }
+  }
 
   // Determine majority position for devil's advocate fallback
   const positionCounts: Record<string, number> = { proceed: 0, delay: 0, abandon: 0 };
@@ -917,6 +932,31 @@ DEBATE PROGRESS:
   } catch (error) {
     console.error('Follow-up generation failed:', error);
     yield { event: 'followup_suggestions', data: ['What are the key risks I should investigate further?', 'What would change this decision from delay to proceed?', 'What is the minimum viable test I can run this week?', 'Who should I talk to before making this decision?'] };
+  }
+
+  // ━━ POST-VERDICT VALIDATION (remaining unqueried advisors) ━━
+  // If all advisors were queried during the debate → skip
+  // If there are unqueried advisors → run them as a quick validation pass
+  const unqueriedAdvisors = fieldPersonas.filter(a => !queriedAdvisors.has(a.id));
+  if (unqueriedAdvisors.length > 0 && options?.enableCrowdWisdom) {
+    console.log(`[field_intel] ${unqueriedAdvisors.length} unqueried advisors remaining — running post-verdict validation`);
+    try {
+      const verdictSummary = `${verdict.recommendation} (${verdict.probability}%). Main risk: ${verdict.main_risk}`;
+      const validationScan = await runFieldScan(
+        question,
+        unqueriedAdvisors.slice(0, 20), // cap at 20 for post-verdict
+        `Validate verdict: ${verdictSummary}`,
+        10,
+      );
+      fieldScans.push(validationScan);
+      unqueriedAdvisors.slice(0, 20).forEach(a => queriedAdvisors.add(a.id));
+      yield { event: 'field_scan', data: validationScan };
+      console.log(`[field_intel] Post-verdict validation: ${validationScan.insights.length} insights in ${validationScan.scan_duration_ms}ms`);
+    } catch (err) {
+      console.error('[field_intel] Post-verdict validation failed (non-fatal):', err);
+    }
+  } else if (fieldPersonas.length > 0) {
+    console.log(`[field_intel] All ${queriedAdvisors.size} advisors already participated in the debate — skipping post-verdict`);
   }
 
   // ━━ FINALIZE AUDIT (Palantir #4) ━━━━━━━━━━━━━━━━━━━━━━━━━
