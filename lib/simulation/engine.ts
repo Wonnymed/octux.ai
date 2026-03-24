@@ -8,6 +8,7 @@ import { buildCitations, type EnrichedCitation } from './citations';
 import { scoreAllAgents, type AgentPerformance } from './performance';
 import { critiqueVerdict, refineVerdict, type VerdictCritique } from './self-refine';
 import { createTaskLedger, createProgressLedger, updateTaskLedger, assessProgress, replanDebate, type TaskLedger, type ProgressLedger } from './ledger';
+import { processDelegations, type DelegationResponse } from './delegation';
 import type { AdvisorPersona, AdvisorReport as CrowdAdvisorReport, CrowdWisdomResult } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
 
@@ -29,6 +30,7 @@ export type SimulationSSEEvent =
   | { event: 'verdict_critique'; data: VerdictCritique }
   | { event: 'ledger_update'; data: { task_ledger: TaskLedger; progress_ledger: ProgressLedger } }
   | { event: 'stall_replan'; data: { stall_counter: number; directives: string[] } }
+  | { event: 'delegation_complete'; data: { delegations: DelegationResponse[]; round: number } }
   | { event: 'state_summary'; data: any }
   | { event: 'complete'; data: { simulation_id: string } };
 
@@ -69,6 +71,7 @@ function buildDebateContext(
   currentAgentId: string,
   progressLedger?: ProgressLedger,
   chairDirectives?: string[],
+  delegationResponses?: DelegationResponse[],
 ): string {
   const reports = Array.from(state.latest_reports.entries());
   if (reports.length === 0) return 'No other agents have reported yet. You are among the first to analyze this decision.';
@@ -115,11 +118,36 @@ Consider whether the debate has changed your view. If you changed your mind, exp
     chairSection += `\n\nFRESH ANGLES FROM CHAIR:\n${chairDirectives.map((d) => `\u2022 ${d}`).join('\n')}`;
   }
 
+  // CrewAI #7: Delegation responses — data other agents provided on request
+  let delegationSection = '';
+  if (delegationResponses && delegationResponses.length > 0) {
+    // Show delegations relevant to this agent (requested by them, or provided by them)
+    const relevantDelegations = delegationResponses.filter(
+      (d) => d.request.requesting_agent === currentAgentId || d.request.target_agent === currentAgentId,
+    );
+    const otherDelegations = delegationResponses.filter(
+      (d) => d.request.requesting_agent !== currentAgentId && d.request.target_agent !== currentAgentId,
+    );
+
+    if (relevantDelegations.length > 0) {
+      delegationSection += '\n\nDATA DELEGATIONS (directly involving you):';
+      for (const d of relevantDelegations) {
+        delegationSection += `\n\u2022 ${d.request.requesting_agent} asked ${d.request.target_agent}: "${d.request.question}" \u2192 "${d.response}"`;
+      }
+    }
+    if (otherDelegations.length > 0) {
+      delegationSection += '\n\nCROSS-AGENT DATA EXCHANGES:';
+      for (const d of otherDelegations) {
+        delegationSection += `\n\u2022 ${d.request.target_agent} provided: "${d.response.substring(0, 120)}"`;
+      }
+    }
+  }
+
   return `DEBATE SO FAR:
 ${otherReports}
 
 ${consensusSummary}
-${conflicts.length > 0 ? '\n' + conflicts.join('\n') : ''}${ownHistory}${chairSection}
+${conflicts.length > 0 ? '\n' + conflicts.join('\n') : ''}${ownHistory}${chairSection}${delegationSection}
 
 IMPORTANT: React to what other agents said. If you agree with someone, say why. If you disagree, challenge their specific claim. Do NOT repeat what others already covered \u2014 add NEW information or challenge EXISTING arguments.`;
 }
@@ -229,6 +257,9 @@ export async function* runSimulation(
   let taskLedger = createTaskLedger();
   let progressLedger = createProgressLedger();
   let chairDirectives: string[] = [];
+
+  // CrewAI #7: Delegation tracking
+  let allDelegations: DelegationResponse[] = [];
 
   // ━━ ROUND 1 — PLANNING ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -389,13 +420,30 @@ export async function* runSimulation(
     }
   }
 
+  // CrewAI #7: Process delegation requests from deep analysis agents
+  {
+    try {
+      const deepDelegations = await processDelegations(allReports, state, question);
+      if (deepDelegations.length > 0) {
+        allDelegations.push(...deepDelegations);
+        yield { event: 'delegation_complete', data: { delegations: deepDelegations, round: 4 } };
+        console.log(`[delegation] After rounds 2-4: ${deepDelegations.length} delegations fulfilled`);
+        for (const d of deepDelegations) {
+          console.log(`[delegation]   ${d.request.requesting_agent} ← ${d.request.target_agent}: "${d.request.question.substring(0, 60)}"`);
+        }
+      }
+    } catch (err) {
+      console.error('[delegation] Deep analysis delegation failed (non-fatal):', err);
+    }
+  }
+
   // ━━ ROUND 5 — RAPID ASSESSMENT (remaining 5 agents, parallel, staggered yield) ━━
 
   transitionPhase(state, 'quick_takes');
   yield { event: 'round_start', data: { round: 5, title: 'Rapid Assessment', description: 'Remaining specialists provide quick perspectives', total_rounds: 10 } };
 
   const quickPromises = quickAgentTasks.map(({ agent, task }) => {
-    const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives);
+    const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, allDelegations);
     return callAgent(
       agent,
       `Question: ${question}\n\n${debateCtx}\n\nAs ${agent.role}, add your perspective. Focus on what others MISSED or got wrong. React to their specific arguments. Respond with valid JSON only.`,
@@ -448,6 +496,21 @@ export async function* runSimulation(
     }
   }
 
+  // CrewAI #7: Process delegation requests from rapid assessment agents
+  {
+    try {
+      const recentQuick = allReports.slice(allReports.length - quickAgentTasks.length);
+      const quickDelegations = await processDelegations(recentQuick, state, question);
+      if (quickDelegations.length > 0) {
+        allDelegations.push(...quickDelegations);
+        yield { event: 'delegation_complete', data: { delegations: quickDelegations, round: 5 } };
+        console.log(`[delegation] After round 5: ${quickDelegations.length} delegations fulfilled`);
+      }
+    } catch (err) {
+      console.error('[delegation] Quick takes delegation failed (non-fatal):', err);
+    }
+  }
+
   // Verify all 10 agents participated after rounds 2-5
   const uniqueAgentsAfterR5 = state.latest_reports.size;
   if (uniqueAgentsAfterR5 < 10) {
@@ -491,7 +554,7 @@ export async function* runSimulation(
 
       if (targetAgent) {
         try {
-          const devilCtx = buildDebateContext(state, targetAgent.id, progressLedger, chairDirectives);
+          const devilCtx = buildDebateContext(state, targetAgent.id, progressLedger, chairDirectives, allDelegations);
           const devilReport = await callAgent(
             targetAgent,
             `Question: ${question}\n\n${devilCtx}\n\nAll agents currently agree on "${majorityPosition}". The Decision Chair is forcing a devil's advocate round. As ${targetAgent.role}, present the STRONGEST possible argument AGAINST "${majorityPosition}". Reference specific claims from other agents and explain why they're wrong or incomplete. What could go catastrophically wrong? Respond with valid JSON only.`,
@@ -528,7 +591,7 @@ export async function* runSimulation(
     const challengerReport = allReports.find((r) => r.agent_id === pair.challenger_id);
 
     try {
-      const challengerCtx = buildDebateContext(state, pair.challenger_id, progressLedger, chairDirectives);
+      const challengerCtx = buildDebateContext(state, pair.challenger_id, progressLedger, chairDirectives, allDelegations);
       const challengeReport = await callAgent(
         challengerAgent,
         `Question: ${question}\n\n${challengerCtx}\n\nYou are CHALLENGING ${defenderAgent.name}'s position. They said: "${defenderReport?.key_argument || 'their position'}"\n\nAttack their weakest point with specific counter-evidence. Reference what other agents said to support your challenge. Be direct. Respond with valid JSON only.`,
@@ -543,7 +606,7 @@ export async function* runSimulation(
     }
 
     try {
-      const defenderCtx = buildDebateContext(state, pair.defender_id, progressLedger, chairDirectives);
+      const defenderCtx = buildDebateContext(state, pair.defender_id, progressLedger, chairDirectives, allDelegations);
       const defenseReport = await callAgent(
         defenderAgent,
         `Question: ${question}\n\n${defenderCtx}\n\n${challengerAgent.name} CHALLENGED your position: "${challengerReport?.key_argument || 'disagreement'}"\n\nDefend your position with stronger evidence, or update your position if the challenge is valid. Be honest \u2014 if you changed your mind, say what convinced you. Respond with valid JSON only.`,
@@ -599,7 +662,7 @@ export async function* runSimulation(
   for (const weak of weakAgents) {
     try {
       const challengedAgent = getAgentById(weak.agent_id);
-      const challengeCtx = buildDebateContext(state, weak.agent_id, progressLedger, chairDirectives);
+      const challengeCtx = buildDebateContext(state, weak.agent_id, progressLedger, chairDirectives, allDelegations);
       const challengeReport = await callAgent(
         challengedAgent,
         `Question: ${question}\n\n${challengeCtx}\n\nThe Decision Chair says your analysis lacks specificity. Your argument was: "${weak.key_argument}"\n\nStrengthen your argument with concrete numbers, timelines, and precedents. Reference what other agents said \u2014 agree or disagree with their specific claims. Or reconsider your position if the debate has changed your view. Respond with valid JSON only.`,
@@ -631,7 +694,7 @@ export async function* runSimulation(
   yield { event: 'round_start', data: { round: 9, title: 'Final Convergence', description: 'All 10 specialists declare their final positions', total_rounds: 10 } };
 
   const convergencePromises = specialistAgents().map((agent) => {
-    const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives);
+    const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, allDelegations);
     return callAgent(
       agent,
       `Question: ${question}\n\n${convergenceCtx}\n\nThe debate is concluding. Declare your FINAL position. If you changed your mind from your earlier analysis, explain what argument convinced you. Reference specific agents or evidence that influenced your final stance. Respond with valid JSON only.`,
@@ -857,6 +920,13 @@ DEBATE PROGRESS:
     debate_pairs: state.debate_pairs.length,
     debate_intensity: state.debate_pairs.map((p) => ({ agents: `${p.challenger_id} vs ${p.defender_id}`, intensity: p.intensity.toFixed(2) })),
     handoffs: state.handoffs.length,
+    delegations: allDelegations.length,
+    delegation_details: allDelegations.map((d) => ({
+      from: d.request.requesting_agent,
+      to: d.request.target_agent,
+      question: d.request.question.substring(0, 80),
+      urgency: d.request.urgency,
+    })),
     consensus_history: state.consensus_history,
   } };
 
