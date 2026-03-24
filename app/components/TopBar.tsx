@@ -15,7 +15,7 @@ type TopBarProps = {
 
 /**
  * TopBar — ONLY visible when NOT logged in.
- * Shows "Log in" ghost + "Sign up" gold button, right-aligned.
+ * Shows "Log in" ghost + "Start free" gold button, right-aligned.
  * When logged in: returns null (TopBar doesn't exist).
  */
 export default function TopBar({ authUser, isMobile }: TopBarProps) {
@@ -35,18 +35,18 @@ export default function TopBar({ authUser, isMobile }: TopBarProps) {
       display: "flex",
       alignItems: "center",
       justifyContent: "flex-end",
-      height: 48,
-      padding: "0 20px",
+      height: 52,
+      padding: isMobile ? "0 16px" : "0 28px",
       background: "var(--bg-primary)",
       flexShrink: 0,
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <button
           onClick={() => { window.location.href = "/login"; }}
           onMouseEnter={() => setLoginHovered(true)}
           onMouseLeave={() => setLoginHovered(false)}
           style={{
-            padding: "6px 16px",
+            padding: "7px 18px",
             borderRadius: 8,
             background: "transparent",
             border: "none",
@@ -56,6 +56,7 @@ export default function TopBar({ authUser, isMobile }: TopBarProps) {
             cursor: "pointer",
             transition: "color 180ms ease-out",
             whiteSpace: "nowrap",
+            letterSpacing: 0.1,
           }}
         >
           Log in
@@ -65,19 +66,20 @@ export default function TopBar({ authUser, isMobile }: TopBarProps) {
           onMouseEnter={() => setSignupHovered(true)}
           onMouseLeave={() => setSignupHovered(false)}
           style={{
-            padding: "7px 20px",
+            padding: "7px 22px",
             borderRadius: 8,
-            background: signupHovered ? "#D4AF37" : GOLD,
-            border: "none",
-            color: "#FFFFFF",
+            background: "transparent",
+            border: `1px solid ${signupHovered ? GOLD : `${GOLD}60`}`,
+            color: signupHovered ? GOLD : `${GOLD}CC`,
             fontSize: 13,
             fontWeight: 500,
             cursor: "pointer",
-            transition: "background 180ms ease-out",
+            transition: "all 200ms ease-out",
             whiteSpace: "nowrap",
+            letterSpacing: 0.2,
           }}
         >
-          Sign up
+          Start free
         </button>
       </div>
     </div>

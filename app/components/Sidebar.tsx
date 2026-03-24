@@ -785,12 +785,12 @@ export default function Sidebar({
     return (
       <div style={{
         display: "flex", flexDirection: "column", alignItems: "center",
-        height: "100%", padding: "7px 0 12px",
+        height: "100%", padding: "8px 0 14px",
       }}>
         {/* Logo */}
         <CollapsedLogoButton onClick={onOpen} />
 
-        <div style={{ height: 10 }} />
+        <div style={{ height: 14 }} />
 
         {/* ═══ HOME icon ═══ */}
         <SidebarIconButton
@@ -802,10 +802,11 @@ export default function Sidebar({
           onClick={() => handleMode("chat" as Mode)}
         />
 
-        <div style={{ height: 6 }} />
+        {/* Separator */}
+        <div style={{ width: 20, height: 1, background: "var(--border-primary)", margin: "8px 0" }} />
 
         {/* ═══ ZONE A — 6 engine icons ═══ */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
           {ENGINE_MODES.map(({ key, icon: Icon, name }) => (
             <SidebarIconButton
               key={key}
