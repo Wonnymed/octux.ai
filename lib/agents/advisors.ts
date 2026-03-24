@@ -53,7 +53,43 @@ export type CrowdWisdomResult = {
 
 // ── Persona Generator (Semantic Kernel #19 plugin pattern) ───
 
-export async function generateAdvisorPersonas(question: string, userGuidance?: string): Promise<AdvisorPersona[]> {
+export async function generateAdvisorPersonas(question: string, userGuidance?: string, count = 20): Promise<AdvisorPersona[]> {
+  // Scale distribution and detail based on count
+  let distribution: string;
+  let maxTokens: number;
+
+  if (count <= 20) {
+    distribution = `Generate EXACTLY 20 personas:
+   - 3 CUSTOMERS (people who would actually buy/use the product/service)
+   - 3 COMPETITORS (existing business owners in the same or adjacent space)
+   - 3 DOMAIN EXPERTS (people with deep technical or industry knowledge)
+   - 3 COMMUNITY members (residents, neighbors, local government, community leaders)
+   - 3 SUPPLY CHAIN (suppliers, distributors, delivery, logistics, service providers)
+   - 3 INDIRECT stakeholders (investors, landlords, employees, family members affected)
+   - 2 WILDCARDS (unexpected perspectives that could reveal blind spots)`;
+    maxTokens = 3072;
+  } else if (count <= 50) {
+    distribution = `Generate EXACTLY 50 personas with DEEP stakeholder diversity:
+   - 8 CUSTOMERS (ultra-diverse: different ages, income levels, usage frequency, locals vs visitors, different needs and preferences)
+   - 7 COMPETITORS (direct competitors at different scales, indirect competitors, adjacent businesses, franchise operators, online-only competitors)
+   - 7 DOMAIN EXPERTS (industry consultants, technologists, designers, marketing specialists, financial analysts, legal experts, academic researchers)
+   - 7 COMMUNITY members (residents from different neighborhoods, local officials, community leaders, school administrators, religious leaders, elderly care, local media)
+   - 7 SUPPLY CHAIN (suppliers at different tiers, equipment vendors, logistics, delivery, packaging, maintenance, technology vendors)
+   - 7 INDIRECT stakeholders (investors, landlords, employees at different levels, family members, neighboring businesses, influencers, regulators)
+   - 7 WILDCARDS (unexpected perspectives: tourists, activists, former employees of failed similar businesses, teenagers, elderly longtime residents, foreign observers, people with accessibility needs)`;
+    maxTokens = 6144;
+  } else {
+    distribution = `Generate EXACTLY 100 personas — this should feel like polling an ENTIRE community:
+   - 15 CUSTOMERS (ultra-diverse: ages 15-75, income from student to executive, daily to monthly users, locals to tourists, different dietary needs, solo diners to family groups, date night couples, business lunch crowd, food delivery only users)
+   - 14 COMPETITORS (direct competitors at different scales, indirect competitors, adjacent businesses, franchise operators, ghost kitchen operators, food truck owners, catering businesses, convenience store food sections, meal delivery services, vending operators, food court vendors)
+   - 14 DOMAIN EXPERTS (industry consultants, food scientists, restaurant designers, menu engineers, marketing specialists, social media managers, food photographers, health inspectors, commercial real estate agents, restaurant accountants, labor lawyers, supply chain specialists, food safety auditors, technology vendors)
+   - 14 COMMUNITY members (residents of different neighborhoods, local government officials, community leaders, neighborhood associations, school administrators, religious leaders, elderly care facility managers, park workers, street vendors, security guards, parking attendants, building doormen, local reporters, social workers)
+   - 14 SUPPLY CHAIN (food suppliers at different tiers, equipment vendors, cleaning supplies, waste management, delivery drivers, packaging suppliers, linen services, pest control, HVAC maintenance, POS vendors, payment processing, insurance agents, kitchen designers, refrigeration specialists)
+   - 14 INDIRECT stakeholders (investors, landlords, employees at different levels, family members, neighboring business owners, building management, franchise partners, delivery platform reps, influencers, food bloggers, tourism board, university professors, bank loan officers, insurance underwriters)
+   - 15 WILDCARDS (a first-time tourist, someone who got food poisoning nearby, a delivery driver who knows order density, a grandmother who's eaten here 40 years, a broke teenager, a corporate event planner, a wedding caterer, a hospital dietitian, a 2am worker seeking late-night food, a parent with a picky child, a vegan in a meat-heavy area, a food waste activist, a Michelin scout, an owner of a restaurant that closed here, a real estate speculator)`;
+    maxTokens = 10240;
+  }
+
   const response = await callClaude({
     systemPrompt: `You are the Crowd Wisdom Architect for Octux AI. You generate hyper-realistic local advisor personas for business decision validation.
 
@@ -61,44 +97,55 @@ CRITICAL RULES:
 1. CONTEXTUAL GENERATION: Analyze the question to extract geographic context, industry, decision type, and cultural context. ALL personas must be relevant to THESE specifics.
 2. CULTURAL ACCURACY: Names, titles, and backgrounds must match the cultural/geographic context. Korean names for Korea. Brazilian names for Brazil. American names for USA. No generic names.
 3. CrewAI STRUCTURE: Each persona needs Role + Goal + Backstory + Constraints — not just a name and title. Make them REAL people with real motivations.
-4. STAKEHOLDER DIVERSITY: You MUST include personas from ALL 7 categories:
-   - 3 CUSTOMERS (people who would actually buy/use the product/service)
-   - 3 COMPETITORS (existing business owners in the same or adjacent space)
-   - 3 DOMAIN EXPERTS (people with deep technical or industry knowledge)
-   - 3 COMMUNITY members (residents, neighbors, local government, community leaders)
-   - 3 SUPPLY CHAIN (suppliers, distributors, delivery, logistics, service providers)
-   - 3 INDIRECT stakeholders (investors, landlords, employees, family members affected)
-   - 2 WILDCARDS (unexpected perspectives that could reveal blind spots)
+4. STAKEHOLDER DIVERSITY: ${distribution}
 5. NO OVERLAP: Each persona must bring a genuinely different insight. If two personas would say the same thing, replace one.
 6. REALISTIC CONSTRAINTS: Each persona has biases and limitations — acknowledge them. A landlord wants to rent; a competitor wants you to fail; a customer wants low prices. These biases ARE the value.
-7. Return ONLY valid JSON array, nothing else.`,
-    userMessage: `Generate 20 advisor personas for this decision: "${question}"
-${userGuidance ? `\nUSER GUIDANCE FOR PERSONAS:\nThe user specifically wants these types of perspectives included:\n${userGuidance}\n\nYou MUST incorporate the user's requested personas. Fill remaining slots to reach 20 with your own contextual picks. Prioritize the user's requests — they know their situation better than you do.\n` : ''}
+7. Return ONLY valid JSON array, nothing else.${count > 50 ? '\n8. IMPORTANT: For large counts, keep backstory to 1 sentence and constraints to a short phrase to fit within token limits.' : ''}`,
+    userMessage: `Generate ${count} advisor personas for this decision: "${question}"
+${userGuidance ? `\nUSER GUIDANCE FOR PERSONAS:\nThe user specifically wants these types of perspectives included:\n${userGuidance}\n\nYou MUST incorporate the user's requested personas. Fill remaining slots to reach ${count} with your own contextual picks. Prioritize the user's requests — they know their situation better than you do.\n` : ''}
 Return JSON array where each object has:
 {
   "id": "advisor_1",
   "name": "Full Name, Title",
   "role": "Specific role description",
   "goal": "What they want to find out or validate about this decision",
-  "backstory": "1-2 sentences of lived experience making them credible",
+  "backstory": "${count > 50 ? '1 sentence' : '1-2 sentences'} of lived experience making them credible",
   "constraints": "What limits their perspective or creates bias",
   "perspective": "The unique insight only they can provide",
   "emoji": "relevant emoji",
   "stakeholder_type": "customer|competitor|expert|community|supply_chain|indirect|wildcard"
 }`,
-    maxTokens: 3072,
+    maxTokens,
   });
 
   try {
     const personas = parseJSON<AdvisorPersona[]>(response);
-    // Validate we got all 7 stakeholder types
     const types = new Set(personas.map((p) => p.stakeholder_type));
     if (types.size < 5) {
       console.warn('Crowd Wisdom: Low stakeholder diversity, only', types.size, 'types represented');
     }
+    console.log(`[crowd_wisdom] Generated ${personas.length}/${count} personas across ${types.size} stakeholder types`);
     return personas;
   } catch (error) {
-    console.error('Failed to parse advisor personas:', error);
+    console.error('Failed to parse advisor personas, attempting fallback:', error);
+
+    // Fallback for large counts: simpler prompt with less detail per persona
+    if (count > 20) {
+      try {
+        const fallbackResponse = await callClaude({
+          systemPrompt: `Generate ${count} advisor personas as a JSON array. Each object: { "id": "advisor_N", "name": "Full Name, Title", "role": "role", "goal": "goal", "backstory": "1 sentence", "constraints": "bias", "perspective": "unique angle", "emoji": "emoji", "stakeholder_type": "customer|competitor|expert|community|supply_chain|indirect|wildcard" }. Return ONLY valid JSON array.`,
+          userMessage: `Decision: "${question}"\n\nGenerate ${count} diverse personas. Keep each persona concise (1 sentence backstory). Cover all 7 stakeholder types proportionally.`,
+          maxTokens,
+        });
+        const fallbackPersonas = parseJSON<AdvisorPersona[]>(fallbackResponse);
+        console.log(`[crowd_wisdom] Fallback succeeded: ${fallbackPersonas.length} personas`);
+        return fallbackPersonas;
+      } catch (fallbackError) {
+        console.error('Fallback persona generation also failed:', fallbackError);
+        return [];
+      }
+    }
+
     return [];
   }
 }

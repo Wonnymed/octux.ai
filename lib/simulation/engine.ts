@@ -203,7 +203,7 @@ async function callAgent(
 export async function* runSimulation(
   question: string,
   engine: string,
-  options?: { enableCrowdWisdom?: boolean; advisorGuidance?: string },
+  options?: { enableCrowdWisdom?: boolean; advisorGuidance?: string; advisorCount?: number },
 ): AsyncGenerator<SimulationSSEEvent> {
   const kernel = createKernel();
   const simId = `sim_${Date.now()}`;
@@ -883,9 +883,10 @@ DEBATE PROGRESS:
     yield { event: 'phase_start', data: { phase: 'crowd_wisdom', status: 'active' } };
 
     try {
-      // Step 1: Generate 20 contextual personas
-      console.log('[crowd_wisdom] generating personas...');
-      const personas = await generateAdvisorPersonas(question, options?.advisorGuidance);
+      // Step 1: Generate contextual personas (count based on tier)
+      const advisorCount = options?.advisorCount || 20;
+      console.log(`[crowd_wisdom] generating ${advisorCount} personas...`);
+      const personas = await generateAdvisorPersonas(question, options?.advisorGuidance, advisorCount);
       yield { event: 'crowd_personas', data: personas };
 
       // Step 2: Build verdict summary for advisor context

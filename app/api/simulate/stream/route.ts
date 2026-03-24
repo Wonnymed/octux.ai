@@ -23,11 +23,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { question, engine, enableCrowdWisdom, advisorGuidance } = body as {
+  const { question, engine, enableCrowdWisdom, advisorGuidance, advisorCount } = body as {
     question: string;
     engine: string;
     enableCrowdWisdom?: boolean;
     advisorGuidance?: string;
+    advisorCount?: number;
   };
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
   }
 
   console.log(
-    `[simulate/stream] engine=${engine}, crowd=${!!enableCrowdWisdom}, question="${question.slice(0, 80)}"`,
+    `[simulate/stream] engine=${engine}, crowd=${!!enableCrowdWisdom}, advisors=${advisorCount || 0}, question="${question.slice(0, 80)}"`,
   );
 
   const encoder = new TextEncoder();
@@ -62,6 +63,7 @@ export async function POST(req: NextRequest) {
         const generator = runSimulation(question, engine, {
           enableCrowdWisdom: !!enableCrowdWisdom,
           advisorGuidance: advisorGuidance || undefined,
+          advisorCount: advisorCount || undefined,
         });
 
         for await (const sse of generator) {
