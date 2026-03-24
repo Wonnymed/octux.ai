@@ -586,8 +586,8 @@ export default function Sidebar({
   // Desktop: single sidebar, collapsed 56px / expanded 260px
   return (
     <>
-      {/* BUG 10 FIX: Backdrop when sidebar is expanded — clicking outside closes it */}
-      {open && (
+      {/* Backdrop when sidebar is expanded — only for logged-in users (guest sidebar stays open) */}
+      {open && isLoggedIn && (
         <div
           onClick={onClose}
           style={{
@@ -801,6 +801,49 @@ export default function Sidebar({
                 {tier === "max" || tier === "founding" ? "MAX" : tier === "pro" ? "PRO" : "FREE"}
               </span>
             </button>
+          </div>
+        )}
+
+        {/* ═══ BOTTOM — Guest login block (not logged in only) ═══ */}
+        {!isLoggedIn && (
+          <div style={{
+            padding: "0 12px 16px", flexShrink: 0,
+            borderTop: "1px solid var(--border-primary)",
+            marginTop: 0,
+          }}>
+            <div style={{
+              padding: "14px 12px 10px",
+            }}>
+              <div style={{
+                fontSize: 11, color: "var(--text-tertiary)",
+                lineHeight: 1.5, marginBottom: 12,
+              }}>
+                Log in to save decisions, continue work, and unlock all engines.
+              </div>
+              <button
+                onClick={() => { window.location.href = "/login"; }}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  gap: 8, width: "100%", padding: "10px 0",
+                  borderRadius: 9, border: "1px solid var(--border-primary)",
+                  background: "transparent",
+                  color: "var(--text-primary)",
+                  fontSize: 13, fontWeight: 500, cursor: "pointer",
+                  transition: "all 180ms ease-out",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = "var(--border-secondary, var(--border-primary))";
+                  e.currentTarget.style.background = "var(--bg-hover, rgba(255,255,255,0.03))";
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = "var(--border-primary)";
+                  e.currentTarget.style.background = "transparent";
+                }}
+              >
+                <LogIn size={15} strokeWidth={1.5} />
+                Log in
+              </button>
+            </div>
           </div>
         )}
       </>

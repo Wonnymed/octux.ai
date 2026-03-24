@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { HelpCircle } from "lucide-react";
 import type { Mode } from "../lib/types";
 import type { AuthUser } from "../lib/auth";
 
@@ -15,14 +16,13 @@ type TopBarProps = {
 
 /**
  * TopBar — ONLY visible when NOT logged in.
- * Shows "Log in" ghost + "Start free" gold button, right-aligned.
- * When logged in: returns null (TopBar doesn't exist).
+ * Shows Log in + Sign up for free + help icon, right-aligned.
  */
 export default function TopBar({ authUser, isMobile }: TopBarProps) {
   const [loginHovered, setLoginHovered] = useState(false);
   const [signupHovered, setSignupHovered] = useState(false);
+  const [helpHovered, setHelpHovered] = useState(false);
 
-  // Logged in → no top bar at all
   if (authUser) return null;
 
   return (
@@ -36,17 +36,17 @@ export default function TopBar({ authUser, isMobile }: TopBarProps) {
       alignItems: "center",
       justifyContent: "flex-end",
       height: 52,
-      padding: isMobile ? "0 16px" : "0 28px",
+      padding: isMobile ? "0 16px" : "0 24px",
       background: "var(--bg-primary)",
       flexShrink: 0,
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
         <button
           onClick={() => { window.location.href = "/login"; }}
           onMouseEnter={() => setLoginHovered(true)}
           onMouseLeave={() => setLoginHovered(false)}
           style={{
-            padding: "7px 18px",
+            padding: "7px 16px",
             borderRadius: 8,
             background: "transparent",
             border: "none",
@@ -56,7 +56,6 @@ export default function TopBar({ authUser, isMobile }: TopBarProps) {
             cursor: "pointer",
             transition: "color 180ms ease-out",
             whiteSpace: "nowrap",
-            letterSpacing: 0.1,
           }}
         >
           Log in
@@ -66,11 +65,11 @@ export default function TopBar({ authUser, isMobile }: TopBarProps) {
           onMouseEnter={() => setSignupHovered(true)}
           onMouseLeave={() => setSignupHovered(false)}
           style={{
-            padding: "7px 22px",
+            padding: "7px 20px",
             borderRadius: 8,
             background: "transparent",
-            border: `1px solid ${signupHovered ? GOLD : `${GOLD}60`}`,
-            color: signupHovered ? GOLD : `${GOLD}CC`,
+            border: `1px solid ${signupHovered ? GOLD : `${GOLD}50`}`,
+            color: signupHovered ? GOLD : `${GOLD}BB`,
             fontSize: 13,
             fontWeight: 500,
             cursor: "pointer",
@@ -79,7 +78,26 @@ export default function TopBar({ authUser, isMobile }: TopBarProps) {
             letterSpacing: 0.2,
           }}
         >
-          Start free
+          Sign up free
+        </button>
+        <button
+          onClick={() => { window.location.href = "/about"; }}
+          onMouseEnter={() => setHelpHovered(true)}
+          onMouseLeave={() => setHelpHovered(false)}
+          style={{
+            width: 32, height: 32,
+            borderRadius: "50%",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            color: helpHovered ? "var(--text-secondary)" : "var(--text-tertiary)",
+            transition: "color 180ms ease-out",
+            marginLeft: 4,
+          }}
+          title="About Signux"
+        >
+          <HelpCircle size={16} strokeWidth={1.5} />
         </button>
       </div>
     </div>

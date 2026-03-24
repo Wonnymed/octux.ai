@@ -264,55 +264,6 @@ export default function WelcomeScreen({
             </div>
           )}
 
-          {/* ─── 5. Compact engine shortcuts ─── */}
-          {!showRoutingState && (
-            <div style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: isMobile ? 6 : 8,
-              width: "100%",
-            }}>
-              {ENGINE_LIST.map((engine) => {
-                const Icon = ICON_MAP[engine.icon] || Zap;
-                const isHovered = hoveredEngine === engine.id;
-                const eColor = engine.color;
-
-                return (
-                  <button
-                    key={engine.id}
-                    onClick={() => onSwitchMode?.(engine.id as Mode)}
-                    onMouseEnter={() => setHoveredEngine(engine.id)}
-                    onMouseLeave={() => setHoveredEngine(null)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 7,
-                      padding: isMobile ? "8px 12px" : "9px 16px",
-                      borderRadius: 10,
-                      border: `1px solid ${isHovered ? `${eColor}50` : "var(--border-primary)"}`,
-                      background: isHovered ? `${eColor}08` : "transparent",
-                      cursor: "pointer",
-                      transition: "all 200ms ease-out",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    <Icon size={14} color={isHovered ? eColor : "var(--text-tertiary)"} strokeWidth={1.5} style={{ transition: "color 200ms ease-out" }} />
-                    <span style={{
-                      fontSize: 12.5,
-                      fontWeight: 500,
-                      color: isHovered ? "var(--text-primary)" : "var(--text-secondary)",
-                      transition: "color 200ms ease-out",
-                      letterSpacing: 0.1,
-                    }}>
-                      {engine.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
           {/* ─── Continue strip (returning users only) ─── */}
           {!showRoutingState && recentItems.length > 0 && (
             <div style={{

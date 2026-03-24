@@ -258,7 +258,7 @@ function ChatPage() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [showSettings, setShowSettings] = useState(false);
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showCheckinReminder, setShowCheckinReminder] = useState(false);
   const [showKnowledge, setShowKnowledge] = useState(false);
   const isMobile = useIsMobile();
