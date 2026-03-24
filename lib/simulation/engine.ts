@@ -1153,15 +1153,19 @@ DEBATE PROGRESS:
     else console.warn('[persistence] Simulation save returned null');
   }).catch(err => console.error('[persistence] Save error:', err));
 
-  // Memory: Extract facts ASYNCHRONOUSLY (non-blocking, Mem0 pattern)
+  // Memory: Extract facts (must await — serverless shuts down after generator ends)
   if (options?.userId) {
-    extractAndSaveFacts(
-      options.userId,
-      simId,
-      question,
-      verdict,
-      Object.fromEntries(state.agent_reports.entries()),
-    ).catch(err => console.error('[facts] Background extraction error:', err));
+    try {
+      await extractAndSaveFacts(
+        options.userId,
+        simId,
+        question,
+        verdict,
+        Object.fromEntries(state.agent_reports.entries()),
+      );
+    } catch (err) {
+      console.error('[facts] Extraction error (non-fatal):', err);
+    }
   }
 
   yield { event: 'complete', data: { simulation_id: simId } };
