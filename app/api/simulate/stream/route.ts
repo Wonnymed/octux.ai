@@ -62,7 +62,8 @@ export async function POST(req: NextRequest) {
 
       try {
         // TODO: Extract userId from Supabase auth session when auth is wired
-        const userId = undefined;
+        // Using test UUID for fact extraction verification
+        const userId = 'test-user-00000000-0000-0000-0000-000000000001';
 
         const generator = runSimulation(question, engine, {
           enableCrowdWisdom: !!enableCrowdWisdom,
