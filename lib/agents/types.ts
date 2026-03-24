@@ -8,7 +8,8 @@ export type AgentId =
   | 'execution_operator'
   | 'capital_allocator'
   | 'scenario_planner'
-  | 'intervention_optimizer';
+  | 'intervention_optimizer'
+  | 'customer_reality';
 
 export type AgentConfig = {
   id: AgentId;

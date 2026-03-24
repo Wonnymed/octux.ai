@@ -15,6 +15,7 @@ const AGENT_COLORS: Record<string, string> = {
   capital_allocator: "#06B6D4",
   scenario_planner: "#EC4899",
   intervention_optimizer: "#14B8A6",
+  customer_reality: "#8B5CF6",
   // Legacy mock IDs
   "base-rate": "#6366F1",
   "demand-signal": "#F59E0B",

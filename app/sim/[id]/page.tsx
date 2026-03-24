@@ -348,7 +348,7 @@ function SimulationPageInner() {
                     margin: "0 0 12px",
                   }}
                 >
-                  Agent Reports ({uniqueAgentCount}{isRunning && plan ? `/${Math.min(expectedAgents, 9)}` : ""})
+                  Agent Reports ({uniqueAgentCount}{isRunning && plan ? `/${Math.min(expectedAgents, 10)}` : ""})
                 </p>
                 <div
                   style={{

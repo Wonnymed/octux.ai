@@ -326,7 +326,7 @@ export async function* runSimulation(
   let debates: { challenger_id: AgentId; defender_id: AgentId; topic: string }[] = [];
   try {
     const debateStart = Date.now();
-    const debatePrompt = `Here are all 9 agent reports:\n${reportSummaryForChair}\n\nIdentify the 2 biggest disagreements. For each, name the challenger and defender. Return valid JSON only:\n{ "debates": [{ "challenger_id": "agent_id", "defender_id": "agent_id", "topic": "what they disagree on" }] }`;
+    const debatePrompt = `Here are all 10 specialist agent reports:\n${reportSummaryForChair}\n\nIdentify the 2 biggest disagreements. For each, name the challenger and defender. Return valid JSON only:\n{ "debates": [{ "challenger_id": "agent_id", "defender_id": "agent_id", "topic": "what they disagree on" }] }`;
     const debateRaw = await callClaude({
       systemPrompt: chair.systemPrompt,
       userMessage: debatePrompt,
@@ -390,7 +390,7 @@ export async function* runSimulation(
 
   yield { event: 'consensus_update', data: calculateConsensus(allReports) };
 
-  // ━━ ROUND 9 — CONVERGENCE (all 9 specialists, parallel) ━━
+  // ━━ ROUND 9 — CONVERGENCE (all 10 specialists, parallel) ━━
 
   yield { event: 'phase_start', data: { phase: 'convergence', status: 'active' } };
 
