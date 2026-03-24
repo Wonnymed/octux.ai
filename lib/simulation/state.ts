@@ -2,6 +2,7 @@
 
 import type { AgentReport, SimulationPlan, DecisionObject } from '../agents/types';
 import type { AdvisorPersona, CrowdWisdomResult } from '../agents/advisors';
+import type { DelegationResponse } from '../simulation/delegation';
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -39,6 +40,9 @@ export type SimulationState = {
 
   // OpenAI Agents SDK #8: Handoff tracking
   handoffs: { from_agent: string; to_agent: string; reason: string; round: number }[];
+
+  // CrewAI #7: Delegation responses
+  delegations: DelegationResponse[];
 
   // Results
   verdict: DecisionObject | null;
@@ -94,6 +98,7 @@ export function createInitialState(
     consensus_history: [],
 
     handoffs: [],
+    delegations: [],
 
     verdict: null,
     follow_ups: [],
