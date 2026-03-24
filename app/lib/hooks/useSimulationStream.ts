@@ -15,8 +15,17 @@ export type PhaseState = {
   status: "active" | "complete" | "pending";
 };
 
+export type RoundState = {
+  round: number;
+  title: string;
+  description: string;
+  status: "active" | "complete" | "pending" | "skipped";
+};
+
 type SimulationStreamState = {
   phases: PhaseState[];
+  rounds: RoundState[];
+  currentRound: number;
   agents: AgentReport[];
   plan: SimulationPlan | null;
   consensus: ConsensusState | null;
@@ -49,6 +58,8 @@ function buildPhases(enableCrowdWisdom: boolean): PhaseState[] {
 
 const initialState: SimulationStreamState = {
   phases: buildPhases(false),
+  rounds: [],
+  currentRound: 0,
   agents: [],
   plan: null,
   consensus: null,
@@ -229,6 +240,46 @@ function processEvent(
       break;
     }
 
+    case "round_start": {
+      const { round, title, description } = data as {
+        round: number;
+        title: string;
+        description: string;
+        total_rounds: number;
+      };
+      const isSkipped = description.startsWith("Skipped");
+      setState((s) => ({
+        ...s,
+        currentRound: round,
+        rounds: [
+          // Mark all previous active rounds as complete
+          ...s.rounds.map((r) =>
+            r.status === "active" ? { ...r, status: "complete" as const } : r,
+          ),
+          {
+            round,
+            title,
+            description,
+            status: isSkipped ? ("skipped" as const) : ("active" as const),
+          },
+        ],
+      }));
+      break;
+    }
+
+    case "round_complete": {
+      const { round } = data as { round: number };
+      setState((s) => ({
+        ...s,
+        rounds: s.rounds.map((r) =>
+          r.round === round && r.status === "active"
+            ? { ...r, status: "complete" as const }
+            : r,
+        ),
+      }));
+      break;
+    }
+
     case "plan_complete":
       setState((s) => ({ ...s, plan: data as SimulationPlan }));
       break;
@@ -281,6 +332,9 @@ function processEvent(
         crowdLoading: false,
         phases: s.phases.map((p) =>
           p.status === "active" ? { ...p, status: "complete" } : p,
+        ),
+        rounds: s.rounds.map((r) =>
+          r.status === "active" ? { ...r, status: "complete" as const } : r,
         ),
       }));
       break;

@@ -1,71 +1,87 @@
 "use client";
 
-import {
-  ClipboardList,
-  MessageSquare,
-  Swords,
-  GitMerge,
-  Scale,
-  Check,
-  Loader2,
-} from "lucide-react";
-import type { SimulationPhase } from "@/app/lib/types/simulation";
-import type { PhaseState } from "@/app/lib/hooks/useSimulationStream";
-import type { ComponentType } from "react";
-
-const PHASE_META: Record<
-  SimulationPhase,
-  { label: string; icon: ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }
-> = {
-  planning: { label: "Planning", icon: ClipboardList },
-  opening: { label: "Opening Analysis", icon: MessageSquare },
-  adversarial: { label: "Adversarial Debate", icon: Swords },
-  convergence: { label: "Convergence", icon: GitMerge },
-  verdict: { label: "Verdict", icon: Scale },
-};
+import { Check, Loader2, Circle, SkipForward } from "lucide-react";
+import type { RoundState } from "@/app/lib/hooks/useSimulationStream";
 
 type SimulationProgressProps = {
-  phases: PhaseState[];
+  rounds: RoundState[];
+  currentRound: number;
+  totalRounds?: number;
 };
 
-export default function SimulationProgress({ phases }: SimulationProgressProps) {
+export default function SimulationProgress({
+  rounds,
+  currentRound,
+  totalRounds = 10,
+}: SimulationProgressProps) {
+  // Build all 10 rounds — fill in pending ones that haven't arrived yet
+  const allRounds: RoundState[] = [];
+  for (let i = 1; i <= totalRounds; i++) {
+    const existing = rounds.find((r) => r.round === i);
+    if (existing) {
+      allRounds.push(existing);
+    } else {
+      allRounds.push({
+        round: i,
+        title: `Round ${i}`,
+        description: "",
+        status: "pending",
+      });
+    }
+  }
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      {phases.map((p, i) => {
-        const meta = PHASE_META[p.phase];
-        const Icon = meta.icon;
-        const isActive = p.status === "active";
-        const isComplete = p.status === "complete";
-        const isPending = p.status === "pending";
-        const isLast = i === phases.length - 1;
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      <p
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: "var(--text-tertiary)",
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+          margin: "0 0 12px",
+        }}
+      >
+        Rounds {currentRound > 0 ? `${currentRound}/${totalRounds}` : ""}
+      </p>
+
+      {allRounds.map((r, i) => {
+        const isActive = r.status === "active";
+        const isComplete = r.status === "complete";
+        const isSkipped = r.status === "skipped";
+        const isPending = r.status === "pending";
+        const isLast = i === allRounds.length - 1;
 
         return (
-          <div key={p.phase} style={{ display: "flex", gap: 12, position: "relative" }}>
-            {/* Vertical line connecting phases */}
+          <div
+            key={r.round}
+            style={{ display: "flex", gap: 10, position: "relative" }}
+          >
+            {/* Vertical connector line */}
             {!isLast && (
               <div
                 style={{
                   position: "absolute",
-                  left: 15,
-                  top: 32,
+                  left: 9,
+                  top: 20,
                   width: 2,
-                  height: "calc(100% - 16px)",
-                  background: isComplete
+                  height: "calc(100% - 4px)",
+                  background: isComplete || isSkipped
                     ? "#10B981"
                     : isActive
                       ? "var(--accent)"
                       : "var(--border-default)",
-                  opacity: isPending ? 0.4 : 1,
+                  opacity: isPending ? 0.3 : isSkipped ? 0.5 : 1,
                   transition: "all 300ms ease-out",
                 }}
               />
             )}
 
-            {/* Icon circle */}
+            {/* Status indicator */}
             <div
               style={{
-                width: 32,
-                height: 32,
+                width: 20,
+                height: 20,
                 borderRadius: "50%",
                 display: "flex",
                 alignItems: "center",
@@ -75,55 +91,71 @@ export default function SimulationProgress({ phases }: SimulationProgressProps) 
                   ? "rgba(16,185,129,0.12)"
                   : isActive
                     ? "var(--accent-muted)"
-                    : "var(--surface-2)",
-                border: isActive
-                  ? "2px solid var(--accent)"
-                  : isComplete
-                    ? "2px solid #10B981"
-                    : "1px solid var(--border-default)",
+                    : isSkipped
+                      ? "rgba(16,185,129,0.06)"
+                      : "transparent",
+                border: isComplete
+                  ? "2px solid #10B981"
+                  : isActive
+                    ? "2px solid var(--accent)"
+                    : isSkipped
+                      ? "1px solid rgba(16,185,129,0.3)"
+                      : "1px solid var(--border-default)",
                 transition: "all 300ms ease-out",
-                opacity: isPending ? 0.5 : 1,
+                opacity: isPending ? 0.4 : 1,
               }}
             >
               {isComplete ? (
-                <Check size={14} strokeWidth={2.5} color="#10B981" />
+                <Check size={10} strokeWidth={3} color="#10B981" />
               ) : isActive ? (
                 <Loader2
-                  size={14}
-                  strokeWidth={2}
+                  size={10}
+                  strokeWidth={2.5}
                   color="var(--accent)"
                   className="spin-icon"
                 />
+              ) : isSkipped ? (
+                <SkipForward size={8} strokeWidth={2} color="#10B981" />
               ) : (
-                <Icon
-                  size={14}
-                  strokeWidth={1.5}
-                />
+                <Circle size={6} strokeWidth={0} fill="var(--text-tertiary)" style={{ opacity: 0.3 }} />
               )}
             </div>
 
-            {/* Label */}
-            <div
-              style={{
-                paddingTop: 5,
-                paddingBottom: 16,
-              }}
-            >
+            {/* Round info */}
+            <div style={{ paddingBottom: 12, minWidth: 0 }}>
               <span
                 style={{
-                  fontSize: 13,
-                  fontWeight: isActive ? 500 : 400,
+                  fontSize: 12,
+                  fontWeight: isActive ? 600 : 400,
                   color: isActive
                     ? "var(--accent)"
                     : isComplete
                       ? "var(--text-secondary)"
-                      : "var(--text-tertiary)",
+                      : isSkipped
+                        ? "var(--text-tertiary)"
+                        : "var(--text-tertiary)",
                   transition: "color 300ms ease-out",
-                  opacity: isPending ? 0.5 : 1,
+                  opacity: isPending ? 0.4 : isSkipped ? 0.6 : 1,
+                  display: "block",
+                  lineHeight: 1.3,
                 }}
               >
-                {meta.label}
+                {r.title}
               </span>
+              {r.description && !isPending && (
+                <span
+                  style={{
+                    fontSize: 10,
+                    color: "var(--text-tertiary)",
+                    opacity: isSkipped ? 0.5 : 0.7,
+                    display: "block",
+                    lineHeight: 1.3,
+                    marginTop: 1,
+                  }}
+                >
+                  {r.description}
+                </span>
+              )}
             </div>
           </div>
         );

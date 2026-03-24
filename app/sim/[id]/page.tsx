@@ -36,6 +36,8 @@ function SimulationPageInner() {
 
   const {
     phases,
+    rounds,
+    currentRound,
     agents,
     plan,
     consensus,
@@ -195,9 +197,11 @@ function SimulationPageInner() {
             }}
           >
             <span>
-              {enableCrowdWisdom
-                ? `${TIERS.free.agents} specialists + 20 advisors · 10 rounds`
-                : `${TIERS.free.agents} specialists · 10 rounds · ${getModelLabel(TIERS.free.model)}`}
+              {isRunning && currentRound > 0
+                ? `10 specialists · Round ${currentRound}/10 · analyzing...`
+                : enableCrowdWisdom
+                  ? `${TIERS.free.agents} specialists + 20 advisors · 10 rounds`
+                  : `${TIERS.free.agents} specialists · 10 rounds · ${getModelLabel(TIERS.free.model)}`}
             </span>
             {/* Crowd Wisdom toggle — disabled once running */}
             <button
@@ -250,7 +254,7 @@ function SimulationPageInner() {
               overflowY: "auto",
             }}
           >
-            <SimulationProgress phases={phases} />
+            <SimulationProgress rounds={rounds} currentRound={currentRound} />
 
             {/* Plan tasks */}
             {plan && (
@@ -348,7 +352,7 @@ function SimulationPageInner() {
                     margin: "0 0 12px",
                   }}
                 >
-                  Agent Reports ({uniqueAgentCount}{isRunning && plan ? `/${Math.min(expectedAgents, 10)}` : ""})
+                  Agent Reports ({uniqueAgentCount}{isRunning ? "/10" : ""})
                 </p>
                 <div
                   style={{
