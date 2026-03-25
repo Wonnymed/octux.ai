@@ -106,7 +106,7 @@ export default function PricingPage() {
                   else handleCheckout(tier.id);
                 }}
               >
-                {tier.id === 'free' ? 'Start free' : tier.id === 'paygo' ? 'Buy 5 credits ($7.50)' : `Go ${tier.name}`}
+                {tier.id === 'free' ? 'Start free' : tier.id === 'paygo' ? 'Buy 5 credits ($14.95)' : `Go ${tier.name}`}
               </OctButton>
             </div>
           ))}
