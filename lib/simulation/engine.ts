@@ -13,8 +13,9 @@ import { processDelegations, type DelegationResponse } from './delegation';
 import { generateCounterFactualFlip, detectBlindSpots, type CounterFactualFlip, type BlindSpotAnalysis } from './verdict-insights';
 import { evaluateSimulation, type SimulationEval } from './evals';
 import { saveSimulation } from '../memory/persistence';
-import { extractAndSaveFacts } from '../memory/facts';
+import { extractAndSaveFacts, applyFactActions } from '../memory/facts';
 import { maybeRegenerateProfile } from '../memory/profile';
+import { loadMemoryForSimulation, formatMemoryContext, formatAgentMemory, extractQuestionFacts, type MemoryPayload } from '../memory/core-memory';
 import type { AdvisorPersona } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
 
@@ -39,6 +40,7 @@ export type SimulationSSEEvent =
   | { event: 'counter_factual'; data: CounterFactualFlip }
   | { event: 'blind_spots'; data: BlindSpotAnalysis }
   | { event: 'evaluation'; data: SimulationEval }
+  | { event: 'memory_loaded'; data: { isReturningUser: boolean; factCount: number; hasProfile: boolean; previousSimCount: number } }
   | { event: 'state_summary'; data: any }
   | { event: 'complete'; data: { simulation_id: string } };
 
@@ -108,9 +110,17 @@ function buildDebateContext(
   progressLedger?: ProgressLedger,
   chairDirectives?: string[],
   fieldScans?: FieldScan[],
+  memory?: MemoryPayload,
 ): string {
+  // Memory injection — FIRST in context so agents always see it
+  let memorySection = '';
+  if (memory && memory.isReturningUser) {
+    memorySection = formatMemoryContext(memory);
+    memorySection += formatAgentMemory(memory, currentAgentId);
+  }
+
   const reports = Array.from(state.latest_reports.entries());
-  if (reports.length === 0) return 'No other agents have reported yet. You are among the first to analyze this decision.';
+  if (reports.length === 0) return memorySection + 'No other agents have reported yet. You are among the first to analyze this decision.';
 
   // Build summary of what other agents said (exclude current agent's own reports)
   const otherReports = reports
@@ -166,7 +176,7 @@ Consider whether the debate has changed your view. If you changed your mind, exp
   // Field Intelligence: ground-level data from Haiku advisors
   const fieldSection = fieldScans ? formatFieldIntelligence(fieldScans) : '';
 
-  return `DEBATE SO FAR:
+  return `${memorySection}DEBATE SO FAR:
 ${otherReports}
 
 ${consensusSummary}
@@ -260,6 +270,36 @@ export async function* runSimulation(
   const simId = `sim_${Date.now()}`;
   const audit = createAudit(simId, question, engine);
   const state = createInitialState(simId, question, engine, options?.tier || 'free');
+
+  // ═══ MEMORY: Load user context (Letta + Mem0 + Agno) ═══
+  const memory = await loadMemoryForSimulation(options?.userId, question);
+
+  if (memory.isReturningUser) {
+    console.log(`[memory] Loaded: ${memory.relevantFacts.length} facts, profile: ${memory.profile ? 'yes' : 'no'}, sims: ${memory.previousSimCount}`);
+  }
+
+  // OpenClaw WAL: Parse question for immediate facts BEFORE sim runs
+  if (options?.userId) {
+    const questionFacts = extractQuestionFacts(question);
+    if (questionFacts.length > 0) {
+      console.log(`[memory:wal] Extracted ${questionFacts.length} facts from question`);
+      const walActions = questionFacts.map(f => ({
+        action: 'ADD' as const,
+        fact: f.content,
+        category: f.category as 'business_info' | 'market_context' | 'financial' | 'personal' | 'preference' | 'decision_history',
+        confidence: 0.9,
+        reason: 'Extracted from user question (WAL protocol)',
+      }));
+      applyFactActions(options.userId, simId, walActions).catch(() => {});
+    }
+  }
+
+  yield { event: 'memory_loaded', data: {
+    isReturningUser: memory.isReturningUser,
+    factCount: memory.relevantFacts.length,
+    hasProfile: !!memory.profile,
+    previousSimCount: memory.previousSimCount,
+  }};
 
   // ━━ INPUT GUARDRAILS (OpenAI Agents SDK #8) ━━━━━━━━━━━━━━
   for (const filter of kernel.inputFilters) {
@@ -429,7 +469,7 @@ export async function* runSimulation(
 
   {
     const batchPromises = deepWave1.map(({ agent, task }) => {
-      const debateCtx = buildDebateContext(state, agent.id, undefined, undefined, fieldScans);
+      const debateCtx = buildDebateContext(state, agent.id, undefined, undefined, fieldScans, memory);
       return callAgent(
         agent,
         `Question: ${question}\n\nYour task: ${task}\n\n${debateCtx}\n\nAnalyze from your perspective as ${agent.role}. Be specific with data. Respond with valid JSON only.`,
@@ -488,7 +528,7 @@ export async function* runSimulation(
 
   {
     const batchPromises = deepWave2.map(({ agent, task }) => {
-      const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans);
+      const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory);
       return callAgent(
         agent,
         `Question: ${question}\n\nYour task: ${task}\n\n${debateCtx}\n\nAnalyze from your perspective as ${agent.role}. Be specific with data. Respond with valid JSON only.`,
@@ -568,7 +608,7 @@ export async function* runSimulation(
   const quickBatch2 = quickAgentTasks.slice(3);
 
   const quickBatch1Promises = quickBatch1.map(({ agent, task }) => {
-    const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans);
+    const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory);
     return callAgentWithRetry(
       agent,
       `Question: ${question}\n\n${debateCtx}\n\nAs ${agent.role}, add your perspective. Focus on what others MISSED or got wrong. React to their specific arguments. Respond with valid JSON only.`,
@@ -581,7 +621,7 @@ export async function* runSimulation(
   await wait(500);
 
   const quickBatch2Promises = quickBatch2.map(({ agent, task }) => {
-    const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans);
+    const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory);
     return callAgentWithRetry(
       agent,
       `Question: ${question}\n\n${debateCtx}\n\nAs ${agent.role}, add your perspective. Focus on what others MISSED or got wrong. React to their specific arguments. Respond with valid JSON only.`,
@@ -705,7 +745,7 @@ export async function* runSimulation(
 
       if (targetAgent) {
         try {
-          const devilCtx = buildDebateContext(state, targetAgent.id, progressLedger, chairDirectives, fieldScans);
+          const devilCtx = buildDebateContext(state, targetAgent.id, progressLedger, chairDirectives, fieldScans, memory);
           const devilReport = await callAgent(
             targetAgent,
             `Question: ${question}\n\n${devilCtx}\n\nAll agents currently agree on "${majorityPosition}". The Decision Chair is forcing a devil's advocate round. As ${targetAgent.role}, present the STRONGEST possible argument AGAINST "${majorityPosition}". Reference specific claims from other agents and explain why they're wrong or incomplete. What could go catastrophically wrong? Respond with valid JSON only.`,
@@ -742,7 +782,7 @@ export async function* runSimulation(
     const challengerReport = allReports.find((r) => r.agent_id === pair.challenger_id);
 
     try {
-      const challengerCtx = buildDebateContext(state, pair.challenger_id, progressLedger, chairDirectives, fieldScans);
+      const challengerCtx = buildDebateContext(state, pair.challenger_id, progressLedger, chairDirectives, fieldScans, memory);
       const challengeReport = await callAgent(
         challengerAgent,
         `Question: ${question}\n\n${challengerCtx}\n\nYou are CHALLENGING ${defenderAgent.name}'s position. They said: "${defenderReport?.key_argument || 'their position'}"\n\nAttack their weakest point with specific counter-evidence. Reference what other agents said to support your challenge. Be direct. Respond with valid JSON only.`,
@@ -757,7 +797,7 @@ export async function* runSimulation(
     }
 
     try {
-      const defenderCtx = buildDebateContext(state, pair.defender_id, progressLedger, chairDirectives, fieldScans);
+      const defenderCtx = buildDebateContext(state, pair.defender_id, progressLedger, chairDirectives, fieldScans, memory);
       const defenseReport = await callAgent(
         defenderAgent,
         `Question: ${question}\n\n${defenderCtx}\n\n${challengerAgent.name} CHALLENGED your position: "${challengerReport?.key_argument || 'disagreement'}"\n\nDefend your position with stronger evidence, or update your position if the challenge is valid. Be honest \u2014 if you changed your mind, say what convinced you. Respond with valid JSON only.`,
@@ -808,7 +848,7 @@ export async function* runSimulation(
   const convBatch2 = specialists.slice(5);
 
   const convBatch1Promises = convBatch1.map((agent) => {
-    const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans);
+    const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory);
     return callAgentWithRetry(
       agent,
       `Question: ${question}\n\n${convergenceCtx}\n\nThe debate is concluding. Declare your FINAL position. If you changed your mind from your earlier analysis, explain what argument convinced you. Reference specific agents or evidence that influenced your final stance. Respond with valid JSON only.`,
@@ -820,7 +860,7 @@ export async function* runSimulation(
   await wait(500);
 
   const convBatch2Promises = convBatch2.map((agent) => {
-    const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans);
+    const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory);
     return callAgentWithRetry(
       agent,
       `Question: ${question}\n\n${convergenceCtx}\n\nThe debate is concluding. Declare your FINAL position. If you changed your mind from your earlier analysis, explain what argument convinced you. Reference specific agents or evidence that influenced your final stance. Respond with valid JSON only.`,
@@ -917,7 +957,11 @@ DEBATE PROGRESS:
       ? `\n\nCRITICAL CONSENSUS CONSTRAINT: ${agentConsensusPercent}% of agents recommend "${agentConsensusPosition}" with average confidence ${avgAgentConfidence.toFixed(1)}/10. Your verdict MUST align with this consensus. The agents debated for 9 rounds — respect their conclusion. If they say "${agentConsensusPosition}", your recommendation must be "${agentConsensusPosition}"${agentConsensusPosition === 'proceed' ? ' or "proceed_with_conditions"' : ''}. Do NOT override the agents.\n`
       : '';
 
-    const verdictPrompt = `QUESTION: ${question}\n\nFINAL AGENT POSITIONS:\n${finalSummary}\n\nFULL DEBATE HISTORY (${allReports.length} total reports across all rounds):\n${reportSummaryForChair}\n${taskLedgerSection}${consensusDirective}\n\nSynthesize ALL agent positions into a final Decision Object. Weight by confidence and evidence quality. Use the Task Ledger to distinguish verified facts from assumptions — your verdict should rely on VERIFIED facts and flag unresolved assumptions as risks.\n\nRespond with valid JSON only:\n{\n  "recommendation": "proceed" | "proceed_with_conditions" | "delay" | "abandon",\n  "probability": 0-100,\n  "main_risk": "the single biggest risk",\n  "leverage_point": "the one thing that changes everything",\n  "next_action": "specific, actionable, doable this week",\n  "grade": "A" | "B+" | "B" | "C" | "D" | "F",\n  "grade_score": 0-100,\n  "citations": [{ "id": 1, "agent_id": "agent_id", "agent_name": "name", "claim": "specific claim", "confidence": 1-10 }]\n}`;
+    const memoryForVerdict = memory.isReturningUser
+      ? `\n\nDECISION-MAKER CONTEXT:\n${memory.profile ? memory.profile.profile_text : 'Limited user context available.'}\nPast simulations: ${memory.previousSimCount}\nKnown facts: ${memory.relevantFacts.slice(0, 5).map(f => f.content).join('; ')}\n`
+      : '';
+
+    const verdictPrompt = `QUESTION: ${question}${memoryForVerdict}\n\nFINAL AGENT POSITIONS:\n${finalSummary}\n\nFULL DEBATE HISTORY (${allReports.length} total reports across all rounds):\n${reportSummaryForChair}\n${taskLedgerSection}${consensusDirective}\n\nSynthesize ALL agent positions into a final Decision Object. Tailor your recommendation to the specific decision-maker's context if known. Weight by confidence and evidence quality. Use the Task Ledger to distinguish verified facts from assumptions — your verdict should rely on VERIFIED facts and flag unresolved assumptions as risks.\n\nRespond with valid JSON only:\n{\n  "recommendation": "proceed" | "proceed_with_conditions" | "delay" | "abandon",\n  "probability": 0-100,\n  "main_risk": "the single biggest risk",\n  "leverage_point": "the one thing that changes everything",\n  "next_action": "specific, actionable, doable this week",\n  "grade": "A" | "B+" | "B" | "C" | "D" | "F",\n  "grade_score": 0-100,\n  "citations": [{ "id": 1, "agent_id": "agent_id", "agent_name": "name", "claim": "specific claim", "confidence": 1-10 }]\n}`;
     const verdictRaw = await callClaude({
       systemPrompt: chair.systemPrompt,
       userMessage: verdictPrompt,

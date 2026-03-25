@@ -49,6 +49,7 @@ type SimulationStreamState = {
   blindSpots: any | null;
   stateSummary: any | null;
   evaluation: any | null;
+  memory: { isReturningUser: boolean; factCount: number; hasProfile: boolean; previousSimCount: number } | null;
 };
 
 const BASE_PHASES: SimulationPhase[] = [
@@ -89,6 +90,7 @@ const initialState: SimulationStreamState = {
   blindSpots: null,
   stateSummary: null,
   evaluation: null,
+  memory: null,
 };
 
 export function useSimulationStream() {
@@ -365,6 +367,10 @@ function processEvent(
 
     case "blind_spots":
       setState((s) => ({ ...s, blindSpots: data }));
+      break;
+
+    case "memory_loaded":
+      setState((s) => ({ ...s, memory: data as SimulationStreamState['memory'] }));
       break;
 
     case "state_summary":
