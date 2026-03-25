@@ -28,6 +28,7 @@ import {
 } from '../memory/hooks';
 import { buildSystemPromptFromOverride } from '../memory/prompt-optimizer';
 import { generateCrowdAdvisors, runCrowdRound, synthesizeCrowdSignal, formatCrowdSignal, type CrowdSignal } from './crowd';
+import { selectRelevantAgents, calculateAgentBudget, type AgentSelection } from './agent-selection';
 import type { AdvisorPersona } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
 
@@ -57,6 +58,7 @@ export type SimulationSSEEvent =
   | { event: 'reflect_triggered'; data: { sim_count: number } }
   | { event: 'optimization_triggered'; data: { sim_count: number } }
   | { event: 'agent_reflected'; data: { agent_id: string; iterations: number; original_score: number; final_score: number } }
+  | { event: 'agents_selected'; data: { active: { id: string; reason: string; priority: string }[]; skipped: { id: string; reason: string }[]; tokensPerAgent: number } }
   | { event: 'crowd_round_started'; data: { advisorCount: number } }
   | { event: 'crowd_round_complete'; data: CrowdSignal }
   | { event: 'state_summary'; data: any }
@@ -421,8 +423,34 @@ export async function* runSimulation(
     };
   }
 
-  // Force ALL 10 specialists into the plan (Problem 1 fix)
-  const allSpecialistIds = AGENTS.filter((a) => a.id !== 'decision_chair').map((a) => a.id);
+  // ═══ ADAPTIVE AGENT SELECTION (Free tier: 4-6 agents, Pro/Max: all 10) ═══
+  const useAdaptiveSelection = !options?.tier || options.tier === 'free';
+  let agentSelection: AgentSelection | null = null;
+  let activeAgentIds: Set<string>;
+
+  if (useAdaptiveSelection) {
+    try {
+      agentSelection = await selectRelevantAgents(
+        question,
+        memory.coreMemory?.human || '',
+      );
+      activeAgentIds = new Set(agentSelection.selected.map(s => s.agentId));
+      yield { event: 'agents_selected', data: {
+        active: agentSelection.selected.map(s => ({ id: s.agentId, reason: s.reason, priority: s.priority })),
+        skipped: agentSelection.skipped.map(s => ({ id: s.agentId, reason: s.reason })),
+        tokensPerAgent: agentSelection.tokensPerAgent,
+      }};
+    } catch (err) {
+      console.error('AGENT SELECT failed, using all agents:', err);
+      activeAgentIds = new Set(AGENTS.filter(a => a.id !== 'decision_chair').map(a => a.id));
+    }
+  } else {
+    activeAgentIds = new Set(AGENTS.filter(a => a.id !== 'decision_chair').map(a => a.id));
+  }
+
+  const allSpecialistIds = [...activeAgentIds] as AgentId[];
+
+  // Force all active agents into the plan
   const assignedIds = new Set(plan.tasks.map((t) => t.assigned_agent));
   for (const id of allSpecialistIds) {
     if (!assignedIds.has(id)) {
@@ -434,26 +462,30 @@ export async function* runSimulation(
     }
   }
 
-  // Split into deep (first 5) and quick (remaining 5) — guaranteed 10 total
+  // Split active agents into deep (first half) and quick (second half)
+  const deepCount = Math.ceil(allSpecialistIds.length / 2);
   const deepAgentIds = new Set<AgentId>();
   const deepAgentTasks: { agent: AgentConfig; task: string }[] = [];
   for (const t of plan.tasks) {
     const agentId = t.assigned_agent as AgentId;
     if (deepAgentIds.has(agentId) || agentId === 'decision_chair') continue;
+    if (!activeAgentIds.has(agentId)) continue;
     try {
       const agent = applyPromptOverride(getAgentById(agentId));
       deepAgentTasks.push({ agent, task: t.description });
       deepAgentIds.add(agentId);
     } catch { continue; }
-    if (deepAgentTasks.length >= 5) break;
+    if (deepAgentTasks.length >= deepCount) break;
   }
   const quickAgentTasks: { agent: AgentConfig; task: string }[] = [];
   for (const id of allSpecialistIds) {
-    if (deepAgentIds.has(id)) continue;
+    if (deepAgentIds.has(id as AgentId)) continue;
     const agent = applyPromptOverride(getAgentById(id));
     const planTask = plan.tasks.find((t) => t.assigned_agent === id);
     quickAgentTasks.push({ agent, task: planTask?.description || `Analyze this decision from your perspective as ${agent.role}` });
   }
+
+  const activeAgentCount = allSpecialistIds.length;
 
   state.plan = plan;
   yield { event: 'plan_complete', data: plan };
@@ -788,12 +820,12 @@ export async function* runSimulation(
     }
   }
 
-  // Verify all 10 agents participated after rounds 2-6
+  // Verify all active agents participated after rounds 2-6
   const uniqueAgentsAfterR6 = state.latest_reports.size;
-  if (uniqueAgentsAfterR6 < 10) {
-    console.error(`[engine] WARNING: Only ${uniqueAgentsAfterR6}/10 agents participated in rounds 2-6`);
+  if (uniqueAgentsAfterR6 < activeAgentCount) {
+    console.error(`[engine] WARNING: Only ${uniqueAgentsAfterR6}/${activeAgentCount} agents participated in rounds 2-6`);
   } else {
-    console.log(`[engine] All 10 agents reported after round 6`);
+    console.log(`[engine] All ${activeAgentCount} agents reported after round 6`);
   }
 
   const reportSummaryForChair = allReports
@@ -935,16 +967,17 @@ export async function* runSimulation(
     }
   }
 
-  // ━━ ROUND 9 — CONVERGENCE (all 10 specialists declare final position, ALWAYS runs) ━━
+  // ━━ ROUND 9 — CONVERGENCE (active specialists declare final position, ALWAYS runs) ━━
 
   transitionPhase(state, 'convergence');
   yield { event: 'phase_start', data: { phase: 'convergence', status: 'active' } };
-  yield { event: 'round_start', data: { round: 9, title: 'Final Convergence', description: `All 10 specialists declare final positions${fieldScans.length > 0 ? ' informed by field intelligence' : ''}`, total_rounds: 10 } };
+  yield { event: 'round_start', data: { round: 9, title: 'Final Convergence', description: `All ${activeAgentCount} specialists declare final positions${fieldScans.length > 0 ? ' informed by field intelligence' : ''}`, total_rounds: 10 } };
 
-  // Stagger convergence into 2 batches of 5 to avoid rate limits
-  const specialists = specialistAgents();
-  const convBatch1 = specialists.slice(0, 5);
-  const convBatch2 = specialists.slice(5);
+  // Stagger convergence into 2 batches to avoid rate limits
+  const specialists = specialistAgents().filter(a => activeAgentIds.has(a.id));
+  const convMid = Math.ceil(specialists.length / 2);
+  const convBatch1 = specialists.slice(0, convMid);
+  const convBatch2 = specialists.slice(convMid);
 
   const convBatch1Promises = convBatch1.map((agent) => {
     const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryWithDiscoveries, buildAgentContext(agent.id, preSim.agentKnowledgeMap, preSim.agentLessonsMap, preSim.agentRulesMap));
@@ -999,7 +1032,7 @@ export async function* runSimulation(
   yield { event: 'round_complete', data: { round: 9 } };
   saveToWorkingBuffer(simId, options?.userId || 'anon', 9, 'convergence', `Convergence: ${finalReports.length} final positions`, null, getCurrentPositions(state));
 
-  console.log(`[convergence] ${finalReports.length}/10 convergence reports, using ${consensusReports.length} for consensus`);
+  console.log(`[convergence] ${finalReports.length}/${activeAgentCount} convergence reports, using ${consensusReports.length} for consensus`);
 
   // MagenticOne #9: Final ledger update after convergence (round 9)
   {
@@ -1009,10 +1042,10 @@ export async function* runSimulation(
     console.log(`[ledger] After round 9: verified_facts=${taskLedger.verified_facts.length}, assumptions=${taskLedger.assumptions.length}, insights=${taskLedger.derived_insights.length}`);
   }
 
-  // Verify all 10 agents have final reports
+  // Verify all active agents have final reports
   const uniqueAgentsAfterR9 = state.latest_reports.size;
-  if (uniqueAgentsAfterR9 < 10) {
-    console.warn(`[engine] WARNING: Only ${uniqueAgentsAfterR9}/10 agents have reports after convergence`);
+  if (uniqueAgentsAfterR9 < activeAgentCount) {
+    console.warn(`[engine] WARNING: Only ${uniqueAgentsAfterR9}/${activeAgentCount} agents have reports after convergence`);
   }
 
   // ═══ CROWD ROUND (Pro/Max tiers only) ═══
