@@ -26,8 +26,8 @@ import { maybeRegenerateProfile } from './profile';
 import { reflectOnExperiences } from './reflect';
 import { runMemoryOptimization } from './optimize';
 import { extractAllAgentRules, loadAllAgentRules } from './procedural';
-import { getAllActivePrompts, recordEvalScore, optimizePrompt } from './prompt-optimizer';
-import { supabase } from './supabase';
+import { getAllActivePrompts, recordEvalScore } from './prompt-optimizer';
+import { optimizeAllAgents, monitorAndRollback } from './multi-optimizer';
 
 // Re-export for engine convenience
 export { formatRoundDiscoveries, type RoundLearning } from './agent-improvement';
@@ -385,37 +385,26 @@ export async function postSimHook(
     })
     .catch(err => console.error('HOOK POST: Procedural rules failed:', err));
 
-  // 11. Prompt optimization — every 20 sims (LangMem gradient)
-  // Expensive (~5 LLM calls per agent) so run less frequently
-  if (supabase) {
-    Promise.resolve(
-      supabase
-        .from('simulations')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', userId)
-    ).then(({ count }) => {
-      if (!count || count < 20 || count % 20 !== 0) return;
+  // 11. Multi-prompt optimization — every 20 sims (LangMem coordinated)
+  // Replaces P19's per-agent loop with coordinated batch
+  optimizeAllAgents(userId)
+    .then(results => {
+      const promoted = results.filter(r => r.action === 'promoted');
+      if (promoted.length > 0) {
+        console.log(`HOOK POST: Multi-opt — ${promoted.length} agents promoted: ${promoted.map(r => r.agentId).join(', ')}`);
+      }
+    })
+    .catch(err => console.error('HOOK POST: Multi-opt failed:', err));
 
-      console.log(`HOOK POST: Triggering prompt optimization (${count} sims)`);
-
-      import('../agents/prompts').then(({ AGENTS }) => {
-        const specialists = AGENTS.filter((a: any) => a.id !== 'decision_chair');
-        for (const agent of specialists) {
-          optimizePrompt(userId, agent.id, {
-            role: agent.role,
-            goal: agent.goal,
-            backstory: agent.backstory,
-            sop: agent.sop,
-            constraints: agent.constraints,
-          })
-            .then(promoted => {
-              if (promoted) console.log(`HOOK POST: Prompt optimized for ${agent.id}`);
-            })
-            .catch(err => console.error(`HOOK POST: Prompt optimization failed for ${agent.id}:`, err));
-        }
-      }).catch(() => {});
-    }).catch(() => {});
-  }
+  // 12. Regression monitoring — check if recently promoted agents are underperforming
+  // Cheap — just DB checks, no LLM calls. Runs every sim.
+  monitorAndRollback(userId)
+    .then(rolledBack => {
+      if (rolledBack.length > 0) {
+        console.log(`HOOK POST: Rollback — ${rolledBack.join(', ')} reverted to previous version`);
+      }
+    })
+    .catch(err => console.error('HOOK POST: Monitor/rollback failed:', err));
 }
 
 // ═══════════════════════════════════════════
