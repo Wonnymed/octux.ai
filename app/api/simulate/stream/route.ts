@@ -3,6 +3,7 @@ import { runSimulation } from "@/lib/simulation/engine";
 import { getUserIdFromRequest } from "@/lib/auth/supabase-server";
 import { hitlStore } from "@/lib/simulation/hitl-store";
 import type { HITLResponse } from "@/lib/simulation/hitl";
+import { addMessage, updateConversationAfterSim } from "@/lib/conversation/manager";
 
 /* ═══════════════════════════════════════
    POST /api/simulate/stream
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { question, engine, enableCrowdWisdom, advisorGuidance, advisorCount, tier, threadId } = body as {
+  const { question, engine, enableCrowdWisdom, advisorGuidance, advisorCount, tier, threadId, conversationId } = body as {
     question: string;
     engine: string;
     enableCrowdWisdom?: boolean;
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest) {
     advisorCount?: number;
     tier?: string;
     threadId?: string;
+    conversationId?: string;
   };
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -99,8 +101,35 @@ export async function POST(req: NextRequest) {
           onHITLCheckpoint,
         });
 
+        let finalVerdict: any = null;
+        let simulationId = '';
+
         for await (const sse of generator) {
           send(sse.event, sse.data);
+          if (sse.event === 'verdict_artifact') {
+            finalVerdict = sse.data;
+            simulationId = (sse.data as any)?.simulation_id || '';
+          }
+        }
+
+        // Save verdict to conversation if conversationId was provided
+        if (conversationId && finalVerdict && userId) {
+          try {
+            await addMessage(conversationId, userId, {
+              message_type: 'simulation_verdict',
+              role: 'assistant',
+              content: finalVerdict.one_liner || 'Simulation complete',
+              structured_data: finalVerdict,
+              simulation_id: simulationId,
+            });
+            await updateConversationAfterSim(
+              conversationId,
+              finalVerdict,
+              finalVerdict.domain || 'general',
+            );
+          } catch (e) {
+            console.error('[simulate/stream] failed to save verdict to conversation:', e);
+          }
         }
       } catch (err) {
         console.error("[simulate/stream] fatal error:", err);

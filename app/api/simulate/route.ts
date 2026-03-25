@@ -645,7 +645,7 @@ export async function POST(req: NextRequest) {
               const industries = contextSummary.match(/food|restaurant|cafe|saas|tech|software|ecommerce|retail|finance|crypto|real estate|health/gi) || [];
               const topIndustry = industries.length > 0
                 ? [...new Set(industries.map(i => i.toLowerCase()))].sort((a: string, b: string) =>
-                    industries.filter(v => v.toLowerCase() === b).length - industries.filter(v => v.toLowerCase() === a).length
+                    industries.filter((v: string) => v.toLowerCase() === b).length - industries.filter((v: string) => v.toLowerCase() === a).length
                   )[0]
                 : null;
               const riskPatterns = allInsights.filter(i => /risk|caution|stop|concern|threat/i.test(i));
