@@ -9,6 +9,7 @@ interface ChatInputProps {
   placeholder?: string;
   loading?: boolean;
   disabled?: boolean;
+  isNewConversation?: boolean;
 }
 
 const SUGGESTION_CHIPS = [
@@ -19,7 +20,7 @@ const SUGGESTION_CHIPS = [
   { text: 'Move abroad or stay close to family?', category: 'life' },
 ];
 
-export default function ChatInput({ onSend, placeholder, loading = false, disabled = false }: ChatInputProps) {
+export default function ChatInput({ onSend, placeholder, loading = false, disabled = false, isNewConversation = false }: ChatInputProps) {
   const [value, setValue] = useState('');
   const [tier, setTier] = useState<'ink' | 'deep' | 'kraken'>('ink');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -56,7 +57,7 @@ export default function ChatInput({ onSend, placeholder, loading = false, disabl
     textareaRef.current?.focus();
   };
 
-  const showChips = !value && !loading;
+  const showChips = !value && !loading && isNewConversation;
 
   return (
     <div className="shrink-0 border-t border-border-subtle bg-surface-0">

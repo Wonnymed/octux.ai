@@ -239,3 +239,7 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.6; color: 
 .entity-ring-active { box-shadow: 0 0 0 2px var(--entity-active), 0 0 40px var(--entity-active); }
 .entity-ring-engaged { box-shadow: 0 0 0 2px var(--entity-engaged), 0 0 60px var(--entity-engaged), 0 0 80px var(--entity-bioluminescent); }
 .oct-entity-bg { background: radial-gradient(ellipse at 50% 50%, var(--entity-dormant) 0%, transparent 70%); }
+
+/* ═══ SCROLLBAR UTILITIES ═══ */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }

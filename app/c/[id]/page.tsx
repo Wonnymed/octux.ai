@@ -10,6 +10,8 @@ import VerdictCard from '@/components/chat/VerdictCard';
 import RefinementCard from '@/components/chat/RefinementCard';
 import { cn } from '@/lib/design/cn';
 import { OctButton } from '@/components/ui';
+import { useSuggestions } from '@/lib/hooks/useSuggestions';
+import SuggestionChips from '@/components/chat/SuggestionChips';
 
 type Message = {
   id: string;
@@ -33,6 +35,9 @@ export default function ConversationPage() {
   const [octopusState, setOctopusState] = useState<OctopusState>('idle');
   const [, setActiveSimulation] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { suggestions, loading: sugLoading, fetchSuggestions, refresh, clear: clearSuggestions } = useSuggestions({
+    conversationId,
+  });
 
   // Load conversation messages
   useEffect(() => {
@@ -55,10 +60,25 @@ export default function ConversationPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Ref for event listener to avoid stale closure
+  const handleSendRef = useRef<(msg: string) => void>(() => {});
+
+  // Listen for send-message events from SuggestionChips
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const text = (e as CustomEvent).detail?.text;
+      if (text) handleSendRef.current(text);
+    };
+    window.addEventListener('octux:send-message', handler);
+    return () => window.removeEventListener('octux:send-message', handler);
+  }, []);
+
   // Send chat message
   const handleSend = useCallback(async (message: string, options?: { tier?: string; simulate?: boolean }) => {
     if (!message.trim() || loading) return;
     const tier = options?.tier || 'ink';
+
+    clearSuggestions();
 
     // If simulate requested, trigger simulation flow
     if (options?.simulate) {
@@ -98,6 +118,9 @@ export default function ConversationPage() {
         created_at: new Date().toISOString(),
       };
       setMessages(prev => [...prev, assistantMsg]);
+
+      // Fetch post-chat suggestions after assistant response
+      fetchSuggestions('post_chat');
     } catch {
       setMessages(prev => [...prev, {
         id: `err-${Date.now()}`, message_type: 'text', role: 'assistant',
@@ -107,7 +130,10 @@ export default function ConversationPage() {
     } finally {
       setLoading(false);
     }
-  }, [conversationId, loading]);
+  }, [conversationId, loading, clearSuggestions, fetchSuggestions]);
+
+  // Keep ref current
+  handleSendRef.current = handleSend;
 
   // Trigger simulation
   const handleSimulate = useCallback(async (question: string, tier: string) => {
@@ -251,13 +277,25 @@ export default function ConversationPage() {
             </div>
           )}
 
+          {/* Post-chat suggestions */}
+          {suggestions.length > 0 && !loading && (
+            <div className="mt-2 mb-4">
+              <SuggestionChips
+                suggestions={suggestions}
+                loading={sugLoading}
+                onSelect={(text) => handleSend(text)}
+                onRefresh={() => refresh('post_chat')}
+              />
+            </div>
+          )}
+
           {/* Scroll anchor */}
           <div ref={bottomRef} />
         </div>
       </div>
 
       {/* Input */}
-      <ChatInput onSend={handleSend} loading={loading} />
+      <ChatInput onSend={handleSend} loading={loading} isNewConversation={messages.length === 0} />
     </div>
   );
 }

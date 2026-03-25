@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import VerdictCompact from '@/components/verdict/VerdictCompact';
 import VerdictExpanded from '@/components/verdict/VerdictExpanded';
+import SuggestionChips from '@/components/chat/SuggestionChips';
+import { useSuggestions } from '@/lib/hooks/useSuggestions';
 import type { VerdictData } from '@/components/verdict/VerdictCompact';
 
 interface VerdictCardProps {
@@ -14,6 +16,10 @@ interface VerdictCardProps {
 
 export default function VerdictCard({ verdict, simulationId, conversationId, onRefine }: VerdictCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const { suggestions, loading: sugLoading, fetchSuggestions, refresh } = useSuggestions({
+    conversationId: conversationId || '',
+    enabled: !!conversationId,
+  });
 
   if (!verdict) return null;
 
@@ -50,6 +56,24 @@ export default function VerdictCard({ verdict, simulationId, conversationId, onR
     }));
   }, [simulationId, conversationId]);
 
+  // Fetch suggestions when verdict renders
+  useEffect(() => {
+    if (verdict && conversationId) {
+      fetchSuggestions('post_verdict', {
+        verdict: {
+          recommendation: data.recommendation,
+          probability: data.probability,
+          grade: data.grade,
+          one_liner: data.one_liner,
+          main_risk: data.main_risk,
+          next_action: data.next_action,
+          agent_scores: data.agent_scores,
+        },
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId]);
+
   return (
     <div className="mb-4">
       {expanded ? (
@@ -72,6 +96,27 @@ export default function VerdictCard({ verdict, simulationId, conversationId, onR
           onRefine={onRefine}
           onAgentChat={handleAgentChat}
         />
+      )}
+
+      {(suggestions.length > 0 || sugLoading) && (
+        <div className="mt-2">
+          <SuggestionChips
+            suggestions={suggestions}
+            loading={sugLoading}
+            onSelect={(text) => {
+              window.dispatchEvent(new CustomEvent('octux:send-message', { detail: { text } }));
+            }}
+            onRefresh={() => refresh('post_verdict', {
+              verdict: {
+                recommendation: data.recommendation,
+                probability: data.probability,
+                one_liner: data.one_liner,
+                main_risk: data.main_risk,
+                next_action: data.next_action,
+              },
+            })}
+          />
+        </div>
       )}
     </div>
   );
