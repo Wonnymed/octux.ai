@@ -34,7 +34,7 @@ function HomePageInner() {
     setIsSubmitting(true);
     const id = `sim_${Date.now()}`;
     const params = new URLSearchParams({ question: query, engine: activeEngine });
-    router.push(`/sim/${id}?${params.toString()}`);
+    router.push(`/c/${id}?${params.toString()}`);
     // Fallback: re-enable after 5s if navigation stalls
     setTimeout(() => setIsSubmitting(false), 5000);
   }, [activeEngine, router, isSubmitting]);

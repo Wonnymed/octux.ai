@@ -644,7 +644,7 @@ export async function POST(req: NextRequest) {
               const allInsights = contexts.flatMap(c => c.key_insights || []);
               const industries = contextSummary.match(/food|restaurant|cafe|saas|tech|software|ecommerce|retail|finance|crypto|real estate|health/gi) || [];
               const topIndustry = industries.length > 0
-                ? [...new Set(industries.map(i => i.toLowerCase()))].sort((a, b) =>
+                ? [...new Set(industries.map(i => i.toLowerCase()))].sort((a: string, b: string) =>
                     industries.filter(v => v.toLowerCase() === b).length - industries.filter(v => v.toLowerCase() === a).length
                   )[0]
                 : null;

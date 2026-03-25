@@ -20,6 +20,7 @@ export function createTestFact(overrides: Partial<any> = {}) {
     expired_at: null,
     superseded_by: null,
     source_simulation: TEST_SIM_ID,
+    metadata: {},
     created_at: '2026-01-15T00:00:00Z',
     updated_at: '2026-01-15T00:00:00Z',
     ...overrides,

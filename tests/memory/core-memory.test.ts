@@ -57,7 +57,7 @@ describe('Memory: Core Memory', () => {
         preferences: 'Moderate risk tolerance',
         history: '"Open café?" → PROCEED (72%)',
       },
-      relevantFacts: [createTestFact()],
+      relevantFacts: [createTestFact() as any],
       profile: null,
       previousSimCount: 1,
       isReturningUser: true,

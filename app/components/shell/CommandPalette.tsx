@@ -123,7 +123,7 @@ export default function CommandPalette({ isOpen, onClose }: Props) {
               sublabel: `${(s.verdict_recommendation || '?').toUpperCase()} (${s.verdict_probability || 0}%) — ${new Date(s.created_at).toLocaleDateString()}`,
               section: 'recent' as const,
               icon: s.verdict_recommendation === 'proceed' ? '●' : s.verdict_recommendation === 'delay' ? '◐' : '○',
-              action: () => { onClose(); router.push(`/sim/${s.id}`); },
+              action: () => { onClose(); router.push(`/c/${s.id}`); },
               keywords: [s.verdict_recommendation || '', 'recent', 'simulation', 'past'],
             }))
           );

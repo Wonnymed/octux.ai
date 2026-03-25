@@ -118,8 +118,8 @@ export async function incrementUsage(userId: string, field: "chat_messages" | "s
   if (existing) {
     await supabase
       .from("usage_tracking")
-      .update({ [field]: (existing[field] || 0) + 1 })
-      .eq("id", existing.id);
+      .update({ [field]: ((existing as any)[field] || 0) + 1 })
+      .eq("id", (existing as any).id);
   } else {
     await supabase
       .from("usage_tracking")
