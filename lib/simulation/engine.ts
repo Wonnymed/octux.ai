@@ -18,6 +18,7 @@ import { maybeRegenerateProfile } from '../memory/profile';
 import { loadMemoryForSimulation, formatMemoryContext, formatAgentMemory, type MemoryPayload } from '../memory/core-memory';
 import { saveExperience, getUserExperiences, formatExperiencesForContext } from '../memory/experiences';
 import { cognify } from '../memory/knowledge-graph';
+import { buildAllAgentKnowledge } from '../memory/agent-knowledge';
 import { extractOpinionsAndObservations, applyOpinionActions, saveObservations, getUserOpinions, getUserObservations, formatOpinionsForContext, formatObservationsForContext } from '../memory/opinions';
 import type { AdvisorPersona } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
@@ -116,6 +117,7 @@ function buildDebateContext(
   fieldScans?: FieldScan[],
   memory?: MemoryPayload,
   networkMemory?: string,
+  agentKnowledge?: string,
 ): string {
   // Memory injection — FIRST in context so agents always see it
   let memorySection = '';
@@ -123,6 +125,10 @@ function buildDebateContext(
     memorySection = formatMemoryContext(memory);
     memorySection += formatAgentMemory(memory, currentAgentId);
     if (networkMemory) memorySection += networkMemory;
+  }
+  // Per-agent knowledge (MiroFish individual memory) — after shared, before debate
+  if (agentKnowledge) {
+    memorySection += agentKnowledge;
   }
 
   const reports = Array.from(state.latest_reports.entries());
@@ -305,6 +311,19 @@ export async function* runSimulation(
       }
     } catch (err) {
       console.error('[memory:4net] Load failed (non-blocking):', err);
+    }
+  }
+
+  // ═══ PER-AGENT KNOWLEDGE (MiroFish individual memory) ═══
+  let agentKnowledgeMap = new Map<string, string>();
+  if (options?.userId) {
+    try {
+      agentKnowledgeMap = await buildAllAgentKnowledge(options.userId);
+      if (agentKnowledgeMap.size > 0) {
+        console.log(`[memory:agent-knowledge] Loaded personalized context for ${agentKnowledgeMap.size} agents`);
+      }
+    } catch (err) {
+      console.error('[memory:agent-knowledge] Load failed (non-blocking):', err);
     }
   }
 
@@ -496,7 +515,7 @@ export async function* runSimulation(
 
   {
     const batchPromises = deepWave1.map(({ agent, task }) => {
-      const debateCtx = buildDebateContext(state, agent.id, undefined, undefined, fieldScans, memory, networkMemoryText);
+      const debateCtx = buildDebateContext(state, agent.id, undefined, undefined, fieldScans, memory, networkMemoryText, agentKnowledgeMap.get(agent.id) || '');
       return callAgent(
         agent,
         `Question: ${question}\n\nYour task: ${task}\n\n${debateCtx}\n\nAnalyze from your perspective as ${agent.role}. Be specific with data. Respond with valid JSON only.`,
@@ -555,7 +574,7 @@ export async function* runSimulation(
 
   {
     const batchPromises = deepWave2.map(({ agent, task }) => {
-      const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText);
+      const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText, agentKnowledgeMap.get(agent.id) || '');
       return callAgent(
         agent,
         `Question: ${question}\n\nYour task: ${task}\n\n${debateCtx}\n\nAnalyze from your perspective as ${agent.role}. Be specific with data. Respond with valid JSON only.`,
@@ -635,7 +654,7 @@ export async function* runSimulation(
   const quickBatch2 = quickAgentTasks.slice(3);
 
   const quickBatch1Promises = quickBatch1.map(({ agent, task }) => {
-    const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText);
+    const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText, agentKnowledgeMap.get(agent.id) || '');
     return callAgentWithRetry(
       agent,
       `Question: ${question}\n\n${debateCtx}\n\nAs ${agent.role}, add your perspective. Focus on what others MISSED or got wrong. React to their specific arguments. Respond with valid JSON only.`,
@@ -648,7 +667,7 @@ export async function* runSimulation(
   await wait(500);
 
   const quickBatch2Promises = quickBatch2.map(({ agent, task }) => {
-    const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText);
+    const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText, agentKnowledgeMap.get(agent.id) || '');
     return callAgentWithRetry(
       agent,
       `Question: ${question}\n\n${debateCtx}\n\nAs ${agent.role}, add your perspective. Focus on what others MISSED or got wrong. React to their specific arguments. Respond with valid JSON only.`,
@@ -772,7 +791,7 @@ export async function* runSimulation(
 
       if (targetAgent) {
         try {
-          const devilCtx = buildDebateContext(state, targetAgent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText);
+          const devilCtx = buildDebateContext(state, targetAgent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText, agentKnowledgeMap.get(targetAgent.id) || '');
           const devilReport = await callAgent(
             targetAgent,
             `Question: ${question}\n\n${devilCtx}\n\nAll agents currently agree on "${majorityPosition}". The Decision Chair is forcing a devil's advocate round. As ${targetAgent.role}, present the STRONGEST possible argument AGAINST "${majorityPosition}". Reference specific claims from other agents and explain why they're wrong or incomplete. What could go catastrophically wrong? Respond with valid JSON only.`,
@@ -809,7 +828,7 @@ export async function* runSimulation(
     const challengerReport = allReports.find((r) => r.agent_id === pair.challenger_id);
 
     try {
-      const challengerCtx = buildDebateContext(state, pair.challenger_id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText);
+      const challengerCtx = buildDebateContext(state, pair.challenger_id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText, agentKnowledgeMap.get(pair.challenger_id) || '');
       const challengeReport = await callAgent(
         challengerAgent,
         `Question: ${question}\n\n${challengerCtx}\n\nYou are CHALLENGING ${defenderAgent.name}'s position. They said: "${defenderReport?.key_argument || 'their position'}"\n\nAttack their weakest point with specific counter-evidence. Reference what other agents said to support your challenge. Be direct. Respond with valid JSON only.`,
@@ -824,7 +843,7 @@ export async function* runSimulation(
     }
 
     try {
-      const defenderCtx = buildDebateContext(state, pair.defender_id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText);
+      const defenderCtx = buildDebateContext(state, pair.defender_id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText, agentKnowledgeMap.get(pair.defender_id) || '');
       const defenseReport = await callAgent(
         defenderAgent,
         `Question: ${question}\n\n${defenderCtx}\n\n${challengerAgent.name} CHALLENGED your position: "${challengerReport?.key_argument || 'disagreement'}"\n\nDefend your position with stronger evidence, or update your position if the challenge is valid. Be honest \u2014 if you changed your mind, say what convinced you. Respond with valid JSON only.`,
@@ -875,7 +894,7 @@ export async function* runSimulation(
   const convBatch2 = specialists.slice(5);
 
   const convBatch1Promises = convBatch1.map((agent) => {
-    const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText);
+    const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText, agentKnowledgeMap.get(agent.id) || '');
     return callAgentWithRetry(
       agent,
       `Question: ${question}\n\n${convergenceCtx}\n\nThe debate is concluding. Declare your FINAL position. If you changed your mind from your earlier analysis, explain what argument convinced you. Reference specific agents or evidence that influenced your final stance. Respond with valid JSON only.`,
@@ -887,7 +906,7 @@ export async function* runSimulation(
   await wait(500);
 
   const convBatch2Promises = convBatch2.map((agent) => {
-    const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText);
+    const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText, agentKnowledgeMap.get(agent.id) || '');
     return callAgentWithRetry(
       agent,
       `Question: ${question}\n\n${convergenceCtx}\n\nThe debate is concluding. Declare your FINAL position. If you changed your mind from your earlier analysis, explain what argument convinced you. Reference specific agents or evidence that influenced your final stance. Respond with valid JSON only.`,
