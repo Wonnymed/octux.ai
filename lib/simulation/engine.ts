@@ -27,6 +27,7 @@ import {
   type RoundLearning,
 } from '../memory/hooks';
 import { buildSystemPromptFromOverride } from '../memory/prompt-optimizer';
+import { generateCrowdAdvisors, runCrowdRound, synthesizeCrowdSignal, formatCrowdSignal, type CrowdSignal } from './crowd';
 import type { AdvisorPersona } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
 
@@ -56,6 +57,8 @@ export type SimulationSSEEvent =
   | { event: 'reflect_triggered'; data: { sim_count: number } }
   | { event: 'optimization_triggered'; data: { sim_count: number } }
   | { event: 'agent_reflected'; data: { agent_id: string; iterations: number; original_score: number; final_score: number } }
+  | { event: 'crowd_round_started'; data: { advisorCount: number } }
+  | { event: 'crowd_round_complete'; data: CrowdSignal }
   | { event: 'state_summary'; data: any }
   | { event: 'complete'; data: { simulation_id: string } };
 
@@ -1012,6 +1015,26 @@ export async function* runSimulation(
     console.warn(`[engine] WARNING: Only ${uniqueAgentsAfterR9}/10 agents have reports after convergence`);
   }
 
+  // ═══ CROWD ROUND (Pro/Max tiers only) ═══
+  let crowdSignalText = '';
+  const crowdCount = options?.tier === 'max' ? 50 : options?.tier === 'pro' ? 20 : 0;
+
+  if (crowdCount > 0) {
+    const advisors = generateCrowdAdvisors(crowdCount);
+    const specialistSummary = Array.from(state.latest_reports.entries())
+      .map(([id, r]) => `${id}: ${r.position} (${r.confidence}/10)`)
+      .join(', ');
+
+    yield { event: 'crowd_round_started', data: { advisorCount: crowdCount } };
+
+    const votes = await runCrowdRound(question, advisors, memory.coreMemory?.human || '', specialistSummary);
+    const signal = synthesizeCrowdSignal(votes);
+    crowdSignalText = formatCrowdSignal(signal);
+
+    yield { event: 'crowd_round_complete', data: signal };
+    console.log(`[crowd] ${votes.length}/${crowdCount} advisors responded, verdict: ${signal.crowd_verdict} (${signal.consensus_strength})`);
+  }
+
   transitionPhase(state, 'verdict');
 
   // ━━ COMPUTE AGENT CONSENSUS for verdict alignment ━━━━━━━━━
@@ -1060,7 +1083,7 @@ DEBATE PROGRESS:
       ? `\n\nDECISION-MAKER CONTEXT:\n${memory.profile ? memory.profile.profile_text : 'Limited user context available.'}\nPast simulations: ${memory.previousSimCount}\nKnown facts: ${memory.relevantFacts.slice(0, 5).map(f => f.content).join('; ')}${networkMemoryText ? '\n' + networkMemoryText : ''}\n`
       : '';
 
-    const verdictPrompt = `QUESTION: ${question}${memoryForVerdict}\n\nFINAL AGENT POSITIONS:\n${finalSummary}\n\nFULL DEBATE HISTORY (${allReports.length} total reports across all rounds):\n${reportSummaryForChair}\n${taskLedgerSection}${consensusDirective}\n\nSynthesize ALL agent positions into a final Decision Object. Tailor your recommendation to the specific decision-maker's context if known. Weight by confidence and evidence quality. Use the Task Ledger to distinguish verified facts from assumptions — your verdict should rely on VERIFIED facts and flag unresolved assumptions as risks.\n\nRespond with valid JSON only:\n{\n  "recommendation": "proceed" | "proceed_with_conditions" | "delay" | "abandon",\n  "probability": 0-100,\n  "main_risk": "the single biggest risk",\n  "leverage_point": "the one thing that changes everything",\n  "next_action": "specific, actionable, doable this week",\n  "grade": "A" | "B+" | "B" | "C" | "D" | "F",\n  "grade_score": 0-100,\n  "citations": [{ "id": 1, "agent_id": "agent_id", "agent_name": "name", "claim": "specific claim", "confidence": 1-10 }]\n}`;
+    const verdictPrompt = `QUESTION: ${question}${memoryForVerdict}\n\nFINAL AGENT POSITIONS:\n${finalSummary}\n\nFULL DEBATE HISTORY (${allReports.length} total reports across all rounds):\n${reportSummaryForChair}\n${taskLedgerSection}${consensusDirective}${crowdSignalText ? '\n' + crowdSignalText : ''}\n\nSynthesize ALL agent positions into a final Decision Object. Tailor your recommendation to the specific decision-maker's context if known. Weight by confidence and evidence quality. Use the Task Ledger to distinguish verified facts from assumptions — your verdict should rely on VERIFIED facts and flag unresolved assumptions as risks.${crowdSignalText ? ' Consider the crowd signal as an additional data point — it reflects diverse perspectives beyond the specialist panel.' : ''}\n\nRespond with valid JSON only:\n{\n  "recommendation": "proceed" | "proceed_with_conditions" | "delay" | "abandon",\n  "probability": 0-100,\n  "main_risk": "the single biggest risk",\n  "leverage_point": "the one thing that changes everything",\n  "next_action": "specific, actionable, doable this week",\n  "grade": "A" | "B+" | "B" | "C" | "D" | "F",\n  "grade_score": 0-100,\n  "citations": [{ "id": 1, "agent_id": "agent_id", "agent_name": "name", "claim": "specific claim", "confidence": 1-10 }]\n}`;
     const verdictRaw = await callClaude({
       systemPrompt: chair.systemPrompt,
       userMessage: verdictPrompt,
