@@ -3,6 +3,9 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { createBrowserClient } from '@/lib/auth/supabase-client';
 import AuthModal from './AuthModal';
+import CommandPalette from '@/app/components/shell/CommandPalette';
+import { useCommandPalette } from '@/hooks/useCommandPalette';
+import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 import type { User } from '@supabase/supabase-js';
 
 type AuthContextType = {
@@ -28,6 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const supabase = createBrowserClient();
+  const { isOpen: paletteOpen, open: openPalette, close: closePalette } = useCommandPalette();
+  useGlobalShortcuts(openPalette);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -63,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, signOut, checkGuestLimit }}>
       {children}
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onAuthSuccess={() => { setShowAuthModal(false); localStorage.removeItem(GUEST_SIM_KEY); }} />
+      <CommandPalette isOpen={paletteOpen} onClose={closePalette} />
     </AuthContext.Provider>
   );
 }
