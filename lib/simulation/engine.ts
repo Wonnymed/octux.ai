@@ -17,6 +17,7 @@ import { extractAndSaveFacts, applyFactActions, parseQuestionForFacts } from '..
 import { maybeRegenerateProfile } from '../memory/profile';
 import { loadMemoryForSimulation, formatMemoryContext, formatAgentMemory, type MemoryPayload } from '../memory/core-memory';
 import { saveExperience, getUserExperiences, formatExperiencesForContext } from '../memory/experiences';
+import { cognify } from '../memory/knowledge-graph';
 import { extractOpinionsAndObservations, applyOpinionActions, saveObservations, getUserOpinions, getUserObservations, formatOpinionsForContext, formatObservationsForContext } from '../memory/opinions';
 import type { AdvisorPersona } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
@@ -43,6 +44,7 @@ export type SimulationSSEEvent =
   | { event: 'blind_spots'; data: BlindSpotAnalysis }
   | { event: 'evaluation'; data: SimulationEval }
   | { event: 'memory_loaded'; data: { isReturningUser: boolean; factCount: number; hasProfile: boolean; previousSimCount: number } }
+  | { event: 'knowledge_graph_started'; data: { simulation_id: string } }
   | { event: 'state_summary'; data: any }
   | { event: 'complete'; data: { simulation_id: string } };
 
@@ -1281,6 +1283,34 @@ DEBATE PROGRESS:
     } catch (err) {
       console.error('[hindsight] Opinion/observation extraction error (non-fatal):', err);
     }
+  }
+
+  // ═══ KNOWLEDGE GRAPH — cognify (Cognee pattern) ═══
+  if (options?.userId) {
+    yield { event: 'knowledge_graph_started', data: { simulation_id: simId } };
+
+    const verdictSummary = verdict
+      ? `Recommendation: ${(verdict as Record<string, unknown>).recommendation}. Probability: ${(verdict as Record<string, unknown>).probability}%. Risk: ${(verdict as Record<string, unknown>).main_risk}. Action: ${(verdict as Record<string, unknown>).next_action}.`
+      : 'No verdict generated.';
+
+    const agentSummaries = Array.from(state.latest_reports.entries())
+      .map(([agentId, report]) =>
+        `${report.agent_name || agentId} (${report.position}, ${report.confidence}/10): ${report.key_argument}`
+      )
+      .join('\n');
+
+    // Fire and forget — don't block SSE stream completion
+    cognify(
+      options.userId,
+      simId,
+      question,
+      verdictSummary,
+      agentSummaries
+    ).then(result => {
+      console.log(`[cognify] Complete: ${result.entity_count} entities, ${result.relation_count} relations`);
+    }).catch(err => {
+      console.error('[cognify] Background error (non-blocking):', err);
+    });
   }
 
   yield { event: 'complete', data: { simulation_id: simId } };

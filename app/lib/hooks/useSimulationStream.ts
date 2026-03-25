@@ -373,6 +373,10 @@ function processEvent(
       setState((s) => ({ ...s, memory: data as SimulationStreamState['memory'] }));
       break;
 
+    case "knowledge_graph_started":
+      console.log('Knowledge graph extraction started for sim:', (data as Record<string, unknown>).simulation_id);
+      break;
+
     case "state_summary":
       setState((s) => ({ ...s, stateSummary: data }));
       break;

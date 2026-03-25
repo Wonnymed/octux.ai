@@ -6,6 +6,7 @@ import { getUserFacts, type UserFact } from './facts';
 import { getDecisionProfile, type DecisionProfile } from './profile';
 import { getUserSimulations } from './persistence';
 import { getUserOpinions, getUserObservations } from './opinions';
+import { formatGraphForContext } from './knowledge-graph';
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -25,6 +26,7 @@ export type MemoryPayload = {
   isReturningUser: boolean;
   opinions: { belief: string; confidence: number; domain: string }[];
   observations: { pattern: string; strength: number }[];
+  graphContext: string;
 };
 
 // ── Build Core Memory Blocks (Letta) ───────────────────────
@@ -153,28 +155,36 @@ export async function loadMemoryForSimulation(
       isReturningUser: false,
       opinions: [],
       observations: [],
+      graphContext: '',
     };
   }
 
-  const [facts, profile, simHistory, opinions, observations] = await Promise.all([
+  const [facts, profile, simHistory, opinions, observations, graphContext] = await Promise.all([
     getUserFacts(userId, 50),
     getDecisionProfile(userId),
     getUserSimulations(userId, 10),
     getUserOpinions(userId, 10),
     getUserObservations(userId, 10),
+    formatGraphForContext(userId, 10, 8),
   ]);
 
   const scoredFacts = scoreFacts(facts, question);
   const coreMemory = buildCoreMemory(profile, facts, simHistory);
 
+  // Enrich business block with knowledge graph
+  const businessWithGraph = graphContext
+    ? `${coreMemory.business}\n${graphContext}`
+    : coreMemory.business;
+
   return {
-    coreMemory,
+    coreMemory: { ...coreMemory, business: businessWithGraph },
     relevantFacts: scoredFacts,
     profile,
     previousSimCount: simHistory.length,
     isReturningUser: simHistory.length > 0,
     opinions: (opinions as { belief: string; confidence: number; domain: string }[]),
     observations: (observations as { pattern: string; strength: number }[]),
+    graphContext,
   };
 }
 
