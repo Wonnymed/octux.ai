@@ -1253,6 +1253,7 @@ DEBATE PROGRESS:
     }
 
     // Hindsight Networks 3 & 4: Extract and apply opinions + observations
+    console.log(`[hindsight] Starting opinion/observation extraction for sim ${simId}`);
     try {
       const existingOpinions = await getUserOpinions(options.userId, 20);
       const { opinions, observations } = await extractOpinionsAndObservations(

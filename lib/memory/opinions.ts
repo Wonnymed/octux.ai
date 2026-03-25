@@ -96,8 +96,11 @@ Extract opinions and observations. JSON:
   });
 
   try {
-    return parseJSON<{ opinions: OpinionAction[]; observations: ObservationAction[] }>(response);
-  } catch {
+    const result = parseJSON<{ opinions: OpinionAction[]; observations: ObservationAction[] }>(response);
+    console.log(`[opinions] Extracted ${result.opinions?.length || 0} opinions, ${result.observations?.length || 0} observations`);
+    return result;
+  } catch (err) {
+    console.error('[opinions] JSON parse failed. Raw response:', response.substring(0, 500), 'Error:', err);
     return { opinions: [], observations: [] };
   }
 }
