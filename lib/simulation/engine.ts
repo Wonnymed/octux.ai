@@ -29,6 +29,7 @@ import {
 import { buildSystemPromptFromOverride } from '../memory/prompt-optimizer';
 import { generateCrowdAdvisors, runCrowdRound, synthesizeCrowdSignal, formatCrowdSignal, type CrowdSignal } from './crowd';
 import { selectRelevantAgents, calculateAgentBudget, type AgentSelection } from './agent-selection';
+import { extractVerdictClaims, type ConfidenceHeatmap } from './confidence-heatmap';
 import type { AdvisorPersona } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
 
@@ -58,6 +59,7 @@ export type SimulationSSEEvent =
   | { event: 'reflect_triggered'; data: { sim_count: number } }
   | { event: 'optimization_triggered'; data: { sim_count: number } }
   | { event: 'agent_reflected'; data: { agent_id: string; iterations: number; original_score: number; final_score: number } }
+  | { event: 'confidence_heatmap'; data: ConfidenceHeatmap }
   | { event: 'agents_selected'; data: { active: { id: string; reason: string; priority: string }[]; skipped: { id: string; reason: string }[]; tokensPerAgent: number } }
   | { event: 'crowd_round_started'; data: { advisorCount: number } }
   | { event: 'crowd_round_complete'; data: CrowdSignal }
@@ -1231,6 +1233,17 @@ DEBATE PROGRESS:
       claim: c.claim,
       confidence: c.confidence,
     }));
+  }
+
+  // ═══ CONFIDENCE HEATMAP — decompose verdict into graded claims ═══
+  try {
+    const heatmap = await extractVerdictClaims(question, verdict, state.latest_reports);
+    if (heatmap.total_claims > 0) {
+      (verdict as any).confidence_heatmap = heatmap;
+      yield { event: 'confidence_heatmap', data: heatmap };
+    }
+  } catch (err) {
+    console.error('[heatmap] extraction failed (non-fatal):', err);
   }
 
   state.verdict = verdict;
