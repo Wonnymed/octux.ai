@@ -79,17 +79,17 @@ export async function searchAgents(query: string, limit: number = 20): Promise<L
 // ═══ AUTO-SUGGEST — Domain → recommended agents ═══
 
 const DOMAIN_AGENT_MAP: Record<string, { category: string; count: number }[]> = {
-  business:      [{ category: 'business', count: 8 }],
+  business:      [{ category: 'business', count: 7 }, { category: 'career', count: 3 }],
   investment:    [{ category: 'investment', count: 8 }, { category: 'business', count: 2 }],
-  career:        [{ category: 'career', count: 6 }, { category: 'business', count: 2 }],
-  relationships: [{ category: 'relationships', count: 8 }],
-  legal:         [{ category: 'legal', count: 6 }, { category: 'business', count: 2 }],
-  health:        [{ category: 'health', count: 6 }, { category: 'personal', count: 2 }],
-  technology:    [{ category: 'technology', count: 6 }, { category: 'business', count: 2 }],
-  education:     [{ category: 'education', count: 6 }, { category: 'career', count: 2 }],
-  real_estate:   [{ category: 'real_estate', count: 6 }, { category: 'investment', count: 2 }],
-  personal:      [{ category: 'personal', count: 6 }, { category: 'relationships', count: 2 }],
-  general:       [{ category: 'business', count: 5 }, { category: 'personal', count: 3 }],
+  career:        [{ category: 'career', count: 7 }, { category: 'business', count: 3 }],
+  relationships: [{ category: 'relationships', count: 8 }, { category: 'life', count: 2 }],
+  legal:         [{ category: 'business', count: 5 }, { category: 'life', count: 3 }, { category: 'career', count: 2 }],
+  health:        [{ category: 'life', count: 7 }, { category: 'relationships', count: 3 }],
+  technology:    [{ category: 'business', count: 5 }, { category: 'investment', count: 3 }, { category: 'career', count: 2 }],
+  education:     [{ category: 'career', count: 6 }, { category: 'life', count: 4 }],
+  real_estate:   [{ category: 'investment', count: 6 }, { category: 'business', count: 4 }],
+  personal:      [{ category: 'life', count: 6 }, { category: 'relationships', count: 4 }],
+  general:       [{ category: 'life', count: 3 }, { category: 'business', count: 3 }, { category: 'investment', count: 2 }, { category: 'career', count: 2 }],
 };
 
 export async function suggestAgentsForDomain(domain: string): Promise<LibraryAgent[]> {
