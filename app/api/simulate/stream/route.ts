@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { runSimulation } from "@/lib/simulation/engine";
-import { getUserIdFromRequest } from "@/lib/auth/supabase-client";
+import { getUserIdFromRequest } from "@/lib/auth/supabase-server";
 
 /* ═══════════════════════════════════════
    POST /api/simulate/stream

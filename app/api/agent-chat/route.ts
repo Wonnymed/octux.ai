@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { chatWithAgent, type AgentChatMessage } from '@/lib/agent-chat/chat';
-import { getUserIdFromRequest } from '@/lib/auth/supabase-client';
+import { getUserIdFromRequest } from '@/lib/auth/supabase-server';
 
 export async function POST(req: NextRequest) {
   try {

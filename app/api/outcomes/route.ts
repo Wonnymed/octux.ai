@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recordOutcome, getCalibrationData } from '@/lib/memory/outcomes';
-import { getUserIdFromRequest } from '@/lib/auth/supabase-client';
+import { getUserIdFromRequest } from '@/lib/auth/supabase-server';
 
 export async function POST(req: NextRequest) {
   const { userId } = await getUserIdFromRequest(req);

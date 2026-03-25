@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAuthServerClient } from '@/lib/auth/supabase-client';
+import { createAuthServerClient } from '@/lib/auth/supabase-server';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOptimizationReport } from '@/lib/memory/multi-optimizer';
-import { getUserIdFromRequest } from '@/lib/auth/supabase-client';
+import { getUserIdFromRequest } from '@/lib/auth/supabase-server';
 
 export async function GET(req: NextRequest) {
   const { userId } = await getUserIdFromRequest(req);
