@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/design/cn';
 import { OctAvatar, OctBadge } from '@/components/ui';
+import { CitatedText } from '@/components/citations';
 import type { StreamingAgent } from '@/lib/hooks/useSimulationStream';
 
 interface AgentStreamCardProps {
@@ -108,7 +109,12 @@ export default function AgentStreamCard({ agent, index, className }: AgentStream
           {agent.key_argument && (
             <div>
               <span className="text-micro font-medium text-txt-tertiary">Key Argument</span>
-              <p className="text-xs text-txt-secondary leading-relaxed mt-0.5">{agent.key_argument}</p>
+              <CitatedText
+                text={agent.key_argument || ''}
+                citations={[]}
+                className="text-xs text-txt-secondary leading-relaxed mt-0.5"
+                as="p"
+              />
             </div>
           )}
 

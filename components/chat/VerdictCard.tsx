@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { cn } from '@/lib/design/cn';
 import { OctBadge, OctButton, OctCard } from '@/components/ui';
 import { CircularProgress } from '@/components/ui';
-import { CitationHover } from '@/components/ui';
+import { CitatedText, CitationFootnotes } from '@/components/citations';
+import { type Citation } from '@/lib/citations/types';
 import { verdictColors, gradeColors } from '@/lib/design/tokens';
 
 interface VerdictCardProps {
@@ -24,6 +25,12 @@ export default function VerdictCard({ verdict, simulationId, conversationId, onR
   const grade = verdict.grade || 'C';
   const vColor = verdictColors[recommendation as keyof typeof verdictColors] || verdictColors.proceed;
   const gColor = gradeColors[grade] || gradeColors['C'];
+
+  const handleAgentChat = (agentId: string, agentName: string) => {
+    window.dispatchEvent(new CustomEvent('octux:agent-chat', {
+      detail: { agentId, agentName, simulationId, conversationId }
+    }));
+  };
 
   return (
     <div className="mb-4 animate-scale-in">
@@ -58,22 +65,40 @@ export default function VerdictCard({ verdict, simulationId, conversationId, onR
             </div>
 
             {/* One-liner with citations */}
-            <p className="text-sm text-txt-primary leading-relaxed mb-2">
-              {renderWithCitations(verdict.one_liner || verdict.summary || '', verdict.citations)}
-            </p>
+            <CitatedText
+              text={verdict.one_liner || verdict.summary || ''}
+              citations={verdict.citations as Citation[]}
+              simulationId={simulationId || undefined}
+              conversationId={conversationId}
+              onAgentChat={handleAgentChat}
+              className="text-sm text-txt-primary leading-relaxed mb-2"
+              as="p"
+            />
 
             {/* Risk + Action */}
             <div className="space-y-1.5">
               {verdict.main_risk && (
                 <div className="flex items-start gap-2">
                   <span className="text-micro font-medium text-verdict-abandon shrink-0 mt-0.5">RISK</span>
-                  <span className="text-xs text-txt-secondary">{verdict.main_risk}</span>
+                  <CitatedText
+                    text={verdict.main_risk}
+                    citations={verdict.citations as Citation[]}
+                    simulationId={simulationId || undefined}
+                    onAgentChat={handleAgentChat}
+                    className="text-xs text-txt-secondary"
+                  />
                 </div>
               )}
               {verdict.next_action && (
                 <div className="flex items-start gap-2">
                   <span className="text-micro font-medium text-verdict-proceed shrink-0 mt-0.5">ACTION</span>
-                  <span className="text-xs text-txt-secondary">{verdict.next_action}</span>
+                  <CitatedText
+                    text={verdict.next_action}
+                    citations={verdict.citations as Citation[]}
+                    simulationId={simulationId || undefined}
+                    onAgentChat={handleAgentChat}
+                    className="text-xs text-txt-secondary"
+                  />
                 </div>
               )}
             </div>
@@ -150,43 +175,17 @@ export default function VerdictCard({ verdict, simulationId, conversationId, onR
                 </div>
               </div>
             )}
+
+            {/* Citation footnotes */}
+            {verdict.citations && verdict.citations.length > 0 && (
+              <CitationFootnotes
+                citations={verdict.citations as Citation[]}
+                onAgentChat={handleAgentChat}
+              />
+            )}
           </div>
         )}
       </OctCard>
     </div>
   );
-}
-
-// Render text with [1][2] citation references
-function renderWithCitations(text: string, citations?: any[]) {
-  if (!citations || citations.length === 0) return text;
-
-  const parts = text.split(/(\[\d+\])/g);
-  return parts.map((part, i) => {
-    const match = part.match(/\[(\d+)\]/);
-    if (match && citations) {
-      const idx = parseInt(match[1]) - 1;
-      const citation = citations[idx];
-      if (citation) {
-        return (
-          <CitationHover
-            key={i}
-            citation={{
-              id: idx + 1,
-              agent_name: citation.agent_name || 'Agent',
-              round: citation.round || 0,
-              confidence: citation.confidence || 5,
-              claim: citation.claim || '',
-              evidence: citation.supporting_data,
-            }}
-          >
-            <button className="inline-flex items-center justify-center w-4 h-4 rounded-sm text-[10px] font-medium bg-accent-muted text-accent hover:bg-accent-glow cursor-pointer align-super mx-0.5 transition-colors duration-normal">
-              {idx + 1}
-            </button>
-          </CitationHover>
-        );
-      }
-    }
-    return <span key={i}>{part}</span>;
-  });
 }

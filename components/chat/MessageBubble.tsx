@@ -2,6 +2,8 @@
 
 import { cn } from '@/lib/design/cn';
 import { OctAvatar, OctBadge } from '@/components/ui';
+import { CitatedText } from '@/components/citations';
+import { type Citation } from '@/lib/citations/types';
 
 interface MessageBubbleProps {
   role: 'user' | 'assistant' | 'system';
@@ -12,11 +14,13 @@ interface MessageBubbleProps {
   agentIndex?: number;
   streaming?: boolean;
   timestamp?: string;
+  citations?: Citation[];
+  onAgentChat?: (agentId: string, agentName: string) => void;
 }
 
 export default function MessageBubble({
   role, content, tier, agentName, agentCategory, agentIndex,
-  streaming = false, timestamp,
+  streaming = false, timestamp, citations, onAgentChat,
 }: MessageBubbleProps) {
   if (role === 'user') {
     return (
@@ -75,7 +79,16 @@ export default function MessageBubble({
           'prose-code:text-accent prose-code:bg-surface-2 prose-code:px-1 prose-code:rounded-sm prose-code:text-xs',
           'prose-a:text-accent prose-a:no-underline hover:prose-a:underline',
         )}>
-          <MessageContent content={content} />
+          {citations && citations.length > 0 ? (
+            <CitatedText
+              text={content}
+              citations={citations}
+              onAgentChat={onAgentChat}
+              className="text-sm text-txt-primary leading-relaxed"
+            />
+          ) : (
+            <MessageContent content={content} />
+          )}
           {streaming && <span className="inline-block w-0.5 h-4 bg-accent animate-pulse-accent ml-0.5 align-text-bottom" />}
         </div>
       </div>
