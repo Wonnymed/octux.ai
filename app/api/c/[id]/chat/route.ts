@@ -75,13 +75,21 @@ export async function POST(
     const question = message || body.question;
     if (!question) return NextResponse.json({ error: 'Question required' }, { status: 400 });
 
+    const agentIds: string[] | undefined = body.agentIds;
+    const includeSelf: boolean | undefined = body.includeSelf;
+
     // Save simulation start message
     await addMessage(conversationId, userId, {
       message_type: 'simulation_start',
       role: 'system',
       content: question,
-      structured_data: { tier, question },
+      structured_data: { tier, question, agentIds, includeSelf },
     });
+
+    // Build stream URL with optional params
+    let streamUrl = `/api/simulate/stream?q=${encodeURIComponent(question)}&conversationId=${conversationId}&tier=${tier}`;
+    if (agentIds?.length) streamUrl += `&agentIds=${agentIds.join(',')}`;
+    if (includeSelf) streamUrl += `&includeSelf=true`;
 
     // Return the simulation config — frontend will connect to SSE
     return NextResponse.json({
@@ -89,7 +97,9 @@ export async function POST(
       question,
       conversationId,
       tier,
-      streamUrl: `/api/simulate/stream?q=${encodeURIComponent(question)}&conversationId=${conversationId}&tier=${tier}`,
+      agentIds,
+      includeSelf,
+      streamUrl,
     });
   }
 

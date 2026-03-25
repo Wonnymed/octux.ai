@@ -1,5 +1,6 @@
 import { callClaude, callClaudeWithTools, formatSearchCitations, parseJSON, DEFAULT_MODEL, type SearchCitation, type ToolCallResult } from './claude';
 import { AGENTS, getAgentById } from '../agents/prompts';
+import { getAgentsByIds, suggestAgentsForDomain, buildSelfAgent, libraryAgentToConfig, type LibraryAgent } from '../agents/library';
 import { generateAdvisorPersonas } from '../agents/advisors';
 import { selectRelevantAdvisors, runFieldScan, formatFieldIntelligence, type FieldScan } from './field-intelligence';
 import { createKernel, type OctuxKernel } from './kernel';
@@ -336,7 +337,7 @@ async function callAgent(
 export async function* runSimulation(
   question: string,
   engine: string,
-  options?: { enableCrowdWisdom?: boolean; advisorGuidance?: string; advisorCount?: number; tier?: string; userId?: string; threadId?: string; onHITLCheckpoint?: (checkpoint: any) => Promise<HITLResponse> },
+  options?: { enableCrowdWisdom?: boolean; advisorGuidance?: string; advisorCount?: number; tier?: string; userId?: string; threadId?: string; onHITLCheckpoint?: (checkpoint: any) => Promise<HITLResponse>; agentIds?: string[]; includeSelf?: boolean },
 ): AsyncGenerator<SimulationSSEEvent> {
   const kernel = createKernel();
   const simId = `sim_${Date.now()}`;
@@ -514,12 +515,91 @@ export async function* runSimulation(
     };
   }
 
+  // ═══ DYNAMIC AGENT LIBRARY (P41) — load from DB or fallback to hardcoded ═══
+  // Dynamic agent map: keyed by agent ID, stores AgentConfig for both DB and hardcoded agents
+  const dynamicAgentMap = new Map<string, AgentConfig>();
+
+  // Populate with hardcoded agents as baseline
+  for (const a of AGENTS) {
+    dynamicAgentMap.set(a.id, a);
+  }
+
+  // Try to load dynamic agents from DB if user specified agentIds or domain-based suggestion
+  let usedDynamicAgents = false;
+  if (options?.agentIds && options.agentIds.length > 0) {
+    try {
+      const dbAgents = await getAgentsByIds(options.agentIds);
+      if (dbAgents.length > 0) {
+        for (const la of dbAgents) {
+          dynamicAgentMap.set(la.id, libraryAgentToConfig(la));
+        }
+        usedDynamicAgents = true;
+        console.log(`AGENTS(P41): loaded ${dbAgents.length} user-selected agents from DB: ${dbAgents.map(a => a.id).join(', ')}`);
+      }
+    } catch (err) {
+      console.error('AGENTS(P41): failed to load user-selected agents from DB, using fallback:', err);
+    }
+  } else {
+    // Auto-suggest from DB based on domain
+    try {
+      const suggested = await suggestAgentsForDomain(domainClassification.domain);
+      if (suggested.length > 0) {
+        for (const la of suggested) {
+          dynamicAgentMap.set(la.id, libraryAgentToConfig(la));
+        }
+        usedDynamicAgents = true;
+        console.log(`AGENTS(P41): auto-suggested ${suggested.length} agents for domain "${domainClassification.domain}": ${suggested.map(a => a.id).join(', ')}`);
+      }
+    } catch {
+      console.log('AGENTS(P41): DB auto-suggest unavailable, using hardcoded agents');
+    }
+  }
+
+  // Add self-agent if requested
+  if (options?.includeSelf && options?.userId) {
+    try {
+      const behavioral = await getOrCreateProfile(options.userId);
+      const selfAgent = await buildSelfAgent(options.userId, memory.coreMemory, behavioral);
+      dynamicAgentMap.set(selfAgent.id, libraryAgentToConfig(selfAgent));
+      console.log(`AGENTS(P41): self-agent "${selfAgent.id}" added to simulation`);
+    } catch (err) {
+      console.error('AGENTS(P41): failed to build self-agent:', err);
+    }
+  }
+
+  // Helper: resolve agent by ID from dynamic map first, then hardcoded fallback
+  const resolveAgent = (id: string): AgentConfig => {
+    const fromMap = dynamicAgentMap.get(id);
+    if (fromMap) return fromMap;
+    return getAgentById(id as AgentId);
+  };
+
   // ═══ ADAPTIVE AGENT SELECTION (Free tier: 4-6 agents, Pro/Max: all 10) ═══
   const useAdaptiveSelection = !options?.tier || options.tier === 'free';
   let agentSelection: AgentSelection | null = null;
   let activeAgentIds: Set<string>;
 
-  if (useAdaptiveSelection) {
+  if (options?.agentIds && options.agentIds.length > 0) {
+    // User explicitly chose agents — use those + any self-agent
+    activeAgentIds = new Set(options.agentIds);
+    if (options?.includeSelf && options?.userId) {
+      activeAgentIds.add(`self_${options.userId.substring(0, 12)}`);
+    }
+    yield { event: 'agents_selected', data: {
+      active: [...activeAgentIds].map(id => ({ id, reason: 'user-selected', priority: 'critical' as const })),
+      skipped: [],
+      tokensPerAgent: calculateAgentBudget(activeAgentIds.size).maxTokens,
+    }};
+  } else if (usedDynamicAgents) {
+    // Domain auto-suggested from DB — use those
+    const suggestedIds = [...dynamicAgentMap.keys()].filter(id => id !== 'decision_chair');
+    activeAgentIds = new Set(suggestedIds);
+    yield { event: 'agents_selected', data: {
+      active: suggestedIds.map(id => ({ id, reason: 'domain-suggested', priority: 'important' as const })),
+      skipped: [],
+      tokensPerAgent: calculateAgentBudget(suggestedIds.length).maxTokens,
+    }};
+  } else if (useAdaptiveSelection) {
     try {
       agentSelection = await selectRelevantAgents(
         question,
@@ -545,7 +625,7 @@ export async function* runSimulation(
   const assignedIds = new Set(plan.tasks.map((t) => t.assigned_agent));
   for (const id of allSpecialistIds) {
     if (!assignedIds.has(id)) {
-      const agent = getAgentById(id);
+      const agent = resolveAgent(id);
       plan.tasks.push({
         description: `Analyze this decision from your perspective as ${agent.role}`,
         assigned_agent: id,
@@ -562,7 +642,7 @@ export async function* runSimulation(
     if (deepAgentIds.has(agentId) || agentId === 'decision_chair') continue;
     if (!activeAgentIds.has(agentId)) continue;
     try {
-      const agent = applyPromptOverride(getAgentById(agentId));
+      const agent = applyPromptOverride(resolveAgent(agentId));
       deepAgentTasks.push({ agent, task: t.description });
       deepAgentIds.add(agentId);
     } catch { continue; }
@@ -571,7 +651,7 @@ export async function* runSimulation(
   const quickAgentTasks: { agent: AgentConfig; task: string }[] = [];
   for (const id of allSpecialistIds) {
     if (deepAgentIds.has(id as AgentId)) continue;
-    const agent = applyPromptOverride(getAgentById(id));
+    const agent = applyPromptOverride(resolveAgent(id));
     const planTask = plan.tasks.find((t) => t.assigned_agent === id);
     quickAgentTasks.push({ agent, task: planTask?.description || `Analyze this decision from your perspective as ${agent.role}` });
   }
