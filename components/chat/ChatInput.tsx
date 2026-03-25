@@ -98,6 +98,7 @@ export default function ChatInput({ onSend, placeholder, loading = false, disabl
           {/* Textarea */}
           <textarea
             ref={textareaRef}
+            data-chat-input
             value={value}
             onChange={e => setValue(e.target.value)}
             onKeyDown={handleKeyDown}

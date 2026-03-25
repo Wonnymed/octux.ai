@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/design/cn';
 import { layout } from '@/lib/design/tokens';
+import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import ConversationSidebar from './ConversationSidebar';
 
 interface ChatLayoutProps {
@@ -20,17 +21,14 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Keyboard shortcut: [ to toggle sidebar
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === '[' && !e.metaKey && !e.ctrlKey && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
-        e.preventDefault();
-        setSidebarExpanded(prev => !prev);
-      }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, []);
+  // Central keyboard shortcuts
+  useKeyboardShortcuts({
+    onToggleSidebar: () => setSidebarExpanded(prev => !prev),
+    onFocusInput: () => document.querySelector<HTMLTextAreaElement>('[data-chat-input]')?.focus(),
+    onExpandVerdict: () => window.dispatchEvent(new CustomEvent('octux:toggle-verdict-expand')),
+    onStartDeepSim: () => window.dispatchEvent(new CustomEvent('octux:auto-simulate', { detail: { tier: 'deep' } })),
+    onStartKrakenSim: () => window.dispatchEvent(new CustomEvent('octux:auto-simulate', { detail: { tier: 'kraken' } })),
+  });
 
   return (
     <div className="flex h-dvh bg-surface-0 overflow-hidden">

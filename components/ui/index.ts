@@ -13,3 +13,6 @@ export { default as OctTabs } from './OctTabs';
 export { default as OctCollapsible } from './OctCollapsible';
 export { default as OctHoverCard, CitationHover } from './OctHoverCard';
 export { default as OctToggle } from './OctToggle';
+export { default as ShortcutOverlay, ShortcutKeys } from './ShortcutOverlay';
+export { default as ShortcutHint } from './ShortcutHint';
+export { default as ShortcutToast } from './ShortcutToast';
