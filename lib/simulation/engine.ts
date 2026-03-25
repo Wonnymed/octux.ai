@@ -1299,18 +1299,19 @@ DEBATE PROGRESS:
       )
       .join('\n');
 
-    // Fire and forget — don't block SSE stream completion
-    cognify(
-      options.userId,
-      simId,
-      question,
-      verdictSummary,
-      agentSummaries
-    ).then(result => {
+    // Must await — serverless shuts down after generator ends
+    try {
+      const result = await cognify(
+        options.userId,
+        simId,
+        question,
+        verdictSummary,
+        agentSummaries
+      );
       console.log(`[cognify] Complete: ${result.entity_count} entities, ${result.relation_count} relations`);
-    }).catch(err => {
-      console.error('[cognify] Background error (non-blocking):', err);
-    });
+    } catch (err) {
+      console.error('[cognify] Error (non-fatal):', err);
+    }
   }
 
   yield { event: 'complete', data: { simulation_id: simId } };
