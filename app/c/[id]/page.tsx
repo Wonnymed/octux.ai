@@ -138,7 +138,7 @@ export default function ConversationPage() {
   }, [conversationId]);
 
   // Simulation completed callback
-  const handleSimulationComplete = useCallback((verdict: any, simulationId: string) => {
+  const handleSimulationComplete = useCallback((verdict: any) => {
     setOctopusState('resting');
     setActiveSimulation(null);
 
@@ -146,7 +146,7 @@ export default function ConversationPage() {
       id: `verdict-${Date.now()}`, message_type: 'simulation_verdict',
       role: 'assistant', content: null,
       structured_data: verdict,
-      model_tier: 'deep', simulation_id: simulationId,
+      model_tier: 'deep', simulation_id: verdict.simulation_id || '',
       created_at: new Date().toISOString(),
     }]);
   }, []);
@@ -203,7 +203,6 @@ export default function ConversationPage() {
             key={msg.id}
             question={msg.content || ''}
             streamUrl={msg.structured_data?.streamUrl}
-            octopusState={octopusState}
             onComplete={handleSimulationComplete}
             onStateChange={(s) => setOctopusState(s as OctopusState)}
           />

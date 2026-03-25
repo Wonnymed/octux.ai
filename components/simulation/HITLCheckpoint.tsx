@@ -1,166 +1,91 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
+import { cn } from '@/lib/design/cn';
+import { OctButton, OctCard, OctInput } from '@/components/ui';
+import type { HITLState } from '@/lib/hooks/useSimulationStream';
 
-type Props = {
-  simulationId: string;
-  assumptions: string[];
-  summary: string;
-  agentPositions: { agent: string; position: string; confidence: number }[];
-  timeoutMs: number;
-  onComplete: () => void;
-};
+interface HITLCheckpointProps {
+  hitl: HITLState;
+  onRespond: (response: { approved: boolean; corrections?: Record<string, string> }) => void;
+  className?: string;
+}
 
-export default function HITLCheckpoint({
-  simulationId, assumptions, summary, agentPositions, timeoutMs, onComplete,
-}: Props) {
-  const [correction, setCorrection] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(Math.round(timeoutMs / 1000));
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const submittedRef = useRef(false);
+export default function HITLCheckpoint({ hitl, onRespond, className }: HITLCheckpointProps) {
+  const [editing, setEditing] = useState(false);
+  const [corrections, setCorrections] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          if (!submittedRef.current) {
-            submittedRef.current = true;
-            handleSubmit('skip');
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  if (!hitl.active) return null;
 
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const handleApprove = () => {
+    onRespond({ approved: true });
+  };
 
-  useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 200);
-  }, []);
-
-  async function handleSubmit(action: 'confirm' | 'correct' | 'skip') {
-    if (submitting || submittedRef.current) return;
-    submittedRef.current = true;
-    setSubmitting(true);
-
-    try {
-      await fetch('/api/simulate/hitl', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          simulationId,
-          action,
-          correction: action === 'correct' ? correction : undefined,
-        }),
-      });
-    } catch (err) {
-      console.error('HITL submit failed:', err);
+  const handleCorrect = () => {
+    if (!editing) {
+      setEditing(true);
+      // Pre-fill corrections with current values
+      const initial: Record<string, string> = {};
+      hitl.assumptions.forEach(a => { initial[a.key] = a.value; });
+      setCorrections(initial);
+      return;
     }
-
-    onComplete();
-  }
+    // Submit corrections
+    const changed: Record<string, string> = {};
+    hitl.assumptions.forEach(a => {
+      if (corrections[a.key] && corrections[a.key] !== a.value) {
+        changed[a.key] = corrections[a.key];
+      }
+    });
+    onRespond({ approved: false, corrections: changed });
+  };
 
   return (
-    <div style={{
-      margin: '16px 0', padding: '24px', borderRadius: '12px',
-      border: '2px solid #7C3AED', background: 'var(--surface-0)',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <div style={{ fontSize: '15px', fontWeight: 500, color: '#7C3AED' }}>
-          Decision Chair is asking for your input
-        </div>
-        <div style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontVariantNumeric: 'tabular-nums' }}>
-          {timeLeft}s remaining
-        </div>
-      </div>
-
-      <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px', lineHeight: 1.6 }}>
-        {summary}
-      </div>
-
-      <div style={{ marginBottom: '16px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-tertiary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Key assumptions being used
-        </div>
-        {assumptions.map((a, i) => (
-          <div key={i} style={{
-            padding: '8px 12px', marginBottom: '4px', borderRadius: '6px',
-            background: 'var(--surface-1)', fontSize: '13px', color: 'var(--text-primary)',
-          }}>
-            {i + 1}. {a}
+    <div className={cn('animate-scale-in', className)}>
+      <OctCard variant="elevated" padding="md" className="border-verdict-delay/30">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-6 h-6 rounded-full bg-verdict-delay/20 flex items-center justify-center">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--verdict-delay)" strokeWidth="1.5">
+              <rect x="2" y="2" width="3" height="8" rx="0.5" />
+              <rect x="7" y="2" width="3" height="8" rx="0.5" />
+            </svg>
           </div>
-        ))}
-      </div>
+          <div>
+            <p className="text-xs font-medium text-txt-primary">Checkpoint — Round {hitl.round}</p>
+            <p className="text-micro text-txt-tertiary">The agents are assuming the following. Is this correct?</p>
+          </div>
+        </div>
 
-      <div style={{ marginBottom: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        {agentPositions.slice(0, 6).map((ap, i) => (
-          <span key={i} style={{
-            padding: '3px 8px', borderRadius: '4px', fontSize: '11px',
-            background: ap.position === 'proceed' ? '#10B98118' : ap.position === 'delay' ? '#F59E0B18' : '#F43F5E18',
-            color: ap.position === 'proceed' ? '#10B981' : ap.position === 'delay' ? '#F59E0B' : '#F43F5E',
-          }}>
-            {ap.agent}: {ap.position} ({ap.confidence}/10)
-          </span>
-        ))}
-      </div>
+        {/* Assumptions */}
+        <div className="space-y-2 mb-4">
+          {hitl.assumptions.map((assumption, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <span className="text-xs text-txt-tertiary w-28 shrink-0">{assumption.key}:</span>
+              {editing ? (
+                <OctInput
+                  inputSize="sm"
+                  value={corrections[assumption.key] || assumption.value}
+                  onChange={e => setCorrections(prev => ({ ...prev, [assumption.key]: e.target.value }))}
+                  className="flex-1"
+                />
+              ) : (
+                <span className="text-xs text-txt-primary font-medium">{assumption.value}</span>
+              )}
+            </div>
+          ))}
+        </div>
 
-      <textarea
-        ref={inputRef}
-        value={correction}
-        onChange={(e) => setCorrection(e.target.value)}
-        placeholder="Correct any wrong assumptions, add context, or specify constraints... (e.g., 'Actually targeting families, not young professionals. Budget is $80K, not $50K.')"
-        style={{
-          width: '100%', minHeight: '80px', padding: '12px', borderRadius: '8px',
-          border: '1px solid var(--border-default)', background: 'var(--surface-0)',
-          fontSize: '14px', resize: 'vertical', outline: 'none',
-          fontFamily: 'inherit', boxSizing: 'border-box',
-        }}
-      />
-
-      <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-        <button
-          onClick={() => handleSubmit('correct')}
-          disabled={submitting || !correction.trim()}
-          style={{
-            flex: 1, padding: '10px', borderRadius: '8px',
-            border: 'none', background: '#7C3AED', color: '#fff',
-            fontSize: '14px', fontWeight: 500,
-            cursor: submitting || !correction.trim() ? 'default' : 'pointer',
-            opacity: submitting || !correction.trim() ? 0.5 : 1,
-          }}
-        >
-          Submit correction
-        </button>
-        <button
-          onClick={() => handleSubmit('confirm')}
-          disabled={submitting}
-          style={{
-            padding: '10px 20px', borderRadius: '8px',
-            border: '1px solid var(--border-default)', background: 'transparent',
-            fontSize: '14px', color: 'var(--text-secondary)',
-            cursor: submitting ? 'default' : 'pointer',
-          }}
-        >
-          All correct, continue
-        </button>
-        <button
-          onClick={() => handleSubmit('skip')}
-          disabled={submitting}
-          style={{
-            padding: '10px 16px', borderRadius: '8px',
-            border: 'none', background: 'transparent',
-            fontSize: '13px', color: 'var(--text-tertiary)',
-            cursor: submitting ? 'default' : 'pointer',
-          }}
-        >
-          Skip
-        </button>
-      </div>
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <OctButton variant="primary" size="sm" onClick={handleApprove}>
+            Everything correct
+          </OctButton>
+          <OctButton variant="secondary" size="sm" onClick={handleCorrect}>
+            {editing ? 'Submit corrections' : 'I need to adjust...'}
+          </OctButton>
+        </div>
+      </OctCard>
     </div>
   );
 }
