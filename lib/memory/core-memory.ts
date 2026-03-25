@@ -5,6 +5,7 @@
 import { getUserFacts, type UserFact } from './facts';
 import { getDecisionProfile, type DecisionProfile } from './profile';
 import { getUserSimulations } from './persistence';
+import { getUserOpinions, getUserObservations } from './opinions';
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -22,6 +23,8 @@ export type MemoryPayload = {
   profile: DecisionProfile | null;
   previousSimCount: number;
   isReturningUser: boolean;
+  opinions: { belief: string; confidence: number; domain: string }[];
+  observations: { pattern: string; strength: number }[];
 };
 
 // ── Build Core Memory Blocks (Letta) ───────────────────────
@@ -148,13 +151,17 @@ export async function loadMemoryForSimulation(
       profile: null,
       previousSimCount: 0,
       isReturningUser: false,
+      opinions: [],
+      observations: [],
     };
   }
 
-  const [facts, profile, simHistory] = await Promise.all([
+  const [facts, profile, simHistory, opinions, observations] = await Promise.all([
     getUserFacts(userId, 50),
     getDecisionProfile(userId),
     getUserSimulations(userId, 10),
+    getUserOpinions(userId, 10),
+    getUserObservations(userId, 10),
   ]);
 
   const scoredFacts = scoreFacts(facts, question);
@@ -166,6 +173,8 @@ export async function loadMemoryForSimulation(
     profile,
     previousSimCount: simHistory.length,
     isReturningUser: simHistory.length > 0,
+    opinions: (opinions as { belief: string; confidence: number; domain: string }[]),
+    observations: (observations as { pattern: string; strength: number }[]),
   };
 }
 
