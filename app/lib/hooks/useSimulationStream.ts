@@ -381,6 +381,10 @@ function processEvent(
       console.log(`Reflect triggered at ${(data as Record<string, unknown>).sim_count} sims`);
       break;
 
+    case "optimization_triggered":
+      console.log(`Memory optimization triggered at ${(data as Record<string, unknown>).sim_count} sims`);
+      break;
+
     case "state_summary":
       setState((s) => ({ ...s, stateSummary: data }));
       break;

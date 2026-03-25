@@ -29,6 +29,7 @@ import {
   clearWorkingBuffer,
 } from '../memory/session';
 import { reflectOnExperiences, shouldReflect } from '../memory/reflect';
+import { runMemoryOptimization } from '../memory/optimize';
 import {
   evaluateAgentPerformance,
   loadAllAgentLessons,
@@ -63,6 +64,7 @@ export type SimulationSSEEvent =
   | { event: 'memory_loaded'; data: { isReturningUser: boolean; factCount: number; hasProfile: boolean; previousSimCount: number; hasRecalledMemories: boolean; hasThreadHistory: boolean; threadId: string | null; hasAgentLessons: boolean } }
   | { event: 'knowledge_graph_started'; data: { simulation_id: string } }
   | { event: 'reflect_triggered'; data: { sim_count: number } }
+  | { event: 'optimization_triggered'; data: { sim_count: number } }
   | { event: 'state_summary'; data: any }
   | { event: 'complete'; data: { simulation_id: string } };
 
@@ -1475,6 +1477,17 @@ DEBATE PROGRESS:
         }
       })
       .catch(err => console.error('REFLECT error (non-blocking):', err));
+  }
+
+  // ═══ MEMORY OPTIMIZATION: consolidate + prune + strengthen every 10 sims ═══
+  if (options?.userId) {
+    runMemoryOptimization(options.userId)
+      .then(result => {
+        if (result.consolidated > 0 || result.pruned > 0 || result.strengthened > 0 || result.derived > 0) {
+          console.log(`OPTIMIZE: consolidated=${result.consolidated}, pruned=${result.pruned}, strengthened=${result.strengthened}, derived=${result.derived}`);
+        }
+      })
+      .catch(err => console.error('OPTIMIZE error (non-blocking):', err));
   }
 
   yield { event: 'complete', data: { simulation_id: simId } };
