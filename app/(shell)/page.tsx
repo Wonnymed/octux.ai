@@ -98,7 +98,7 @@ export default function HomePage() {
     <>
       {/* ═══ ABOVE THE FOLD — Product ═══ */}
       <div className="min-h-dvh flex flex-col">
-        <div className="flex-1 flex flex-col items-center justify-center px-6 relative">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative">
           {/* Background glow */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-accent/[0.03] blur-[100px]" />

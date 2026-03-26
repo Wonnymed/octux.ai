@@ -436,7 +436,7 @@ function VerdictDot({ verdict, hasSim, pinned }: {
   }
 
   if (!hasSim) {
-    return <MessageSquare size={13} className="shrink-0 text-icon-secondary opacity-45" />;
+    return <MessageSquare size={13} className="shrink-0 text-txt-tertiary" />;
   }
 
   const colorMap: Record<string, string> = {

@@ -81,17 +81,17 @@ export default function EntityVisual({ state, compact = false, className }: Enti
 
   // Full entity visual (new conversation / empty state)
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-4 py-12', className)}>
+    <div className={cn('flex flex-col items-center justify-center gap-3 py-6', className)}>
       {/* Entity glow background */}
       <div className="relative">
         <div className="absolute inset-0 oct-entity-bg scale-150 opacity-50" />
         <div className={cn(
-          'relative w-20 h-20 rounded-full flex items-center justify-center',
+          'relative w-16 h-16 rounded-full flex items-center justify-center',
           'bg-gradient-to-br from-accent/80 to-entity-bioluminescent/60',
           'transition-all duration-entity ease-out',
           s.scale, s.glow, s.breathe,
         )}>
-          <span className="text-3xl">🐙</span>
+          <span className="text-2xl">🐙</span>
         </div>
       </div>
 

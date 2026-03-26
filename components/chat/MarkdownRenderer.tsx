@@ -30,6 +30,10 @@ function parseMarkdown(text: string): string {
 
   let html = escapeHtml(text);
 
+  // Horizontal rules (---, ***, ___)
+  html = html.replace(/^(---|&mdash;{3}|\*\*\*|___)\s*$/gm,
+    '<hr class="my-3 border-t border-border-subtle" />');
+
   // Code blocks (```...```)
   html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (_match, _lang, code) => {
     return `<pre class="my-2 p-3 rounded-lg bg-surface-2 border border-border-subtle overflow-x-auto"><code class="text-xs font-mono text-txt-secondary">${code.trim()}</code></pre>`;
@@ -47,9 +51,10 @@ function parseMarkdown(text: string): string {
   // Links [text](url) — only allow http/https
   html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline">$1</a>');
 
-  // Headings (### → h4, ## → h3)
-  html = html.replace(/^### (.+)$/gm, '<h4 class="font-semibold text-txt-primary mt-3 mb-1 text-sm">$1</h4>');
-  html = html.replace(/^## (.+)$/gm, '<h3 class="font-semibold text-txt-primary mt-3 mb-1">$1</h3>');
+  // Headings (### → h4, ## → h3, # → h2)
+  html = html.replace(/^### (.+)$/gm, '<h4 class="font-medium text-txt-primary mt-2 mb-1 text-sm">$1</h4>');
+  html = html.replace(/^## (.+)$/gm, '<h3 class="font-semibold text-txt-primary mt-3 mb-1.5 text-sm">$1</h3>');
+  html = html.replace(/^# (.+)$/gm, '<h2 class="font-semibold text-txt-primary mt-4 mb-2 text-base">$1</h2>');
 
   // Unordered lists (- item)
   html = html.replace(/^- (.+)$/gm, '<li class="ml-4 list-disc text-txt-secondary">$1</li>');

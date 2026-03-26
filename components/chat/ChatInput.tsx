@@ -109,19 +109,18 @@ export default function ChatInput({
   // ─── CHIP CLICK ───
   const handleChipClick = useCallback(
     (text: string) => {
-      setValue(text);
-      setHasContent(true);
-      textareaRef.current?.focus();
-      // Auto-send after brief moment
-      setTimeout(() => {
-        if (onSend) {
-          onSend(text, { tier: selectedTier });
-          setValue('');
-          setHasContent(false);
-        }
-      }, 150);
+      if (sending) return;
+      if (onSend) {
+        // Direct send — don't set value (prevents Enter key double-send)
+        onSend(text, { tier: selectedTier });
+      } else {
+        // Fill input for Zustand path
+        setValue(text);
+        setHasContent(true);
+        textareaRef.current?.focus();
+      }
     },
-    [selectedTier, onSend],
+    [selectedTier, onSend, sending],
   );
 
   // ─── TIER CLICK ───
@@ -177,8 +176,8 @@ export default function ChatInput({
                   disabled={sending}
                   className={cn(
                     'px-3 py-1.5 text-xs rounded-full border transition-all duration-normal',
-                    'border-border-subtle text-txt-tertiary',
-                    'hover:text-txt-secondary hover:border-border-default hover:bg-surface-2/50',
+                    'border-border-default text-txt-secondary',
+                    'hover:text-txt-primary hover:border-accent/30 hover:bg-surface-2/50',
                     'active:scale-[0.97]',
                     'disabled:opacity-40 disabled:cursor-not-allowed',
                   )}
