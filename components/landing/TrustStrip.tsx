@@ -14,8 +14,8 @@ export default function TrustStrip() {
         </div>
 
         {/* Tech logos */}
-        <div className="flex items-center justify-center gap-6 sm:gap-10">
-          <span className="text-micro text-txt-disabled">Built with</span>
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:gap-x-6">
+          <span className="text-micro shrink-0 text-txt-disabled">Built with</span>
           <TechLogo name="Anthropic Claude" />
           <TechLogo name="Next.js" />
           <TechLogo name="Supabase" />

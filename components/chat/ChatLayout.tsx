@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/design/cn';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useAppStore } from '@/lib/store/app';
@@ -8,26 +9,79 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import Sidebar from '@/components/sidebar/Sidebar';
 import { Menu } from 'lucide-react';
 
+/** Matches Tailwind `md:` — sidebar is overlay below this width */
+const MD_BREAKPOINT = 768;
+
 interface ChatLayoutProps {
   children: React.ReactNode;
 }
 
 export default function ChatLayout({ children }: ChatLayoutProps) {
-  const [isMobile, setIsMobile] = useState(false);
+  const pathname = usePathname();
+  const [viewport, setViewport] = useState<'mobile' | 'desktop' | null>(null);
+
   const sidebarExpanded = useAppStore((s) => s.sidebarExpanded);
   const setSidebarExpanded = useAppStore((s) => s.setSidebarExpanded);
+  const toggleSidebar = useAppStore((s) => s.toggleSidebar);
   const { isAuthenticated, isLoading } = useAuth();
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
+  const isMobile = viewport === 'mobile';
 
-  // Central keyboard shortcuts
+  // Before paint: detect viewport and force mobile drawer closed on load (store defaults to expanded).
+  /* eslint-disable react-hooks/set-state-in-effect -- intentional sync with window + Zustand before first paint */
+  useLayoutEffect(() => {
+    const mobile = window.innerWidth < MD_BREAKPOINT;
+    setViewport(mobile ? 'mobile' : 'desktop');
+    if (mobile) {
+      setSidebarExpanded(false);
+    }
+  }, [setSidebarExpanded]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Resize: sync viewport + collapse overlay when entering mobile
+  useEffect(() => {
+    const onResize = () => {
+      const mobile = window.innerWidth < MD_BREAKPOINT;
+      setViewport(mobile ? 'mobile' : 'desktop');
+      if (mobile) {
+        setSidebarExpanded(false);
+      }
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [setSidebarExpanded]);
+
+  // Mobile: close drawer after navigation (new chat, conversation, tools…)
+  useEffect(() => {
+    if (viewport !== 'mobile') return;
+    setSidebarExpanded(false);
+  }, [pathname, viewport, setSidebarExpanded]);
+
+  // Mobile drawer: Escape to close + lock body scroll
+  useEffect(() => {
+    if (!isMobile || !sidebarExpanded) return;
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setSidebarExpanded(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isMobile, sidebarExpanded, setSidebarExpanded]);
+
+  const openMobileMenu = useCallback(() => setSidebarExpanded(true), [setSidebarExpanded]);
+  const closeMobileMenu = useCallback(() => setSidebarExpanded(false), [setSidebarExpanded]);
+
   useKeyboardShortcuts({
-    onToggleSidebar: () => setSidebarExpanded(!sidebarExpanded),
+    onToggleSidebar: toggleSidebar,
     onFocusInput: () => document.querySelector<HTMLTextAreaElement>('[data-chat-input]')?.focus(),
     onExpandVerdict: () => window.dispatchEvent(new CustomEvent('octux:toggle-verdict-expand')),
     onStartDeepSim: () => window.dispatchEvent(new CustomEvent('octux:auto-simulate', { detail: { tier: 'deep' } })),
@@ -36,43 +90,59 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
 
   const showAuthButtons = !isLoading && !isAuthenticated;
 
-  return (
-    <div className="flex h-dvh bg-surface-0">
-      {/* Sidebar — always visible on desktop */}
-      {!isMobile && <Sidebar />}
+  const showDesktopSidebar = viewport === 'desktop';
+  const showMobileDrawer = viewport === 'mobile' && sidebarExpanded;
 
-      {/* Main content */}
-      <main className="flex-1 flex flex-col min-w-0 relative overflow-x-hidden overflow-y-auto">
-        {/* Top header bar */}
-        <header className="h-12 flex items-center px-4 shrink-0 sticky top-0 z-30 bg-surface-0">
-          {/* Mobile only: open sidebar (desktop uses logo / header toggle inside Sidebar — Okara pattern) */}
+  return (
+    <div className="flex min-h-0 h-[100dvh] overflow-x-hidden bg-surface-0">
+      {/* Desktop sidebar only — never mount on mobile (avoids flash + layout shift) */}
+      {showDesktopSidebar && <Sidebar />}
+
+      <main className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto supports-[padding:max(0px)]:pb-[max(0px,env(safe-area-inset-bottom))]">
+        <header
+          className={cn(
+            'sticky top-0 z-30 flex h-12 shrink-0 items-center bg-surface-0/95 px-3 backdrop-blur-sm supports-[padding:max(0px)]:pt-[max(0px,env(safe-area-inset-top))] sm:px-4',
+            isMobile && 'border-b border-border-subtle/60',
+          )}
+        >
           {isMobile && (
-            <button
-              type="button"
-              onClick={() => setSidebarExpanded(true)}
-              className="p-1.5 rounded-md text-icon-secondary hover:text-icon-primary hover:bg-surface-2 transition-colors duration-normal"
-              aria-label="Open menu"
-            >
-              <Menu size={18} />
-            </button>
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <button
+                type="button"
+                onClick={openMobileMenu}
+                className="rounded-md p-2 text-icon-secondary transition-colors hover:bg-surface-2 hover:text-icon-primary"
+                aria-label="Open menu"
+                aria-expanded={sidebarExpanded}
+              >
+                <Menu size={20} strokeWidth={1.75} />
+              </button>
+              <span className="truncate text-sm font-medium tracking-tight text-txt-primary">octux</span>
+            </div>
           )}
 
-          <div className="flex-1" />
+          {!isMobile && <div className="flex-1" />}
 
-          {/* Right: auth buttons */}
           {showAuthButtons && (
-            <div className="flex items-center gap-2">
+            <div
+              className={cn(
+                'flex items-center gap-2',
+                isMobile && 'ml-auto shrink-0',
+              )}
+            >
               <button
+                type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'login' } }))}
-                className="px-4 py-1.5 text-sm text-txt-secondary hover:text-txt-primary border border-border-default rounded-lg transition-colors duration-normal"
+                className="rounded-lg border border-border-default px-3 py-1.5 text-xs text-txt-secondary transition-colors hover:text-txt-primary sm:px-4 sm:text-sm"
               >
                 Log in
               </button>
               <button
+                type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'signup' } }))}
-                className="px-4 py-1.5 text-sm text-white bg-accent hover:bg-accent-hover rounded-lg transition-colors duration-normal"
+                className="rounded-lg bg-accent px-3 py-1.5 text-xs text-txt-on-accent transition-colors hover:bg-accent-hover sm:px-4 sm:text-sm"
               >
-                Sign up for free
+                <span className="sm:hidden">Sign up</span>
+                <span className="hidden sm:inline">Sign up for free</span>
               </button>
             </div>
           )}
@@ -81,15 +151,25 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
         {children}
       </main>
 
-      {/* Mobile sidebar overlay */}
-      {isMobile && sidebarExpanded && (
+      {/* Mobile: full-screen overlay + drawer from the left */}
+      {showMobileDrawer && (
         <>
-          <div
-            className="fixed inset-0 bg-surface-overlay backdrop-blur-sm z-40 animate-fade-in"
-            onClick={() => setSidebarExpanded(false)}
+          <button
+            type="button"
+            aria-label="Close menu"
+            className="fixed inset-0 z-[100] bg-surface-overlay/70 backdrop-blur-sm animate-fade-in"
+            onClick={closeMobileMenu}
           />
-          <aside className="fixed inset-y-0 left-0 w-72 bg-surface-1 border-r border-border-subtle z-50 animate-slide-in-right">
-            <Sidebar />
+          <aside
+            className={cn(
+              'fixed inset-y-0 left-0 z-[110] flex w-[min(288px,92vw)] max-w-full flex-col',
+              'border-r border-border-subtle bg-surface-1 shadow-xl',
+              'animate-slide-in-left pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]',
+            )}
+          >
+            <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+              <Sidebar />
+            </div>
           </aside>
         </>
       )}

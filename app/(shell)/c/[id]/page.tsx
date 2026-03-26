@@ -108,7 +108,7 @@ export default function ConversationPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
-      className="flex flex-col h-full bg-surface-0"
+      className="flex min-h-0 flex-1 flex-col bg-surface-0"
     >
       {/* ─── MESSAGES AREA ─── */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">

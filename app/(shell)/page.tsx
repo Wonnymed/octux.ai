@@ -97,8 +97,8 @@ export default function HomePage() {
   return (
     <>
       {/* ═══ MAIN CHAT VIEW ═══ */}
-      <div className="min-h-dvh flex flex-col items-center justify-center px-6 relative">
-        <div className="relative z-10 max-w-3xl mx-auto text-center w-full">
+      <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-x-hidden px-4 pb-8 pt-4 sm:px-6 sm:pb-12 sm:pt-8">
+        <div className="relative z-10 mx-auto w-full max-w-3xl text-center">
           {/* Large Logo + Branding */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
