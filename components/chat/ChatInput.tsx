@@ -1,204 +1,335 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback, useState, type KeyboardEvent } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowUp, Lock, Zap } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
-import { OctTooltip } from '@/components/ui';
+import { useChatStore } from '@/lib/store/chat';
+import { useBillingStore } from '@/lib/store/billing';
+import { TIER_CONFIGS, type ModelTier } from '@/lib/chat/tiers';
+import { TOKEN_COSTS } from '@/lib/billing/tiers';
+import {
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from '@/components/ui/shadcn/tooltip';
 
 interface ChatInputProps {
-  onSend: (message: string, options?: { tier?: string; simulate?: boolean }) => void;
+  /** Legacy prop — called on send if provided (used by pages that manage their own state) */
+  onSend?: (message: string, options?: { tier?: string; simulate?: boolean }) => void;
+  /** Zustand-connected: auto-sends via useChatStore.sendMessage */
+  conversationId?: string;
+  /** Show suggestion chips (for empty / new conversations) */
+  showSuggestions?: boolean;
+  /** @deprecated use showSuggestions */
+  isNewConversation?: boolean;
   placeholder?: string;
   loading?: boolean;
   disabled?: boolean;
-  isNewConversation?: boolean;
+  className?: string;
 }
 
 const SUGGESTION_CHIPS = [
-  { text: 'Should I invest in NVIDIA?', category: 'investment' },
-  { text: 'Time to break up or work on it?', category: 'relationships' },
-  { text: 'Quit my 9-5 for a startup?', category: 'career' },
-  { text: 'Open a restaurant in Gangnam?', category: 'business' },
-  { text: 'Move abroad or stay close to family?', category: 'life' },
+  'Should I invest $10K in NVIDIA?',
+  'Time to break up or work on it?',
+  'Quit my 9-5 for a startup?',
+  'Open a restaurant in Gangnam?',
+  'Move abroad or stay close to family?',
 ];
 
-export default function ChatInput({ onSend, placeholder, loading = false, disabled = false, isNewConversation = false }: ChatInputProps) {
-  const [value, setValue] = useState('');
-  const [tier, setTier] = useState<'ink' | 'deep' | 'kraken'>('ink');
+const MAX_ROWS = 6;
+const LINE_HEIGHT = 22;
+
+export default function ChatInput({
+  onSend,
+  conversationId,
+  showSuggestions,
+  isNewConversation,
+  placeholder = 'What decision are you facing?',
+  loading: externalLoading,
+  disabled = false,
+  className,
+}: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize
-  useEffect(() => {
+  // Zustand
+  const selectedTier = useChatStore((s) => s.selectedTier);
+  const setSelectedTier = useChatStore((s) => s.setSelectedTier);
+  const storeSending = useChatStore((s) => s.sending);
+  const storeSendMessage = useChatStore((s) => s.sendMessage);
+
+  const tokensRemaining = useBillingStore((s) => s.tokensRemaining);
+  const canAfford = useBillingStore((s) => s.canAfford);
+
+  // Local state
+  const [value, setValue] = useState('');
+  const [hasContent, setHasContent] = useState(false);
+  const sending = externalLoading ?? storeSending;
+  const chips = showSuggestions ?? isNewConversation ?? false;
+
+  // ─── AUTO-RESIZE ───
+  const autoResize = useCallback(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    const maxH = 160;
-    el.style.height = `${Math.min(el.scrollHeight, maxH)}px`;
-    el.style.overflowY = el.scrollHeight > maxH ? 'auto' : 'hidden';
-  }, [value]);
+    const maxHeight = LINE_HEIGHT * MAX_ROWS;
+    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
+    el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
+  }, []);
 
-  const handleSend = () => {
-    if (!value.trim() || loading || disabled) return;
-    onSend(value.trim(), { tier });
+  useEffect(() => { autoResize(); }, [value, autoResize]);
+
+  // ─── SEND ───
+  const handleSend = useCallback(() => {
+    const message = value.trim();
+    if (!message || sending || disabled) return;
+
+    if (onSend) {
+      onSend(message, { tier: selectedTier });
+    } else if (conversationId) {
+      storeSendMessage(conversationId, message);
+    }
+
     setValue('');
-    // Reset height
+    setHasContent(false);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
-  };
+  }, [value, sending, disabled, selectedTier, onSend, conversationId, storeSendMessage]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+  // ─── KEYBOARD ───
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+    },
+    [handleSend],
+  );
 
-  const handleChipClick = (text: string) => {
-    setValue(text);
-    textareaRef.current?.focus();
-  };
+  // ─── CHIP CLICK ───
+  const handleChipClick = useCallback(
+    (text: string) => {
+      setValue(text);
+      setHasContent(true);
+      textareaRef.current?.focus();
+      // Auto-send after brief moment
+      setTimeout(() => {
+        if (onSend) {
+          onSend(text, { tier: selectedTier });
+          setValue('');
+          setHasContent(false);
+        }
+      }, 150);
+    },
+    [selectedTier, onSend],
+  );
 
-  const showChips = !value && !loading && isNewConversation;
+  // ─── TIER CLICK ───
+  const handleTierClick = useCallback(
+    (tier: ModelTier) => {
+      if (tier === 'ink') {
+        setSelectedTier(tier);
+        return;
+      }
+      const simType = tier === 'kraken' ? 'kraken' : 'deep';
+      if (!canAfford(simType)) {
+        window.dispatchEvent(
+          new CustomEvent('octux:show-upgrade', {
+            detail: {
+              suggestedTier: tier === 'kraken' ? 'max' : 'pro',
+              reason: `Need ${TOKEN_COSTS[simType]} token${TOKEN_COSTS[simType] > 1 ? 's' : ''} for ${TIER_CONFIGS[tier].label}`,
+            },
+          }),
+        );
+        return;
+      }
+      setSelectedTier(tier);
+    },
+    [canAfford, setSelectedTier],
+  );
+
+  // ─── FOCUS ON MOUNT ───
+  useEffect(() => {
+    const timer = setTimeout(() => textareaRef.current?.focus(), 200);
+    return () => clearTimeout(timer);
+  }, [conversationId]);
 
   return (
-    <div className="shrink-0 border-t border-border-subtle bg-surface-0">
-      {/* Suggestion chips (only when empty) */}
-      {showChips && (
-        <div className="px-4 pt-3 pb-0 max-w-3xl mx-auto w-full">
-          <div className="flex flex-wrap gap-1.5">
-            {SUGGESTION_CHIPS.map((chip, i) => (
-              <button
-                key={i}
-                onClick={() => handleChipClick(chip.text)}
-                className={cn(
-                  'px-3 py-1.5 text-xs rounded-full border border-border-subtle',
-                  'text-txt-tertiary hover:text-txt-secondary hover:border-border-default hover:bg-surface-1',
-                  'transition-all duration-normal ease-out',
-                  `stagger-${i + 1} animate-fade-in`,
-                )}
-              >
-                {chip.text}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+    <div className={cn('shrink-0 border-t border-border-subtle bg-surface-0', className)}>
+      {/* ─── SUGGESTION CHIPS ─── */}
+      <AnimatePresence>
+        {chips && !hasContent && !sending && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.2 }}
+            className="px-4 pt-3 pb-0 max-w-3xl mx-auto w-full"
+          >
+            <div className="flex flex-wrap gap-1.5 justify-center">
+              {SUGGESTION_CHIPS.map((chip, i) => (
+                <motion.button
+                  key={i}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: i * 0.04 }}
+                  onClick={() => handleChipClick(chip)}
+                  disabled={sending}
+                  className={cn(
+                    'px-3 py-1.5 text-xs rounded-full border transition-all duration-normal',
+                    'border-border-subtle text-txt-tertiary',
+                    'hover:text-txt-secondary hover:border-border-default hover:bg-surface-2/50',
+                    'active:scale-[0.97]',
+                    'disabled:opacity-40 disabled:cursor-not-allowed',
+                  )}
+                >
+                  {chip}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Input area */}
+      {/* ─── INPUT AREA ─── */}
       <div className="p-4 max-w-3xl mx-auto w-full">
-        <div className={cn(
-          'flex items-end gap-2 rounded-xl border bg-surface-1 transition-all duration-normal',
-          'focus-within:border-accent focus-within:ring-1 focus-within:ring-accent/20',
-          loading ? 'border-border-subtle opacity-70' : 'border-border-default',
-        )}>
-          {/* Tier selector */}
-          <div className="pl-3 pb-2.5 pt-2.5 shrink-0">
-            <TierPills tier={tier} onChange={setTier} disabled={loading} />
-          </div>
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className={cn(
+            'flex items-end gap-2 rounded-xl border transition-colors duration-normal',
+            'bg-surface-1',
+            'focus-within:border-accent/30 focus-within:shadow-sm focus-within:shadow-accent/5',
+            sending ? 'border-border-subtle opacity-70' : 'border-border-default',
+          )}
+        >
+          {/* ─── TIER SELECTOR ─── */}
+          <TooltipProvider delayDuration={300}>
+            <div className="pl-3 pb-2.5 pt-2.5 shrink-0">
+              <div className="flex items-center gap-0.5 p-0.5 bg-surface-2 rounded-md">
+                {(['ink', 'deep', 'kraken'] as const).map((tier) => {
+                  const config = TIER_CONFIGS[tier];
+                  const isActive = selectedTier === tier;
+                  const cost = tier === 'ink' ? 0 : TOKEN_COSTS[tier === 'kraken' ? 'kraken' : 'deep'];
+                  const locked = cost > 0 && !canAfford(tier === 'kraken' ? 'kraken' : 'deep');
 
-          {/* Textarea */}
+                  return (
+                    <Tooltip key={tier}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => handleTierClick(tier)}
+                          disabled={sending}
+                          className={cn(
+                            'flex items-center gap-1 px-2.5 py-1 rounded-sm text-xs font-medium transition-all duration-normal',
+                            isActive
+                              ? tier === 'ink'
+                                ? 'bg-surface-raised text-txt-primary shadow-xs'
+                                : tier === 'deep'
+                                ? 'bg-accent-muted text-accent shadow-xs'
+                                : 'bg-[#00e5ff]/10 text-[#00e5ff] shadow-xs'
+                              : locked
+                              ? 'text-txt-disabled cursor-not-allowed opacity-50'
+                              : 'text-txt-tertiary hover:text-txt-secondary',
+                          )}
+                        >
+                          {config.label}
+                          {cost > 0 && (
+                            <span className={cn('text-[10px] tabular-nums', isActive ? 'opacity-80' : 'opacity-50')}>
+                              {cost}t
+                            </span>
+                          )}
+                          {locked && <Lock size={9} className="opacity-60" />}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs max-w-48">
+                        <p className="font-medium">{config.label}</p>
+                        <p className="text-txt-tertiary">{config.description}</p>
+                        {locked && (
+                          <p className="text-verdict-delay mt-1">
+                            Need {cost} token{cost > 1 ? 's' : ''} · {tokensRemaining} remaining
+                          </p>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </div>
+          </TooltipProvider>
+
+          {/* ─── TEXTAREA ─── */}
           <textarea
             ref={textareaRef}
             data-chat-input
             value={value}
-            onChange={e => setValue(e.target.value)}
+            onChange={(e) => {
+              setValue(e.target.value);
+              const newHas = e.target.value.trim().length > 0;
+              if (newHas !== hasContent) setHasContent(newHas);
+            }}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder || 'What decision are you facing?'}
-            disabled={loading || disabled}
+            placeholder={placeholder}
+            disabled={sending || disabled}
             rows={1}
             className={cn(
-              'flex-1 bg-transparent text-sm text-txt-primary placeholder:text-txt-disabled',
-              'outline-none resize-none py-2.5 min-h-[20px]',
-              'disabled:cursor-not-allowed',
+              'flex-1 resize-none bg-transparent text-sm text-txt-primary',
+              'placeholder:text-txt-disabled',
+              'outline-none border-none',
+              'min-h-[22px] py-2.5',
+              'disabled:cursor-not-allowed disabled:opacity-50',
             )}
+            style={{
+              lineHeight: `${LINE_HEIGHT}px`,
+              overflow: 'hidden',
+            }}
           />
 
-          {/* Send / Simulate buttons */}
+          {/* ─── SEND BUTTON ─── */}
           <div className="pr-2 pb-2 flex items-center gap-1 shrink-0">
-            {tier !== 'ink' && value.trim() && (
-              <OctTooltip content={`Run ${tier === 'deep' ? 'Deep' : 'Kraken'} Simulation`} placement="top">
-                <button
-                  onClick={() => { if (value.trim()) onSend(value.trim(), { tier, simulate: true }); setValue(''); }}
-                  disabled={loading}
-                  className={cn(
-                    'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-normal',
-                    tier === 'deep' ? 'bg-accent-muted text-accent hover:bg-accent-glow' : 'bg-tier-kraken/15 text-tier-kraken hover:bg-tier-kraken/25',
-                    loading && 'opacity-40 pointer-events-none',
-                  )}
-                >
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
-                    <path d="M7 1L2 4v4l5 3 5-3V4L7 1z" opacity="0.3" />
-                    <path d="M7 3L4 5v3l3 2 3-2V5L7 3z" />
-                  </svg>
-                </button>
-              </OctTooltip>
-            )}
-
             <button
               onClick={handleSend}
-              disabled={!value.trim() || loading}
+              disabled={!hasContent || sending || disabled}
               className={cn(
                 'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-normal',
-                value.trim() && !loading
-                  ? 'bg-accent text-white hover:bg-accent-hover'
+                hasContent && !sending
+                  ? 'bg-accent text-white hover:bg-accent-hover active:scale-95'
                   : 'bg-surface-2 text-txt-disabled',
+                (sending || disabled) && 'opacity-50 cursor-not-allowed',
               )}
             >
-              {loading ? (
-                <svg className="animate-spin w-4 h-4" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" opacity="0.3" />
-                  <path d="M14 8a6 6 0 00-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
+              {sending ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                >
+                  <Zap size={14} />
+                </motion.div>
               ) : (
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M7 12V2M3 6l4-4 4 4" />
-                </svg>
+                <ArrowUp size={14} strokeWidth={2.5} />
               )}
             </button>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Bottom hint */}
-        <div className="flex items-center justify-center mt-2">
+        {/* ─── FOOTER HINTS ─── */}
+        <div className="flex items-center justify-between mt-1.5 px-1">
           <span className="text-micro text-txt-disabled">
-            Enter to send · Shift+Enter for new line{tier !== 'ink' && ' · ⚡ to simulate'}
+            Enter to send · Shift+Enter for new line
           </span>
+          {selectedTier !== 'ink' && (
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center gap-1 text-micro text-txt-disabled"
+            >
+              <Zap size={9} className="text-accent" />
+              {TOKEN_COSTS[selectedTier === 'kraken' ? 'kraken' : 'deep']} token
+              {TOKEN_COSTS[selectedTier === 'kraken' ? 'kraken' : 'deep'] > 1 ? 's' : ''} per sim
+            </motion.span>
+          )}
         </div>
       </div>
-    </div>
-  );
-}
-
-// --- Tier selector pills ---
-function TierPills({ tier, onChange, disabled }: { tier: string; onChange: (t: 'ink' | 'deep' | 'kraken') => void; disabled: boolean }) {
-  const tiers = [
-    { id: 'ink' as const, label: 'Ink', tooltip: 'Quick chat (free)', cost: '' },
-    { id: 'deep' as const, label: 'Deep', tooltip: '10 agents debate (1 token)', cost: '1' },
-    { id: 'kraken' as const, label: 'Kraken', tooltip: '3 scenarios + crowd (8 tokens)', cost: '8' },
-  ];
-
-  return (
-    <div className="flex items-center gap-0.5 p-0.5 bg-surface-2 rounded-md">
-      {tiers.map(t => (
-        <OctTooltip key={t.id} content={t.tooltip} placement="top" delay={400}>
-          <button
-            onClick={() => !disabled && onChange(t.id)}
-            disabled={disabled}
-            className={cn(
-              'px-2.5 py-1 text-xs font-medium rounded-sm transition-all duration-normal flex items-center gap-1',
-              tier === t.id
-                ? t.id === 'ink' ? 'bg-surface-raised text-txt-primary shadow-xs'
-                  : t.id === 'deep' ? 'bg-accent-muted text-accent shadow-xs'
-                  : 'bg-[#00e5ff]/10 text-[#00e5ff] shadow-xs'
-                : 'text-txt-tertiary hover:text-txt-secondary',
-            )}
-          >
-            {t.label}
-            {t.cost && (
-              <span className="text-[10px] opacity-60">{t.cost}t</span>
-            )}
-          </button>
-        </OctTooltip>
-      ))}
     </div>
   );
 }
