@@ -1,10 +1,29 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
-import { cn } from '@/lib/design/cn';
-import { OctBadge } from '@/components/octux';
-import { OctAvatar, OctSkeleton } from '@/components/ui';
-import { type Command, ACTIONS, CATEGORIES } from '@/lib/commands/registry';
+import { useCallback } from 'react';
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandSeparator,
+  CommandShortcut,
+} from '@/components/ui/shadcn/command';
+import {
+  Plus,
+  Zap,
+  Moon,
+  Keyboard,
+  Settings,
+  Layers,
+  MessageSquare,
+  Bot,
+  Loader2,
+} from 'lucide-react';
+import { categoryColors, type CategoryType, verdictColors, type VerdictType } from '@/lib/design/tokens';
+import type { Command } from '@/lib/commands/registry';
 
 interface CommandPaletteProps {
   open: boolean;
@@ -15,308 +34,233 @@ interface CommandPaletteProps {
   recentCommands: Command[];
   selectedIndex: number;
   onSelectedIndexChange: (i: number) => void;
-  onExecute: (cmd: Command) => void;
+  onExecute: (command: Command) => void;
   loading: boolean;
 }
 
+const ACTION_ICONS: Record<string, React.ReactNode> = {
+  plus: <Plus className="h-4 w-4" />,
+  simulate: <Zap className="h-4 w-4" />,
+  theme: <Moon className="h-4 w-4" />,
+  keyboard: <Keyboard className="h-4 w-4" />,
+  settings: <Settings className="h-4 w-4" />,
+  tier: <Layers className="h-4 w-4" />,
+};
+
+function VerdictDot({ verdict }: { verdict?: string }) {
+  if (!verdict) return null;
+  const key = verdict.toLowerCase() as VerdictType;
+  const color = verdictColors[key]?.solid;
+  if (!color) return null;
+  return (
+    <span
+      className="inline-block h-2 w-2 rounded-full shrink-0"
+      style={{ backgroundColor: color }}
+    />
+  );
+}
+
+function formatTimestamp(ts?: string): string {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 export default function CommandPalette({
-  open, onClose, query, onQueryChange, results, recentCommands,
-  selectedIndex, onSelectedIndexChange, onExecute, loading,
+  open,
+  onClose,
+  query,
+  onQueryChange,
+  results,
+  recentCommands,
+  onExecute,
+  loading,
 }: CommandPaletteProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const handleSelect = useCallback(
+    (value: string) => {
+      const allItems = query.length >= 1 ? results : [...recentCommands, ...DEFAULT_ACTIONS, ...DEFAULT_CATEGORIES];
+      const item = allItems.find((c) => c.id === value);
+      if (item) onExecute(item);
+    },
+    [query, results, recentCommands, onExecute],
+  );
 
-  useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 50);
-  }, [open]);
+  const showResults = query.length >= 1;
+  const hasResults = results.length > 0;
 
-  const hasQuery = query.length >= 1;
-  const showRecent = !hasQuery && recentCommands.length > 0;
-  const showActions = !hasQuery;
-  const showCategories = !hasQuery;
-
-  // Build flat list for keyboard nav
-  const allItems: Command[] = [];
-  if (showRecent) allItems.push(...recentCommands);
-  if (showActions) allItems.push(...ACTIONS);
-  if (showCategories) allItems.push(...CATEGORIES);
-  if (hasQuery) allItems.push(...results);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        onSelectedIndexChange(Math.min(selectedIndex + 1, allItems.length - 1));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        onSelectedIndexChange(Math.max(selectedIndex - 1, 0));
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (allItems[selectedIndex]) onExecute(allItems[selectedIndex]);
-        break;
-      case 'Escape':
-        e.preventDefault();
-        onClose();
-        break;
-    }
-  };
-
-  useEffect(() => {
-    const list = listRef.current;
-    if (!list) return;
-    const selected = list.querySelector('[data-selected="true"]');
-    selected?.scrollIntoView({ block: 'nearest' });
-  }, [selectedIndex]);
-
-  if (!open) return null;
-
-  let itemCounter = 0;
+  // Group results by type
+  const actionResults = results.filter((r) => r.type === 'action');
+  const conversationResults = results.filter((r) => r.type === 'conversation');
+  const categoryResults = results.filter((r) => r.type === 'category');
+  const agentResults = results.filter((r) => r.type === 'agent');
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-start justify-center pt-[20vh]">
-      <div
-        className="absolute inset-0 bg-surface-overlay/60 backdrop-blur-sm animate-fade-in"
-        onClick={onClose}
+    <CommandDialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <CommandInput
+        placeholder="Search conversations, actions, categories…"
+        value={query}
+        onValueChange={onQueryChange}
       />
-
-      <div
-        className={cn(
-          'relative z-10 w-full max-w-[560px] mx-4 animate-scale-in',
-          'bg-surface-raised border border-border-subtle rounded-xl shadow-xl',
-          'flex flex-col overflow-hidden max-h-[60vh]',
+      <CommandList>
+        {loading && (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-4 w-4 animate-spin text-txt-tertiary" />
+          </div>
         )}
-        onKeyDown={handleKeyDown}
-      >
-        {/* Search input */}
-        <div className="flex items-center gap-3 px-4 border-b border-border-subtle">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-icon-secondary shrink-0">
-            <circle cx="7" cy="7" r="4.5" />
-            <path d="M10.5 10.5L14 14" />
-          </svg>
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={e => onQueryChange(e.target.value)}
-            placeholder="Search conversations, agents, actions..."
-            className={cn(
-              'flex-1 h-12 bg-transparent text-sm text-txt-primary placeholder:text-txt-disabled',
-              'outline-none',
+
+        {!loading && showResults && !hasResults && (
+          <CommandEmpty>No results found.</CommandEmpty>
+        )}
+
+        {/* ── Search results ── */}
+        {!loading && showResults && hasResults && (
+          <>
+            {actionResults.length > 0 && (
+              <CommandGroup heading="Actions">
+                {actionResults.map((cmd) => (
+                  <CommandItem key={cmd.id} value={cmd.id} onSelect={handleSelect}>
+                    <span className="text-icon-secondary">
+                      {ACTION_ICONS[cmd.icon || ''] ?? <Zap className="h-4 w-4" />}
+                    </span>
+                    <span>{cmd.label}</span>
+                    {cmd.description && (
+                      <span className="text-txt-tertiary text-xs ml-1 truncate">{cmd.description}</span>
+                    )}
+                    {cmd.shortcut && <CommandShortcut>{cmd.shortcut}</CommandShortcut>}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
             )}
-          />
-          <kbd className="text-micro text-txt-disabled bg-surface-2 px-1.5 py-0.5 rounded-sm">ESC</kbd>
-        </div>
 
-        {/* Results */}
-        <div ref={listRef} className="flex-1 overflow-y-auto py-2">
-          {loading && (
-            <div className="px-4 py-3 space-y-2">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <OctSkeleton key={i} variant="text" className="h-8" />
+            {conversationResults.length > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup heading="Conversations">
+                  {conversationResults.map((cmd) => (
+                    <CommandItem key={cmd.id} value={cmd.id} onSelect={handleSelect}>
+                      <VerdictDot verdict={cmd.verdictDot} />
+                      <MessageSquare className="h-4 w-4 text-icon-secondary" />
+                      <span className="truncate">{cmd.label}</span>
+                      {cmd.timestamp && (
+                        <span className="ml-auto text-xs text-txt-disabled">{formatTimestamp(cmd.timestamp)}</span>
+                      )}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
+
+            {categoryResults.length > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup heading="Categories">
+                  {categoryResults.map((cmd) => (
+                    <CommandItem key={cmd.id} value={cmd.id} onSelect={handleSelect}>
+                      <span
+                        className="inline-block h-2 w-2 rounded-full shrink-0"
+                        style={{ backgroundColor: categoryColors[cmd.category as CategoryType] }}
+                      />
+                      <span>{cmd.label}</span>
+                      {cmd.description && (
+                        <span className="text-txt-tertiary text-xs ml-1">{cmd.description}</span>
+                      )}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
+
+            {agentResults.length > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup heading="Agents">
+                  {agentResults.map((cmd) => (
+                    <CommandItem key={cmd.id} value={cmd.id} onSelect={handleSelect}>
+                      <Bot className="h-4 w-4 text-icon-secondary" />
+                      <span>{cmd.label}</span>
+                      {cmd.description && (
+                        <span className="text-txt-tertiary text-xs ml-1 truncate">{cmd.description}</span>
+                      )}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
+          </>
+        )}
+
+        {/* ── Default view (no query) ── */}
+        {!loading && !showResults && (
+          <>
+            {recentCommands.length > 0 && (
+              <CommandGroup heading="Recent">
+                {recentCommands.map((cmd) => (
+                  <CommandItem key={cmd.id} value={cmd.id} onSelect={handleSelect}>
+                    <VerdictDot verdict={cmd.verdictDot} />
+                    <MessageSquare className="h-4 w-4 text-icon-secondary" />
+                    <span className="truncate">{cmd.label}</span>
+                    {cmd.timestamp && (
+                      <span className="ml-auto text-xs text-txt-disabled">{formatTimestamp(cmd.timestamp)}</span>
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            <CommandSeparator />
+
+            <CommandGroup heading="Actions">
+              {DEFAULT_ACTIONS.map((action) => (
+                <CommandItem key={action.id} value={action.id} onSelect={handleSelect}>
+                  <span className="text-icon-secondary">{ACTION_ICONS[action.icon || '']}</span>
+                  <span>{action.label}</span>
+                  {action.shortcut && <CommandShortcut>{action.shortcut}</CommandShortcut>}
+                </CommandItem>
               ))}
-            </div>
-          )}
+            </CommandGroup>
 
-          {showRecent && (
-            <div>
-              <div className="px-4 py-1 text-[10px] font-medium text-txt-disabled uppercase tracking-widest">
-                Recent
-              </div>
-              {recentCommands.map((cmd) => {
-                const idx = itemCounter++;
-                return (
-                  <CommandItem
-                    key={cmd.id}
-                    command={cmd}
-                    selected={selectedIndex === idx}
-                    onSelect={() => onExecute(cmd)}
-                    onHover={() => onSelectedIndexChange(idx)}
+            <CommandSeparator />
+
+            <CommandGroup heading="Categories">
+              {DEFAULT_CATEGORIES.map((cat) => (
+                <CommandItem key={cat.id} value={cat.id} onSelect={handleSelect}>
+                  <span
+                    className="inline-block h-2 w-2 rounded-full shrink-0"
+                    style={{ backgroundColor: categoryColors[cat.category as CategoryType] }}
                   />
-                );
-              })}
-            </div>
-          )}
-
-          {showActions && (
-            <div>
-              <div className="px-4 py-1 mt-1 text-[10px] font-medium text-txt-disabled uppercase tracking-widest">
-                Actions
-              </div>
-              {ACTIONS.map((cmd) => {
-                const idx = itemCounter++;
-                return (
-                  <CommandItem
-                    key={cmd.id}
-                    command={cmd}
-                    selected={selectedIndex === idx}
-                    onSelect={() => onExecute(cmd)}
-                    onHover={() => onSelectedIndexChange(idx)}
-                  />
-                );
-              })}
-            </div>
-          )}
-
-          {showCategories && (
-            <div>
-              <div className="px-4 py-1 mt-1 text-[10px] font-medium text-txt-disabled uppercase tracking-widest">
-                Categories
-              </div>
-              {CATEGORIES.map((cmd) => {
-                const idx = itemCounter++;
-                return (
-                  <CommandItem
-                    key={cmd.id}
-                    command={cmd}
-                    selected={selectedIndex === idx}
-                    onSelect={() => onExecute(cmd)}
-                    onHover={() => onSelectedIndexChange(idx)}
-                  />
-                );
-              })}
-            </div>
-          )}
-
-          {hasQuery && results.length > 0 && (
-            <div>
-              {results.map((cmd) => {
-                const idx = itemCounter++;
-                return (
-                  <CommandItem
-                    key={cmd.id}
-                    command={cmd}
-                    selected={selectedIndex === idx}
-                    onSelect={() => onExecute(cmd)}
-                    onHover={() => onSelectedIndexChange(idx)}
-                  />
-                );
-              })}
-            </div>
-          )}
-
-          {hasQuery && results.length === 0 && !loading && (
-            <div className="px-4 py-8 text-center">
-              <p className="text-xs text-txt-tertiary">No results for &quot;{query}&quot;</p>
-              <p className="text-micro text-txt-disabled mt-1">Try a different search term</p>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="px-4 py-2 border-t border-border-subtle flex items-center gap-4">
-          <span className="flex items-center gap-1 text-micro text-txt-disabled">
-            <kbd className="bg-surface-2 px-1 rounded-sm">{'\u2191\u2193'}</kbd> navigate
-          </span>
-          <span className="flex items-center gap-1 text-micro text-txt-disabled">
-            <kbd className="bg-surface-2 px-1 rounded-sm">{'\u21B5'}</kbd> select
-          </span>
-          <span className="flex items-center gap-1 text-micro text-txt-disabled">
-            <kbd className="bg-surface-2 px-1 rounded-sm">esc</kbd> close
-          </span>
-        </div>
-      </div>
-    </div>
+                  <span className="capitalize">{cat.label}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </>
+        )}
+      </CommandList>
+    </CommandDialog>
   );
 }
 
-// ═══ Command Item ═══
+// Static defaults for the no-query view
+const DEFAULT_ACTIONS: Command[] = [
+  { id: 'action:new-conversation', type: 'action', label: 'New conversation', shortcut: 'C', icon: 'plus' },
+  { id: 'action:new-simulation', type: 'action', label: 'New simulation', shortcut: 'S', icon: 'simulate' },
+  { id: 'action:toggle-dark-mode', type: 'action', label: 'Toggle dark mode', shortcut: 'D', icon: 'theme' },
+  { id: 'action:shortcuts', type: 'action', label: 'Keyboard shortcuts', shortcut: '?', icon: 'keyboard' },
+  { id: 'action:settings', type: 'action', label: 'Settings', shortcut: ',', icon: 'settings' },
+];
 
-function CommandItem({ command, selected, onSelect, onHover }: {
-  command: Command;
-  selected: boolean;
-  onSelect: () => void;
-  onHover: () => void;
-}) {
-  return (
-    <button
-      data-selected={selected}
-      onClick={onSelect}
-      onMouseEnter={onHover}
-      className={cn(
-        'w-full flex items-center gap-3 px-4 py-2 text-left transition-colors duration-fast',
-        selected ? 'bg-accent/10 text-txt-primary' : 'text-txt-secondary hover:bg-surface-2',
-      )}
-    >
-      <div className="w-6 h-6 flex items-center justify-center shrink-0">
-        {command.type === 'conversation' && (
-          <span className={cn(
-            'w-2 h-2 rounded-full',
-            command.verdictDot === 'proceed' && 'bg-verdict-proceed',
-            command.verdictDot === 'delay' && 'bg-verdict-delay',
-            command.verdictDot === 'abandon' && 'bg-verdict-abandon',
-            !command.verdictDot && 'bg-txt-disabled',
-          )} />
-        )}
-        {command.type === 'agent' && (
-          <OctAvatar
-            type="agent"
-            category={(command.category as any) || 'life'}
-            agentIndex={0}
-            name={command.label}
-            size="xs"
-          />
-        )}
-        {command.type === 'category' && (
-          <span className="text-sm">{command.icon}</span>
-        )}
-        {command.type === 'action' && (
-          <ActionIcon iconId={command.icon} />
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <span className="text-xs block truncate">{command.label}</span>
-        {command.description && (
-          <span className="text-micro text-txt-tertiary block truncate">{command.description}</span>
-        )}
-      </div>
-
-      {command.shortcut && (
-        <kbd className="text-micro text-txt-disabled bg-surface-2 px-1.5 py-0.5 rounded-sm shrink-0">
-          {command.shortcut}
-        </kbd>
-      )}
-      {command.type === 'agent' && command.category && (
-        <OctBadge category={command.category as any} size="xs">{command.category}</OctBadge>
-      )}
-      {command.type === 'conversation' && command.timestamp && (
-        <span className="text-micro text-txt-disabled shrink-0">
-          {formatRelativeTime(command.timestamp)}
-        </span>
-      )}
-    </button>
-  );
-}
-
-function ActionIcon({ iconId }: { iconId?: string }) {
-  const cls = "w-4 h-4 text-icon-secondary";
-  switch (iconId) {
-    case 'plus':
-      return <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 3v10M3 8h10" /></svg>;
-    case 'simulate':
-      return <svg className={cls} viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L3 4v5l5 3 5-3V4L8 1z" opacity="0.4" /><path d="M8 4L5 6v3l3 2 3-2V6L8 4z" /></svg>;
-    case 'theme':
-      return <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="8" r="3" /><path d="M8 2v1M8 13v1M2 8h1M13 8h1" /></svg>;
-    case 'keyboard':
-      return <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="4" width="14" height="8" rx="1.5" /><path d="M4 7h1M7 7h2M11 7h1M5 10h6" /></svg>;
-    case 'settings':
-      return <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="8" r="2.5" /><path d="M8 2v1.5M8 12.5V14M14 8h-1.5M3.5 8H2" /></svg>;
-    case 'tier':
-      return <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12l4-8 4 8M6 8h4" /></svg>;
-    default:
-      return <span className="text-sm">{'\u26A1'}</span>;
-  }
-}
-
-function formatRelativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'now';
-  if (mins < 60) return `${mins}m`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d`;
-  return `${Math.floor(days / 7)}w`;
-}
+const DEFAULT_CATEGORIES: Command[] = [
+  { id: 'cat:investment', type: 'category', label: 'Investment', category: 'investment' },
+  { id: 'cat:relationships', type: 'category', label: 'Relationships', category: 'relationships' },
+  { id: 'cat:career', type: 'category', label: 'Career', category: 'career' },
+  { id: 'cat:business', type: 'category', label: 'Business', category: 'business' },
+  { id: 'cat:life', type: 'category', label: 'Life', category: 'life' },
+];
