@@ -243,3 +243,7 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.6; color: 
 /* ═══ SCROLLBAR UTILITIES ═══ */
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ═══ MARKDOWN RENDERER ═══ */
+.octux-markdown p:last-child { margin-bottom: 0; }
+.octux-markdown ul, .octux-markdown ol { padding-left: 0; }
