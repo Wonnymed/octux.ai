@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { writeConversationCache } from '@/lib/conversations-cache';
 
 export interface ConversationSummary {
   id: string;
@@ -35,8 +36,8 @@ interface AppState {
   conversationsLoading: boolean;
   setConversationsLoading: (loading: boolean) => void;
 
-  // Fetch conversations from API
-  fetchConversations: () => Promise<void>;
+  /** Fetch from /api/c; use silent=true to revalidate without showing loading skeleton */
+  fetchConversations: (opts?: { silent?: boolean }) => Promise<void>;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -77,17 +78,20 @@ export const useAppStore = create<AppState>((set, get) => ({
   setConversationsLoading: (loading) => set({ conversationsLoading: loading }),
 
   // Fetch
-  fetchConversations: async () => {
-    set({ conversationsLoading: true });
+  fetchConversations: async (opts) => {
+    const silent = opts?.silent === true;
+    if (!silent) set({ conversationsLoading: true });
     try {
       const res = await fetch('/api/c');
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
-      set({ conversations: data.conversations || [] });
+      const list = (data.conversations || []) as ConversationSummary[];
+      set({ conversations: list });
+      writeConversationCache(list);
     } catch {
-      // Silent fail — sidebar shows empty
+      // Silent fail — sidebar keeps previous / cache
     } finally {
-      set({ conversationsLoading: false });
+      if (!silent) set({ conversationsLoading: false });
     }
   },
 }));

@@ -161,8 +161,8 @@ export default function ChatInput({
                     type="button"
                     className={cn(
                       'group flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-200',
-                      'border-white/[0.06] bg-white/[0.02]',
-                      'hover:bg-white/[0.05] hover:border-white/[0.12] active:scale-[0.98]',
+                      'border-border-subtle bg-surface-0',
+                      'hover:bg-surface-2 hover:border-border-strong active:scale-[0.98]',
                       'disabled:opacity-40 disabled:cursor-not-allowed',
                     )}
                   >
@@ -171,7 +171,7 @@ export default function ChatInput({
                       className="opacity-35 group-hover:opacity-100 transition-opacity shrink-0"
                       style={{ color: chip.color }}
                     />
-                    <span className="text-[13px] text-white/50 group-hover:text-white/75 transition-colors">
+                    <span className="text-[13px] text-txt-tertiary group-hover:text-txt-secondary transition-colors">
                       {chip.text}
                     </span>
                   </motion.button>
@@ -193,10 +193,10 @@ export default function ChatInput({
           <div
             className={cn(
               'relative rounded-2xl border transition-all duration-200',
-              'bg-[#111118] border-white/[0.06]',
+              'bg-surface-1 border-border-subtle',
               'shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
               'focus-within:border-accent/30 focus-within:shadow-lg focus-within:shadow-accent/5',
-              'hover:border-white/[0.10]',
+              'hover:border-border-default',
               sending && 'opacity-70 pointer-events-none',
             )}
           >
@@ -215,7 +215,7 @@ export default function ChatInput({
               rows={1}
               className={cn(
                 'w-full min-h-[52px] max-h-[120px] resize-none bg-transparent',
-                'px-5 py-3.5 pr-14 text-[15px] text-white/90 placeholder:text-white/25',
+                'px-5 py-3.5 pr-14 text-[15px] text-white/90 placeholder:text-txt-disabled',
                 'outline-none',
                 'disabled:cursor-not-allowed disabled:opacity-50',
               )}
@@ -268,15 +268,15 @@ export default function ChatInput({
                         className={cn(
                           'flex items-center gap-1 px-3 py-1 rounded-full text-xs transition-all',
                           isActive
-                            ? 'bg-white/[0.08] text-white/80'
+                            ? 'bg-white/[0.08] text-txt-secondary'
                             : locked
-                              ? 'text-white/20 cursor-not-allowed opacity-50'
-                              : 'text-white/30 hover:text-white/50',
+                              ? 'text-txt-disabled cursor-not-allowed opacity-50'
+                              : 'text-white/30 hover:text-txt-tertiary',
                         )}
                       >
                         {config.label}
                         {cost > 0 && (
-                          <span className={cn('text-[10px] tabular-nums text-white/20', isActive && 'text-white/35')}>
+                          <span className={cn('text-[10px] tabular-nums text-txt-disabled', isActive && 'text-white/35')}>
                             {cost}t
                           </span>
                         )}

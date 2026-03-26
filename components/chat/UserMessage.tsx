@@ -42,7 +42,7 @@ export default function UserMessage({ content, optimistic, label }: UserMessageP
         <div
           className={cn(
             'px-4 py-2.5 rounded-2xl rounded-br-sm',
-            'bg-accent text-white',
+            'bg-accent text-txt-on-accent',
             'text-sm leading-relaxed whitespace-pre-wrap break-words',
             optimistic && 'opacity-70',
           )}

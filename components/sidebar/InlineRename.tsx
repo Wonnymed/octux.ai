@@ -67,7 +67,7 @@ export default function InlineRename({ conversationId, currentTitle, active, onD
       onBlur={save}
       maxLength={200}
       className={cn(
-        'w-full text-[12px] bg-white/[0.06] border border-accent/30 rounded-md px-1.5 py-0.5',
+        'w-full text-[12px] bg-surface-3 border border-accent/30 rounded-md px-1.5 py-0.5',
         'text-white/90 outline-none',
         'focus:border-accent/50',
       )}

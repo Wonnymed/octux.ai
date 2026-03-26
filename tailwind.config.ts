@@ -24,6 +24,7 @@ const config: Config = {
           tertiary: 'var(--text-tertiary)',
           disabled: 'var(--text-disabled)',
           inverse: 'var(--text-inverse)',
+          'on-accent': 'var(--text-on-accent)',
         },
         icon: {
           primary: 'var(--icon-primary)',
@@ -35,9 +36,11 @@ const config: Config = {
           DEFAULT: 'var(--accent)',
           hover: 'var(--accent-hover)',
           active: 'var(--accent-active)',
+          light: 'var(--accent-light)',
           muted: 'var(--accent-muted)',
           glow: 'var(--accent-glow)',
           subtle: 'var(--accent-subtle)',
+          ring: 'var(--accent-ring)',
         },
         border: {
           subtle: 'var(--border-subtle)',

@@ -13,7 +13,7 @@ export default function RiskMatrixPage() {
         icon={tool.icon}
         iconColor={tool.color}
       />
-      <div className="rounded-2xl border border-white/[0.06] bg-[#111118] p-6">
+      <div className="rounded-2xl border border-border-subtle bg-surface-1 p-6">
         <RiskMatrixGrid />
       </div>
     </>

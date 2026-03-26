@@ -42,7 +42,7 @@ function OptionColumn({
       <input
         value={value.name}
         onChange={(e) => onChange({ ...value, name: e.target.value })}
-        className="w-full bg-transparent text-base font-medium text-white/85 border-b border-white/[0.08] pb-2 outline-none focus:border-accent/40 transition-colors"
+        className="w-full bg-transparent text-base font-medium text-txt-primary border-b border-border-default pb-2 outline-none focus:border-accent/40 transition-colors"
         placeholder={label}
       />
       <div>
@@ -52,7 +52,7 @@ function OptionColumn({
           onChange={(e) => onChange({ ...value, pros: e.target.value })}
           placeholder="List strengths…"
           rows={5}
-          className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] px-3 py-2.5 text-sm text-white/70 placeholder:text-white/20 outline-none focus:border-white/[0.12] resize-y min-h-[120px]"
+          className="w-full rounded-xl bg-surface-2 border border-border-subtle px-3 py-2.5 text-sm text-txt-secondary placeholder:text-txt-disabled outline-none focus:border-border-strong resize-y min-h-[120px]"
         />
       </div>
       <div>
@@ -62,7 +62,7 @@ function OptionColumn({
           onChange={(e) => onChange({ ...value, cons: e.target.value })}
           placeholder="List tradeoffs…"
           rows={5}
-          className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] px-3 py-2.5 text-sm text-white/70 placeholder:text-white/20 outline-none focus:border-white/[0.12] resize-y min-h-[120px]"
+          className="w-full rounded-xl bg-surface-2 border border-border-subtle px-3 py-2.5 text-sm text-txt-secondary placeholder:text-txt-disabled outline-none focus:border-border-strong resize-y min-h-[120px]"
         />
       </div>
       <button

@@ -27,13 +27,13 @@ export default function DecisionCard({
     >
       <div className="flex items-start gap-3 max-w-[min(85%,42rem)] w-full">
         <div
-          className="w-7 h-7 rounded-full bg-gradient-to-br from-accent/60 to-cyan-500/40 flex items-center justify-center shrink-0 mt-0.5 border border-white/[0.08] shadow-sm shadow-black/20"
+          className="w-7 h-7 rounded-full bg-gradient-to-br from-accent/60 to-cyan-500/40 flex items-center justify-center shrink-0 mt-0.5 border border-border-default shadow-sm shadow-black/20"
           aria-hidden
         >
           <span className="text-[10px] leading-none">🐙</span>
         </div>
         <div
-          className="min-w-0 flex-1 rounded-2xl rounded-bl-md bg-[#111118] border border-white/[0.06] text-sm text-txt-primary leading-relaxed shadow-sm shadow-black/20"
+          className="min-w-0 flex-1 rounded-2xl rounded-bl-md bg-surface-1 border border-border-subtle text-sm text-txt-primary leading-relaxed shadow-sm shadow-black/20"
           style={{ padding: '12px 16px' }}
         >
           <MarkdownRenderer content={content} />
@@ -48,7 +48,7 @@ export default function DecisionCard({
           className="mt-3 ml-10 w-full max-w-[min(85%,42rem)]"
         >
           <div className="relative p-[1px] rounded-xl bg-gradient-to-r from-accent/40 via-accent/10 to-transparent overflow-hidden">
-            <div className="rounded-xl bg-[#0e0e16] p-4">
+            <div className="rounded-xl bg-surface-2 p-4">
               <div className="flex items-center gap-2.5 mb-3">
                 <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
                   <Zap size={13} className="text-accent" />

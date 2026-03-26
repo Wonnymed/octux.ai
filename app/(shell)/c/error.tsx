@@ -20,7 +20,7 @@ export default function ChatError({
           <span className="text-2xl">🐙</span>
         </div>
         <h1 className="text-xl font-medium text-white/90 mb-2">Something went wrong</h1>
-        <p className="text-sm text-white/50 mb-6">
+        <p className="text-sm text-txt-tertiary mb-6">
           {error.message || 'An unexpected error occurred.'}
         </p>
         <div className="flex items-center justify-center gap-3">
@@ -32,7 +32,7 @@ export default function ChatError({
           </button>
           <button
             onClick={() => window.location.href = '/'}
-            className="px-5 py-2.5 rounded-lg bg-white/10 text-white/70 text-sm hover:bg-white/15 transition-colors"
+            className="px-5 py-2.5 rounded-lg bg-white/10 text-txt-secondary text-sm hover:bg-white/15 transition-colors"
           >
             Go home
           </button>

@@ -64,7 +64,7 @@ export default function DecisionJournal() {
               'px-3 py-1 rounded-full text-xs transition-colors duration-150',
               filter === f.id
                 ? 'bg-accent/15 text-accent border border-accent/25'
-                : 'text-white/35 border border-transparent hover:bg-white/[0.04] hover:text-white/55',
+                : 'text-white/35 border border-transparent hover:bg-surface-2 hover:text-white/55',
             )}
           >
             {f.label}
@@ -72,9 +72,9 @@ export default function DecisionJournal() {
         ))}
       </div>
 
-      <div className="rounded-xl border border-white/[0.06] overflow-x-auto">
+      <div className="rounded-xl border border-border-subtle overflow-x-auto">
         <div className="min-w-[520px]">
-        <div className="grid grid-cols-[1fr_120px_100px_100px] gap-2 px-4 py-2.5 bg-white/[0.03] text-[10px] font-medium text-white/30 uppercase tracking-wider">
+        <div className="grid grid-cols-[1fr_120px_100px_100px] gap-2 px-4 py-2.5 bg-surface-2 text-[10px] font-medium text-white/30 uppercase tracking-wider">
           <span>Decision</span>
           <span>Verdict</span>
           <span>Date</span>
@@ -84,10 +84,10 @@ export default function DecisionJournal() {
           {rows.map((r) => (
             <li
               key={r.id}
-              className="grid grid-cols-[1fr_120px_100px_100px] gap-2 px-4 py-3 text-sm text-white/70 hover:bg-white/[0.02] transition-colors"
+              className="grid grid-cols-[1fr_120px_100px_100px] gap-2 px-4 py-3 text-sm text-txt-secondary hover:bg-surface-0 transition-colors"
             >
               <span className="truncate">{r.title}</span>
-              <span className="text-white/50 text-xs">{r.verdict}</span>
+              <span className="text-txt-tertiary text-xs">{r.verdict}</span>
               <span className="text-white/35 text-xs">{r.date}</span>
               <OutcomeBadge outcome={r.outcome} />
             </li>
@@ -95,7 +95,7 @@ export default function DecisionJournal() {
         </ul>
         </div>
       </div>
-      <p className="text-micro text-white/25">
+      <p className="text-micro text-txt-disabled">
         Sample data — connect your account to sync real decisions.
       </p>
     </div>

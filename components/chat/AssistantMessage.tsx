@@ -28,7 +28,7 @@ export default function AssistantMessage({ content, tier, disclaimer, isCode }: 
     >
       <div className="flex items-start gap-3 max-w-[min(85%,42rem)] w-full">
         <div
-          className="w-7 h-7 rounded-full bg-gradient-to-br from-accent/60 to-cyan-500/40 flex items-center justify-center shrink-0 mt-0.5 border border-white/[0.08] shadow-sm shadow-black/20"
+          className="w-7 h-7 rounded-full bg-gradient-to-br from-accent/60 to-cyan-500/40 flex items-center justify-center shrink-0 mt-0.5 border border-border-default shadow-sm shadow-black/20"
           aria-hidden
         >
           <span className="text-[10px] leading-none">🐙</span>
@@ -36,8 +36,8 @@ export default function AssistantMessage({ content, tier, disclaimer, isCode }: 
         <div
           className={cn(
             'min-w-0 flex-1 px-4 py-3 rounded-2xl rounded-bl-sm',
-            'bg-[#111118] border border-white/[0.06]',
-            'text-[14px] leading-relaxed text-white/85',
+            'bg-surface-1 border border-border-subtle',
+            'text-[14px] leading-relaxed text-txt-primary',
             'shadow-sm shadow-black/20',
           )}
         >

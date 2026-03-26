@@ -25,11 +25,11 @@ export default function ToolHeader({
         >
           <Icon size={24} style={{ color: iconColor }} strokeWidth={1.5} />
         </div>
-        <h1 className="text-2xl font-medium text-white/90 tracking-tight leading-snug pt-1">
+        <h1 className="text-2xl font-medium text-txt-primary tracking-tight leading-snug pt-1">
           {title}
         </h1>
       </div>
-      <p className="text-sm text-white/50 max-w-xl leading-relaxed">{description}</p>
+      <p className="text-sm text-txt-tertiary max-w-xl leading-relaxed">{description}</p>
     </header>
   );
 }

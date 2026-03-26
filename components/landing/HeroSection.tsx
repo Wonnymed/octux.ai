@@ -53,10 +53,10 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
           <div
             className={cn(
               'relative rounded-2xl border transition-all duration-200',
-              'bg-[#111118] border-white/[0.06]',
+              'bg-surface-1 border-border-subtle',
               'shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
               'focus-within:border-accent/30 focus-within:shadow-lg focus-within:shadow-accent/5',
-              'hover:border-white/[0.10]',
+              'hover:border-border-default',
             )}
           >
             <input
@@ -65,7 +65,7 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
               onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
               placeholder="What decision are you facing?"
               className={cn(
-                'w-full bg-transparent text-sm sm:text-[15px] text-white/90 placeholder:text-white/25',
+                'w-full bg-transparent text-sm sm:text-[15px] text-white/90 placeholder:text-txt-disabled',
                 'outline-none py-3.5 pl-5 pr-14 rounded-2xl',
               )}
             />
@@ -102,13 +102,13 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
                 onClick={() => setInput(chip.text)}
                 className={cn(
                   'group flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-200',
-                  'border-white/[0.06] bg-white/[0.02]',
-                  'hover:bg-white/[0.05] hover:border-white/[0.12]',
+                  'border-border-subtle bg-surface-0',
+                  'hover:bg-surface-2 hover:border-border-strong',
                   `stagger-${i + 1} animate-fade-in`,
                 )}
               >
                 <Icon size={13} className="opacity-35 group-hover:opacity-100 transition-opacity shrink-0" style={{ color: chip.color }} />
-                <span className="text-[13px] text-white/50 group-hover:text-white/75 text-left">
+                <span className="text-[13px] text-txt-tertiary group-hover:text-txt-secondary text-left">
                   {chip.text}
                 </span>
               </button>

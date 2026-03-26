@@ -52,7 +52,7 @@ export default function RiskMatrixGrid() {
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && addRisk()}
           placeholder="Add a risk…"
-          className="flex-1 rounded-xl bg-white/[0.03] border border-white/[0.06] px-3 py-2.5 text-sm text-white/80 placeholder:text-white/25 outline-none focus:border-accent/30"
+          className="flex-1 rounded-xl bg-surface-2 border border-border-subtle px-3 py-2.5 text-sm text-txt-secondary placeholder:text-txt-disabled outline-none focus:border-accent/30"
         />
         <button
           type="button"
@@ -64,10 +64,10 @@ export default function RiskMatrixGrid() {
       </div>
 
       <div className="relative">
-        <div className="absolute -left-1 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] font-medium text-white/25 tracking-wider whitespace-nowrap origin-center">
+        <div className="absolute -left-1 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] font-medium text-txt-disabled tracking-wider whitespace-nowrap origin-center">
           Probability →
         </div>
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-6 text-[10px] font-medium text-white/25 tracking-wider">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-6 text-[10px] font-medium text-txt-disabled tracking-wider">
           Impact →
         </div>
 
@@ -122,12 +122,12 @@ function QuadrantDropZone({
         onDragEnd();
       }}
       className={cn(
-        'rounded-xl border border-dashed border-white/[0.08] bg-white/[0.02] p-3 min-h-[120px] transition-colors',
-        'hover:border-white/[0.12]',
+        'rounded-xl border border-dashed border-border-default bg-surface-0 p-3 min-h-[120px] transition-colors',
+        'hover:border-border-strong',
       )}
     >
       <p className="text-[10px] font-medium text-white/35 mb-0.5">{meta.title}</p>
-      <p className="text-[9px] text-white/20 mb-2">{meta.sub}</p>
+      <p className="text-[9px] text-txt-disabled mb-2">{meta.sub}</p>
       <ul className="space-y-1.5">
         {risks.map((r) => (
           <li
@@ -135,7 +135,7 @@ function QuadrantDropZone({
             draggable
             onDragStart={() => onDragStart(r.id)}
             onDragEnd={onDragEnd}
-            className="text-xs text-white/60 bg-white/[0.04] border border-white/[0.06] rounded-lg px-2 py-1.5 cursor-grab active:cursor-grabbing hover:bg-white/[0.06] transition-colors"
+            className="text-xs text-txt-tertiary bg-surface-2 border border-border-subtle rounded-lg px-2 py-1.5 cursor-grab active:cursor-grabbing hover:bg-surface-3 transition-colors"
           >
             {r.label}
           </li>

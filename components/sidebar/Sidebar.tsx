@@ -16,7 +16,6 @@ import {
   ChevronRight,
   LogIn,
   LogOut,
-  Moon,
   Clock,
 } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
@@ -40,9 +39,8 @@ import {
 import { Skeleton } from '@/components/ui/shadcn/skeleton';
 import ConversationContextMenu from './ConversationContextMenu';
 import InlineRename from './InlineRename';
+import { ThemeToggleCompact } from '@/components/theme/ThemeToggle';
 
-/** Okara-aligned: elevated rail, not pure black */
-const SIDEBAR_BG = '#0E0E16';
 const ICON_STROKE = 1.5;
 /** Okara expanded rail */
 const EXPANDED_W = 256;
@@ -81,8 +79,8 @@ function SidebarCollapsed() {
   return (
     <TooltipProvider delayDuration={200}>
       <div
-        className="flex h-dvh shrink-0 flex-col items-center border-r border-white/[0.06] py-3 font-sans antialiased select-none"
-        style={{ width: COLLAPSED_W, backgroundColor: SIDEBAR_BG }}
+        className="flex h-dvh w-16 shrink-0 flex-col items-center border-r border-border-subtle bg-surface-1 py-3 font-sans antialiased select-none"
+        style={{ width: COLLAPSED_W }}
       >
         <Tooltip>
           <TooltipTrigger asChild>
@@ -161,8 +159,8 @@ function CollapsedIconButton({
           className={cn(
             'mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors duration-150',
             active
-              ? 'bg-white/[0.08] text-white/90'
-              : 'text-white/30 hover:bg-white/[0.05] hover:text-white/60',
+              ? 'bg-accent-subtle text-txt-primary'
+              : 'text-txt-tertiary hover:bg-surface-2 hover:text-txt-secondary',
           )}
         >
           {children}
@@ -236,8 +234,8 @@ function SidebarExpanded() {
   return (
     <TooltipProvider delayDuration={200}>
       <aside
-        className="flex h-dvh shrink-0 flex-col overflow-hidden border-r border-white/[0.06] font-sans antialiased select-none"
-        style={{ width: EXPANDED_W, backgroundColor: SIDEBAR_BG }}
+        className="flex h-dvh shrink-0 flex-col overflow-hidden border-r border-border-subtle bg-surface-1 font-sans antialiased select-none"
+        style={{ width: EXPANDED_W }}
       >
         {/* Header — brand + Okara-style close (only toggle here when expanded) */}
         <div className="flex h-14 shrink-0 items-center justify-between px-4">
@@ -245,14 +243,14 @@ function SidebarExpanded() {
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent/70 to-cyan-500/40 shadow-sm">
               <span className="text-[13px] leading-none">🐙</span>
             </div>
-            <span className="truncate text-[15px] font-semibold tracking-tight text-white/90 lowercase">
+            <span className="truncate text-[15px] font-semibold tracking-tight text-txt-primary lowercase">
               octux
             </span>
           </div>
           <button
             type="button"
             onClick={toggleSidebar}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/25 transition-all hover:bg-white/[0.06] hover:text-white/55"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-txt-disabled transition-all hover:bg-surface-2 hover:text-txt-secondary"
             aria-label="Close sidebar"
             title="Close sidebar"
           >
@@ -264,7 +262,7 @@ function SidebarExpanded() {
           <NavItemButton icon={Plus} label="New conversation" onClick={handleNew} />
         </div>
 
-        <div className="mx-4 my-2 h-px bg-white/[0.06]" />
+        <div className="mx-4 my-2 h-px bg-border-subtle" />
 
         <div className="space-y-1 px-3">
           <NavItemButton
@@ -282,12 +280,12 @@ function SidebarExpanded() {
           <ToolsFlyoutMenu pathname={pathname} variant="expanded" toolsActive={toolsNavActive} />
         </div>
 
-        <div className="mx-4 my-2 h-px bg-white/[0.06]" />
+        <div className="mx-4 my-2 h-px bg-border-subtle" />
 
         <div className="mb-1 px-3">
           {searchActive ? (
-            <div className="flex h-9 items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3">
-              <Search size={13} className="shrink-0 text-white/25" strokeWidth={ICON_STROKE} />
+            <div className="flex h-9 items-center gap-2 rounded-xl border border-border-subtle bg-surface-2/80 px-3">
+              <Search size={13} className="shrink-0 text-txt-disabled" strokeWidth={ICON_STROKE} />
               <input
                 autoFocus
                 value={searchQuery}
@@ -302,25 +300,25 @@ function SidebarExpanded() {
                   }
                 }}
                 placeholder="Search conversations..."
-                className="min-w-0 flex-1 bg-transparent text-[12px] text-white/80 outline-none placeholder:text-white/20"
+                className="min-w-0 flex-1 bg-transparent text-[12px] text-txt-primary outline-none placeholder:text-txt-disabled"
               />
             </div>
           ) : (
             <button
               type="button"
               onClick={() => setSearchActive(true)}
-              className="flex h-9 w-full items-center gap-2.5 rounded-xl px-3 text-white/25 transition-all hover:bg-white/[0.03] hover:text-white/40"
+              className="flex h-9 w-full items-center gap-2.5 rounded-xl px-3 text-txt-disabled transition-all hover:bg-surface-2/60 hover:text-txt-secondary"
             >
               <Search size={14} strokeWidth={ICON_STROKE} />
               <span className="flex-1 text-left text-[12px]">Search...</span>
-              <kbd className="rounded px-1.5 py-0.5 font-mono text-[9px] text-white/15 bg-white/[0.04]">
+              <kbd className="rounded px-1.5 py-0.5 font-mono text-[9px] text-txt-disabled bg-surface-2/80">
                 ⌘K
               </kbd>
             </button>
           )}
         </div>
 
-        <div className="mx-4 mb-1 h-px bg-white/[0.06]" />
+        <div className="mx-4 mb-1 h-px bg-border-subtle" />
 
         <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto px-3 pt-1">
           {loading ? (
@@ -345,8 +343,8 @@ function SidebarExpanded() {
 
               {filtered.length === 0 && (
                 <div className="py-10 text-center">
-                  <MessageSquare size={18} className="mx-auto mb-2 text-white/10" strokeWidth={ICON_STROKE} />
-                  <p className="text-[11px] text-white/20">
+                  <MessageSquare size={18} className="mx-auto mb-2 text-txt-disabled" strokeWidth={ICON_STROKE} />
+                  <p className="text-[11px] text-txt-disabled">
                     {searchQuery.trim() ? 'No results' : 'No conversations yet'}
                   </p>
                 </div>
@@ -367,28 +365,28 @@ function SidebarExpanded() {
                   <Zap size={14} className="text-accent" strokeWidth={ICON_STROKE} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[12px] font-medium text-white/70">Upgrade to Pro</p>
-                  <p className="text-[10px] text-white/25">
+                  <p className="text-[12px] font-medium text-txt-secondary">Upgrade to Pro</p>
+                  <p className="text-[10px] text-txt-disabled">
                     {pro.limits.tokensPerMonth} tokens/mo · {pro.priceLabel}
                     {pro.period}
                   </p>
                 </div>
                 <ChevronRight
                   size={13}
-                  className="shrink-0 text-white/15 transition-colors group-hover:text-white/30"
+                  className="shrink-0 text-txt-disabled transition-colors group-hover:text-txt-tertiary"
                   strokeWidth={ICON_STROKE}
                 />
               </div>
             </button>
           ) : (
-            <div className="rounded-xl border border-white/[0.05] bg-white/[0.03] px-2 py-2">
+            <div className="rounded-xl border border-border-subtle bg-surface-2/60 px-2 py-2">
               <div className="mb-1.5 flex items-center gap-2">
                 <Zap size={13} className="shrink-0 text-accent/70" strokeWidth={ICON_STROKE} />
-                <span className="text-[10px] text-white/35">
+                <span className="text-[10px] text-txt-tertiary">
                   {tokensRemaining}/{tokensTotal} tokens
                 </span>
               </div>
-              <div className="h-1 overflow-hidden rounded-full bg-white/[0.06]">
+              <div className="h-1 overflow-hidden rounded-full bg-surface-3">
                 <div
                   className={cn(
                     'h-full rounded-full transition-all duration-300',
@@ -435,14 +433,14 @@ function NavItemButton({
       className={cn(
         'flex h-10 w-full items-center gap-2.5 rounded-xl px-2.5 text-left transition-colors duration-150',
         active
-          ? 'bg-white/[0.08] text-white/90'
-          : 'text-white/50 hover:bg-white/[0.05] hover:text-white/80',
+          ? 'bg-accent-subtle text-txt-primary'
+          : 'text-txt-secondary hover:bg-surface-2 hover:text-txt-primary',
       )}
     >
       <Icon
         size={NAV_ICON}
         strokeWidth={ICON_STROKE}
-        className={cn('shrink-0', active ? 'text-white/80' : 'text-white/35')}
+        className={cn('shrink-0', active ? 'text-txt-primary' : 'text-txt-tertiary')}
       />
       <span className="flex-1 text-[14px] font-normal leading-5">{label}</span>
     </button>
@@ -452,7 +450,7 @@ function NavItemButton({
 function SectionGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mb-2.5">
-      <span className="mb-1 block px-2 text-[10px] font-medium uppercase tracking-[0.08em] text-white/15">
+      <span className="mb-1 block px-2 text-[10px] font-medium uppercase tracking-[0.08em] text-txt-disabled">
         {label}
       </span>
       <div className="space-y-0.5">{children}</div>
@@ -486,20 +484,20 @@ function ToolsFlyoutMenu({
             className={cn(
               'flex h-10 w-full items-center gap-2.5 rounded-xl px-2.5 text-left transition-colors duration-150',
               toolsActive || open
-                ? 'bg-white/[0.08] text-white/90'
-                : 'text-white/50 hover:bg-white/[0.05] hover:text-white/80',
+                ? 'bg-accent-subtle text-txt-primary'
+                : 'text-txt-secondary hover:bg-surface-2 hover:text-txt-primary',
             )}
           >
             <Settings2
               size={NAV_ICON}
               strokeWidth={ICON_STROKE}
-              className={cn('shrink-0', toolsActive || open ? 'text-white/80' : 'text-white/35')}
+              className={cn('shrink-0', toolsActive || open ? 'text-txt-primary' : 'text-txt-tertiary')}
             />
             <span className="flex-1 text-[14px] font-normal leading-5">Tools</span>
             <ChevronRight
               size={14}
               strokeWidth={ICON_STROKE}
-              className={cn('shrink-0 text-white/25 transition-transform duration-150', open && 'rotate-90')}
+              className={cn('shrink-0 text-txt-disabled transition-transform duration-150', open && 'rotate-90')}
             />
           </button>
         </DropdownMenuTrigger>
@@ -507,11 +505,11 @@ function ToolsFlyoutMenu({
           side="right"
           align="start"
           sideOffset={8}
-          className="z-[100] w-60 rounded-xl border border-white/[0.08] bg-[#18181F] p-2 shadow-xl shadow-black/40"
+          className="z-[100] w-60 rounded-xl border border-border-default bg-surface-raised p-2 shadow-lg"
         >
           <div className="mb-1 flex items-center gap-2 px-2 py-1.5">
-            <Settings2 size={14} className="text-white/40" strokeWidth={ICON_STROKE} />
-            <span className="text-[12px] font-medium text-white/60">Tools</span>
+            <Settings2 size={14} className="text-txt-secondary" strokeWidth={ICON_STROKE} />
+            <span className="text-[12px] font-medium text-txt-tertiary">Tools</span>
           </div>
           {tools.map((tool) => {
             const Icon = tool.icon;
@@ -525,17 +523,17 @@ function ToolsFlyoutMenu({
                 }}
                 className={cn(
                   'cursor-pointer rounded-lg p-0 focus:bg-transparent',
-                  active ? 'bg-white/[0.06]' : '',
+                  active ? 'bg-accent-subtle' : '',
                 )}
               >
-                <span className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-white/[0.04]">
+                <span className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-surface-2/80">
                   <div
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
                     style={{ backgroundColor: `${tool.color}18` }}
                   >
                     <Icon size={14} style={{ color: tool.color }} strokeWidth={ICON_STROKE} />
                   </div>
-                  <span className="text-[13px] text-white/65">{tool.name}</span>
+                  <span className="text-[13px] text-txt-secondary">{tool.name}</span>
                 </span>
               </DropdownMenuItem>
             );
@@ -555,8 +553,8 @@ function ToolsFlyoutMenu({
               className={cn(
                 'mb-1 flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-150',
                 toolsActive || open
-                  ? 'bg-white/[0.08] text-white/90'
-                  : 'text-white/30 hover:bg-white/[0.05] hover:text-white/60',
+                  ? 'bg-accent-subtle text-txt-primary'
+                  : 'text-txt-tertiary hover:bg-surface-2 hover:text-txt-tertiary',
               )}
               aria-label="Tools"
             >
@@ -568,11 +566,11 @@ function ToolsFlyoutMenu({
           side="right"
           align="start"
           sideOffset={8}
-          className="z-[100] w-60 rounded-xl border border-white/[0.08] bg-[#18181F] p-2 shadow-xl shadow-black/40"
+          className="z-[100] w-60 rounded-xl border border-border-default bg-surface-raised p-2 shadow-lg"
         >
           <div className="mb-1 flex items-center gap-2 px-2 py-1.5">
-            <Settings2 size={14} className="text-white/40" strokeWidth={ICON_STROKE} />
-            <span className="text-[12px] font-medium text-white/60">Tools</span>
+            <Settings2 size={14} className="text-txt-secondary" strokeWidth={ICON_STROKE} />
+            <span className="text-[12px] font-medium text-txt-tertiary">Tools</span>
           </div>
           {tools.map((tool) => {
             const Icon = tool.icon;
@@ -586,17 +584,17 @@ function ToolsFlyoutMenu({
                 }}
                 className={cn(
                   'cursor-pointer rounded-lg p-0 focus:bg-transparent',
-                  active ? 'bg-white/[0.06]' : '',
+                  active ? 'bg-accent-subtle' : '',
                 )}
               >
-                <span className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-white/[0.04]">
+                <span className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-surface-2/80">
                   <div
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
                     style={{ backgroundColor: `${tool.color}18` }}
                   >
                     <Icon size={14} style={{ color: tool.color }} strokeWidth={ICON_STROKE} />
                   </div>
-                  <span className="text-[13px] text-white/65">{tool.name}</span>
+                  <span className="text-[13px] text-txt-secondary">{tool.name}</span>
                 </span>
               </DropdownMenuItem>
             );
@@ -626,25 +624,21 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
   const initial =
     isAuthenticated && user?.email ? user.email[0].toUpperCase() : 'G';
 
-  const onThemeToggle = () => {
-    document.documentElement.classList.toggle('dark');
-  };
-
   const triggerExpanded = (
     <button
       type="button"
-      className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 transition-all hover:bg-white/[0.03]"
+      className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 transition-all hover:bg-surface-2"
     >
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/15">
         <span className="text-[10px] font-bold text-accent">{initial}</span>
       </div>
       <div className="min-w-0 flex-1 text-left">
-        <p className="truncate text-[12px] text-white/55">{displayName}</p>
+        <p className="truncate text-[12px] text-txt-secondary">{displayName}</p>
         {!isAuthenticated && (
           <p className="text-[10px] text-accent/60">Sign In</p>
         )}
         {isAuthenticated && user?.email && (
-          <p className="truncate text-[10px] text-white/25">{user.email}</p>
+          <p className="truncate text-[10px] text-txt-disabled">{user.email}</p>
         )}
       </div>
       <TierPill tier={tier} />
@@ -654,7 +648,7 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
   const triggerCollapsed = (
     <button
       type="button"
-      className="flex h-10 w-10 items-center justify-center rounded-xl transition-all hover:bg-white/[0.04]"
+      className="flex h-10 w-10 items-center justify-center rounded-xl transition-all hover:bg-surface-2/80"
       aria-label="Profile"
     >
       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/15">
@@ -672,22 +666,22 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
         side="top"
         align="start"
         sideOffset={8}
-        className="z-[100] min-w-[220px] rounded-xl border border-white/[0.08] bg-[#18181F] p-1.5 shadow-xl shadow-black/40"
+        className="z-[100] min-w-[220px] rounded-xl border border-border-default bg-surface-raised p-1.5 shadow-lg"
       >
         {isAuthenticated ? (
           <>
             <div className="px-3 py-2">
-              <p className="text-[13px] font-medium text-white/75">{displayName}</p>
-              {user?.email && <p className="text-[11px] text-white/30">{user.email}</p>}
+              <p className="text-[13px] font-medium text-txt-primary">{displayName}</p>
+              {user?.email && <p className="text-[11px] text-txt-tertiary">{user.email}</p>}
             </div>
-            <div className="mx-2 my-1 h-px bg-white/[0.06]" />
+            <div className="mx-2 my-1 h-px bg-border-subtle" />
             <PopoverRow
               icon={Zap}
               label={`${tier === 'free' ? 'Free' : tier === 'pro' ? 'Pro' : tier === 'max' ? 'Max' : 'Octopus'} plan · ${tokensRemaining} token${tokensRemaining === 1 ? '' : 's'}`}
               sub
             />
             <DropdownMenuItem
-              className="cursor-pointer rounded-lg px-3 py-2 text-white/55 focus:bg-white/[0.04]"
+              className="cursor-pointer rounded-lg px-3 py-2 text-txt-secondary focus:bg-surface-2/80"
               onSelect={() => router.push('/pricing')}
             >
               <span className="flex items-center gap-2.5 text-[13px]">
@@ -695,16 +689,10 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
                 Settings
               </span>
             </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer rounded-lg px-3 py-2 text-white/55 focus:bg-white/[0.04]"
-              onSelect={() => onThemeToggle()}
-            >
-              <span className="flex items-center gap-2.5 text-[13px]">
-                <Moon size={15} strokeWidth={ICON_STROKE} />
-                Toggle dark mode
-              </span>
-            </DropdownMenuItem>
-            <div className="mx-2 my-1 h-px bg-white/[0.06]" />
+            <div className="px-1 py-1" onPointerDown={(e) => e.preventDefault()}>
+              <ThemeToggleCompact />
+            </div>
+            <div className="mx-2 my-1 h-px bg-border-subtle" />
             <DropdownMenuItem
               className="cursor-pointer rounded-lg px-3 py-2 text-red-400/80 focus:bg-red-500/[0.06]"
               onSelect={async () => {
@@ -720,17 +708,11 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
           </>
         ) : (
           <>
+            <div className="px-1 py-1" onPointerDown={(e) => e.preventDefault()}>
+              <ThemeToggleCompact />
+            </div>
             <DropdownMenuItem
-              className="cursor-pointer rounded-lg px-3 py-2 text-white/55 focus:bg-white/[0.04]"
-              onSelect={() => onThemeToggle()}
-            >
-              <span className="flex items-center gap-2.5 text-[13px]">
-                <Moon size={15} strokeWidth={ICON_STROKE} />
-                Toggle dark mode
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer rounded-lg px-3 py-2 text-white/55 focus:bg-white/[0.04]"
+              className="cursor-pointer rounded-lg px-3 py-2 text-txt-secondary focus:bg-surface-2/80"
               onSelect={() =>
                 window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'login' } }))
               }
@@ -757,7 +739,7 @@ function PopoverRow({
   sub?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/45">
+    <div className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-txt-tertiary">
       <Icon size={15} className={sub ? 'text-accent/70' : undefined} strokeWidth={ICON_STROKE} />
       {label}
     </div>
@@ -780,8 +762,8 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
       className={cn(
         'group relative flex min-h-[32px] cursor-pointer items-center gap-2 rounded-lg py-[7px] pl-2.5 pr-1.5 transition-colors duration-150',
         isActive
-          ? 'bg-white/[0.08] text-white/90'
-          : 'text-white/40 hover:bg-white/[0.04] hover:text-white/70',
+          ? 'bg-accent-subtle text-txt-primary'
+          : 'text-txt-secondary hover:bg-surface-2 hover:text-txt-primary',
       )}
       onClick={() => {
         if (!renaming) router.push(`/c/${convo.id}`);
@@ -789,6 +771,12 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
+      {isActive && (
+        <div
+          className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-accent"
+          aria-hidden
+        />
+      )}
       <ConvoIcon convo={convo} />
 
       <div className="min-w-0 flex-1">
@@ -819,7 +807,7 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-white/15 transition-all hover:bg-white/[0.06] hover:text-white/45"
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-txt-disabled transition-all hover:bg-surface-2 hover:text-txt-tertiary"
             aria-label="More"
           >
             <MoreHorizontal size={12} strokeWidth={ICON_STROKE} />
@@ -842,19 +830,19 @@ function ConvoIcon({ convo }: { convo: ConversationSummary }) {
     };
     return (
       <span
-        className="h-2 w-2 shrink-0 rounded-full ring-1 ring-white/10"
+        className="h-2 w-2 shrink-0 rounded-full ring-1 ring-border-default"
         style={{ backgroundColor: colors[convo.latest_verdict || ''] || '#7C3AED' }}
       />
     );
   }
-  return <MessageSquare size={13} className="shrink-0 text-white/15" strokeWidth={ICON_STROKE} />;
+  return <MessageSquare size={13} className="shrink-0 text-txt-disabled" strokeWidth={ICON_STROKE} />;
 }
 
 function TierPill({ tier }: { tier: TierType }) {
   const label =
     tier === 'free' ? 'Free' : tier === 'pro' ? 'Pro' : tier === 'max' ? 'Max' : 'Octopus';
   return (
-    <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider text-white/15">{label}</span>
+    <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider text-txt-disabled">{label}</span>
   );
 }
 
@@ -863,8 +851,8 @@ function SidebarLoadingSkeleton() {
     <div className="space-y-3 px-1 py-1">
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="flex items-center gap-2 py-1.5">
-          <Skeleton className="h-2 w-2 shrink-0 rounded-full bg-white/[0.06]" />
-          <Skeleton className="h-3 flex-1 rounded bg-white/[0.06]" />
+          <Skeleton className="h-2 w-2 shrink-0 rounded-full bg-surface-3" />
+          <Skeleton className="h-3 flex-1 rounded bg-surface-3" />
         </div>
       ))}
     </div>

@@ -1,6 +1,18 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import ThemeInitializer from "@/components/theme/ThemeInitializer";
+
+const themeInitScript = `
+(function() {
+  try {
+    var mode = localStorage.getItem('octux:theme') || 'system';
+    var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('dark', dark);
+    document.documentElement.classList.toggle('light', !dark);
+  } catch (e) {}
+})();
+`;
 
 export const metadata: Metadata = {
   title: {
@@ -41,13 +53,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" dir="ltr" className="dark" suppressHydrationWarning>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
         />
-        <meta name="theme-color" content="#0A0A0F" />
+        <meta name="theme-color" content="#0F0F13" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -59,7 +72,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body><AuthProvider>{children}</AuthProvider></body>
+      <body className="min-h-dvh font-sans antialiased bg-surface-0 text-txt-primary transition-colors duration-200">
+        <ThemeInitializer />
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
