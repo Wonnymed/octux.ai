@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctCard, OctBadge } from '@/components/ui';
+import { OctCard, OctBadge } from '@/components/octux';
 
 interface RefinementCardProps {
   data: any;

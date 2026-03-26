@@ -2,7 +2,8 @@
 
 import { useRef, useEffect } from 'react';
 import { cn } from '@/lib/design/cn';
-import { OctAvatar, OctBadge, OctSkeleton } from '@/components/ui';
+import { OctBadge } from '@/components/octux';
+import { OctAvatar, OctSkeleton } from '@/components/ui';
 import { type Command, ACTIONS, CATEGORIES } from '@/lib/commands/registry';
 
 interface CommandPaletteProps {

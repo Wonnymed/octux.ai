@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctBadge, OctButton } from '@/components/ui';
+import { OctBadge, OctButton } from '@/components/octux';
 import { CircularProgress } from '@/components/ui';
 import { CitatedText } from '@/components/citations';
 import { verdictColors } from '@/lib/design/tokens';

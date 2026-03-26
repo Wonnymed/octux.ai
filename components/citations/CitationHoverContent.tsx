@@ -1,7 +1,8 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctAvatar, OctBadge } from '@/components/ui';
+import { OctBadge } from '@/components/octux';
+import { OctAvatar } from '@/components/ui';
 import { type Citation, type CitationGroup, getConfidenceLevel } from '@/lib/citations/types';
 
 interface CitationHoverContentProps {

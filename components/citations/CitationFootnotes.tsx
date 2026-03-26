@@ -1,7 +1,8 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctAvatar, OctBadge, OctCollapsible } from '@/components/ui';
+import { OctBadge } from '@/components/octux';
+import { OctAvatar, OctCollapsible } from '@/components/ui';
 import { type Citation, getConfidenceLevel } from '@/lib/citations/types';
 import { getUniqueCitedAgents } from '@/lib/citations/parser';
 

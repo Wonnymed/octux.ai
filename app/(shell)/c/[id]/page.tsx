@@ -9,7 +9,7 @@ import SimulationBlock from '@/components/chat/SimulationBlock';
 import VerdictCard from '@/components/chat/VerdictCard';
 import RefinementCard from '@/components/chat/RefinementCard';
 import { cn } from '@/lib/design/cn';
-import { OctButton } from '@/components/ui';
+import { OctButton } from '@/components/octux';
 import { useSuggestions } from '@/lib/hooks/useSuggestions';
 import SuggestionChips from '@/components/chat/SuggestionChips';
 

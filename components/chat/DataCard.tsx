@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctCard, OctBadge, OctButton } from '@/components/ui';
+import { OctCard, OctBadge, OctButton } from '@/components/octux';
 
 interface DataCardProps {
   data: any;

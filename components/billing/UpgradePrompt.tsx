@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctButton, OctCard } from '@/components/ui';
+import { OctButton, OctCard } from '@/components/octux';
 import { TIERS, type TierType } from '@/lib/billing/tiers';
 
 interface UpgradePromptProps {
@@ -50,7 +50,7 @@ export default function UpgradePrompt({
           )}
 
           <div className="flex items-center gap-2 flex-wrap">
-            <OctButton variant="primary" size="sm" onClick={handleUpgrade}>
+            <OctButton variant="default" size="sm" onClick={handleUpgrade}>
               Upgrade to {tier.name} — {tier.limits.tokensPerMonth} tokens{tier.period}
             </OctButton>
             {onDismiss && (

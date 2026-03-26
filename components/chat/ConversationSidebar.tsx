@@ -3,7 +3,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/design/cn';
-import { OctAvatar, OctButton, OctSkeleton } from '@/components/ui';
+import { OctButton } from '@/components/octux';
+import { OctAvatar, OctSkeleton } from '@/components/ui';
 import SidebarSearch from '@/components/sidebar/SidebarSearch';
 import SidebarCategories from '@/components/sidebar/SidebarCategories';
 import SidebarContextMenu from '@/components/sidebar/SidebarContextMenu';
@@ -133,7 +134,7 @@ export default function ConversationSidebar({ expanded, onNavigate }: Conversati
 
         {expanded ? (
           <OctButton
-            variant="primary"
+            variant="default"
             size="sm"
             fullWidth
             onClick={() => navigate('/')}

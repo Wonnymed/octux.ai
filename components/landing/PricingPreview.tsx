@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctButton } from '@/components/ui';
+import { OctButton } from '@/components/octux';
 
 const tiers = [
   {
@@ -98,7 +98,7 @@ export default function PricingPreview({ onSignIn }: PricingPreviewProps) {
               </div>
 
               <OctButton
-                variant={tier.popular ? 'primary' : 'secondary'}
+                variant={tier.popular ? 'default' : 'secondary'}
                 size="sm"
                 fullWidth
                 onClick={onSignIn}

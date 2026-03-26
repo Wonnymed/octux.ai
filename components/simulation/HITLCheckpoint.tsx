@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/design/cn';
-import { OctButton, OctCard, OctInput } from '@/components/ui';
+import { OctButton, OctCard } from '@/components/octux';
+import { OctInput } from '@/components/ui';
 import type { HITLState } from '@/lib/hooks/useSimulationStream';
 
 interface HITLCheckpointProps {
@@ -78,7 +79,7 @@ export default function HITLCheckpoint({ hitl, onRespond, className }: HITLCheck
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <OctButton variant="primary" size="sm" onClick={handleApprove}>
+          <OctButton variant="default" size="sm" onClick={handleApprove}>
             Everything correct
           </OctButton>
           <OctButton variant="secondary" size="sm" onClick={handleCorrect}>

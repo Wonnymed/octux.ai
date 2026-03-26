@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/design/cn';
-import { OctButton } from '@/components/ui';
+import { OctButton } from '@/components/octux';
 import { TIERS, type TierType } from '@/lib/billing/tiers';
 
 export default function PricingPage() {
@@ -84,7 +84,7 @@ export default function PricingPage() {
               </div>
 
               <OctButton
-                variant={tier.popular ? 'primary' : 'secondary'}
+                variant={tier.popular ? 'default' : 'secondary'}
                 size="md"
                 fullWidth
                 loading={loading === tier.id}

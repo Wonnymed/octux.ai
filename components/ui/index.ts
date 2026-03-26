@@ -1,8 +1,6 @@
-export { default as OctButton } from './OctButton';
+// Custom Octux components (not replaced by shadcn)
 export { default as OctInput } from './OctInput';
 export { default as OctTextarea } from './OctTextarea';
-export { default as OctBadge } from './OctBadge';
-export { default as OctCard } from './OctCard';
 export { default as OctTooltip } from './OctTooltip';
 export { default as OctDialog } from './OctDialog';
 export { default as OctDropdown } from './OctDropdown';

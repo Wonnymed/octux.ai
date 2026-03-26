@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctButton } from '@/components/ui';
+import { OctButton } from '@/components/octux';
 
 interface LiveExampleProps {
   onSignIn: () => void;
@@ -92,7 +92,7 @@ export default function LiveExample({ onSignIn }: LiveExampleProps) {
 
           {/* CTA */}
           <div className="px-6 py-4 border-t border-border-subtle text-center bg-accent-subtle/30">
-            <OctButton variant="primary" size="md" onClick={onSignIn}>
+            <OctButton variant="default" size="md" onClick={onSignIn}>
               Try your own decision &rarr;
             </OctButton>
           </div>

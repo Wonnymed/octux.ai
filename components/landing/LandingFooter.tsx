@@ -1,6 +1,6 @@
 'use client';
 
-import { OctButton } from '@/components/ui';
+import { OctButton } from '@/components/octux';
 
 interface LandingFooterProps {
   onSignIn: () => void;
@@ -21,7 +21,7 @@ export default function LandingFooter({ onSignIn }: LandingFooterProps) {
           <p className="text-sm text-txt-tertiary mb-6">
             10 AI specialists. Real-time debate. Traceable verdicts.
           </p>
-          <OctButton variant="primary" size="lg" onClick={onSignIn}>
+          <OctButton variant="default" size="lg" onClick={onSignIn}>
             Start deciding &rarr;
           </OctButton>
         </div>

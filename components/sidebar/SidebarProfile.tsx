@@ -1,6 +1,7 @@
 'use client';
 
-import { OctAvatar, OctBadge, OctToggle, OctTooltip } from '@/components/ui';
+import { OctBadge } from '@/components/octux';
+import { OctAvatar, OctToggle, OctTooltip } from '@/components/ui';
 import { useTheme } from '@/lib/hooks/useTheme';
 
 interface SidebarProfileProps {
