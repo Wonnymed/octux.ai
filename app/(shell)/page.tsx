@@ -73,8 +73,8 @@ export default function HomePage() {
 
   return (
     <>
-      {/* ABOVE THE FOLD — the product */}
-      <div className="h-dvh flex flex-col shrink-0">
+      {/* ABOVE THE FOLD — the product (min-h so marketing scrolls below) */}
+      <div className="min-h-dvh flex flex-col">
         {/* Center: Entity */}
         <div className="flex-1 flex items-center justify-center">
           <EntityVisual state="idle" />
