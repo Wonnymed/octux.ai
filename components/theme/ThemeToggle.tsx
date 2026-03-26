@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { Moon, Sun, Monitor } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import { useThemeStore, type ThemeMode } from '@/lib/store/theme';
@@ -58,7 +59,13 @@ export function ThemeToggleCompact() {
       onClick={cycle}
       className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-txt-secondary transition-colors hover:bg-surface-2"
     >
-      <Icon size={15} />
+      <motion.span
+        className="inline-flex shrink-0"
+        animate={{ rotate: resolved === 'dark' ? 0 : 180 }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <Icon size={15} />
+      </motion.span>
       <span className="flex-1 text-[13px]">{label}</span>
       <span className="text-[10px] capitalize text-txt-disabled">{mode}</span>
     </button>

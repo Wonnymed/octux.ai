@@ -417,3 +417,97 @@
 [data-framer-motion] {
   will-change: transform, opacity;
 }
+
+/* ═══════════════════════════════════════
+   OCTUX MOTION SYSTEM
+   ═══════════════════════════════════════ */
+
+:root {
+  --duration-instant: 80ms;
+  --duration-fast: 150ms;
+  --duration-medium: 200ms;
+  --duration-slow: 350ms;
+  --duration-reveal: 500ms;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+button,
+a,
+input,
+textarea,
+select,
+[role="button"],
+[role="tab"],
+[role="menuitem"] {
+  transition-property: background-color, border-color, color, box-shadow, opacity, transform;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
+}
+
+button:hover:not(:disabled),
+[role="button"]:hover:not(:disabled) {
+  transform: translateY(-0.5px);
+}
+
+button:active:not(:disabled),
+[role="button"]:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+a.animated-link {
+  position: relative;
+  text-decoration: none;
+}
+
+a.animated-link::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--accent);
+  transition: width var(--duration-fast) var(--ease-out);
+}
+
+a.animated-link:hover::after {
+  width: 100%;
+}
+
+.card-interactive {
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.card-interactive:hover {
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-sm);
+}
+
+body,
+main,
+aside,
+nav,
+[class*="surface"],
+[class*="bg-surface"] {
+  transition:
+    background-color var(--duration-medium) var(--ease-in-out),
+    color var(--duration-medium) var(--ease-in-out),
+    border-color var(--duration-medium) var(--ease-in-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

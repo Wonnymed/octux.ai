@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { EASE_OUT } from '@/lib/motion/constants';
 
 interface ProbabilityRingProps {
   value: number;
@@ -41,15 +42,15 @@ export default function ProbabilityRing({
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: dashOffset }}
-          transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
+          transition={{ duration: 1.2, ease: EASE_OUT, delay: 0.3 }}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         <motion.span
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.6 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.5, ease: EASE_OUT }}
           className="text-lg font-bold tabular-nums"
           style={{ color }}
         >

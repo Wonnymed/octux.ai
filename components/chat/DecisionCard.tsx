@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
 import { OctButton } from '@/components/octux';
+import { TRANSITION } from '@/lib/motion/constants';
 import MarkdownRenderer from './MarkdownRenderer';
 import DisclaimerBanner from './DisclaimerBanner';
 
@@ -20,9 +21,9 @@ export default function DecisionCard({
 }: DecisionCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
+      transition={{ ...TRANSITION.reveal, delay: 0.05 }}
       className="flex flex-col items-start mb-4 w-full"
     >
       <div className="flex items-start gap-3 max-w-[min(85%,42rem)] w-full">
@@ -42,31 +43,32 @@ export default function DecisionCard({
 
       {suggestSimulation && simulationPrompt && (
         <motion.div
-          initial={{ opacity: 0, y: 4, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.2, delay: 0.3 }}
-          className="mt-3 ml-10 w-full max-w-[min(85%,42rem)]"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+          className="mt-3 ml-10 w-full max-w-[min(85%,42rem)] border-l-2 border-accent/40 bg-surface-1 rounded-r-xl p-4"
         >
-          <div className="relative p-[1px] rounded-xl bg-gradient-to-r from-accent/40 via-accent/10 to-transparent overflow-hidden">
-            <div className="rounded-xl bg-surface-2 p-4">
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <Zap size={13} className="text-accent" />
-                </div>
-                <span className="text-xs font-medium text-accent/80">
-                  This looks like a decision worth analyzing deeply
-                </span>
+          <div className="relative overflow-hidden rounded-xl bg-surface-2 p-4">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10">
+                <Zap size={13} className="text-accent" />
               </div>
-              <OctButton
-                variant="default"
-                size="sm"
-                className="rounded-xl hover:shadow-lg hover:shadow-accent/20 transition-all duration-200"
-                onClick={() => onSimulate?.(simulationPrompt, 'deep')}
-              >
-                <Zap size={14} className="mr-1.5" />
-                Activate Deep Simulation
-              </OctButton>
+              <span className="text-xs font-medium text-accent/80">
+                This looks like a decision worth analyzing deeply
+              </span>
             </div>
+            <OctButton
+              variant="default"
+              size="sm"
+              className="group relative overflow-hidden rounded-xl transition-colors"
+              onClick={() => onSimulate?.(simulationPrompt, 'deep')}
+            >
+              <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.07] to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
+              <span className="relative flex items-center gap-2">
+                <Zap size={14} className="mr-0.5" />
+                Activate Deep Simulation
+              </span>
+            </OctButton>
           </div>
         </motion.div>
       )}

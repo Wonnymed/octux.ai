@@ -111,9 +111,9 @@ function PhaseItem({
   return (
     <Collapsible>
       <motion.div
-        initial={{ opacity: 0, x: -8 }}
+        initial={{ opacity: 0, x: -4 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.2, delay: index * 0.05 }}
+        transition={{ duration: 0.25, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
           'rounded-lg border transition-all duration-normal',
           phase.status === 'active' && 'border-accent/30 bg-accent-subtle/20 shadow-sm shadow-accent/5',

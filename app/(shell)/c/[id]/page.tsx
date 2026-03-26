@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { EASE_OUT, stagger } from '@/lib/motion/constants';
 import { useChatStore } from '@/lib/store/chat';
 import { useSimulationStore } from '@/lib/store/simulation';
 import { useAppStore } from '@/lib/store/app';
@@ -102,7 +103,13 @@ export default function ConversationPage() {
   const hasMessages = messages.length > 0;
 
   return (
-    <div className="flex flex-col h-full bg-surface-0">
+    <motion.div
+      key={conversationId}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className="flex flex-col h-full bg-surface-0"
+    >
       {/* ─── MESSAGES AREA ─── */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-6">
@@ -126,14 +133,28 @@ export default function ConversationPage() {
 
           <AnimatePresence initial={false}>
             {messages.map((msg, i) => (
-              <MessageRenderer
+              <motion.div
                 key={msg.id}
-                message={msg}
-                conversationId={conversationId}
-                onSimulate={handleSimulate}
-                onRefine={handleRefine}
-                isLast={i === messages.length - 1}
-              />
+                initial={
+                  msg.role === 'user'
+                    ? { opacity: 0, x: 12 }
+                    : { opacity: 0, y: 8 }
+                }
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{
+                  duration: msg.role === 'user' ? 0.2 : 0.3,
+                  delay: stagger(i, 0.04, 0.3),
+                  ease: EASE_OUT,
+                }}
+              >
+                <MessageRenderer
+                  message={msg}
+                  conversationId={conversationId}
+                  onSimulate={handleSimulate}
+                  onRefine={handleRefine}
+                  isLast={i === messages.length - 1}
+                />
+              </motion.div>
             ))}
           </AnimatePresence>
 
@@ -155,6 +176,6 @@ export default function ConversationPage() {
             : 'What decision are you facing?'
         }
       />
-    </div>
+    </motion.div>
   );
 }

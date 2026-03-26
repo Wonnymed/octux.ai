@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { motion, LayoutGroup } from 'framer-motion';
 import {
   Plus,
   Search,
@@ -60,7 +61,16 @@ function getToolsForFlyout(): OctuxTool[] {
 
 export default function Sidebar() {
   const expanded = useAppStore((s) => s.sidebarExpanded);
-  return expanded ? <SidebarExpanded /> : <SidebarCollapsed />;
+  return (
+    <motion.aside
+      initial={false}
+      animate={{ width: expanded ? EXPANDED_W : COLLAPSED_W }}
+      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      className="flex h-dvh shrink-0 flex-col overflow-hidden border-r border-border-subtle bg-surface-1 font-sans antialiased select-none"
+    >
+      {expanded ? <SidebarExpanded /> : <SidebarCollapsed />}
+    </motion.aside>
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -78,10 +88,7 @@ function SidebarCollapsed() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div
-        className="flex h-dvh w-16 shrink-0 flex-col items-center border-r border-border-subtle bg-surface-1 py-3 font-sans antialiased select-none"
-        style={{ width: COLLAPSED_W }}
-      >
+      <div className="flex h-full w-full flex-col items-center py-3">
         <Tooltip>
           <TooltipTrigger asChild>
             <button
@@ -233,10 +240,7 @@ function SidebarExpanded() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <aside
-        className="flex h-dvh shrink-0 flex-col overflow-hidden border-r border-border-subtle bg-surface-1 font-sans antialiased select-none"
-        style={{ width: EXPANDED_W }}
-      >
+      <div className="flex h-full w-full min-w-0 flex-col overflow-hidden">
         {/* Header — brand + Okara-style close (only toggle here when expanded) */}
         <div className="flex h-14 shrink-0 items-center justify-between px-4">
           <div className="flex min-w-0 items-center gap-2.5">
@@ -320,38 +324,40 @@ function SidebarExpanded() {
 
         <div className="mx-4 mb-1 h-px bg-border-subtle" />
 
-        <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto px-3 pt-1">
-          {loading ? (
-            <SidebarLoadingSkeleton />
-          ) : (
-            <>
-              {pinned.length > 0 && (
-                <SectionGroup label="Pinned">
-                  {pinned.map((c) => (
-                    <ConversationRow key={c.id} convo={c} isActive={pathname === `/c/${c.id}`} />
-                  ))}
-                </SectionGroup>
-              )}
+        <LayoutGroup id="sidebar-conversations">
+          <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto px-3 pt-1">
+            {loading ? (
+              <SidebarLoadingSkeleton />
+            ) : (
+              <>
+                {pinned.length > 0 && (
+                  <SectionGroup label="Pinned">
+                    {pinned.map((c) => (
+                      <ConversationRow key={c.id} convo={c} isActive={pathname === `/c/${c.id}`} />
+                    ))}
+                  </SectionGroup>
+                )}
 
-              {groups.map((group) => (
-                <SectionGroup key={group.label} label={group.label}>
-                  {group.conversations.map((c) => (
-                    <ConversationRow key={c.id} convo={c} isActive={pathname === `/c/${c.id}`} />
-                  ))}
-                </SectionGroup>
-              ))}
+                {groups.map((group) => (
+                  <SectionGroup key={group.label} label={group.label}>
+                    {group.conversations.map((c) => (
+                      <ConversationRow key={c.id} convo={c} isActive={pathname === `/c/${c.id}`} />
+                    ))}
+                  </SectionGroup>
+                ))}
 
-              {filtered.length === 0 && (
-                <div className="py-10 text-center">
-                  <MessageSquare size={18} className="mx-auto mb-2 text-txt-disabled" strokeWidth={ICON_STROKE} />
-                  <p className="text-[11px] text-txt-disabled">
-                    {searchQuery.trim() ? 'No results' : 'No conversations yet'}
-                  </p>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+                {filtered.length === 0 && (
+                  <div className="py-10 text-center">
+                    <MessageSquare size={18} className="mx-auto mb-2 text-txt-disabled" strokeWidth={ICON_STROKE} />
+                    <p className="text-[11px] text-txt-disabled">
+                      {searchQuery.trim() ? 'No results' : 'No conversations yet'}
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </LayoutGroup>
 
         <div className="shrink-0 space-y-2 p-3 pt-2">
           {tier === 'free' ? (
@@ -406,7 +412,7 @@ function SidebarExpanded() {
 
           <ProfileMenu variant="expanded" tier={tier} />
         </div>
-      </aside>
+      </div>
     </TooltipProvider>
   );
 }
@@ -772,8 +778,10 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
       onMouseLeave={() => setHovered(false)}
     >
       {isActive && (
-        <div
+        <motion.div
+          layoutId="sidebar-active-indicator"
           className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-accent"
+          transition={{ type: 'spring', stiffness: 400, damping: 28 }}
           aria-hidden
         />
       )}
@@ -796,7 +804,7 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
         <Pin size={9} className="shrink-0 text-accent/30" strokeWidth={ICON_STROKE} />
       )}
 
-      {hovered && !renaming && (
+      {!renaming && (
         <ConversationContextMenu
           conversationId={convo.id}
           title={title}
@@ -804,14 +812,20 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
           onRename={() => setRenaming(true)}
           onShare={() => navigator.clipboard.writeText(`${window.location.origin}/c/${convo.id}/report`)}
         >
-          <button
+          <motion.button
             type="button"
+            initial={false}
+            animate={{ opacity: hovered ? 1 : 0 }}
+            transition={{ duration: 0.1 }}
             onClick={(e) => e.stopPropagation()}
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-txt-disabled transition-all hover:bg-surface-2 hover:text-txt-tertiary"
+            className={cn(
+              'flex h-5 w-5 shrink-0 items-center justify-center rounded text-txt-disabled transition-colors hover:bg-surface-2 hover:text-txt-tertiary',
+              hovered ? 'pointer-events-auto' : 'pointer-events-none',
+            )}
             aria-label="More"
           >
             <MoreHorizontal size={12} strokeWidth={ICON_STROKE} />
-          </button>
+          </motion.button>
         </ConversationContextMenu>
       )}
     </div>

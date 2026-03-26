@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef, useEffect, useCallback, useState, type KeyboardEvent } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import { SPRING } from '@/lib/motion/constants';
 import { ArrowUp, Lock, Zap } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import { useChatStore } from '@/lib/store/chat';
@@ -192,10 +193,11 @@ export default function ChatInput({
           {/* Large input — primary focus */}
           <div
             className={cn(
-              'relative rounded-2xl border transition-all duration-200',
-              'bg-surface-1 border-border-subtle',
+              'relative rounded-2xl border transition-all duration-[150ms]',
+              'bg-surface-1 border-border-default',
               'shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-              'focus-within:border-accent/30 focus-within:shadow-lg focus-within:shadow-accent/5',
+              'focus-within:border-accent/40 focus-within:ring-2 focus-within:ring-accent/15',
+              'focus-within:shadow-[0_0_0_4px_var(--accent-ring,rgba(124,58,237,0.12))]',
               'hover:border-border-default',
               sending && 'opacity-70 pointer-events-none',
             )}
@@ -215,7 +217,7 @@ export default function ChatInput({
               rows={1}
               className={cn(
                 'w-full min-h-[52px] max-h-[120px] resize-none bg-transparent',
-                'px-5 py-3.5 pr-14 text-[15px] text-white/90 placeholder:text-txt-disabled',
+                'px-5 py-3.5 pr-14 text-[15px] text-txt-primary placeholder:text-txt-disabled',
                 'outline-none',
                 'disabled:cursor-not-allowed disabled:opacity-50',
               )}
@@ -229,11 +231,12 @@ export default function ChatInput({
               onClick={handleSend}
               disabled={!hasContent || sending || disabled}
               className={cn(
-                'absolute right-3 bottom-3 w-8 h-8 rounded-xl flex items-center justify-center transition-colors',
-                hasContent && !sending
-                  ? 'bg-accent text-white hover:bg-accent-hover'
-                  : 'bg-surface-2 text-txt-disabled',
-                (sending || disabled) && 'opacity-50 cursor-not-allowed',
+                'absolute right-3 bottom-3 flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-[120ms]',
+                !hasContent || disabled
+                  ? 'pointer-events-none bg-surface-2 text-txt-disabled opacity-30'
+                  : sending
+                    ? 'cursor-not-allowed bg-accent text-txt-on-accent opacity-70'
+                    : 'bg-accent text-txt-on-accent hover:scale-105 hover:bg-accent-hover active:scale-95',
               )}
             >
               {sending ? (
@@ -251,38 +254,48 @@ export default function ChatInput({
 
           {/* Tier row — separate from input */}
           <TooltipProvider delayDuration={300}>
-            <div className="flex items-center justify-center gap-1 flex-wrap">
-              {(['ink', 'deep', 'kraken'] as const).map((tier) => {
-                const config = TIER_CONFIGS[tier];
-                const isActive = selectedTier === tier;
-                const cost = tier === 'ink' ? 0 : TOKEN_COSTS[tier === 'kraken' ? 'kraken' : 'deep'];
-                const locked = cost > 0 && !canAfford(tier === 'kraken' ? 'kraken' : 'deep');
+            <LayoutGroup>
+              <div className="relative flex flex-wrap items-center justify-center gap-1">
+                {(['ink', 'deep', 'kraken'] as const).map((tier) => {
+                  const config = TIER_CONFIGS[tier];
+                  const isActive = selectedTier === tier;
+                  const cost = tier === 'ink' ? 0 : TOKEN_COSTS[tier === 'kraken' ? 'kraken' : 'deep'];
+                  const locked = cost > 0 && !canAfford(tier === 'kraken' ? 'kraken' : 'deep');
 
-                return (
-                  <Tooltip key={tier}>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        onClick={() => handleTierClick(tier)}
-                        disabled={sending}
-                        className={cn(
-                          'flex items-center gap-1 px-3 py-1 rounded-full text-xs transition-all',
-                          isActive
-                            ? 'bg-white/[0.08] text-txt-secondary'
-                            : locked
-                              ? 'text-txt-disabled cursor-not-allowed opacity-50'
-                              : 'text-white/30 hover:text-txt-tertiary',
-                        )}
-                      >
-                        {config.label}
-                        {cost > 0 && (
-                          <span className={cn('text-[10px] tabular-nums text-txt-disabled', isActive && 'text-white/35')}>
-                            {cost}t
+                  return (
+                    <Tooltip key={tier}>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() => handleTierClick(tier)}
+                          disabled={sending}
+                          className={cn(
+                            'relative flex items-center gap-1 rounded-full px-3 py-1 text-xs transition-colors duration-[150ms]',
+                            locked
+                              ? 'cursor-not-allowed opacity-50 text-txt-disabled'
+                              : isActive
+                                ? 'text-txt-primary'
+                                : 'text-txt-tertiary hover:text-txt-secondary',
+                          )}
+                        >
+                          {isActive && (
+                            <motion.div
+                              layoutId="chat-tier-indicator"
+                              className="absolute inset-0 rounded-full bg-accent-muted"
+                              transition={SPRING.smooth}
+                            />
+                          )}
+                          <span className="relative z-10 flex items-center gap-1 font-medium">
+                            {config.label}
+                            {cost > 0 && (
+                              <span className={cn('text-[10px] tabular-nums text-txt-disabled', isActive && 'text-txt-tertiary')}>
+                                {cost}t
+                              </span>
+                            )}
+                            {locked && <Lock size={9} className="opacity-60" />}
                           </span>
-                        )}
-                        {locked && <Lock size={9} className="opacity-60" />}
-                      </button>
-                    </TooltipTrigger>
+                        </button>
+                      </TooltipTrigger>
                     <TooltipContent side="top" className="text-xs max-w-48">
                       <p className="font-medium">{config.label}</p>
                       <p className="text-txt-tertiary">{config.description}</p>
@@ -293,9 +306,10 @@ export default function ChatInput({
                       )}
                     </TooltipContent>
                   </Tooltip>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            </LayoutGroup>
           </TooltipProvider>
         </motion.div>
 

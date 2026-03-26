@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import { SUGGESTION_CHIP_CONFIG } from '@/lib/design/suggestionChips';
@@ -12,6 +13,8 @@ interface HeroSectionProps {
 export default function HeroSection({ onSignIn }: HeroSectionProps) {
   const [input, setInput] = useState('');
   const [showConsent, setShowConsent] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const heroInView = useInView(sectionRef, { once: true, margin: '-40px' });
 
   const handleSubmit = () => {
     if (!input.trim()) return;
@@ -26,7 +29,13 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
   };
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20 pb-24">
+    <motion.section
+      ref={sectionRef}
+      initial={{ opacity: 0, y: 24 }}
+      animate={heroInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="relative flex min-h-screen flex-col items-center justify-center px-6 pt-20 pb-24"
+    >
       <div className="hero-glow" aria-hidden />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 oct-entity-bg opacity-30" />
@@ -126,6 +135,6 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
           <path d="M10 4v12M6 12l4 4 4-4" />
         </svg>
       </div>
-    </section>
+    </motion.section>
   );
 }

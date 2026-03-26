@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/design/cn';
 import MarkdownRenderer from './MarkdownRenderer';
 import DisclaimerBanner from './DisclaimerBanner';
@@ -20,12 +19,7 @@ const TIER_LABELS: Record<string, string> = {
 
 export default function AssistantMessage({ content, tier, disclaimer, isCode }: AssistantMessageProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className="flex flex-col items-start mb-4 w-full"
-    >
+    <div className="mb-4 flex w-full flex-col items-start">
       <div className="flex items-start gap-3 max-w-[min(85%,42rem)] w-full">
         <div
           className="w-7 h-7 rounded-full bg-gradient-to-br from-accent/60 to-cyan-500/40 flex items-center justify-center shrink-0 mt-0.5 border border-border-default shadow-sm shadow-black/20"
@@ -58,6 +52,6 @@ export default function AssistantMessage({ content, tier, disclaimer, isCode }: 
       )}
 
       {disclaimer && <DisclaimerBanner text={disclaimer} className="mt-2 ml-10" />}
-    </motion.div>
+    </div>
   );
 }

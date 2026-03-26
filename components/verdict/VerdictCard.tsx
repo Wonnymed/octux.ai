@@ -7,6 +7,7 @@ import {
   RefreshCcw, AlertTriangle, Target, Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
+import { EASE_SPRING, TRANSITION } from '@/lib/motion/constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs';
 import { Separator } from '@/components/ui/shadcn/separator';
 import { OctButton } from '@/components/octux';
@@ -43,9 +44,9 @@ export default function VerdictCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
+      initial={{ opacity: 0, scale: 0.96, y: 16 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={TRANSITION.reveal}
       className={cn('my-4', className)}
     >
       <div
@@ -64,12 +65,19 @@ export default function VerdictCard({
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                <span
-                  className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md"
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{
+                    duration: 0.3,
+                    delay: 0.6,
+                    ease: EASE_SPRING,
+                  }}
+                  className="rounded-md px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
                   style={{ color, backgroundColor: `${color}15` }}
                 >
                   {label}
-                </span>
+                </motion.span>
                 <span className="text-lg font-light text-txt-primary tabular-nums">
                   {prob}%
                 </span>

@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/design/cn';
 import { useAuth } from '@/components/auth/AuthProvider';
 
@@ -29,12 +28,7 @@ export default function UserMessage({ content, optimistic, label }: UserMessageP
   const initials = initialsFromUser(user);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: optimistic ? 0.7 : 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      className="flex flex-col items-end mb-4 w-full"
-    >
+    <div className="mb-4 flex w-full flex-col items-end">
       {label && (
         <span className="text-micro text-txt-disabled mb-1 mr-1">{label}</span>
       )}
@@ -56,6 +50,6 @@ export default function UserMessage({ content, optimistic, label }: UserMessageP
           <span className="text-[10px] font-bold text-accent tabular-nums">{initials}</span>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

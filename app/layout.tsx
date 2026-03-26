@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import MotionProvider from "@/components/providers/MotionProvider";
 import ThemeInitializer from "@/components/theme/ThemeInitializer";
 
 const themeInitScript = `
@@ -74,7 +75,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh font-sans antialiased bg-surface-0 text-txt-primary transition-colors duration-200">
         <ThemeInitializer />
-        <AuthProvider>{children}</AuthProvider>
+        <MotionProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </MotionProvider>
       </body>
     </html>
   );

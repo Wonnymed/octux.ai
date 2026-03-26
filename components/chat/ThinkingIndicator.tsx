@@ -16,12 +16,12 @@ export default function ThinkingIndicator() {
           {[0, 1, 2].map((i) => (
             <motion.span
               key={i}
-              className="w-1.5 h-1.5 rounded-full bg-accent"
+              className="h-1.5 w-1.5 rounded-full bg-txt-tertiary"
               animate={{ opacity: [0.3, 1, 0.3] }}
               transition={{
                 duration: 1.2,
                 repeat: Infinity,
-                delay: i * 0.2,
+                delay: i * 0.15,
                 ease: 'easeInOut',
               }}
             />
