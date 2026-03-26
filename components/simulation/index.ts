@@ -5,3 +5,4 @@ export { default as AgentCardsStream } from './AgentCardsStream';
 export { default as AgentScoreboard } from './AgentScoreboard';
 export { default as ConsensusTracker } from './ConsensusTracker';
 export { default as ConsensusSparkline } from './ConsensusSparkline';
+export { default as SimulationBlockNew } from './SimulationBlockNew';

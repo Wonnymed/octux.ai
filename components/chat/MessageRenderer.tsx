@@ -9,8 +9,9 @@ import SystemMessage from './SystemMessage';
 import UpgradeMessage from './UpgradeMessage';
 import ErrorMessage from './ErrorMessage';
 
-// Placeholders — replaced by PF-13, PF-14, PF-17
-import SimulationBlockPlaceholder from './placeholders/SimulationBlockPlaceholder';
+// PF-13: real simulation block (replaces placeholder)
+import SimulationBlockNew from '@/components/simulation/SimulationBlockNew';
+// Placeholders — replaced by PF-14, PF-17
 import VerdictCardPlaceholder from './placeholders/VerdictCardPlaceholder';
 import RefinementCardPlaceholder from './placeholders/RefinementCardPlaceholder';
 
@@ -67,7 +68,7 @@ const MessageRenderer = memo(function MessageRenderer({
 
     case 'simulation_start':
       return (
-        <SimulationBlockPlaceholder
+        <SimulationBlockNew
           question={message.content || ''}
           streamUrl={message.structured_data?.streamUrl}
         />
