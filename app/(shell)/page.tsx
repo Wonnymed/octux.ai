@@ -5,14 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useAppStore } from '@/lib/store/app';
-import EntityVisual from '@/components/chat/EntityVisual';
 import ChatInput from '@/components/chat/ChatInput';
-import TrustStrip from '@/components/landing/TrustStrip';
-import HowItWorks from '@/components/landing/HowItWorks';
-import LiveExample from '@/components/landing/LiveExample';
-import WhyNotChatGPT from '@/components/landing/WhyNotChatGPT';
-import PricingPreview from '@/components/landing/PricingPreview';
-import LandingFooter from '@/components/landing/LandingFooter';
 import AuthModal from '@/components/auth/AuthModal';
 
 export default function HomePage() {
@@ -96,23 +89,24 @@ export default function HomePage() {
 
   return (
     <>
-      {/* ═══ ABOVE THE FOLD — Product ═══ */}
-      <div className="min-h-dvh flex flex-col">
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative">
-          {/* Background glow */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-accent/[0.03] blur-[100px]" />
-          </div>
-
-          <div className="relative z-10 max-w-2xl mx-auto text-center w-full">
-            {/* Entity */}
+      {/* ═══ MAIN CHAT VIEW ═══ */}
+      <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 relative">
+          <div className="relative z-10 max-w-3xl mx-auto text-center w-full">
+            {/* Large Logo + Branding */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="mb-2"
+              className="mb-8 flex flex-col items-center"
             >
-              <EntityVisual state="idle" />
+              <div className="relative mb-4">
+                <div className="absolute inset-0 oct-entity-bg scale-150 opacity-50" />
+                <div className="relative w-20 h-20 rounded-full flex items-center justify-center bg-gradient-to-br from-accent/80 to-entity-bioluminescent/60 animate-breathe entity-ring">
+                  <span className="text-3xl">🐙</span>
+                </div>
+              </div>
+              <h1 className="oct-wordmark text-3xl text-txt-primary tracking-wide">OCTUX AI</h1>
             </motion.div>
 
             {/* Input */}
@@ -128,27 +122,9 @@ export default function HomePage() {
                 placeholder="What decision are you facing?"
               />
             </motion.div>
-
-            {/* Sub-tagline */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.5 }}
-              className="text-micro text-txt-disabled mt-4"
-            >
-              10 AI specialists debate your decisions · Free to start
-            </motion.p>
           </div>
         </div>
       </div>
-
-      {/* ═══ BELOW THE FOLD — Marketing ═══ */}
-      <TrustStrip />
-      <HowItWorks />
-      <LiveExample onSignIn={() => setShowAuth(true)} />
-      <WhyNotChatGPT />
-      <PricingPreview onSignIn={() => setShowAuth(true)} />
-      <LandingFooter onSignIn={() => setShowAuth(true)} />
 
       {/* Auth modal */}
       <AuthModal

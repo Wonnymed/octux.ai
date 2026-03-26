@@ -191,39 +191,55 @@ export default function Sidebar() {
 
         <Separator className="bg-border-subtle/50 mx-3" />
 
-        {/* ─── BOTTOM: TOKENS + SETTINGS ─── */}
+        {/* ─── BOTTOM: UPGRADE + SETTINGS ─── */}
         <div className="shrink-0 px-3 py-2.5 space-y-2">
-          {/* Token balance */}
+          {/* Upgrade to Pro card */}
           <AnimatePresence mode="wait">
             {expanded ? (
               <motion.div
-                key="expanded-tokens"
+                key="expanded-upgrade"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-2"
               >
-                <Zap size={13} className="text-accent opacity-60" />
-                <span className="text-micro text-txt-tertiary">
-                  {tokensRemaining}/{tokensTotal} tokens
-                </span>
-                <div className="flex-1 h-1 rounded-full bg-surface-2 overflow-hidden">
-                  <div
-                    className={cn(
-                      'h-full rounded-full transition-all duration-300',
-                      tokensRemaining === 0
-                        ? 'bg-verdict-abandon'
-                        : tokensRemaining <= 2
-                        ? 'bg-verdict-delay'
-                        : 'bg-accent',
-                    )}
-                    style={{ width: `${tokensTotal > 0 ? (tokensRemaining / tokensTotal) * 100 : 0}%` }}
-                  />
-                </div>
+                {tier === 'free' ? (
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent('octux:show-upgrade', { detail: { suggestedTier: 'pro' } }))}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-2 hover:bg-surface-3 border border-border-subtle transition-colors duration-normal text-left"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center shrink-0">
+                      <Zap size={14} className="text-accent" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-txt-primary">Upgrade to Pro</p>
+                      <p className="text-[10px] text-txt-tertiary">Unlock more usage and benefits</p>
+                    </div>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Zap size={13} className="text-accent opacity-60" />
+                    <span className="text-micro text-txt-tertiary">
+                      {tokensRemaining}/{tokensTotal} tokens
+                    </span>
+                    <div className="flex-1 h-1 rounded-full bg-surface-2 overflow-hidden">
+                      <div
+                        className={cn(
+                          'h-full rounded-full transition-all duration-300',
+                          tokensRemaining === 0
+                            ? 'bg-verdict-abandon'
+                            : tokensRemaining <= 2
+                            ? 'bg-verdict-delay'
+                            : 'bg-accent',
+                        )}
+                        style={{ width: `${tokensTotal > 0 ? (tokensRemaining / tokensTotal) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </motion.div>
             ) : (
               <motion.div
-                key="collapsed-tokens"
+                key="collapsed-upgrade"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -232,11 +248,11 @@ export default function Sidebar() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="w-6 h-6 rounded-full flex items-center justify-center">
-                      <span className="text-micro font-bold text-accent tabular-nums">{tokensRemaining}</span>
+                      <Zap size={14} className="text-accent" />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="right">
-                    {tokensRemaining}/{tokensTotal} tokens remaining
+                    {tier === 'free' ? 'Upgrade to Pro' : `${tokensRemaining}/${tokensTotal} tokens`}
                   </TooltipContent>
                 </Tooltip>
               </motion.div>
