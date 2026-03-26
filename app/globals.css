@@ -77,8 +77,8 @@
   --shadow-entity-glow: 0 0 80px rgba(124, 58, 237, 0.30), 0 0 120px rgba(0, 229, 255, 0.10);
   --shadow-accent: 0 0 20px rgba(124, 58, 237, 0.25);
 
-  --sidebar-width-collapsed: 56px;
-  --sidebar-width-expanded: 260px;
+  --sidebar-width-collapsed: 64px;
+  --sidebar-width-expanded: 256px;
   --chat-max-width: 768px;
   --header-height: 48px;
 

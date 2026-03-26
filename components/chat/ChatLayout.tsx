@@ -6,7 +6,7 @@ import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useAppStore } from '@/lib/store/app';
 import { useAuth } from '@/components/auth/AuthProvider';
 import Sidebar from '@/components/sidebar/Sidebar';
-import { Menu, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { Menu } from 'lucide-react';
 
 interface ChatLayoutProps {
   children: React.ReactNode;
@@ -45,19 +45,13 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
       <main className="flex-1 flex flex-col min-w-0 relative overflow-x-hidden overflow-y-auto">
         {/* Top header bar */}
         <header className="h-12 flex items-center px-4 shrink-0 sticky top-0 z-30 bg-surface-0">
-          {/* Left: sidebar toggle */}
-          {!isMobile && (
-            <button
-              onClick={() => setSidebarExpanded(!sidebarExpanded)}
-              className="p-1.5 rounded-md text-icon-secondary hover:text-icon-primary hover:bg-surface-2 transition-colors duration-normal"
-            >
-              {sidebarExpanded ? <PanelLeftClose size={18} /> : <PanelLeft size={18} />}
-            </button>
-          )}
+          {/* Mobile only: open sidebar (desktop uses logo / header toggle inside Sidebar — Okara pattern) */}
           {isMobile && (
             <button
+              type="button"
               onClick={() => setSidebarExpanded(true)}
               className="p-1.5 rounded-md text-icon-secondary hover:text-icon-primary hover:bg-surface-2 transition-colors duration-normal"
+              aria-label="Open menu"
             >
               <Menu size={18} />
             </button>

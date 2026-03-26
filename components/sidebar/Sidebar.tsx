@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
 import {
   Plus,
   Search,
@@ -42,10 +41,15 @@ import { Skeleton } from '@/components/ui/shadcn/skeleton';
 import ConversationContextMenu from './ConversationContextMenu';
 import InlineRename from './InlineRename';
 
+/** Okara-aligned: elevated rail, not pure black */
 const SIDEBAR_BG = '#0E0E16';
 const ICON_STROKE = 1.5;
+/** Okara expanded rail */
 const EXPANDED_W = 256;
-const COLLAPSED_W = 56;
+/** Okara collapsed rail (~64px matches reference screenshots) */
+const COLLAPSED_W = 64;
+/** Okara nav icons ~20px outlined */
+const NAV_ICON = 20;
 
 /** Okara flyout order: Compare → Risk Matrix → Templates → Journal */
 const TOOLS_FLYOUT_ORDER = ['compare', 'risk-matrix', 'templates', 'journal'] as const;
@@ -77,7 +81,7 @@ function SidebarCollapsed() {
   return (
     <TooltipProvider delayDuration={200}>
       <div
-        className="flex h-dvh shrink-0 flex-col items-center border-r border-white/[0.04] py-4 select-none"
+        className="flex h-dvh shrink-0 flex-col items-center border-r border-white/[0.06] py-3 font-sans antialiased select-none"
         style={{ width: COLLAPSED_W, backgroundColor: SIDEBAR_BG }}
       >
         <Tooltip>
@@ -85,19 +89,19 @@ function SidebarCollapsed() {
             <button
               type="button"
               onClick={toggleSidebar}
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent/70 to-cyan-500/40 transition-transform hover:scale-[1.02]"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent/70 to-cyan-500/40 shadow-sm transition-transform hover:scale-[1.02]"
               aria-label="Open sidebar"
             >
-              <span className="text-sm leading-none">🐙</span>
+              <span className="text-[15px] leading-none">🐙</span>
             </button>
           </TooltipTrigger>
           <TooltipContent side="right">Open sidebar</TooltipContent>
         </Tooltip>
 
-        <div className="h-2 shrink-0" />
+        <div className="h-1.5 shrink-0" />
 
         <CollapsedIconButton onClick={() => router.push('/')} tooltip="New conversation">
-          <Plus size={17} strokeWidth={ICON_STROKE} />
+          <Plus size={NAV_ICON} strokeWidth={ICON_STROKE} />
         </CollapsedIconButton>
 
         <CollapsedIconButton
@@ -105,7 +109,7 @@ function SidebarCollapsed() {
           tooltip="Home"
           active={pathname === '/'}
         >
-          <Home size={17} strokeWidth={ICON_STROKE} />
+          <Home size={NAV_ICON} strokeWidth={ICON_STROKE} />
         </CollapsedIconButton>
 
         <CollapsedIconButton
@@ -113,13 +117,13 @@ function SidebarCollapsed() {
           tooltip="Decision Journal"
           active={pathname === '/tools/journal' || pathname?.startsWith('/tools/journal/')}
         >
-          <BarChart3 size={17} strokeWidth={ICON_STROKE} />
+          <BarChart3 size={NAV_ICON} strokeWidth={ICON_STROKE} />
         </CollapsedIconButton>
 
         <ToolsFlyoutMenu pathname={pathname} variant="collapsed" toolsActive={toolsActive} />
 
         <CollapsedIconButton onClick={() => setSidebarExpanded(true)} tooltip="Conversations">
-          <Clock size={17} strokeWidth={ICON_STROKE} />
+          <Clock size={NAV_ICON} strokeWidth={ICON_STROKE} />
         </CollapsedIconButton>
 
         <div className="min-h-2 flex-1" />
@@ -128,7 +132,7 @@ function SidebarCollapsed() {
           onClick={() => router.push('/pricing')}
           tooltip="Upgrade to Pro"
         >
-          <Zap size={17} className="text-accent" strokeWidth={ICON_STROKE} />
+          <Zap size={NAV_ICON} className="text-accent" strokeWidth={ICON_STROKE} />
         </CollapsedIconButton>
 
         <ProfileMenu variant="collapsed" tier={tier} />
@@ -155,15 +159,12 @@ function CollapsedIconButton({
           type="button"
           onClick={onClick}
           className={cn(
-            'relative mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all',
+            'mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors duration-150',
             active
-              ? 'bg-accent/[0.08] text-white/80'
-              : 'text-white/25 hover:bg-white/[0.04] hover:text-white/55',
+              ? 'bg-white/[0.08] text-white/90'
+              : 'text-white/30 hover:bg-white/[0.05] hover:text-white/60',
           )}
         >
-          {active && (
-            <span className="absolute left-0 top-1/2 h-3 w-[2px] -translate-y-1/2 rounded-full bg-accent" />
-          )}
           {children}
         </button>
       </TooltipTrigger>
@@ -235,36 +236,37 @@ function SidebarExpanded() {
   return (
     <TooltipProvider delayDuration={200}>
       <aside
-        className="flex h-dvh shrink-0 flex-col overflow-hidden border-r border-white/[0.04] select-none"
+        className="flex h-dvh shrink-0 flex-col overflow-hidden border-r border-white/[0.06] font-sans antialiased select-none"
         style={{ width: EXPANDED_W, backgroundColor: SIDEBAR_BG }}
       >
-        {/* Header — logo is NOT a toggle when expanded */}
-        <div className="flex h-14 shrink-0 items-center justify-between px-3">
-          <div className="flex min-w-0 items-center gap-2.5 px-1">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent/70 to-cyan-500/40">
-              <span className="text-[11px] leading-none">🐙</span>
+        {/* Header — brand + Okara-style close (only toggle here when expanded) */}
+        <div className="flex h-14 shrink-0 items-center justify-between px-4">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent/70 to-cyan-500/40 shadow-sm">
+              <span className="text-[13px] leading-none">🐙</span>
             </div>
-            <span className="truncate text-[14px] font-medium tracking-[0.06em] text-white/75 lowercase">
+            <span className="truncate text-[15px] font-semibold tracking-tight text-white/90 lowercase">
               octux
             </span>
           </div>
           <button
             type="button"
             onClick={toggleSidebar}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/20 transition-all hover:bg-white/[0.04] hover:text-white/50"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/25 transition-all hover:bg-white/[0.06] hover:text-white/55"
             aria-label="Close sidebar"
+            title="Close sidebar"
           >
-            <PanelLeftClose size={16} strokeWidth={ICON_STROKE} />
+            <PanelLeftClose size={18} strokeWidth={ICON_STROKE} />
           </button>
         </div>
 
-        <div className="px-2">
+        <div className="px-3">
           <NavItemButton icon={Plus} label="New conversation" onClick={handleNew} />
         </div>
 
-        <div className="mx-4 my-2 h-px bg-white/[0.04]" />
+        <div className="mx-4 my-2 h-px bg-white/[0.06]" />
 
-        <div className="space-y-0.5 px-2">
+        <div className="space-y-1 px-3">
           <NavItemButton
             icon={Home}
             label="Home"
@@ -280,9 +282,9 @@ function SidebarExpanded() {
           <ToolsFlyoutMenu pathname={pathname} variant="expanded" toolsActive={toolsNavActive} />
         </div>
 
-        <div className="mx-4 my-2 h-px bg-white/[0.04]" />
+        <div className="mx-4 my-2 h-px bg-white/[0.06]" />
 
-        <div className="mb-1 px-2">
+        <div className="mb-1 px-3">
           {searchActive ? (
             <div className="flex h-9 items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3">
               <Search size={13} className="shrink-0 text-white/25" strokeWidth={ICON_STROKE} />
@@ -318,9 +320,9 @@ function SidebarExpanded() {
           )}
         </div>
 
-        <div className="mx-4 mb-1 h-px bg-white/[0.04]" />
+        <div className="mx-4 mb-1 h-px bg-white/[0.06]" />
 
-        <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto px-2 pt-1">
+        <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto px-3 pt-1">
           {loading ? (
             <SidebarLoadingSkeleton />
           ) : (
@@ -353,7 +355,7 @@ function SidebarExpanded() {
           )}
         </div>
 
-        <div className="shrink-0 space-y-1.5 p-2">
+        <div className="shrink-0 space-y-2 p-3 pt-2">
           {tier === 'free' ? (
             <button
               type="button"
@@ -431,15 +433,18 @@ function NavItemButton({
       type="button"
       onClick={onClick}
       className={cn(
-        'relative flex h-10 w-full items-center gap-2.5 rounded-xl px-3 text-left transition-all',
-        active ? 'bg-accent/[0.08] text-white/80' : 'text-white/45 hover:bg-white/[0.04] hover:text-white/70',
+        'flex h-10 w-full items-center gap-2.5 rounded-xl px-2.5 text-left transition-colors duration-150',
+        active
+          ? 'bg-white/[0.08] text-white/90'
+          : 'text-white/50 hover:bg-white/[0.05] hover:text-white/80',
       )}
     >
-      {active && (
-        <span className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-accent" />
-      )}
-      <Icon size={17} strokeWidth={ICON_STROKE} className={active ? 'text-white/70' : 'text-white/30'} />
-      <span className="flex-1 text-[13px]">{label}</span>
+      <Icon
+        size={NAV_ICON}
+        strokeWidth={ICON_STROKE}
+        className={cn('shrink-0', active ? 'text-white/80' : 'text-white/35')}
+      />
+      <span className="flex-1 text-[14px] font-normal leading-5">{label}</span>
     </button>
   );
 }
@@ -479,25 +484,22 @@ function ToolsFlyoutMenu({
           <button
             type="button"
             className={cn(
-              'relative flex h-10 w-full items-center gap-2.5 rounded-xl px-3 text-left transition-all duration-150',
+              'flex h-10 w-full items-center gap-2.5 rounded-xl px-2.5 text-left transition-colors duration-150',
               toolsActive || open
-                ? 'bg-accent/[0.08] text-white/80'
-                : 'text-white/45 hover:bg-white/[0.04] hover:text-white/70',
+                ? 'bg-white/[0.08] text-white/90'
+                : 'text-white/50 hover:bg-white/[0.05] hover:text-white/80',
             )}
           >
-            {(toolsActive || open) && (
-              <span className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-accent" />
-            )}
             <Settings2
-              size={17}
+              size={NAV_ICON}
               strokeWidth={ICON_STROKE}
-              className={toolsActive || open ? 'text-white/70' : 'text-white/30'}
+              className={cn('shrink-0', toolsActive || open ? 'text-white/80' : 'text-white/35')}
             />
-            <span className="flex-1 text-[13px]">Tools</span>
+            <span className="flex-1 text-[14px] font-normal leading-5">Tools</span>
             <ChevronRight
-              size={13}
+              size={14}
               strokeWidth={ICON_STROKE}
-              className={cn('text-white/20 transition-transform duration-150', open && 'rotate-90')}
+              className={cn('shrink-0 text-white/25 transition-transform duration-150', open && 'rotate-90')}
             />
           </button>
         </DropdownMenuTrigger>
@@ -551,17 +553,14 @@ function ToolsFlyoutMenu({
             <button
               type="button"
               className={cn(
-                'relative mb-1 flex h-10 w-10 items-center justify-center rounded-xl transition-all',
+                'mb-1 flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-150',
                 toolsActive || open
-                  ? 'bg-accent/[0.08] text-white/80'
-                  : 'text-white/25 hover:bg-white/[0.04] hover:text-white/55',
+                  ? 'bg-white/[0.08] text-white/90'
+                  : 'text-white/30 hover:bg-white/[0.05] hover:text-white/60',
               )}
               aria-label="Tools"
             >
-              {(toolsActive || open) && (
-                <span className="absolute left-0 top-1/2 h-3 w-[2px] -translate-y-1/2 rounded-full bg-accent" />
-              )}
-              <Settings2 size={17} strokeWidth={ICON_STROKE} />
+              <Settings2 size={NAV_ICON} strokeWidth={ICON_STROKE} />
             </button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
@@ -779,10 +778,10 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
   return (
     <div
       className={cn(
-        'group relative flex min-h-[32px] cursor-pointer items-center gap-2 rounded-lg py-[7px] pl-2.5 pr-1.5 transition-all',
+        'group relative flex min-h-[32px] cursor-pointer items-center gap-2 rounded-lg py-[7px] pl-2.5 pr-1.5 transition-colors duration-150',
         isActive
-          ? 'bg-accent/[0.07] text-white/80'
-          : 'text-white/35 hover:bg-white/[0.03] hover:text-white/60',
+          ? 'bg-white/[0.08] text-white/90'
+          : 'text-white/40 hover:bg-white/[0.04] hover:text-white/70',
       )}
       onClick={() => {
         if (!renaming) router.push(`/c/${convo.id}`);
@@ -790,14 +789,6 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {isActive && (
-        <motion.div
-          layoutId="sidebar-active-convo"
-          className="absolute left-0 top-1/2 h-3.5 w-[2px] -translate-y-1/2 rounded-full bg-accent"
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        />
-      )}
-
       <ConvoIcon convo={convo} />
 
       <div className="min-w-0 flex-1">
