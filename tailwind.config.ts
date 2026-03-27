@@ -117,7 +117,10 @@ const config: Config = {
         display: ['var(--font-display)', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        micro: ['var(--text-micro-size)', { lineHeight: 'var(--text-micro-leading)' }],
+        micro: [
+          'var(--text-micro-size)',
+          { lineHeight: 'var(--text-micro-leading)', fontWeight: '400' },
+        ],
         'page-title': [
           'var(--text-page-title-size)',
           {
@@ -150,10 +153,16 @@ const config: Config = {
             fontWeight: '500',
           },
         ],
-        meta: ['var(--text-meta-size)', { lineHeight: 'var(--text-meta-leading)' }],
+        meta: [
+          'var(--text-meta-size)',
+          { lineHeight: 'var(--text-meta-leading)', fontWeight: '400' },
+        ],
         'xs': ['12px', { lineHeight: '1.5', letterSpacing: '0.005em' }],
         'sm': ['13px', { lineHeight: '1.55' }],
-        'base': ['var(--text-body-size)', { lineHeight: 'var(--text-body-leading)' }],
+        'base': [
+          'var(--text-body-size)',
+          { lineHeight: 'var(--text-body-leading)', fontWeight: '400' },
+        ],
         'md': ['15px', { lineHeight: '1.5', letterSpacing: '-0.005em' }],
         'lg': ['17px', { lineHeight: '1.45', letterSpacing: '-0.01em' }],
         'xl': ['20px', { lineHeight: '1.4', letterSpacing: '-0.015em' }],

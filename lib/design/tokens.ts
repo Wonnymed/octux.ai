@@ -23,7 +23,7 @@ export const focusRing = {
   offsetVar: 'var(--focus-ring-offset)',
 } as const;
 
-/** Mirrors `app/globals.css` Phase 0.2 + motion tokens (seconds, for Framer Motion). */
+/** Mirrors `app/globals.css` BUILD PLAN §2.2 (+ display-lg for marketing). */
 export const typographyRoles = {
   pageTitle: { size: '1.75rem', weight: 300, lineHeight: 1.3, letterSpacing: '-0.025em' },
   section: { size: '1.25rem', weight: 500, lineHeight: 1.4, letterSpacing: '-0.015em' },
@@ -32,6 +32,17 @@ export const typographyRoles = {
   meta: { size: '0.75rem', weight: 400, lineHeight: 1.5 },
   micro: { size: '0.6875rem', weight: 400, lineHeight: 1.4 },
   displayLg: { size: '2rem', weight: 500, lineHeight: 1.2, letterSpacing: '-0.02em' },
+} as const;
+
+/** Default text color per role (BUILD PLAN §2.2 — use with typography role). */
+export const typographyRoleColors = {
+  pageTitle: 'var(--text-primary)',
+  section: 'var(--text-primary)',
+  cardTitle: 'var(--text-primary)',
+  body: 'var(--text-secondary)',
+  meta: 'var(--text-tertiary)',
+  micro: 'var(--text-tertiary)',
+  displayLg: 'var(--text-primary)',
 } as const;
 
 /** 4px grid — same as `--space-*` in globals.css */
