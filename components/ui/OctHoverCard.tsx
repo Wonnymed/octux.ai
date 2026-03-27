@@ -1,8 +1,10 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { cn } from '@/lib/design/cn';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/shadcn/hover-card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/shadcn/popover';
+import { usePrefersCoarsePointer } from '@/lib/hooks/usePrefersCoarsePointer';
 
 interface OctHoverCardProps {
   trigger: ReactNode;
@@ -14,7 +16,7 @@ interface OctHoverCardProps {
   className?: string;
 }
 
-/** Shared hover surface: Radix HoverCard (portal, collision, Escape). Touch: opens on trigger press (Radix). */
+/** Shared hover surface: HoverCard (fine pointer) or Popover (coarse / touch-primary). */
 export default function OctHoverCard({
   trigger,
   children,
@@ -24,6 +26,35 @@ export default function OctHoverCard({
   delay = 300,
   className,
 }: OctHoverCardProps) {
+  const coarse = usePrefersCoarsePointer();
+
+  const widthStyle: CSSProperties = {
+    width: `${width}px`,
+    maxWidth: `min(${width}px, calc(100vw - 24px))`,
+  };
+
+  const contentClassName = cn('w-auto min-w-0 p-4 text-sm text-txt-primary', className);
+
+  if (coarse) {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <span className="inline-flex">{trigger}</span>
+        </PopoverTrigger>
+        <PopoverContent
+          side={side}
+          align={align}
+          sideOffset={8}
+          collisionPadding={12}
+          className={contentClassName}
+          style={widthStyle}
+        >
+          {children}
+        </PopoverContent>
+      </Popover>
+    );
+  }
+
   return (
     <HoverCard openDelay={delay} closeDelay={150}>
       <HoverCardTrigger asChild>
@@ -34,11 +65,8 @@ export default function OctHoverCard({
         align={align}
         sideOffset={8}
         collisionPadding={12}
-        className={cn('w-auto min-w-0 p-4 text-sm text-txt-primary', className)}
-        style={{
-          width: `${width}px`,
-          maxWidth: `min(${width}px, calc(100vw - 24px))`,
-        }}
+        className={contentClassName}
+        style={widthStyle}
       >
         {children}
       </HoverCardContent>
