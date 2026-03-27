@@ -768,7 +768,7 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
       className={cn(
         'group relative flex min-h-[32px] cursor-pointer items-center gap-2 rounded-lg py-[7px] pl-2.5 pr-1.5 transition-colors duration-150',
         isActive
-          ? 'bg-accent-subtle text-txt-primary'
+          ? 'bg-accent-subtle font-medium text-txt-primary'
           : 'text-txt-secondary hover:bg-surface-2 hover:text-txt-primary',
       )}
       onClick={() => {

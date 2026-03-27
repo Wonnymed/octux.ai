@@ -37,7 +37,7 @@ function parseMarkdown(text: string): string {
 
   // Code blocks (```...```)
   html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (_match, _lang, code) => {
-    return `<pre class="my-2 p-3 rounded-lg bg-surface-2 border border-border-subtle overflow-x-auto"><code class="text-xs font-mono text-txt-secondary">${code.trim()}</code></pre>`;
+    return `<pre class="my-2 overflow-x-auto rounded-lg border border-border-subtle bg-surface-2 p-3"><code class="text-xs font-mono text-txt-primary">${code.trim()}</code></pre>`;
   });
 
   // Inline code (`...`)
@@ -47,7 +47,7 @@ function parseMarkdown(text: string): string {
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-txt-primary">$1</strong>');
 
   // Italic (*...*)
-  html = html.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em class="italic">$1</em>');
+  html = html.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em class="italic text-txt-secondary">$1</em>');
 
   // Links [text](url) — only allow http/https
   html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline">$1</a>');
@@ -58,23 +58,23 @@ function parseMarkdown(text: string): string {
   html = html.replace(/^# (.+)$/gm, '<h2 class="font-semibold text-txt-primary mt-4 mb-2 text-base">$1</h2>');
 
   // Unordered lists (- item)
-  html = html.replace(/^- (.+)$/gm, '<li class="ml-4 list-disc text-txt-secondary">$1</li>');
+  html = html.replace(/^- (.+)$/gm, '<li class="ml-4 list-disc text-txt-primary">$1</li>');
 
   // Ordered lists (1. item)
-  html = html.replace(/^\d+\. (.+)$/gm, '<li class="ml-4 list-decimal text-txt-secondary">$1</li>');
+  html = html.replace(/^\d+\. (.+)$/gm, '<li class="ml-4 list-decimal text-txt-primary">$1</li>');
 
   // Wrap consecutive <li> in <ul>
   html = html.replace(/((?:<li[^>]*>.*<\/li>\s*)+)/g, '<ul class="my-2 space-y-0.5">$1</ul>');
 
   // Paragraphs (double newline)
-  html = html.replace(/\n\n/g, '</p><p class="mb-2">');
+  html = html.replace(/\n\n/g, '</p><p class="mb-2 text-txt-primary">');
 
   // Single newlines
   html = html.replace(/\n/g, '<br />');
 
   // Wrap in paragraph if not already wrapped
   if (!html.startsWith('<')) {
-    html = `<p class="mb-2">${html}</p>`;
+    html = `<p class="mb-2 text-txt-primary">${html}</p>`;
   }
 
   return html;

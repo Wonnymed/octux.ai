@@ -50,8 +50,7 @@ export function ThemeToggleCompact() {
   };
 
   const Icon = resolved === 'dark' ? Moon : Sun;
-  const label =
-    mode === 'system' ? 'System theme' : mode === 'light' ? 'Light mode' : 'Dark mode';
+  const modeShort = mode === 'system' ? 'System' : mode === 'light' ? 'Light' : 'Dark';
 
   return (
     <button
@@ -66,8 +65,8 @@ export function ThemeToggleCompact() {
       >
         <Icon size={15} />
       </motion.span>
-      <span className="flex-1 text-[13px]">{label}</span>
-      <span className="text-[10px] capitalize text-txt-disabled">{mode}</span>
+      <span className="flex-1 text-[13px]">Appearance</span>
+      <span className="text-[11px] text-txt-tertiary tabular-nums">{modeShort}</span>
     </button>
   );
 }

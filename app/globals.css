@@ -241,7 +241,7 @@
 @layer base {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
-  body { font-family: var(--font-sans); font-size: 14px; line-height: 1.6; color: var(--text-primary); background-color: var(--surface-0); transition: background-color 200ms ease-out, color 200ms ease-out; position: relative; }
+  body { font-family: var(--font-sans); font-size: 14px; line-height: 1.6; color: var(--text-primary); background-color: var(--surface-0); transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease; position: relative; }
   /* Subtle film grain — stays behind UI (pointer-events none) */
   body::after {
     content: '';
@@ -353,13 +353,67 @@
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
-/* ═══ MARKDOWN RENDERER ═══ */
-.octux-markdown p:last-child { margin-bottom: 0; }
-.octux-markdown ul, .octux-markdown ol { padding-left: 0; }
+/* ═══ MARKDOWN RENDERER (assistant / decision bubbles) ═══ */
+.octux-markdown {
+  color: var(--text-primary);
+}
+
+.octux-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.octux-markdown ul,
+.octux-markdown ol {
+  padding-left: 0;
+}
+
+.octux-markdown h1,
+.octux-markdown h2,
+.octux-markdown h3,
+.octux-markdown h4,
+.octux-markdown strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.octux-markdown p,
+.octux-markdown li,
+.octux-markdown td {
+  color: var(--text-primary);
+}
+
+.octux-markdown em {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.octux-markdown code {
+  color: var(--accent);
+  background: var(--accent-subtle);
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  font-size: 0.875em;
+}
+
+.octux-markdown blockquote {
+  color: var(--text-secondary);
+  border-left: 2px solid var(--border-default);
+  padding-left: 1em;
+  margin: 0.5em 0;
+}
+
 .octux-markdown hr {
   margin: 16px 0;
   border: none;
   border-top: 1px solid var(--border-subtle);
+}
+
+.octux-markdown ul > li::marker {
+  color: var(--text-tertiary);
+}
+
+.octux-markdown ol > li::marker {
+  color: var(--text-tertiary);
 }
 
 /* ═══ HOTFIX: VISUAL DEPTH & PREMIUM POLISH ═══ */
@@ -493,6 +547,9 @@ body,
 main,
 aside,
 nav,
+header,
+footer,
+section,
 [class*="surface"],
 [class*="bg-surface"] {
   transition:

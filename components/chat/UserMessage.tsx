@@ -30,7 +30,7 @@ export default function UserMessage({ content, optimistic, label }: UserMessageP
   return (
     <div className="mb-4 flex w-full flex-col items-end">
       {label && (
-        <span className="text-micro text-txt-disabled mb-1 mr-1">{label}</span>
+        <span className="text-micro mb-1 mr-1 text-txt-tertiary">{label}</span>
       )}
       <div className="flex items-start gap-3 justify-end max-w-[min(85%,42rem)] w-full">
         <div

@@ -29,10 +29,8 @@ export default function AssistantMessage({ content, tier, disclaimer, isCode }: 
         </div>
         <div
           className={cn(
-            'min-w-0 flex-1 px-4 py-3 rounded-2xl rounded-bl-sm',
-            'bg-surface-1 border border-border-subtle',
-            'text-[14px] leading-relaxed text-txt-primary',
-            'shadow-sm shadow-black/20',
+            'min-w-0 flex-1 rounded-2xl rounded-bl-sm border border-border-subtle px-4 py-3',
+            'bg-surface-raised text-[14px] leading-relaxed text-txt-primary shadow-sm shadow-black/20 dark:bg-surface-1',
           )}
         >
           {isCode ? (
@@ -46,7 +44,7 @@ export default function AssistantMessage({ content, tier, disclaimer, isCode }: 
       </div>
 
       {tier && TIER_LABELS[tier] && (
-        <span className="text-micro text-txt-disabled mt-1 ml-10">
+        <span className="text-micro mt-1 ml-10 text-txt-tertiary">
           {TIER_LABELS[tier]}
         </span>
       )}

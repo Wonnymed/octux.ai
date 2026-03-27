@@ -34,7 +34,7 @@ export default function DecisionCard({
           <span className="text-[10px] leading-none">🐙</span>
         </div>
         <div
-          className="min-w-0 flex-1 rounded-2xl rounded-bl-md bg-surface-1 border border-border-subtle text-sm text-txt-primary leading-relaxed shadow-sm shadow-black/20"
+          className="min-w-0 flex-1 rounded-2xl rounded-bl-md border border-border-subtle bg-surface-raised text-sm leading-relaxed text-txt-primary shadow-sm shadow-black/20 dark:bg-surface-1"
           style={{ padding: '12px 16px' }}
         >
           <MarkdownRenderer content={content} />
@@ -46,14 +46,14 @@ export default function DecisionCard({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-          className="mt-3 ml-10 w-full max-w-[min(85%,42rem)] border-l-2 border-accent/40 bg-surface-1 rounded-r-xl p-4"
+          className="mt-3 ml-10 w-full max-w-[min(85%,42rem)] rounded-r-xl border-l-2 border-accent/40 bg-surface-raised p-4 shadow-sm dark:bg-surface-1"
         >
-          <div className="relative overflow-hidden rounded-xl bg-surface-2 p-4">
-            <div className="flex items-center gap-2.5 mb-3">
+          <div className="relative overflow-hidden rounded-xl border border-border-subtle bg-surface-2 p-4">
+            <div className="mb-3 flex items-center gap-2.5">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10">
                 <Zap size={13} className="text-accent" />
               </div>
-              <span className="text-xs font-medium text-accent/80">
+              <span className="text-xs font-medium text-accent-light">
                 This looks like a decision worth analyzing deeply
               </span>
             </div>
@@ -74,7 +74,7 @@ export default function DecisionCard({
       )}
 
       {tier && (
-        <span className="text-micro text-txt-disabled mt-1 ml-10">
+        <span className="text-micro mt-1 ml-10 text-txt-tertiary">
           {tier === 'ink' ? 'Ink' : tier === 'deep' ? 'Deep' : 'Kraken'}
         </span>
       )}

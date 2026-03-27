@@ -12,14 +12,14 @@ export default function DisclaimerBanner({ text, className }: DisclaimerBannerPr
   return (
     <div
       className={cn(
-        'flex items-start gap-2 px-3 py-2 rounded-lg',
-        'bg-verdict-delay/5 border border-verdict-delay/10',
-        'text-xs text-verdict-delay leading-relaxed',
+        'flex items-start gap-2 rounded-xl border px-4 py-3',
+        'border-verdict-delay/20 bg-verdict-delay/10',
+        'text-sm leading-relaxed text-verdict-delay',
         className,
       )}
     >
-      <AlertTriangle size={13} className="shrink-0 mt-0.5 opacity-70" />
-      <span>{text}</span>
+      <AlertTriangle size={13} className="mt-0.5 shrink-0 text-verdict-delay" />
+      <span className="text-verdict-delay">{text}</span>
     </div>
   );
 }

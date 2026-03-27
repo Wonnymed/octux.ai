@@ -194,12 +194,12 @@ export default function ChatInput({
           <div
             className={cn(
               'relative rounded-2xl border transition-all duration-[150ms]',
-              'bg-surface-1 border-border-default',
+              'border-border-subtle bg-surface-1',
               'shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-              'focus-within:border-accent/40 focus-within:ring-2 focus-within:ring-accent/15',
+              'focus-within:border-accent/40 focus-within:ring-2 focus-within:ring-accent/10',
               'focus-within:shadow-[0_0_0_4px_var(--accent-ring,rgba(124,58,237,0.12))]',
               'hover:border-border-default',
-              sending && 'opacity-70 pointer-events-none',
+              sending && 'pointer-events-none opacity-70',
             )}
           >
             <textarea
@@ -217,7 +217,7 @@ export default function ChatInput({
               rows={1}
               className={cn(
                 'w-full min-h-[52px] max-h-[120px] resize-none bg-transparent',
-                'px-5 py-3.5 pr-14 text-[15px] text-txt-primary placeholder:text-txt-disabled',
+                'px-5 py-3.5 pr-14 text-[15px] text-txt-primary placeholder:text-txt-tertiary',
                 'outline-none',
                 'disabled:cursor-not-allowed disabled:opacity-50',
               )}
@@ -272,10 +272,10 @@ export default function ChatInput({
                           className={cn(
                             'relative flex items-center gap-1 rounded-full px-3 py-1 text-xs transition-colors duration-[150ms]',
                             locked
-                              ? 'cursor-not-allowed opacity-50 text-txt-disabled'
+                              ? 'cursor-not-allowed text-txt-tertiary'
                               : isActive
                                 ? 'text-txt-primary'
-                                : 'text-txt-tertiary hover:text-txt-secondary',
+                                : 'text-txt-secondary hover:text-txt-primary',
                           )}
                         >
                           {isActive && (
@@ -288,11 +288,20 @@ export default function ChatInput({
                           <span className="relative z-10 flex items-center gap-1 font-medium">
                             {config.label}
                             {cost > 0 && (
-                              <span className={cn('text-[10px] tabular-nums text-txt-disabled', isActive && 'text-txt-tertiary')}>
+                              <span
+                                className={cn(
+                                  'text-[10px] tabular-nums',
+                                  locked
+                                    ? 'text-txt-tertiary'
+                                    : isActive
+                                      ? 'text-txt-tertiary'
+                                      : 'text-txt-secondary',
+                                )}
+                              >
                                 {cost}t
                               </span>
                             )}
-                            {locked && <Lock size={9} className="opacity-60" />}
+                            {locked && <Lock size={9} className="shrink-0 text-txt-tertiary" />}
                           </span>
                         </button>
                       </TooltipTrigger>
@@ -314,14 +323,14 @@ export default function ChatInput({
         </motion.div>
 
         <div className="flex items-center justify-between mt-1.5 px-1">
-          <span className="text-micro text-txt-disabled">
+          <span className="text-micro text-txt-tertiary">
             Enter to send · Shift+Enter for new line
           </span>
           {selectedTier !== 'ink' && (
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex items-center gap-1 text-micro text-txt-disabled"
+              className="text-micro flex items-center gap-1 text-txt-tertiary"
             >
               <Zap size={9} className="text-accent" />
               {TOKEN_COSTS[selectedTier === 'kraken' ? 'kraken' : 'deep']} token

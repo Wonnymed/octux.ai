@@ -132,7 +132,7 @@ export default function HomePage() {
               showSuggestions
               placeholder="What decision are you facing?"
             />
-            <p className="text-center text-micro text-txt-disabled mt-4">
+            <p className="text-micro mt-4 text-center text-txt-tertiary">
               10 AI specialists debate your decisions · Free to start
             </p>
           </motion.div>
