@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import {
+  AGENT_CATALOG,
   DOMAIN_COLORS as CATALOG_DOMAIN_COLORS,
   DOMAIN_LABELS as CATALOG_DOMAIN_LABELS,
   type AgentDomain as CatalogAgentDomain,
@@ -62,6 +63,9 @@ const DOMAIN_COLORS: Record<AgentDomain, string> = {
   custom: '#A855F7',
   self: '#8B5CF6',
 };
+
+/** Stable order for catalog agents (symmetric 5×2 grids per category). */
+const CATALOG_ORDER = new Map(AGENT_CATALOG.map((a, i) => [a.id, i]));
 
 export default function AgentLabPage() {
   const [joker, setJoker] = useState<JokerProfile>({
@@ -129,7 +133,17 @@ export default function AgentLabPage() {
             }));
           })
         );
-        setAllAgents(byCategory.flat());
+        const fromApi = byCategory.flat() as AgentDef[];
+        const apiIds = new Set(fromApi.map((a) => a.id));
+        const fromCatalog: AgentDef[] = AGENT_CATALOG.filter((c) => !apiIds.has(c.id)).map((c) => ({
+          id: c.id,
+          name: c.name,
+          role: c.role,
+          description: c.description,
+          domain: c.domain as AgentDomain,
+          defaultFor: c.defaultFor as AgentDomain[],
+        }));
+        setAllAgents([...fromApi, ...fromCatalog]);
       } catch {
         setAllAgents([]);
       } finally {
@@ -149,16 +163,25 @@ export default function AgentLabPage() {
     setSaving(false);
   }, []);
 
-  const filteredAgents = useMemo(
-    () =>
-      allAgents.filter((a) => {
-        if (filterDomain !== 'all' && a.domain !== filterDomain) return false;
-        if (!searchQuery) return true;
-        const q = searchQuery.toLowerCase();
-        return a.name.toLowerCase().includes(q) || a.role.toLowerCase().includes(q) || a.description.toLowerCase().includes(q);
-      }),
-    [allAgents, filterDomain, searchQuery]
-  );
+  const filteredAgents = useMemo(() => {
+    const list = allAgents.filter((a) => {
+      if (filterDomain !== 'all' && a.domain !== filterDomain) return false;
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        a.name.toLowerCase().includes(q) ||
+        a.role.toLowerCase().includes(q) ||
+        a.description.toLowerCase().includes(q)
+      );
+    });
+    list.sort((a, b) => {
+      const oa = CATALOG_ORDER.get(a.id) ?? 9999;
+      const ob = CATALOG_ORDER.get(b.id) ?? 9999;
+      if (oa !== ob) return oa - ob;
+      return a.name.localeCompare(b.name);
+    });
+    return list;
+  }, [allAgents, filterDomain, searchQuery]);
 
   const selectedAgent = selectedAgentId ? allAgents.find((a) => a.id === selectedAgentId) || null : null;
 
@@ -260,9 +283,15 @@ export default function AgentLabPage() {
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-4">
             {filteredAgents.map((agent, i) => (
-              <motion.div key={agent.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 * Math.min(i, 10) }}>
+              <motion.div
+                key={agent.id}
+                className="h-full min-h-0"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.04 * Math.min(i, 10) }}
+              >
                 <AgentCard
                   agent={agent}
                   override={overrides[agent.id]}
@@ -416,9 +445,10 @@ function AgentCard({ agent, override, isDisabled, onSelect }: { agent: AgentDef;
   const hasOverride = !!override && (override.weight !== 1 || !!override.perspective || !!override.notes);
   return (
     <button
+      type="button"
       onClick={onSelect}
       className={cn(
-        'group w-full rounded-xl border p-4 text-left transition-all',
+        'group flex h-full min-h-[5.5rem] w-full rounded-xl border p-4 text-left transition-all',
         isDisabled ? 'border-border-subtle/50 bg-surface-0 opacity-50' : 'border-border-subtle bg-surface-1 hover:border-border-default hover:shadow-sm'
       )}
     >
