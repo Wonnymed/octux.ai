@@ -66,7 +66,7 @@ export default function Sidebar() {
       initial={false}
       animate={{ width: expanded ? EXPANDED_W : COLLAPSED_W }}
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-      className="flex h-dvh shrink-0 flex-col overflow-hidden border-r border-border-subtle bg-surface-1 font-sans antialiased select-none"
+      className="flex h-dvh shrink-0 flex-col overflow-hidden border-r border-border-subtle bg-sidebar font-sans antialiased select-none"
     >
       {expanded ? <SidebarExpanded /> : <SidebarCollapsed />}
     </motion.aside>

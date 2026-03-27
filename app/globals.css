@@ -18,6 +18,8 @@
   --radius-2xl: 20px;
   --radius-3xl: 24px;
   --radius-pill: 9999px;
+  /* BUILD PLAN §2.1 — circular controls (avatars, dots); pill uses --radius-pill */
+  --radius-full: 999px;
 
   /* Film grain (body::after uses --grain-opacity) */
   --grain-opacity: 0.018;
@@ -209,6 +211,7 @@
 
   --sidebar-width-collapsed: 64px;
   --sidebar-width-expanded: 256px;
+  --sidebar-bg: var(--surface-1);
   --chat-max-width: 768px;
   --container-narrow: var(--chat-max-width);
   --container-page: 75rem;
@@ -265,7 +268,26 @@
   --agent-life-8: #4f46e5;
   --agent-life-9: #7e22ce;
   --agent-life-10: #6d28d9;
-  --agent-chair: #6d28d9;
+
+  /* ═══ BUILD PLAN §2.1 — product engines + canonical agent roles (semantic aliases) ═══ */
+  --engine-simulate: var(--accent);
+  --engine-build: #10b981;
+  --engine-grow: #8b5cf6;
+  --engine-hire: #f59e0b;
+  --engine-protect: #ef4444;
+  --engine-compete: #f97316;
+
+  --agent-base-rate: #6366f1;
+  --agent-unit-econ: #10b981;
+  --agent-demand: #f59e0b;
+  --agent-competitive: #f97316;
+  --agent-regulatory: #ef4444;
+  --agent-execution: #8b5cf6;
+  --agent-capital: #06b6d4;
+  --agent-scenario: #ec4899;
+  --agent-intervention: #14b8a6;
+  /* Chair aligns with BUILD PLAN accent purple */
+  --agent-chair: #7c3aed;
 }
 
 /* ═══ DARK — cool neutrals, restrained purple signature ═══ */
@@ -418,6 +440,14 @@
 /* ═══ TYPOGRAPHY UTILITIES ═══ */
 .octux-wordmark { font-weight: 300; letter-spacing: 0.15em; text-transform: lowercase; }
 .octux-gradient-text { background: linear-gradient(135deg, #7C3AED 0%, #00E5FF 50%, #7C3AED 100%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+/* BUILD PLAN §2.3 — gold midpoint (Stripe-style); default wordmark keeps cyan midpoint above */
+.octux-gradient-text-gold {
+  background: linear-gradient(135deg, #7c3aed 0%, #e8d48e 50%, #7c3aed 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 .entity-gradient-text { background: linear-gradient(135deg, #7C3AED 0%, #FF006E 30%, #00E5FF 60%, #7C3AED 100%); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shimmer 4s linear infinite; }
 
 .octx-text-page-title {
@@ -696,6 +726,7 @@
 }
 
 /* ═══ HOTFIX: VISUAL DEPTH & PREMIUM POLISH ═══ */
+/* BUILD PLAN §2.3 — hero ambient (accent wash; dark uses violet) */
 .hero-glow {
   position: fixed;
   top: 0;
@@ -703,12 +734,12 @@
   transform: translateX(-50%);
   width: 800px;
   height: 600px;
-  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.04) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
 .dark .hero-glow {
-  background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.04) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
 }
 
 .sidebar-item-active {

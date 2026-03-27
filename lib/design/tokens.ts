@@ -116,6 +116,30 @@ export const tierConfig = {
   kraken: { label: 'Kraken', color: '#00E5FF', badgeClass: 'oct-badge-kraken' },
 } as const;
 
+/** BUILD PLAN §2.1 — product engines (CSS vars; use in motion/SVG). */
+export const engineSemantic = {
+  simulate: 'var(--engine-simulate)',
+  build: 'var(--engine-build)',
+  grow: 'var(--engine-grow)',
+  hire: 'var(--engine-hire)',
+  protect: 'var(--engine-protect)',
+  compete: 'var(--engine-compete)',
+} as const;
+
+/** BUILD PLAN §2.1 — canonical agent roles (CSS vars). */
+export const agentRoleSemantic = {
+  baseRate: 'var(--agent-base-rate)',
+  unitEcon: 'var(--agent-unit-econ)',
+  demand: 'var(--agent-demand)',
+  competitive: 'var(--agent-competitive)',
+  regulatory: 'var(--agent-regulatory)',
+  execution: 'var(--agent-execution)',
+  capital: 'var(--agent-capital)',
+  scenario: 'var(--agent-scenario)',
+  intervention: 'var(--agent-intervention)',
+  chair: 'var(--agent-chair)',
+} as const;
+
 export const layout = {
   sidebarCollapsed: 56, sidebarExpanded: 260, chatMaxWidth: 768, headerHeight: 48,
   agentCardMinHeight: 120, verdictCardMinHeight: 200,

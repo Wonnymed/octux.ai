@@ -18,6 +18,8 @@ const config: Config = {
           raised: 'var(--surface-raised)',
           overlay: 'var(--surface-overlay)',
         },
+        /** BUILD PLAN §2.1 — sidebar surface (alias of --surface-1; themeable) */
+        sidebar: 'var(--sidebar-bg)',
         txt: {
           primary: 'var(--text-primary)',
           secondary: 'var(--text-secondary)',
@@ -87,6 +89,27 @@ const config: Config = {
           info: 'var(--state-info)',
           'info-muted': 'var(--state-info-muted)',
         },
+        /** BUILD PLAN §2.1 */
+        engine: {
+          simulate: 'var(--engine-simulate)',
+          build: 'var(--engine-build)',
+          grow: 'var(--engine-grow)',
+          hire: 'var(--engine-hire)',
+          protect: 'var(--engine-protect)',
+          compete: 'var(--engine-compete)',
+        },
+        role: {
+          'base-rate': 'var(--agent-base-rate)',
+          'unit-econ': 'var(--agent-unit-econ)',
+          demand: 'var(--agent-demand)',
+          competitive: 'var(--agent-competitive)',
+          regulatory: 'var(--agent-regulatory)',
+          execution: 'var(--agent-execution)',
+          capital: 'var(--agent-capital)',
+          scenario: 'var(--agent-scenario)',
+          intervention: 'var(--agent-intervention)',
+          chair: 'var(--agent-chair)',
+        },
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'system-ui', '-apple-system', 'sans-serif'],
@@ -155,6 +178,7 @@ const config: Config = {
         'radius-xl': 'var(--radius-xl)',
         'radius-2xl': 'var(--radius-2xl)',
         'radius-3xl': 'var(--radius-3xl)',
+        'radius-full': 'var(--radius-full)',
         pill: 'var(--radius-pill)',
       },
       backgroundImage: {
