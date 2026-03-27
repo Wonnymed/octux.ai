@@ -54,7 +54,7 @@ export default function HowItWorks() {
                   <span className="text-micro font-bold text-accent tracking-widest">{step.number}</span>
                   <h3 className="text-xl font-medium text-txt-primary">{step.title}</h3>
                   <span className="rounded-radius-pill bg-surface-1 px-2 py-0.5 text-micro text-txt-disabled">
-                    {i === 0 ? 'Input' : i === 1 ? 'Tensao' : 'Payoff'}
+                    {i === 0 ? 'Input' : i === 1 ? 'Tension' : 'Payoff'}
                   </span>
                 </div>
                 <p className="text-sm text-txt-secondary leading-relaxed mb-3">{step.description}</p>
@@ -69,7 +69,7 @@ export default function HowItWorks() {
           ))}
         </div>
         <p className="mt-10 text-center text-xs text-txt-tertiary">
-          Fluxo completo: pergunta → debate adversarial → veredito com probabilidade.
+          Full flow: question &rarr; adversarial debate &rarr; probability-graded verdict.
         </p>
       </div>
     </section>

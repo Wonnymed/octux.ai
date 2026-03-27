@@ -3,7 +3,7 @@ export default function TrustStrip() {
     <section className="py-12 border-y border-border-subtle/30">
       <div className="max-w-landing mx-auto px-6">
         <p className="mb-6 text-center text-xs text-txt-tertiary">
-          “Decisions analyzed” contabiliza simulacoes completas com veredito e citacoes salvas.
+          "Decisions analyzed" counts completed simulations with saved verdicts and citations.
         </p>
         {/* Stats */}
         <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 mb-8">
@@ -11,7 +11,7 @@ export default function TrustStrip() {
           <StatDivider />
           <Stat value="50" label="specialist agents" />
           <StatDivider />
-          <Stat value="5" label="decision categories" />
+          <Stat value="6" label="decision categories" />
           <StatDivider />
           <Stat value="10" label="debate rounds per sim" />
         </div>

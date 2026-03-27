@@ -8,73 +8,73 @@ type Score = 'strong' | 'partial' | 'weak';
 
 const ROWS = [
   {
-    feature: 'Estrutura de analise',
-    chatgpt: 'Resposta unica',
-    consultants: 'Revisao manual',
-    octux: 'Simulacao multi-perspectiva',
+    feature: 'Analysis structure',
+    chatgpt: 'Single response',
+    consultants: 'Manual review',
+    octux: 'Multi-perspective simulation',
     chatgptScore: 'weak' as Score,
     consultantsScore: 'partial' as Score,
     octuxScore: 'strong' as Score,
   },
   {
-    feature: 'Tempo para saida util',
-    chatgpt: 'Segundos, sem estrutura',
-    consultants: 'Dias a semanas',
-    octux: 'Abaixo de 1 minuto',
+    feature: 'Time to useful output',
+    chatgpt: 'Seconds, unstructured',
+    consultants: 'Days to weeks',
+    octux: 'Under 1 minute',
     chatgptScore: 'partial' as Score,
     consultantsScore: 'weak' as Score,
     octuxScore: 'strong' as Score,
   },
   {
-    feature: 'Risco explicito',
-    chatgpt: 'Depende de prompt',
-    consultants: 'Projeto a projeto',
-    octux: 'Downside scan nativo',
+    feature: 'Explicit risk handling',
+    chatgpt: 'Prompt-dependent',
+    consultants: 'Varies by engagement',
+    octux: 'Native downside scanning',
     chatgptScore: 'weak' as Score,
     consultantsScore: 'partial' as Score,
     octuxScore: 'strong' as Score,
   },
   {
-    feature: 'Comparar opcoes rapido',
-    chatgpt: 'Parcial',
-    consultants: 'Lento',
-    octux: 'Sim',
+    feature: 'Fast option comparison',
+    chatgpt: 'Partial',
+    consultants: 'Slow',
+    octux: 'Yes',
     chatgptScore: 'partial' as Score,
     consultantsScore: 'weak' as Score,
     octuxScore: 'strong' as Score,
   },
   {
-    feature: 'Probabilidade e confianca',
-    chatgpt: 'Raro',
-    consultants: 'Nem sempre',
-    octux: 'Em todo veredito',
+    feature: 'Probability and confidence',
+    chatgpt: 'Rare',
+    consultants: 'Not always',
+    octux: 'In every verdict',
     chatgptScore: 'weak' as Score,
     consultantsScore: 'partial' as Score,
     octuxScore: 'strong' as Score,
   },
   {
-    feature: 'Rastreabilidade',
-    chatgpt: 'Sem trilha clara',
-    consultants: 'Depende do time',
-    octux: 'Claim ligado ao agente',
+    feature: 'Traceability',
+    chatgpt: 'No clear trail',
+    consultants: 'Team-dependent',
+    octux: 'Every claim linked to an agent',
     chatgptScore: 'weak' as Score,
     consultantsScore: 'partial' as Score,
     octuxScore: 'strong' as Score,
   },
   {
-    feature: 'Discordancia explicita',
-    chatgpt: 'Normalmente nao',
-    consultants: 'Variavel',
-    octux: 'Adversarial por design',
+    feature: 'Explicit disagreement',
+    chatgpt: 'Usually no',
+    consultants: 'Variable',
+    octux: 'Adversarial by design',
     chatgptScore: 'weak' as Score,
     consultantsScore: 'partial' as Score,
     octuxScore: 'strong' as Score,
   },
   {
-    feature: 'Infra de decisao no tempo',
-    chatgpt: 'Nao',
-    consultants: 'Raro',
-    octux: 'Projetado para isso',
+    feature: 'Long-term decision infrastructure',
+    chatgpt: 'No',
+    consultants: 'Rare',
+    octux: 'Designed for this',
     chatgptScore: 'weak' as Score,
     consultantsScore: 'weak' as Score,
     octuxScore: 'strong' as Score,
@@ -103,7 +103,7 @@ export default function WhyNotChatGPT() {
             Not another chatbot. A decision engine.
           </h2>
           <p className="mx-auto max-w-reading text-sm leading-relaxed text-txt-tertiary sm:text-base">
-            Octux foi desenhado para estruturar decisoes, pressionar incerteza e retornar saida acionavel.
+            Octux is designed to structure decisions, pressure-test uncertainty, and deliver actionable output.
           </p>
         </motion.div>
 
@@ -173,7 +173,7 @@ export default function WhyNotChatGPT() {
           className="mt-8 text-center"
         >
           <p className="text-xs italic text-txt-disabled">
-            Tabela ilustrativa para posicionamento de produto.
+            Illustrative table for product positioning.
           </p>
           <p className="mt-3 text-sm text-txt-secondary sm:text-base">
             Built for decisions that need more than one answer.

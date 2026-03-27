@@ -86,6 +86,16 @@ export default function AgentLabPage() {
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDomain, setFilterDomain] = useState<AgentDomain | 'all'>('all');
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get('category');
+    if (!requested) return;
+    const normalized = requested.toLowerCase();
+    const allowed = new Set(['life', 'relationships', 'career', 'business', 'health', 'investment']);
+    if (allowed.has(normalized)) {
+      setFilterDomain(normalized as AgentDomain);
+    }
+  }, []);
+
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [jokerEditing, setJokerEditing] = useState(false);
 
@@ -276,7 +286,7 @@ export default function AgentLabPage() {
               />
             </div>
             <div className="flex flex-wrap gap-1">
-              {(['all', 'investment', 'career', 'business', 'health', 'relationships', 'life'] as const).map((domain) => (
+              {(['all', 'life', 'relationships', 'career', 'business', 'health', 'investment'] as const).map((domain) => (
                 <button
                   key={domain}
                   onClick={() => setFilterDomain(domain)}
