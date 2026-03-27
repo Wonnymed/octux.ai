@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { motion, LayoutGroup } from 'framer-motion';
 import {
   Plus,
@@ -18,13 +18,7 @@ import {
   LogIn,
   LogOut,
   Clock,
-  Hammer,
-  TrendingUp,
-  UserRound,
-  Shield,
-  Swords,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import { useAppStore, type ConversationSummary } from '@/lib/store/app';
 import { useBillingStore } from '@/lib/store/billing';
@@ -56,20 +50,6 @@ const COLLAPSED_W = 56;
 /** Okara nav icons ~20px outlined */
 const NAV_ICON = 20;
 
-const ENGINE_ITEMS: Array<{
-  slug: 'simulate' | 'build' | 'grow' | 'hire' | 'protect' | 'compete';
-  label: string;
-  icon: LucideIcon;
-  colorClass: string;
-}> = [
-  { slug: 'simulate', label: 'Simulate', icon: Zap, colorClass: 'text-engine-simulate' },
-  { slug: 'build', label: 'Build', icon: Hammer, colorClass: 'text-engine-build' },
-  { slug: 'grow', label: 'Grow', icon: TrendingUp, colorClass: 'text-engine-grow' },
-  { slug: 'hire', label: 'Hire', icon: UserRound, colorClass: 'text-engine-hire' },
-  { slug: 'protect', label: 'Protect', icon: Shield, colorClass: 'text-engine-protect' },
-  { slug: 'compete', label: 'Compete', icon: Swords, colorClass: 'text-engine-compete' },
-];
-
 /** Okara flyout order: Compare → Risk Matrix → Templates → Journal */
 const TOOLS_FLYOUT_ORDER = ['compare', 'risk-matrix', 'templates', 'journal'] as const;
 
@@ -100,14 +80,12 @@ export default function Sidebar() {
 function SidebarCollapsed() {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const toggleSidebar = useAppStore((s) => s.toggleSidebar);
   const setSidebarExpanded = useAppStore((s) => s.setSidebarExpanded);
   const tier = useBillingStore((s) => s.tier);
 
   const toolsActive = pathname.startsWith('/tools');
   const agentLabActive = pathname === '/agents';
-  const activeEngine = pathname === '/' ? searchParams.get('engine') : null;
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -148,28 +126,9 @@ function SidebarCollapsed() {
           <Dna size={NAV_ICON} strokeWidth={ICON_STROKE} />
         </CollapsedIconButton>
 
-        {ENGINE_ITEMS.map((engine) => {
-          const active = activeEngine === engine.slug;
-          const Icon = engine.icon;
-          return (
-            <CollapsedIconButton
-              key={engine.slug}
-              onClick={() => router.push(`/?engine=${engine.slug}`)}
-              tooltip={engine.label}
-              active={active}
-            >
-              <Icon
-                size={NAV_ICON}
-                strokeWidth={ICON_STROKE}
-                className={active ? cn(engine.colorClass, 'drop-shadow-[0_0_6px_rgba(124,58,237,0.2)]') : undefined}
-              />
-            </CollapsedIconButton>
-          );
-        })}
-
         <ToolsFlyoutMenu pathname={pathname} variant="collapsed" toolsActive={toolsActive} />
 
-        <CollapsedIconButton onClick={() => setSidebarExpanded(true)} tooltip="Conversations">
+        <CollapsedIconButton onClick={() => setSidebarExpanded(true)} tooltip="Chat">
           <Clock size={NAV_ICON} strokeWidth={ICON_STROKE} />
         </CollapsedIconButton>
 
@@ -227,7 +186,6 @@ function CollapsedIconButton({
 function SidebarExpanded() {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const toggleSidebar = useAppStore((s) => s.toggleSidebar);
   const setExpanded = useAppStore((s) => s.setSidebarExpanded);
   const conversations = useAppStore((s) => s.conversations);
@@ -280,7 +238,7 @@ function SidebarExpanded() {
   const homeActive = pathname === '/';
   const agentLabActive = pathname === '/agents';
   const toolsNavActive = pathname.startsWith('/tools');
-  const activeEngine = pathname === '/' ? searchParams.get('engine') : null;
+  const chatActive = pathname.startsWith('/c/');
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -326,26 +284,12 @@ function SidebarExpanded() {
             onClick={() => router.push('/agents')}
           />
           <ToolsFlyoutMenu pathname={pathname} variant="expanded" toolsActive={toolsNavActive} />
-        </div>
-
-        <div className="mx-4 my-2 h-px bg-border-subtle" />
-
-        <div className="space-y-1 px-3">
-          <SectionLabel>Engines</SectionLabel>
-          {ENGINE_ITEMS.map((engine) => {
-            const active = activeEngine === engine.slug;
-            const Icon = engine.icon;
-            return (
-              <NavItemButton
-                key={engine.slug}
-                icon={Icon}
-                label={engine.label}
-                active={active}
-                iconClassName={active ? cn(engine.colorClass, 'drop-shadow-[0_0_8px_rgba(124,58,237,0.18)]') : undefined}
-                onClick={() => router.push(`/?engine=${engine.slug}`)}
-              />
-            );
-          })}
+          <NavItemButton
+            icon={Clock}
+            label="Chat"
+            active={chatActive}
+            onClick={() => setSearchActive(true)}
+          />
         </div>
 
         <div className="mx-4 my-2 h-px bg-border-subtle" />
@@ -424,28 +368,28 @@ function SidebarExpanded() {
         </LayoutGroup>
 
         <div className="shrink-0 space-y-2 p-3 pt-2">
+          <div className="rounded-xl border border-accent/15 bg-surface-2/60 p-1.5">
+            <ProfileMenu variant="expanded" tier={tier} />
+          </div>
           {tier === 'free' ? (
             <button
               type="button"
               onClick={() => router.push('/pricing')}
-              className="group w-full rounded-xl border border-accent/[0.08] bg-gradient-to-br from-accent/[0.08] to-accent/[0.03] p-3 text-left transition-all hover:border-accent/[0.15]"
+              className="group w-full rounded-xl border border-accent/[0.08] bg-gradient-to-br from-accent/[0.08] to-accent/[0.03] p-2.5 text-left transition-all hover:border-accent/[0.15]"
             >
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 transition-colors group-hover:bg-accent/15">
-                  <Zap size={14} className="text-accent" strokeWidth={ICON_STROKE} />
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent/10 transition-colors group-hover:bg-accent/15">
+                  <Zap size={13} className="text-accent" strokeWidth={ICON_STROKE} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[12px] font-medium text-txt-secondary">Upgrade to Pro</p>
-                  <p className="text-[10px] text-txt-disabled">
-                    {pro.limits.tokensPerMonth} tokens/mo · {pro.priceLabel}
+                  <p className="text-[10px] text-txt-tertiary">
+                    Tokens = simulacoes com 10 especialistas · {pro.priceLabel}
                     {pro.period}
-                  </p>
-                  <p className="mt-0.5 text-[10px] text-txt-tertiary">
-                    Tokens = simulacoes com 10 especialistas.
                   </p>
                 </div>
                 <ChevronRight
-                  size={13}
+                  size={12}
                   className="shrink-0 text-txt-disabled transition-colors group-hover:text-txt-tertiary"
                   strokeWidth={ICON_STROKE}
                 />
@@ -476,8 +420,6 @@ function SidebarExpanded() {
               </div>
             </div>
           )}
-
-          <ProfileMenu variant="expanded" tier={tier} />
         </div>
       </div>
     </TooltipProvider>

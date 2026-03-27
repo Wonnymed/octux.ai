@@ -13,6 +13,7 @@ import HowItWorks from '@/components/landing/HowItWorks';
 import LiveExample from '@/components/landing/LiveExample';
 import WhyNotChatGPT from '@/components/landing/WhyNotChatGPT';
 import PricingPreview from '@/components/landing/PricingPreview';
+import SiteFooter from '@/components/landing/LandingFooter';
 
 export default function HomePage() {
   const { isAuthenticated, isLoading, checkGuestLimit } = useAuth();
@@ -172,6 +173,7 @@ export default function HomePage() {
       <LiveExample onSignIn={() => setShowAuth(true)} />
       <WhyNotChatGPT />
       <PricingPreview onSignIn={() => setShowAuth(true)} />
+      <SiteFooter onSignIn={() => setShowAuth(true)} />
 
       {/* Auth modal */}
       <AuthModal
