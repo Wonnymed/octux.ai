@@ -34,6 +34,14 @@ export const typographyRoles = {
   displayLg: { size: '2rem', weight: 500, lineHeight: 1.2, letterSpacing: '-0.02em' },
 } as const;
 
+/** BUILD PLAN §2.3 — gradient text stops (see `.octux-gradient-text` / `.octux-gradient-text-cyan`). */
+export const gradientTextStops = {
+  from: 'var(--gradient-text-from)',
+  via: 'var(--gradient-text-via)',
+  to: 'var(--gradient-text-to)',
+  viaCyan: 'var(--gradient-text-via-cyan)',
+} as const;
+
 /** Default text color per role (BUILD PLAN §2.2 — use with typography role). */
 export const typographyRoleColors = {
   pageTitle: 'var(--text-primary)',
