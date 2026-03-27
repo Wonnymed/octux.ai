@@ -4,6 +4,22 @@
  * NEVER for static styling — use Tailwind classes instead.
  */
 
+/** Mirrors `app/globals.css` Phase 0.2 + motion tokens (seconds, for Framer Motion). */
+export const typographyRoles = {
+  pageTitle: { size: '1.75rem', weight: 300, lineHeight: 1.3, letterSpacing: '-0.025em' },
+  section: { size: '1.25rem', weight: 500, lineHeight: 1.4, letterSpacing: '-0.015em' },
+  cardTitle: { size: '0.9375rem', weight: 500, lineHeight: 1.4, letterSpacing: '-0.005em' },
+  body: { size: '0.875rem', weight: 400, lineHeight: 1.6 },
+  meta: { size: '0.75rem', weight: 400, lineHeight: 1.5 },
+  micro: { size: '0.6875rem', weight: 400, lineHeight: 1.4 },
+  displayLg: { size: '2rem', weight: 500, lineHeight: 1.2, letterSpacing: '-0.02em' },
+} as const;
+
+/** 4px grid — same as `--space-*` in globals.css */
+export const spacingPx = {
+  1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40, 12: 48, 16: 64, 24: 96,
+} as const;
+
 export const transitions = {
   fast: { duration: 0.1, ease: 'easeOut' },
   normal: { duration: 0.15, ease: 'easeOut' },
@@ -43,7 +59,12 @@ export const gradeColors: Record<string, string> = {
 };
 
 export const categoryColors = {
-  investment: '#6366F1', relationships: '#EC4899', career: '#10B981', business: '#F59E0B', life: '#8B5CF6',
+  investment: '#6366F1',
+  relationships: '#EC4899',
+  career: '#10B981',
+  business: '#F59E0B',
+  health: '#EF4444',
+  life: '#8B5CF6',
 } as const;
 export type CategoryType = keyof typeof categoryColors;
 
@@ -52,6 +73,7 @@ export const agentPalettes: Record<CategoryType, string[]> = {
   relationships: ['#EC4899', '#F43F5E', '#E879F9', '#FB7185', '#D946EF', '#F472B6', '#C084FC', '#FB923C', '#A855F7', '#F87171'],
   career: ['#10B981', '#22C55E', '#14B8A6', '#34D399', '#06B6D4', '#2DD4BF', '#4ADE80', '#059669', '#0D9488', '#16A34A'],
   business: ['#F59E0B', '#F97316', '#EAB308', '#FB923C', '#FBBF24', '#D97706', '#EA580C', '#CA8A04', '#DC2626', '#B45309'],
+  health: ['#EF4444', '#F87171', '#FB7185', '#F43F5E', '#DC2626', '#E11D48', '#BE123C', '#F97316', '#EA580C', '#F59E0B'],
   life: ['#8B5CF6', '#A855F7', '#C084FC', '#7C3AED', '#6D28D9', '#D946EF', '#E879F9', '#4F46E5', '#9333EA', '#7E22CE'],
 };
 

@@ -7,6 +7,85 @@
   --font-display: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+/* ═══ DECISION OS — semantic tokens (Phase 0.1) ═══
+   Single source for radius / canvas / depth. Tailwind: bg-canvas / shadow-premium / rounded-radius-* */
+:root {
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-pill: 9999px;
+
+  /* Film grain (body::after uses --grain-opacity) */
+  --grain-opacity: 0.018;
+
+  /* Ambient canvas: violet mist + cool highlight — sits above solid --surface-0 */
+  --canvas-gradient:
+    radial-gradient(ellipse 90% 55% at 50% -15%, rgba(109, 40, 217, 0.09) 0%, transparent 52%),
+    radial-gradient(ellipse 50% 35% at 100% 0%, rgba(6, 182, 212, 0.05) 0%, transparent 45%);
+
+  /* Payoff moments: verdict card, primary CTA container */
+  --shadow-premium:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 8px 24px -6px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-floating:
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+    0 16px 40px -12px rgba(0, 0, 0, 0.12);
+  --shadow-accent-ring:
+    0 0 0 1px rgba(109, 40, 217, 0.12),
+    0 8px 32px -8px rgba(109, 40, 217, 0.18);
+}
+
+/* ═══ DECISION OS — semantic tokens (Phase 0.2): typography + rhythm ═══
+   BUILD PLAN §2.2. Utilities: .octx-text-* | Tailwind: text-page-title, text-section, gap-octx-* */
+:root {
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  --text-page-title-size: 1.75rem;
+  --text-page-title-weight: 300;
+  --text-page-title-leading: 1.3;
+  --text-page-title-tracking: -0.025em;
+
+  --text-section-size: 1.25rem;
+  --text-section-weight: 500;
+  --text-section-leading: 1.4;
+  --text-section-tracking: -0.015em;
+
+  --text-card-title-size: 0.9375rem;
+  --text-card-title-weight: 500;
+  --text-card-title-leading: 1.4;
+  --text-card-title-tracking: -0.005em;
+
+  --text-body-size: 0.875rem;
+  --text-body-leading: 1.6;
+
+  --text-meta-size: 0.75rem;
+  --text-meta-leading: 1.5;
+
+  --text-micro-size: 0.6875rem;
+  --text-micro-leading: 1.4;
+
+  /* Marketing hero — larger than in-app section titles */
+  --text-display-lg-size: 2rem;
+  --text-display-lg-weight: 500;
+  --text-display-lg-leading: 1.2;
+  --text-display-lg-tracking: -0.02em;
+}
+
 /* ═══ OCTUX ENTERPRISE — LIGHT (default canvas) ═══ */
 :root {
   color-scheme: light;
@@ -80,6 +159,7 @@
   --cat-relationships: #ec4899;
   --cat-career: #059669;
   --cat-business: #d97706;
+  --cat-health: #ef4444;
   --cat-life: #7c3aed;
 
   --confidence-high: #059669;
@@ -100,6 +180,10 @@
   --shadow-entity: 0 4px 24px rgba(0, 0, 0, 0.08);
   --shadow-entity-glow: 0 8px 32px rgba(0, 0, 0, 0.1);
   --shadow-accent: 0 2px 8px rgba(0, 0, 0, 0.12);
+  /* Alias: semantic layer may tune these without renaming consumers */
+  --shadow-depth-sm: var(--shadow-sm);
+  --shadow-depth-md: var(--shadow-md);
+  --shadow-depth-lg: var(--shadow-lg);
 
   --sidebar-width-collapsed: 64px;
   --sidebar-width-expanded: 256px;
@@ -162,6 +246,21 @@
 /* ═══ DARK — cool neutrals, restrained purple signature ═══ */
 .dark {
   color-scheme: dark;
+
+  --grain-opacity: 0.028;
+  --canvas-gradient:
+    radial-gradient(ellipse 85% 50% at 50% -10%, rgba(139, 92, 246, 0.14) 0%, transparent 50%),
+    radial-gradient(ellipse 45% 30% at 100% 0%, rgba(34, 211, 238, 0.06) 0%, transparent 42%);
+  --shadow-premium:
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 12px 32px -8px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-floating:
+    0 8px 16px -4px rgba(0, 0, 0, 0.45),
+    0 24px 48px -16px rgba(0, 0, 0, 0.55);
+  --shadow-accent-ring:
+    0 0 0 1px rgba(139, 92, 246, 0.2),
+    0 12px 40px -10px rgba(139, 92, 246, 0.25);
 
   --surface-0: #0f0f13;
   --surface-1: #17171d;
@@ -227,6 +326,8 @@
   --tier-max: #fbbf24;
   --tier-kraken: #22d3ee;
 
+  --cat-health: #f87171;
+
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.25);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
@@ -241,13 +342,26 @@
 @layer base {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
-  body { font-family: var(--font-sans); font-size: 14px; line-height: 1.6; color: var(--text-primary); background-color: var(--surface-0); transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease; position: relative; }
-  /* Subtle film grain — stays behind UI (pointer-events none) */
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--text-body-size);
+    line-height: var(--text-body-leading);
+    color: var(--text-primary);
+    background-color: var(--surface-0);
+    background-image: var(--canvas-gradient);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-attachment: fixed;
+    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+    position: relative;
+  }
+  /* Subtle film grain — opacity from --grain-opacity */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: var(--grain-opacity);
     pointer-events: none;
     z-index: 5;
     mix-blend-mode: overlay;
@@ -265,6 +379,46 @@
 .octux-wordmark { font-weight: 300; letter-spacing: 0.15em; text-transform: lowercase; }
 .octux-gradient-text { background: linear-gradient(135deg, #7C3AED 0%, #00E5FF 50%, #7C3AED 100%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .entity-gradient-text { background: linear-gradient(135deg, #7C3AED 0%, #FF006E 30%, #00E5FF 60%, #7C3AED 100%); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shimmer 4s linear infinite; }
+
+.octx-text-page-title {
+  font-size: var(--text-page-title-size);
+  font-weight: var(--text-page-title-weight);
+  line-height: var(--text-page-title-leading);
+  letter-spacing: var(--text-page-title-tracking);
+  color: var(--text-primary);
+}
+.octx-text-section {
+  font-size: var(--text-section-size);
+  font-weight: var(--text-section-weight);
+  line-height: var(--text-section-leading);
+  letter-spacing: var(--text-section-tracking);
+  color: var(--text-primary);
+}
+.octx-text-card-title {
+  font-size: var(--text-card-title-size);
+  font-weight: var(--text-card-title-weight);
+  line-height: var(--text-card-title-leading);
+  letter-spacing: var(--text-card-title-tracking);
+  color: var(--text-primary);
+}
+.octx-text-body {
+  font-size: var(--text-body-size);
+  font-weight: 400;
+  line-height: var(--text-body-leading);
+  color: var(--text-secondary);
+}
+.octx-text-meta {
+  font-size: var(--text-meta-size);
+  font-weight: 400;
+  line-height: var(--text-meta-leading);
+  color: var(--text-tertiary);
+}
+.octx-text-micro {
+  font-size: var(--text-micro-size);
+  font-weight: 400;
+  line-height: var(--text-micro-leading);
+  color: var(--text-tertiary);
+}
 
 /* ═══ COMPONENT CLASSES ═══ */
 .oct-card {
@@ -470,9 +624,10 @@
 }
 
 .marketing-heading {
-  font-size: 2rem;
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  font-size: var(--text-display-lg-size);
+  font-weight: var(--text-display-lg-weight);
+  line-height: var(--text-display-lg-leading);
+  letter-spacing: var(--text-display-lg-tracking);
   color: var(--text-primary);
   margin-bottom: 1rem;
 }
@@ -510,6 +665,12 @@
   --ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
   --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Shorthands — raw CSS / inline styles */
+  --transition-instant: var(--duration-instant) var(--ease-out);
+  --transition-fast: var(--duration-fast) var(--ease-out);
+  --transition-normal: var(--duration-medium) var(--ease-out);
+  --transition-slow: var(--duration-slow) var(--ease-out);
 }
 
 button,
@@ -564,6 +725,34 @@ a.animated-link:hover::after {
 .card-interactive:hover {
   border-color: var(--border-default);
   box-shadow: var(--shadow-sm);
+}
+
+/* Premium surfaces — verdict preview, pricing hero, share cards */
+.octx-card-premium {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--surface-raised);
+  box-shadow: var(--shadow-premium);
+}
+.dark .octx-card-premium {
+  background-color: var(--surface-raised);
+  border-color: var(--border-default);
+}
+
+/* Optional: stronger grain (marketing sections) */
+.octx-grain-strong {
+  position: relative;
+}
+.octx-grain-strong::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity: calc(var(--grain-opacity) * 2);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  border-radius: inherit;
+  z-index: 0;
 }
 
 body,

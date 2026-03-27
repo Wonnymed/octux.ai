@@ -50,7 +50,7 @@ export default function VerdictCard({
       className={cn('my-4', className)}
     >
       <div
-        className="rounded-xl border-2 overflow-hidden transition-colors duration-normal"
+        className="rounded-radius-xl border-2 overflow-hidden transition-colors duration-normal ease-out shadow-premium"
         style={{ borderColor: `${color}30` }}
       >
         {/* ═══ COMPACT VIEW ═══ */}

@@ -48,7 +48,7 @@ export default function DecisionCard({
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
           className="mt-3 ml-10 w-full max-w-[min(85%,42rem)] rounded-r-xl border-l-2 border-accent/40 bg-surface-raised p-4 shadow-sm dark:bg-surface-1"
         >
-          <div className="relative overflow-hidden rounded-xl border border-border-subtle bg-surface-2 p-4">
+          <div className="relative overflow-hidden octx-card-premium p-4">
             <div className="mb-3 flex items-center gap-2.5">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10">
                 <Zap size={13} className="text-accent" />

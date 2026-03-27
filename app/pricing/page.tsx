@@ -36,7 +36,7 @@ export default function PricingPage() {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-4">
-          <h1 className="text-3xl font-medium text-txt-primary mb-3">Simple, transparent pricing</h1>
+          <h1 className="text-page-title text-txt-primary mb-3">Simple, transparent pricing</h1>
           <p className="text-sm text-txt-tertiary max-w-md mx-auto">
             Start free. Upgrade when you need depth. Cancel anytime.
           </p>
@@ -48,13 +48,15 @@ export default function PricingPage() {
         </p>
 
         {/* Tier cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-octx-4 mb-16">
           {tiers.map(tier => (
             <div
               key={tier.id}
               className={cn(
-                'rounded-xl border p-6 flex flex-col transition-all duration-normal',
-                tier.popular ? 'border-accent/30 bg-accent-subtle/20 ring-1 ring-accent/10 scale-[1.02]' : 'border-border-subtle bg-surface-1',
+                'rounded-radius-xl border p-6 flex flex-col transition-colors duration-normal ease-out',
+                tier.popular
+                  ? 'octx-card-premium border-accent/30 bg-accent-subtle/20 ring-1 ring-accent/10 scale-[1.02]'
+                  : 'border-border-subtle bg-surface-1 shadow-premium',
               )}
             >
               {tier.popular && (

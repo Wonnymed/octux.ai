@@ -331,9 +331,9 @@ function OutcomeVerdictCard({
 }) {
   return (
     <div className={cn(
-      'flex flex-col rounded-xl p-5 transition-all duration-200 sm:p-6',
+      'flex flex-col rounded-radius-xl p-5 transition-colors duration-normal ease-out sm:p-6 shadow-premium',
       highlighted
-        ? 'border border-accent/12 bg-accent-subtle shadow-md shadow-accent/5'
+        ? 'border border-accent/12 bg-accent-subtle shadow-accent-ring'
         : 'border border-border-subtle bg-surface-1 hover:border-border-default',
     )}>
       <div className="mb-4 flex items-center gap-2.5">

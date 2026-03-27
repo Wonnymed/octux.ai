@@ -56,7 +56,7 @@ export default function PricingPreview({ onSignIn }: PricingPreviewProps) {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-medium text-txt-primary mb-3">
+          <h2 className="text-section text-txt-primary mb-3">
             Simple pricing
           </h2>
           <p className="text-sm text-txt-tertiary">
@@ -65,15 +65,15 @@ export default function PricingPreview({ onSignIn }: PricingPreviewProps) {
         </div>
 
         {/* Tier cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-octx-4">
           {tiers.map((tier, i) => (
             <div
               key={i}
               className={cn(
-                'rounded-xl border p-5 flex flex-col transition-all duration-normal',
+                'rounded-radius-xl border p-5 flex flex-col transition-colors duration-normal ease-out',
                 tier.popular
-                  ? 'border-accent/30 bg-accent-subtle/30 ring-1 ring-accent/10'
-                  : 'border-border-subtle bg-surface-1',
+                  ? 'octx-card-premium border-accent/30 bg-accent-subtle/30 ring-1 ring-accent/10'
+                  : 'border-border-subtle bg-surface-1 shadow-premium',
               )}
             >
               {tier.popular && (

@@ -34,7 +34,7 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
       initial={{ opacity: 0, y: 24 }}
       animate={heroInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="relative flex min-h-screen flex-col items-center justify-center px-6 pt-20 pb-24"
+      className="relative flex min-h-screen flex-col items-center justify-center px-6 pt-20 pb-24 octx-grain-strong"
     >
       <div className="hero-glow" aria-hidden />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -61,8 +61,8 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
         <div className="max-w-lg mx-auto mb-6">
           <div
             className={cn(
-              'relative rounded-2xl border transition-all duration-200',
-              'bg-surface-1 border-border-subtle',
+              'relative rounded-radius-2xl border transition-colors duration-normal ease-out',
+              'bg-canvas bg-surface-1 border-border-subtle shadow-premium',
               'shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
               'focus-within:border-accent/30 focus-within:shadow-lg focus-within:shadow-accent/5',
               'hover:border-border-default',
@@ -75,7 +75,7 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
               placeholder="What decision are you facing?"
               className={cn(
                 'w-full bg-transparent text-sm sm:text-[15px] text-white/90 placeholder:text-txt-disabled',
-                'outline-none py-3.5 pl-5 pr-14 rounded-2xl',
+                'outline-none py-3.5 pl-5 pr-14 rounded-radius-2xl',
               )}
             />
             <button
@@ -83,7 +83,7 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
               onClick={handleSubmit}
               disabled={!input.trim()}
               className={cn(
-                'absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-normal',
+                'absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-radius-xl flex items-center justify-center transition-colors duration-normal ease-out',
                 input.trim()
                   ? 'bg-accent text-white hover:bg-accent-hover'
                   : 'bg-surface-2 text-txt-disabled',
@@ -110,7 +110,7 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
                 type="button"
                 onClick={() => setInput(chip.text)}
                 className={cn(
-                  'group flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-200',
+                  'group flex items-center gap-2 px-4 py-2 rounded-radius-xl border transition-colors duration-normal ease-out',
                   'border-border-subtle bg-surface-0',
                   'hover:bg-surface-2 hover:border-border-strong',
                   `stagger-${i + 1} animate-fade-in`,
