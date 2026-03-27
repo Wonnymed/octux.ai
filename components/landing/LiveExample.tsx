@@ -26,7 +26,7 @@ export default function LiveExample({ onSignIn }: LiveExampleProps) {
   };
 
   return (
-    <section className="py-20 sm:py-28 px-6 bg-surface-1/30">
+    <section id="live-example" className="py-20 sm:py-28 px-6 bg-surface-1/30">
       <div className="max-w-container-narrow mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
@@ -45,7 +45,7 @@ export default function LiveExample({ onSignIn }: LiveExampleProps) {
         </div>
 
         {/* Verdict card */}
-        <div className="rounded-xl border border-accent/15 bg-surface-1 overflow-hidden shadow-lg">
+        <div className="rounded-radius-xl border border-accent/15 bg-surface-1 overflow-hidden shadow-premium">
           <div className="p-6 flex flex-col sm:flex-row items-start gap-6">
             <div className="w-20 h-20 rounded-full border-4 border-verdict-proceed flex items-center justify-center shrink-0">
               <span className="text-2xl font-bold text-verdict-proceed">{verdict.probability}%</span>

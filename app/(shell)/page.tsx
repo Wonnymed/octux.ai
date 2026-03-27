@@ -13,7 +13,6 @@ import HowItWorks from '@/components/landing/HowItWorks';
 import LiveExample from '@/components/landing/LiveExample';
 import WhyNotChatGPT from '@/components/landing/WhyNotChatGPT';
 import PricingPreview from '@/components/landing/PricingPreview';
-import SiteFooter from '@/components/landing/LandingFooter';
 
 export default function HomePage() {
   const { isAuthenticated, isLoading, checkGuestLimit } = useAuth();
@@ -115,8 +114,11 @@ export default function HomePage() {
             <h1 className="text-2xl font-light tracking-[0.15em] text-txt-primary lowercase">
               octux
             </h1>
-            <p className="text-sm text-txt-tertiary mt-1">
-              Never decide alone again
+            <p className="mt-2 max-w-2xl text-base text-txt-secondary sm:text-lg">
+              Transforme incerteza em decisao estruturada.
+            </p>
+            <p className="mt-1 text-sm text-txt-tertiary">
+              10 perspectivas · dados citados · perfil que evolui com o tempo.
             </p>
           </motion.div>
 
@@ -135,6 +137,20 @@ export default function HomePage() {
             <p className="text-micro mt-4 text-center text-txt-tertiary">
               10 AI specialists debate your decisions · Free to start
             </p>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <a
+                href="#live-example"
+                className="rounded-radius-md border border-border-default px-4 py-2 text-sm text-txt-secondary transition-colors hover:bg-surface-1 hover:text-txt-primary"
+              >
+                Ver exemplo
+              </a>
+              <a
+                href="/pricing"
+                className="rounded-radius-md bg-accent px-4 py-2 text-sm font-medium text-txt-on-accent transition-colors hover:bg-accent-hover"
+              >
+                Ver planos
+              </a>
+            </div>
           </motion.div>
         </div>
       </div>
@@ -145,7 +161,6 @@ export default function HomePage() {
       <LiveExample onSignIn={() => setShowAuth(true)} />
       <WhyNotChatGPT />
       <PricingPreview onSignIn={() => setShowAuth(true)} />
-      <SiteFooter onSignIn={() => setShowAuth(true)} />
 
       {/* Auth modal */}
       <AuthModal

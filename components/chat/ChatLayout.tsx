@@ -7,6 +7,7 @@ import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useAppStore } from '@/lib/store/app';
 import { useAuth } from '@/components/auth/AuthProvider';
 import Sidebar from '@/components/sidebar/Sidebar';
+import GlobalFooter from '@/components/layout/GlobalFooter';
 import { Menu } from 'lucide-react';
 
 /** Matches Tailwind `md:` — sidebar is overlay below this width */
@@ -156,6 +157,13 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
         </header>
 
         {children}
+        <GlobalFooter
+          compact
+          className="mt-auto"
+          ctaLabel="Ver planos"
+          ctaHref="/pricing"
+          oneLiner="Decision AI para decisoes operacionais: debate estruturado, risco e proxima acao."
+        />
       </main>
 
       {/* Mobile: full-screen overlay + drawer from the left */}

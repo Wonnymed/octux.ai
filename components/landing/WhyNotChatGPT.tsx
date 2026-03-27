@@ -238,7 +238,7 @@ function ColumnHeader({
   return (
     <div className={cn(
       'px-5 py-4 text-center',
-      highlighted && 'rounded-t-xl bg-accent-subtle',
+      highlighted && 'rounded-t-radius-xl border-x border-t border-accent/25 bg-gradient-to-b from-accent-subtle to-accent-subtle/40 shadow-accent-ring',
     )}>
       <span className={cn(
         'block text-sm font-semibold',
@@ -261,7 +261,7 @@ function ComparisonCell({
   return (
     <div className={cn(
       'flex items-start gap-2.5 border-l px-5 py-5',
-      winner ? 'border-accent/10 bg-accent-subtle' : 'border-border-subtle/40',
+      winner ? 'border-accent/25 bg-gradient-to-b from-accent-subtle/80 to-accent-subtle/20 shadow-[inset_0_0_0_1px_rgba(124,58,237,0.08)]' : 'border-border-subtle/40',
     )}>
       <ScoreDot score={score} />
       <span className={cn(

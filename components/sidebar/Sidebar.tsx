@@ -440,6 +440,9 @@ function SidebarExpanded() {
                     {pro.limits.tokensPerMonth} tokens/mo · {pro.priceLabel}
                     {pro.period}
                   </p>
+                  <p className="mt-0.5 text-[10px] text-txt-tertiary">
+                    Tokens = simulacoes com 10 especialistas.
+                  </p>
                 </div>
                 <ChevronRight
                   size={13}
@@ -836,13 +839,14 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
   const [hovered, setHovered] = useState(false);
 
   const title = convo.title || 'New conversation';
+  const meta = getConversationMeta(convo);
 
   return (
     <div
       className={cn(
-        'group relative flex min-h-[32px] cursor-pointer items-center gap-2 rounded-lg py-[7px] pl-2.5 pr-1.5 transition-colors duration-150',
+        'group relative flex min-h-[40px] cursor-pointer items-start gap-2 rounded-lg py-[7px] pl-2.5 pr-1.5 transition-colors duration-150',
         isActive
-          ? 'bg-accent-subtle font-medium text-txt-primary'
+          ? 'border border-accent/20 bg-gradient-to-r from-accent-subtle/90 to-accent-subtle/30 font-medium text-txt-primary shadow-[inset_0_0_0_1px_rgba(124,58,237,0.06)]'
           : 'text-txt-secondary hover:bg-surface-2 hover:text-txt-primary',
       )}
       onClick={() => {
@@ -870,7 +874,10 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
             onDone={() => setRenaming(false)}
           />
         ) : (
-          <span className="block truncate text-[12px] leading-tight">{title}</span>
+          <>
+            <span className="block truncate text-[12px] leading-tight">{title}</span>
+            <span className="mt-0.5 block truncate text-[10px] text-txt-disabled">{meta}</span>
+          </>
         )}
       </div>
 
@@ -904,6 +911,25 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
       )}
     </div>
   );
+}
+
+function getConversationMeta(convo: ConversationSummary): string {
+  const updated = relativeTime(convo.updated_at);
+  if (convo.has_simulation && convo.latest_verdict) {
+    return `${convo.latest_verdict.toUpperCase()} · ${updated}`;
+  }
+  return updated;
+}
+
+function relativeTime(isoDate: string): string {
+  const diffMs = Date.now() - new Date(isoDate).getTime();
+  const min = Math.floor(diffMs / 60000);
+  if (min < 1) return 'now';
+  if (min < 60) return `${min}m`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h`;
+  const day = Math.floor(hr / 24);
+  return `${day}d`;
 }
 
 function ConvoIcon({ convo }: { convo: ConversationSummary }) {
