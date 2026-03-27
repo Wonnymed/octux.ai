@@ -1,5 +1,6 @@
 'use client';
 
+/** Phase 1.1 — agent debate cards use shared radius + motion tokens. */
 import { useState, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -99,7 +100,7 @@ function AgentCardInner({ agent, index }: AgentCardProps) {
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <div
           className={cn(
-            'rounded-lg border transition-all duration-normal overflow-hidden',
+            'rounded-radius-lg border transition-colors duration-normal ease-out overflow-hidden',
             isStreaming && 'border-accent/30 bg-accent-subtle/10 shadow-sm shadow-accent/5',
             isComplete && 'border-border-subtle bg-surface-1/50',
             !isStreaming && !isComplete && 'border-border-subtle/50 bg-surface-1/30',

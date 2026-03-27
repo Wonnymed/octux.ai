@@ -1,5 +1,6 @@
 'use client';
 
+/** Phase 1.1 — Deep Simulation shell: Decision OS radius, depth, semantic error surfaces. */
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -74,10 +75,10 @@ export default function SimulationBlockNew({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       className={cn(
-        'my-4 rounded-xl border-2 overflow-hidden transition-all duration-300',
+        'my-4 rounded-radius-xl border-2 overflow-hidden transition-colors duration-normal ease-out',
         isActive
-          ? 'border-accent/25 shadow-md shadow-accent/5'
-          : 'border-border-subtle',
+          ? 'border-accent/25 shadow-accent-ring'
+          : 'border-border-subtle shadow-premium',
         className,
       )}
     >
@@ -164,7 +165,7 @@ function SimulationHeader({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className={cn(
-            'text-sm font-medium',
+            'text-card-title',
             isActive ? 'text-accent' : 'text-txt-secondary',
           )}>
             Deep Simulation
@@ -196,8 +197,9 @@ function SimulationHeader({
 
       {onCancel && isActive && (
         <button
+          type="button"
           onClick={onCancel}
-          className="p-1 rounded hover:bg-surface-2 text-txt-disabled hover:text-verdict-abandon transition-colors"
+          className="p-1 rounded-md hover:bg-surface-2 text-txt-disabled hover:text-verdict-abandon transition-colors duration-normal ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0"
           title="Cancel simulation"
         >
           <StopCircle size={14} />
@@ -206,8 +208,9 @@ function SimulationHeader({
 
       {isComplete && (
         <button
+          type="button"
           onClick={onToggle}
-          className="p-1 rounded hover:bg-surface-2 text-txt-disabled hover:text-txt-secondary transition-colors"
+          className="p-1 rounded-md hover:bg-surface-2 text-txt-disabled hover:text-txt-secondary transition-colors duration-normal ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0"
           title={expanded ? 'Collapse' : 'Expand analysis'}
         >
           {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
@@ -323,8 +326,9 @@ function CollapsedSummary({
       <span className="text-micro text-txt-disabled tabular-nums">{elapsed}s</span>
 
       <button
+        type="button"
         onClick={onExpand}
-        className="ml-auto flex items-center gap-1 text-micro text-accent hover:text-accent-hover transition-colors"
+        className="ml-auto flex items-center gap-1 text-micro text-accent hover:text-accent-hover transition-colors duration-normal ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0 rounded-md"
       >
         View analysis
         <ChevronDown size={12} />
@@ -344,20 +348,23 @@ function SimulationError({
   className?: string;
 }) {
   return (
-    <div className={cn(
-      'my-4 rounded-xl border-2 border-verdict-abandon/20 overflow-hidden',
-      className,
-    )}>
-      <div className="flex items-center gap-3 px-4 py-3 bg-verdict-abandon/5">
-        <XCircle size={16} className="text-verdict-abandon shrink-0" />
-        <div className="flex-1 min-w-0">
-          <span className="text-sm font-medium text-verdict-abandon">Simulation Failed</span>
-          <p className="text-xs text-txt-tertiary truncate mt-0.5">{question}</p>
+    <div
+      className={cn(
+        'my-4 overflow-hidden rounded-radius-xl border border-state-error/25 shadow-depth-sm',
+        className,
+      )}
+      role="alert"
+    >
+      <div className="flex items-center gap-3 border-b border-state-error/15 bg-state-error-muted px-4 py-3">
+        <XCircle size={16} className="shrink-0 text-state-error" />
+        <div className="min-w-0 flex-1">
+          <span className="text-sm font-medium text-state-error">Simulation failed</span>
+          <p className="mt-0.5 truncate text-xs text-txt-secondary">{question}</p>
         </div>
-        <span className="text-micro text-txt-disabled tabular-nums">{elapsed}s</span>
+        <span className="text-micro tabular-nums text-txt-disabled">{elapsed}s</span>
       </div>
-      <div className="px-4 py-3">
-        <p className="text-xs text-txt-tertiary mb-2">
+      <div className="bg-surface-1 px-4 py-3">
+        <p className="mb-2 text-xs text-txt-secondary">
           {error || 'An unexpected error occurred. Please try again.'}
         </p>
         <p className="text-micro text-txt-disabled">

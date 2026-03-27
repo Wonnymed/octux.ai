@@ -24,7 +24,7 @@ export default function AgentStreamCard({ agent, index, className }: AgentStream
 
   return (
     <div className={cn(
-      'rounded-lg border transition-all duration-normal overflow-hidden',
+      'rounded-radius-lg border transition-all duration-normal ease-out overflow-hidden',
       isStreaming && 'border-accent/30 bg-accent-subtle/30',
       isComplete && 'border-border-subtle bg-surface-1',
       agent.status === 'pending' && 'border-border-subtle bg-surface-1 opacity-50',
@@ -33,7 +33,21 @@ export default function AgentStreamCard({ agent, index, className }: AgentStream
     )}>
       {/* Header */}
       <div
-        className={cn('flex items-center gap-2.5 px-3 py-2.5 cursor-pointer', isComplete && 'hover:bg-surface-2/50')}
+        role={isComplete ? 'button' : undefined}
+        tabIndex={isComplete ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (!isComplete) return;
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setExpanded((v) => !v);
+          }
+        }}
+        className={cn(
+          'flex items-center gap-2.5 px-3 py-2.5',
+          isComplete &&
+            'cursor-pointer hover:bg-surface-2/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
+          !isComplete && 'cursor-default',
+        )}
         onClick={() => isComplete && setExpanded(!expanded)}
       >
         <OctAvatar

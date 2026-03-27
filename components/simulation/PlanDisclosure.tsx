@@ -1,5 +1,6 @@
 'use client';
 
+/** Phase 1.1 — plan steps aligned to radius tokens. */
 import { cn } from '@/lib/design/cn';
 import type { PhaseStep } from '@/lib/hooks/useSimulationStream';
 
@@ -16,7 +17,7 @@ export default function PlanDisclosure({ phases, elapsed, className }: PlanDiscl
         <div
           key={i}
           className={cn(
-            'flex items-start gap-3 py-2 px-3 rounded-lg transition-all duration-normal',
+            'flex items-start gap-3 py-2 px-3 rounded-radius-lg transition-colors duration-normal ease-out',
             phase.status === 'active' && 'bg-accent-subtle/50',
             phase.status === 'complete' && 'opacity-70',
           )}

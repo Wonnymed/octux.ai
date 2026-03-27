@@ -1,5 +1,6 @@
 'use client';
 
+/** Phase 1.1 — phase list + progress track use Decision OS radius and accent depth. */
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -49,7 +50,7 @@ export default function SimulationPhases() {
       {/* ─── HEADER ─── */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-txt-secondary">
+          <span className="text-card-title text-txt-secondary">
             Analysis Progress
           </span>
           <span className="text-micro text-txt-disabled tabular-nums">
@@ -115,8 +116,8 @@ function PhaseItem({
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.25, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
-          'rounded-lg border transition-all duration-normal',
-          phase.status === 'active' && 'border-accent/30 bg-accent-subtle/20 shadow-sm shadow-accent/5',
+          'rounded-radius-lg border transition-colors duration-normal ease-out',
+          phase.status === 'active' && 'border-accent/30 bg-accent-subtle/20 shadow-accent-ring',
           phase.status === 'complete' && 'border-border-subtle bg-surface-1/50',
           phase.status === 'pending' && 'border-transparent bg-transparent opacity-50',
         )}
