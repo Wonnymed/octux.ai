@@ -9,6 +9,12 @@ import { useBillingStore } from '@/lib/store/billing';
 import { TIER_CONFIGS, type ModelTier } from '@/lib/chat/tiers';
 import { TOKEN_COSTS } from '@/lib/billing/tiers';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/shadcn/tooltip';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -212,33 +218,50 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
           </DropdownMenu>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-radius-lg border border-border-subtle bg-surface-1 p-1">
-              {(['ink', 'deep', 'kraken'] as const).map((tier) => {
-                const config = TIER_CONFIGS[tier];
-                const cost = tier === 'ink' ? 0 : TOKEN_COSTS[tier === 'kraken' ? 'kraken' : 'deep'];
-                const locked = cost > 0 && !canAfford(tier === 'kraken' ? 'kraken' : 'deep');
-                return (
-                  <button
-                    key={tier}
-                    type="button"
-                    onClick={() => handleTierClick(tier)}
-                    className={cn(
-                      'inline-flex items-center gap-1 rounded-radius-md px-2.5 py-1 text-xs font-medium transition-colors',
-                      selectedTier === tier
-                        ? 'bg-accent text-txt-on-accent'
-                        : locked
-                          ? 'text-txt-tertiary'
-                          : 'text-txt-secondary hover:text-txt-primary',
-                    )}
-                    title={config.description}
-                  >
-                    {config.label}
-                    {cost > 0 && <span className="text-[10px] opacity-80">{cost}t</span>}
-                    {locked && <Lock size={9} className="opacity-80" />}
-                  </button>
-                );
-              })}
-            </div>
+            <TooltipProvider delayDuration={220}>
+              <div className="flex items-center rounded-radius-lg border border-border-subtle bg-surface-1 p-1">
+                {(['ink', 'deep', 'kraken'] as const).map((tier) => {
+                  const config = TIER_CONFIGS[tier];
+                  const cost = tier === 'ink' ? 0 : TOKEN_COSTS[tier === 'kraken' ? 'kraken' : 'deep'];
+                  const locked = cost > 0 && !canAfford(tier === 'kraken' ? 'kraken' : 'deep');
+                  return (
+                    <Tooltip key={tier}>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() => handleTierClick(tier)}
+                          className={cn(
+                            'inline-flex items-center gap-1 rounded-radius-md px-2.5 py-1 text-xs font-medium transition-colors',
+                            selectedTier === tier
+                              ? 'bg-accent text-txt-on-accent'
+                              : locked
+                                ? 'text-txt-tertiary'
+                                : 'text-txt-secondary hover:text-txt-primary',
+                          )}
+                        >
+                          {config.label}
+                          {locked && <Lock size={9} className="opacity-80" />}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-56 text-xs">
+                        <p className="font-medium">{config.label}</p>
+                        <p className="text-txt-tertiary">{config.description}</p>
+                        {cost > 0 && (
+                          <p className="mt-1 text-txt-tertiary">
+                            Cost: {cost} token{cost > 1 ? 's' : ''}
+                          </p>
+                        )}
+                        {locked && (
+                          <p className="mt-1 text-verdict-delay">
+                            Need {cost} token{cost > 1 ? 's' : ''} · {tokensRemaining} available
+                          </p>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </TooltipProvider>
             <button
               type="button"
               onClick={send}

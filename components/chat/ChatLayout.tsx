@@ -139,17 +139,16 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'login' } }))}
-                className="rounded-lg border border-border-default px-3 py-1.5 text-xs text-txt-secondary transition-colors duration-normal ease-out hover:text-txt-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0 sm:px-4 sm:text-sm"
+                className="rounded-md border border-border-default bg-surface-0 px-4 py-2 text-sm text-txt-primary transition-colors duration-normal ease-out hover:bg-surface-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0"
               >
                 Log in
               </button>
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'signup' } }))}
-                className="rounded-lg bg-accent px-3 py-1.5 text-xs text-txt-on-accent transition-colors duration-normal ease-out hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0 sm:px-4 sm:text-sm"
+                className="rounded-md border border-border-default bg-surface-0 px-4 py-2 text-sm text-txt-primary transition-colors duration-normal ease-out hover:bg-surface-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0"
               >
-                <span className="sm:hidden">Sign up</span>
-                <span className="hidden sm:inline">Sign up for free</span>
+                Sign up for free
               </button>
             </div>
           )}

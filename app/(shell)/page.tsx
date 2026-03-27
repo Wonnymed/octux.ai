@@ -20,6 +20,7 @@ export default function HomePage() {
   const { isAuthenticated, isLoading, checkGuestLimit } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [showScrollCue, setShowScrollCue] = useState(true);
   const router = useRouter();
   const addConversation = useAppStore((s) => s.addConversation);
 
@@ -32,6 +33,15 @@ export default function HomePage() {
       handleSend(pending);
     }
   }, [isAuthenticated, isLoading]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setShowScrollCue(window.scrollY < 24);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const handleSend = async (message: string, options?: { tier?: string; simulate?: boolean }) => {
     if (!message.trim() || loading) return;
@@ -123,11 +133,22 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-txt-tertiary">
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-txt-tertiary"
+          animate={{
+            opacity: showScrollCue ? 1 : 0,
+            y: showScrollCue ? [0, 6, 0] : 6,
+          }}
+          transition={{
+            opacity: { duration: 0.2, ease: 'easeOut' },
+            y: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
+          }}
+        >
           <div className="flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle bg-surface-1/80">
             <ArrowDown size={18} />
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* ═══ MARKETING (below the fold) ═══ */}

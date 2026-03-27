@@ -43,8 +43,8 @@ import InlineRename from './InlineRename';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggle';
 
 const ICON_STROKE = 1.5;
-/** BUILD PLAN §2.1 / §3.1 expanded rail */
-const EXPANDED_W = 200;
+/** Landing shell parity — narrower expanded rail */
+const EXPANDED_W = 172;
 /** BUILD PLAN §2.1 / §3.1 collapsed rail */
 const COLLAPSED_W = 56;
 /** Okara nav icons ~20px outlined */
