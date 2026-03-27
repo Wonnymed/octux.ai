@@ -53,7 +53,7 @@ interface PricingPreviewProps {
 export default function PricingPreview({ onSignIn }: PricingPreviewProps) {
   return (
     <section className="py-20 sm:py-28 px-6 bg-surface-1/30">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-landing mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-section text-txt-primary mb-3">

@@ -205,7 +205,7 @@ export default function AgentLabPage() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="mx-auto max-w-5xl px-6 py-10">
+      <div className="mx-auto max-w-landing px-6 py-10">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
           <div className="mb-2 flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10">
@@ -293,7 +293,7 @@ export default function AgentLabPage() {
             </div>
           </div>
 
-          <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-4">
+          <div className="mx-auto grid max-w-landing grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-4">
             {filteredAgents.map((agent, i) => (
               <motion.div
                 key={agent.id}

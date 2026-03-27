@@ -64,7 +64,7 @@ export default function SettingsDataPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-10 pb-8">
+    <div className="mx-auto max-w-container-narrow space-y-10 pb-8">
       <SettingSection
         title="Export your data"
         description="Download all your conversations, simulations, and verdicts as JSON."

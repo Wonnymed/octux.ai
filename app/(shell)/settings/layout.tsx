@@ -33,7 +33,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       </div>
 
       {!isLoading && !isAuthenticated && (
-        <div className="mx-6 mt-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3 text-sm text-txt-secondary md:mx-10">
+        <div className="octx-banner-warning mx-6 mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm md:mx-10">
           Sign in to save profile changes, export data, and manage billing.
           <button
             type="button"

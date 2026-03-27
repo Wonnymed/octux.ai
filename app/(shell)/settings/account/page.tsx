@@ -63,7 +63,7 @@ export default function SettingsAccountPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-10 pb-8">
+    <div className="mx-auto max-w-container-narrow space-y-10 pb-8">
       <SettingSection title="User ID" description="Your unique identifier. Useful for support.">
         <div className="flex flex-wrap items-center gap-2">
           <code className="field-input flex-1 min-w-0 overflow-x-auto rounded-lg px-3 py-2 font-mono text-xs text-txt-secondary">

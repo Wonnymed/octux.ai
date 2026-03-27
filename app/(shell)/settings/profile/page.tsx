@@ -77,7 +77,7 @@ export default function SettingsProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-10 pb-8">
+    <div className="mx-auto max-w-container-narrow space-y-10 pb-8">
       <SettingSection title="Profile" description="Your personal information.">
         <div className="grid gap-6 sm:grid-cols-2">
           <SettingField label="Full name">
@@ -122,8 +122,16 @@ export default function SettingsProfilePage() {
         />
       </SettingSection>
 
-      {error && <p className="text-sm text-red-400/90">{error}</p>}
-      {saved && <p className="text-sm text-emerald-500/90">Changes saved.</p>}
+      {error && (
+        <div className="octx-banner-error" role="alert">
+          {error}
+        </div>
+      )}
+      {saved && (
+        <div className="octx-banner-success" role="status">
+          Changes saved.
+        </div>
+      )}
 
       <div className="flex justify-end pt-2">
         <button

@@ -27,7 +27,7 @@ export default function LiveExample({ onSignIn }: LiveExampleProps) {
 
   return (
     <section className="py-20 sm:py-28 px-6 bg-surface-1/30">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-container-narrow mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
           <h2 className="text-2xl sm:text-3xl font-medium text-txt-primary mb-3">

@@ -86,6 +86,28 @@
   --text-display-lg-tracking: -0.02em;
 }
 
+/* ═══ DECISION OS — semantic tokens (Phase 0.3): focus + a11y ═══
+   Global :focus-visible; Tailwind: ring-focus-ring, ring-offset-*; skip: .octx-skip-link */
+:root {
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-radius: var(--radius-sm);
+  --focus-ring-color: var(--accent);
+}
+
+/* ═══ DECISION OS — semantic tokens (Phase 0.4): feedback states + layout measure ═══
+   Tailwind: text-state-* / bg-state-*-muted / max-w-reading | Layout vars extended in theme below */
+:root {
+  --state-success: #059669;
+  --state-success-muted: rgba(5, 150, 105, 0.12);
+  --state-warning: #d97706;
+  --state-warning-muted: rgba(217, 119, 6, 0.12);
+  --state-error: #dc2626;
+  --state-error-muted: rgba(220, 38, 38, 0.12);
+  --state-info: #0891b2;
+  --state-info-muted: rgba(8, 145, 178, 0.12);
+}
+
 /* ═══ OCTUX ENTERPRISE — LIGHT (default canvas) ═══ */
 :root {
   color-scheme: light;
@@ -188,6 +210,9 @@
   --sidebar-width-collapsed: 64px;
   --sidebar-width-expanded: 256px;
   --chat-max-width: 768px;
+  --container-narrow: var(--chat-max-width);
+  --container-page: 75rem;
+  --container-reading: 65ch;
   --header-height: 48px;
 
   --agent-inv-1: #6366f1;
@@ -261,6 +286,17 @@
   --shadow-accent-ring:
     0 0 0 1px rgba(139, 92, 246, 0.2),
     0 12px 40px -10px rgba(139, 92, 246, 0.25);
+
+  --focus-ring-color: var(--accent-light);
+
+  --state-success: #34d399;
+  --state-success-muted: rgba(52, 211, 153, 0.14);
+  --state-warning: #fbbf24;
+  --state-warning-muted: rgba(251, 191, 36, 0.14);
+  --state-error: #f87171;
+  --state-error-muted: rgba(248, 113, 113, 0.14);
+  --state-info: #22d3ee;
+  --state-info-muted: rgba(34, 211, 238, 0.14);
 
   --surface-0: #0f0f13;
   --surface-1: #17171d;
@@ -366,7 +402,11 @@
     z-index: 5;
     mix-blend-mode: overlay;
   }
-  *:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  *:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+    border-radius: var(--focus-ring-radius);
+  }
   ::selection { background: var(--accent-muted); color: var(--text-primary); }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -418,6 +458,68 @@
   font-weight: 400;
   line-height: var(--text-micro-leading);
   color: var(--text-tertiary);
+}
+
+/* Keyboard: jump to main — first tab stop in shell / marketing */
+.octx-skip-link {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 10000;
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-meta-size);
+  font-weight: 500;
+  line-height: var(--text-meta-leading);
+  text-decoration: none;
+  transform: translateY(calc(-100% - var(--space-6)));
+  transition: transform var(--transition-fast);
+}
+.octx-skip-link:focus {
+  transform: translateY(0);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Inline banners — toasts, API feedback, disclaimers (uses Phase 0.4 state tokens) */
+.octx-banner-success {
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--state-success) 28%, transparent);
+  background: var(--state-success-muted);
+  color: var(--state-success);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-leading);
+}
+.octx-banner-warning {
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--state-warning) 28%, transparent);
+  background: var(--state-warning-muted);
+  color: var(--state-warning);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-leading);
+}
+.octx-banner-error {
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--state-error) 28%, transparent);
+  background: var(--state-error-muted);
+  color: var(--state-error);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-leading);
+}
+.octx-banner-info {
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--state-info) 28%, transparent);
+  background: var(--state-info-muted);
+  color: var(--state-info);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-leading);
 }
 
 /* ═══ COMPONENT CLASSES ═══ */
@@ -615,12 +717,13 @@
 }
 
 .sidebar-section-label {
-  font-size: 10px;
+  font-size: var(--text-micro-size);
+  line-height: var(--text-micro-leading);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-tertiary);
-  padding: 0 12px;
-  margin: 16px 0 6px;
+  padding: 0 var(--space-3);
+  margin: var(--space-4) 0 var(--space-2);
 }
 
 .marketing-heading {

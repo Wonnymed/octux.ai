@@ -12,7 +12,7 @@ export default function LandingFooter({ onSignIn }: LandingFooterProps) {
       {/* Subtle entity bg */}
       <div className="absolute inset-0 oct-entity-bg opacity-10 pointer-events-none" />
 
-      <div className="relative max-w-4xl mx-auto">
+      <div className="relative max-w-landing mx-auto">
         {/* Final CTA */}
         <div className="text-center mb-12">
           <h2 className="text-xl sm:text-2xl font-medium text-txt-primary mb-3">

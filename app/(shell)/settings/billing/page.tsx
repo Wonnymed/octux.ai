@@ -94,7 +94,7 @@ export default function SettingsBillingPage() {
   const paid = tier !== 'free' && !!balance.stripeCustomerId;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-10 pb-8">
+    <div className="mx-auto max-w-container-narrow space-y-10 pb-8">
       <SettingSection title="Current plan" description="Your active subscription.">
         <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-1 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">

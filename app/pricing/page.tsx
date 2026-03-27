@@ -33,7 +33,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-surface-0 py-16 px-6">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-landing mx-auto">
         {/* Header */}
         <div className="text-center mb-4">
           <h1 className="text-page-title text-txt-primary mb-3">Simple, transparent pricing</h1>

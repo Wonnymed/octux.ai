@@ -54,7 +54,7 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
 
         <h1 className="text-4xl sm:text-5xl text-txt-primary mb-3 font-light tracking-[0.15em] lowercase">octux</h1>
 
-        <p className="text-lg sm:text-xl text-txt-secondary mb-10 font-light tracking-wide">
+        <p className="mx-auto max-w-reading text-lg sm:text-xl text-txt-secondary mb-10 font-light tracking-wide">
           Never decide alone again
         </p>
 

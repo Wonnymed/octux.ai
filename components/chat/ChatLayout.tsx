@@ -95,10 +95,17 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
 
   return (
     <div className="flex min-h-0 h-[100dvh] overflow-x-hidden bg-surface-0">
+      <a href="#main-content" className="octx-skip-link">
+        Skip to content
+      </a>
       {/* Desktop sidebar only — never mount on mobile (avoids flash + layout shift) */}
       {showDesktopSidebar && <Sidebar />}
 
-      <main className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto supports-[padding:max(0px)]:pb-[max(0px,env(safe-area-inset-bottom))]">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto outline-none focus:outline-none supports-[padding:max(0px)]:pb-[max(0px,env(safe-area-inset-bottom))]"
+      >
         <header
           className={cn(
             'sticky top-0 z-30 flex h-12 shrink-0 items-center bg-surface-0/95 px-3 backdrop-blur-sm supports-[padding:max(0px)]:pt-[max(0px,env(safe-area-inset-top))] sm:px-4',
@@ -110,7 +117,7 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
               <button
                 type="button"
                 onClick={openMobileMenu}
-                className="rounded-md p-2 text-icon-secondary transition-colors hover:bg-surface-2 hover:text-icon-primary"
+                className="rounded-md p-2 text-icon-secondary transition-colors duration-normal ease-out hover:bg-surface-2 hover:text-icon-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0"
                 aria-label="Open menu"
                 aria-expanded={sidebarExpanded}
               >
@@ -132,14 +139,14 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'login' } }))}
-                className="rounded-lg border border-border-default px-3 py-1.5 text-xs text-txt-secondary transition-colors hover:text-txt-primary sm:px-4 sm:text-sm"
+                className="rounded-lg border border-border-default px-3 py-1.5 text-xs text-txt-secondary transition-colors duration-normal ease-out hover:text-txt-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0 sm:px-4 sm:text-sm"
               >
                 Log in
               </button>
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'signup' } }))}
-                className="rounded-lg bg-accent px-3 py-1.5 text-xs text-txt-on-accent transition-colors hover:bg-accent-hover sm:px-4 sm:text-sm"
+                className="rounded-lg bg-accent px-3 py-1.5 text-xs text-txt-on-accent transition-colors duration-normal ease-out hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0 sm:px-4 sm:text-sm"
               >
                 <span className="sm:hidden">Sign up</span>
                 <span className="hidden sm:inline">Sign up for free</span>

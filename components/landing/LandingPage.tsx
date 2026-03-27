@@ -19,8 +19,9 @@ export default function LandingPage() {
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-surface-0/80 backdrop-blur-md border-b border-border-subtle/30">
         <span className="text-sm font-light tracking-[0.15em] text-txt-secondary lowercase">octux</span>
         <button
+          type="button"
           onClick={() => setShowAuth(true)}
-          className="text-xs text-txt-tertiary hover:text-txt-primary transition-colors duration-normal"
+          className="rounded-md px-2 py-1 text-xs text-txt-tertiary transition-colors duration-normal ease-out hover:text-txt-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0"
         >
           Sign in
         </button>

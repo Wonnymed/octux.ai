@@ -4,6 +4,25 @@
  * NEVER for static styling — use Tailwind classes instead.
  */
 
+/** Mirrors `app/globals.css` Phase 0.4 — system feedback (not verdict-specific). */
+export const stateSemantic = {
+  success: 'var(--state-success)',
+  successMuted: 'var(--state-success-muted)',
+  warning: 'var(--state-warning)',
+  warningMuted: 'var(--state-warning-muted)',
+  error: 'var(--state-error)',
+  errorMuted: 'var(--state-error-muted)',
+  info: 'var(--state-info)',
+  infoMuted: 'var(--state-info-muted)',
+} as const;
+
+/** Mirrors `app/globals.css` Phase 0.3 — use CSS vars in static styles when needed. */
+export const focusRing = {
+  colorVar: 'var(--focus-ring-color)',
+  width: '2px',
+  offsetVar: 'var(--focus-ring-offset)',
+} as const;
+
 /** Mirrors `app/globals.css` Phase 0.2 + motion tokens (seconds, for Framer Motion). */
 export const typographyRoles = {
   pageTitle: { size: '1.75rem', weight: 300, lineHeight: 1.3, letterSpacing: '-0.025em' },

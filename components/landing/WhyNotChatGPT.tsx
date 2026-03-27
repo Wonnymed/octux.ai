@@ -105,7 +105,7 @@ export default function WhyNotChatGPT() {
 
   return (
     <section ref={ref} className="px-6 py-24 sm:py-32">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-landing">
 
         {/* ─── HEADER ─── */}
         <motion.div
@@ -120,7 +120,7 @@ export default function WhyNotChatGPT() {
           <h2 className="mb-4 text-3xl font-medium tracking-tight text-txt-primary sm:text-4xl">
             Three ways to make a decision.
           </h2>
-          <p className="mx-auto max-w-xl text-base leading-relaxed text-txt-tertiary sm:text-lg">
+          <p className="mx-auto max-w-reading text-base leading-relaxed text-txt-tertiary sm:text-lg">
             Ask a chatbot. Hire a consultant. Or let 10 specialists debate it.
           </p>
         </motion.div>

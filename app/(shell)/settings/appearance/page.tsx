@@ -15,7 +15,7 @@ export default function SettingsAppearancePage() {
   const setMode = useThemeStore((s) => s.setMode);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 pb-8">
+    <div className="mx-auto max-w-container-narrow space-y-8 pb-8">
       <SettingSection title="Theme" description="Choose how Octux looks to you.">
         <div className="grid gap-3 sm:grid-cols-3">
           {OPTIONS.map(({ mode: m, icon, title, desc }) => {
@@ -26,7 +26,7 @@ export default function SettingsAppearancePage() {
                 type="button"
                 onClick={() => setMode(m)}
                 className={cn(
-                  'flex flex-col items-start rounded-xl border p-4 text-left transition-colors',
+                  'flex flex-col items-start rounded-xl border p-4 text-left transition-colors duration-normal ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0',
                   active
                     ? 'border-accent bg-accent-subtle'
                     : 'border-border-subtle bg-surface-1 hover:border-border-default hover:bg-surface-2/80',
