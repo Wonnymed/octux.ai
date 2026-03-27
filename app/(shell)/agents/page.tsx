@@ -24,6 +24,7 @@ import {
   DOMAIN_LABELS as CATALOG_DOMAIN_LABELS,
   type AgentDomain as CatalogAgentDomain,
 } from '@/lib/agents/catalog';
+import { LEGACY_AGENT_IDS } from '@/lib/agents/legacy-ids';
 
 type AgentDomain = CatalogAgentDomain | 'custom' | 'self';
 
@@ -133,7 +134,8 @@ export default function AgentLabPage() {
             }));
           })
         );
-        const fromApi = byCategory.flat() as AgentDef[];
+        const fromApiRaw = byCategory.flat() as AgentDef[];
+        const fromApi = fromApiRaw.filter((a) => !LEGACY_AGENT_IDS.has(a.id));
         const apiIds = new Set(fromApi.map((a) => a.id));
         const fromCatalog: AgentDef[] = AGENT_CATALOG.filter((c) => !apiIds.has(c.id)).map((c) => ({
           id: c.id,
@@ -143,7 +145,15 @@ export default function AgentLabPage() {
           domain: c.domain as AgentDomain,
           defaultFor: c.defaultFor as AgentDomain[],
         }));
-        setAllAgents([...fromApi, ...fromCatalog]);
+        const merged = [...fromApi, ...fromCatalog];
+        const seen = new Set<string>();
+        setAllAgents(
+          merged.filter((a) => {
+            if (seen.has(a.id)) return false;
+            seen.add(a.id);
+            return true;
+          })
+        );
       } catch {
         setAllAgents([]);
       } finally {
