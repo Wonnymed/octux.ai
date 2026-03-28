@@ -455,7 +455,34 @@
     outline-offset: var(--focus-ring-offset);
     border-radius: var(--focus-ring-radius);
   }
-  ::selection { background: var(--accent-muted); color: var(--text-primary); }
+
+  /* ═══ TEXT SELECTION CONTROL ═══ */
+  /* Disable selection globally — prevents highlight on empty card areas, buttons, sidebar */
+  *, *::before, *::after {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* Re-enable selection on real text content */
+  p, span, h1, h2, h3, h4, h5, h6,
+  li, td, th, label, blockquote, figcaption,
+  article, .octux-markdown, .octux-markdown * {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  /* Inputs and textareas always selectable */
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  /* Code blocks selectable */
+  pre, code, pre *, code * {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* Selection color — warm terracotta tint */
+  ::selection { background: rgba(199, 91, 42, 0.15); color: inherit; }
+  ::-moz-selection { background: rgba(199, 91, 42, 0.15); color: inherit; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
