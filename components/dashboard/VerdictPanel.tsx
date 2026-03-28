@@ -13,6 +13,12 @@ import { resolveAgentChatId } from '@/lib/agent-chat/resolve-agent-id';
 import { DARK_THEME } from '@/lib/dashboard/theme';
 import { cn } from '@/lib/design/cn';
 import type { VerdictResult, AgentScoreEntry, RiskEntry } from '@/lib/simulation/events';
+import type { CompareVerdict, PremortemOpusVerdict, StressOpusVerdict } from '@/lib/simulation/types';
+import {
+  CompareOpusVerdictLayout,
+  PremortemOpusVerdictLayout,
+  StressOpusVerdictLayout,
+} from '@/components/dashboard/OpusVerdictLayouts';
 import type { StressRiskVector } from '@/lib/simulation/mode-verdict';
 import type { SimulationChargeType } from '@/lib/billing/token-costs';
 import type { AgentStreamState } from '@/lib/store/simulation';
@@ -369,9 +375,20 @@ export default function VerdictPanel({ visible }: { visible: boolean }) {
   const outlineBtn =
     'inline-flex items-center justify-center rounded-lg border border-white/10 bg-transparent px-4 py-2 text-[12px] font-medium text-white/50 transition-colors hover:bg-white/[0.04] disabled:cursor-not-allowed disabled:opacity-40';
 
+  const vPremium = verdict as VerdictResult & {
+    opus_compare?: CompareVerdict;
+    opus_stress?: StressOpusVerdict;
+    opus_premortem?: PremortemOpusVerdict;
+  };
+  const hasOpusPremiumLayout =
+    (panelMode === 'compare' && Boolean(vPremium.opus_compare)) ||
+    (panelMode === 'stress' && Boolean(vPremium.opus_stress)) ||
+    (panelMode === 'premortem' && Boolean(vPremium.opus_premortem));
+
   const structuredCompare = verdict?.compare_data;
   const showCompareCard =
     panelMode === 'compare' &&
+    !vPremium.opus_compare &&
     Boolean(structuredCompare || (compareHint != null && compareHint.winner !== null));
 
   return (
@@ -406,6 +423,16 @@ export default function VerdictPanel({ visible }: { visible: boolean }) {
           </button>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-2">
+            {hasOpusPremiumLayout && panelMode === 'compare' && vPremium.opus_compare ? (
+              <CompareOpusVerdictLayout verdict={vPremium.opus_compare} />
+            ) : null}
+            {hasOpusPremiumLayout && panelMode === 'stress' && vPremium.opus_stress ? (
+              <StressOpusVerdictLayout verdict={vPremium.opus_stress} />
+            ) : null}
+            {hasOpusPremiumLayout && panelMode === 'premortem' && vPremium.opus_premortem ? (
+              <PremortemOpusVerdictLayout verdict={vPremium.opus_premortem} />
+            ) : null}
+
             {/* Compare — structured or heuristic */}
             {showCompareCard && structuredCompare && (
               <div className="mb-6 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
@@ -464,7 +491,7 @@ export default function VerdictPanel({ visible }: { visible: boolean }) {
             )}
 
             {/* Score + summary: simulate / stress / premortem always; compare only when no heuristic winner */}
-            {(panelMode !== 'compare' || !showCompareCard) && (
+            {(panelMode !== 'compare' || !showCompareCard) && !hasOpusPremiumLayout && (
               <div className="mb-6 flex flex-col gap-6 sm:flex-row sm:items-start">
                 <div className="relative mx-auto shrink-0 sm:mx-0">
                   <svg width={100} height={100} viewBox="0 0 100 100" className="-rotate-90">
@@ -501,7 +528,7 @@ export default function VerdictPanel({ visible }: { visible: boolean }) {
             )}
 
             {/* Stress — structured vectors or legacy risk_matrix */}
-            {panelMode === 'stress' && stressVectorsStructured.length > 0 && (
+            {panelMode === 'stress' && !vPremium.opus_stress && stressVectorsStructured.length > 0 && (
               <div className="mb-6">
                 <p className={HEADER}>Failure vectors</p>
                 {typeof verdict.stress_data?.overall_resiliency === 'number' ? (
@@ -558,7 +585,10 @@ export default function VerdictPanel({ visible }: { visible: boolean }) {
                 ) : null}
               </div>
             )}
-            {panelMode === 'stress' && stressVectorsStructured.length === 0 && stressRisks.length > 0 && (
+            {panelMode === 'stress' &&
+              !vPremium.opus_stress &&
+              stressVectorsStructured.length === 0 &&
+              stressRisks.length > 0 && (
               <div className="mb-6">
                 <p className={HEADER}>Failure vectors</p>
                 <ul className="mt-3 space-y-2">
@@ -578,7 +608,9 @@ export default function VerdictPanel({ visible }: { visible: boolean }) {
             )}
 
             {/* Pre-mortem — structured failure_analysis or heuristic list */}
-            {panelMode === 'premortem' && verdict.failure_analysis?.failure_causes?.length ? (
+            {panelMode === 'premortem' &&
+            !vPremium.opus_premortem &&
+            verdict.failure_analysis?.failure_causes?.length ? (
               <div className="mb-6">
                 <p className={HEADER}>Failure causes</p>
                 {verdict.failure_analysis.summary ? (
@@ -637,7 +669,10 @@ export default function VerdictPanel({ visible }: { visible: boolean }) {
                 ) : null}
               </div>
             ) : null}
-            {panelMode === 'premortem' && !verdict.failure_analysis?.failure_causes?.length && premortemCauses.length > 0 && (
+            {panelMode === 'premortem' &&
+              !vPremium.opus_premortem &&
+              !verdict.failure_analysis?.failure_causes?.length &&
+              premortemCauses.length > 0 && (
               <div className="mb-6">
                 <p className={HEADER}>Most likely failure path</p>
                 <ul className="mt-3 space-y-2">
@@ -658,6 +693,26 @@ export default function VerdictPanel({ visible }: { visible: boolean }) {
                 )}
               </div>
             )}
+
+            {Array.isArray(verdict.sources) && verdict.sources.length > 0 && !hasOpusPremiumLayout ? (
+              <div className="mb-6 border-t border-white/[0.06] pt-4">
+                <p className={HEADER}>Sources</p>
+                <ul className="mt-3 space-y-1.5">
+                  {verdict.sources.map((src, i) => (
+                    <li key={`${src.url}-${i}`}>
+                      <a
+                        href={src.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block truncate text-[12px] text-white/40 transition-colors hover:text-white/65"
+                      >
+                        {src.title || src.url}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
 
             {/* Specialists — simulate / compare; hide for stress & premortem replaced sections */}
             {(panelMode === 'simulate' || panelMode === 'compare') && scoreboard.length > 0 && (
@@ -741,7 +796,7 @@ export default function VerdictPanel({ visible }: { visible: boolean }) {
             )}
 
             {/* Bordered risk / action */}
-            {(verdict.main_risk || verdict.next_action) && (
+            {(verdict.main_risk || verdict.next_action) && !hasOpusPremiumLayout && (
               <div className="mb-6 space-y-3">
                 {verdict.main_risk && (
                   <div className="border-l-2 border-red-400/70 pl-3">

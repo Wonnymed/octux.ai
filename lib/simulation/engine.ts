@@ -1,4 +1,5 @@
 import { callClaude, callClaudeWithTools, formatSearchCitations, parseJSON, type SearchCitation, type ToolCallResult } from './claude';
+import { callAgentWithSearch } from './agent-call';
 import { getModel, type ModelTier } from '@/lib/config/model-tiers';
 import type { SimulationChargeType } from '@/lib/billing/token-costs';
 import { AGENTS, getAgentById } from '../agents/prompts';
@@ -35,6 +36,9 @@ import {
   runGodViewMarketPipeline,
   synthesizeCrowdSignal,
   formatCrowdSignal,
+  splitCompareOptions,
+  formatChiefCrowdSegmentBootstrap,
+  finalizeGodViewSummary,
   type CrowdSignal,
   type GodViewCrowdSummary,
   type CrowdVote,
@@ -54,14 +58,31 @@ import { getOrCreateProfile, formatBehavioralContext, applyBehavioralModifiers, 
 import type { AdvisorPersona } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
 import { designSimulation } from './design';
-import type { ChiefTier, SimulationDesign } from './types';
+import type { ChiefSimulationMode, ChiefTier, SimulationDesign } from './types';
+import { buildDynamicSpecialistPrompt } from '@/lib/prompts/dynamic-specialist';
+import { buildOperatorAgentPrompt } from '@/lib/prompts/operator-agent';
 import {
   mapChargeTypeToChiefMode,
   sanitizeChiefId,
   specialistPlanToAgentConfig,
   operatorPlanToAgentConfig,
   buildChiefPanelPlan,
+  CHIEF_DEBATE_JSON_SUFFIX,
 } from './flows';
+import { buildOpusCompareVerdictPrompt } from '@/lib/prompts/compare-verdict';
+import { buildOpusStressVerdictPrompt } from '@/lib/prompts/stress-verdict';
+import { buildOpusPremortemVerdictPrompt } from '@/lib/prompts/premortem-verdict';
+import {
+  attachOpusPremiumPayload,
+  buildOpusParseFallbackParsed,
+  buildOpusVerdictUserPayload,
+  mapCompareOpusToDecision,
+  mapPremortemOpusToDecision,
+  mapStressOpusToDecision,
+  mergeToolSourcesIntoParsedVerdict,
+  parseOpusVerdictJson,
+  usesOpusPremiumVerdict,
+} from './opus-verdict';
 
 export type SimulationSSEEvent =
   | { event: 'phase_start'; data: { phase: string; status: string } }
@@ -71,6 +92,7 @@ export type SimulationSSEEvent =
   | { event: 'agent_complete'; data: AgentReport }
   | { event: 'consensus_update'; data: { proceed: number; delay: number; abandon: number; avg_confidence: number } }
   | { event: 'verdict_artifact'; data: DecisionObject }
+  | { event: 'verdict_generating'; data: { message: string } }
   | { event: 'followup_suggestions'; data: string[] }
   | { event: 'crowd_personas'; data: AdvisorPersona[] }
   | { event: 'field_scan'; data: FieldScan }
@@ -90,12 +112,16 @@ export type SimulationSSEEvent =
   | { event: 'optimization_triggered'; data: { sim_count: number } }
   | { event: 'agent_reflected'; data: { agent_id: string; iterations: number; original_score: number; final_score: number } }
   | { event: 'agent_searched'; data: { agent_id: string; searches: number; sources: number; domains: string[] } }
+  | {
+      event: 'agent_sources';
+      data: { agent: string; count: number; sources: { url: string; title: string }[] };
+    }
   | { event: 'confidence_heatmap'; data: ConfidenceHeatmap }
   | { event: 'agents_selected'; data: { active: { id: string; reason: string; priority: string }[]; skipped: { id: string; reason: string }[]; tokensPerAgent: number } }
   | { event: 'crowd_round_started'; data: { advisorCount: number } }
   | {
       event: 'crowd_voice';
-      data: { persona: string; role: string; sentiment: string; statement: string };
+      data: { persona: string; role: string; sentiment: string; statement: string; team?: 'A' | 'B' };
     }
   | { event: 'crowd_summary'; data: GodViewCrowdSummary }
   | { event: 'crowd_round_complete'; data: CrowdSignal }
@@ -174,12 +200,12 @@ async function callAgentWithRetry(
   roundNum: number,
   phase: string,
   retries = 2,
-  useWebSearch = false,
   agentTier: ModelTier = 'specialist',
+  forceDisableSearch?: boolean,
 ): Promise<CallAgentResult | null> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      return await callAgent(agent, userMessage, maxTokens, audit, roundNum, phase, useWebSearch, agentTier);
+      return await callAgent(agent, userMessage, maxTokens, audit, roundNum, phase, agentTier, forceDisableSearch);
     } catch (err) {
       const isRateLimit = err instanceof Error && (err.message.includes('429') || err.message.includes('rate_limit'));
       if (isRateLimit && attempt < retries) {
@@ -329,6 +355,75 @@ ${conflicts.length > 0 ? '\n' + conflicts.join('\n') : ''}${ownHistory}${chairSe
 IMPORTANT: React to what other agents said. If you agree with someone, say why. If you disagree, challenge their specific claim. Do NOT repeat what others already covered \u2014 add NEW information or challenge EXISTING arguments.`;
 }
 
+// ── Chief panel: per-round user messages + web search tiering ─────────────
+
+function chiefPreviousResponses(
+  state: SimulationState,
+  excludeAgentId: string,
+): { name: string; text: string }[] {
+  return Array.from(state.latest_reports.entries())
+    .filter(([id]) => id !== excludeAgentId)
+    .map(([, r]) => ({
+      name: r.agent_name,
+      text: (r.key_argument || '').slice(0, 600),
+    }));
+}
+
+function maxSearchUsesForAgent(agentId: string, phase: string): number {
+  if (agentId === 'chief_operator') return 2;
+  if (phase === 'opening') return 3;
+  if (phase === 'quick_takes' || phase === 'convergence' || phase === 'adversarial') return 2;
+  return 2;
+}
+
+function buildDebateUserMessageForAgent(params: {
+  agent: AgentConfig;
+  chiefDesign: SimulationDesign | null;
+  chiefMode: ChiefSimulationMode;
+  debateRoundLabel: number;
+  state: SimulationState;
+  question: string;
+  task: string;
+  debateCtx: string;
+  instructionSuffix?: string;
+}): string {
+  const {
+    agent,
+    chiefDesign,
+    chiefMode,
+    debateRoundLabel,
+    state,
+    question,
+    task,
+    debateCtx,
+    instructionSuffix,
+  } = params;
+  const suffixBlock = instructionSuffix ? `\n\nROUND INSTRUCTION:\n${instructionSuffix}\n` : '';
+  if (chiefDesign?.kind === 'specialist') {
+    const prev = chiefPreviousResponses(state, agent.id);
+    if (agent.id === 'chief_operator' && chiefDesign.operator) {
+      return (
+        `${buildOperatorAgentPrompt(chiefDesign.operator, question, debateRoundLabel, prev)}\n\n` +
+        `ADDITIONAL CONTEXT:\n${debateCtx}\n` +
+        suffixBlock +
+        `\n` +
+        CHIEF_DEBATE_JSON_SUFFIX
+      );
+    }
+    const specPlan = chiefDesign.specialists.find((s) => agent.id === `chief_${sanitizeChiefId(s.id)}`);
+    if (specPlan) {
+      return (
+        `${buildDynamicSpecialistPrompt(specPlan, question, chiefMode, debateRoundLabel, prev)}\n\n` +
+        `ADDITIONAL CONTEXT:\n${debateCtx}\n` +
+        suffixBlock +
+        `\n` +
+        CHIEF_DEBATE_JSON_SUFFIX
+      );
+    }
+  }
+  return `Question: ${question}\n\nYour task: ${task}\n\n${debateCtx}${suffixBlock}\n\nAnalyze from your perspective as ${agent.role}. Be specific with data. Respond with valid JSON only.`;
+}
+
 // ── Audited callAgent wrapper ──────────────────────────────
 
 type CallAgentResult = AgentReport & { _searchCitations?: SearchCitation[]; _searchCount?: number };
@@ -340,24 +435,35 @@ async function callAgent(
   audit?: SimulationAudit,
   roundNum?: number,
   phase?: string,
-  useWebSearch = false,
   agentTier: ModelTier = 'specialist',
+  forceDisableSearch?: boolean,
 ): Promise<CallAgentResult> {
   const start = Date.now();
   let success = true;
   let error: string | undefined;
-  let raw: string;
+  let raw = '';
   let searchCitations: SearchCitation[] = [];
   let searchCount = 0;
+  const searchUserSuffix =
+    '\n\nYou have web search. Use it for current facts (prices, news, regulations) when it improves your answer.';
+  const maxSearch = forceDisableSearch ? 0 : maxSearchUsesForAgent(agent.id, phase || '');
+  const effectiveUser = maxSearch > 0 ? userMessage + searchUserSuffix : userMessage;
 
   try {
-    if (useWebSearch) {
+    if (maxSearch > 0) {
       const toolResult = await callClaudeWithTools({
         systemPrompt: agent.systemPrompt,
-        userMessage,
+        userMessage: effectiveUser,
         agentId: agent.id,
         maxTokens,
         tier: agentTier,
+        forceWebSearch: {
+          maxUses: maxSearch,
+          searchContext:
+            agent.id === 'chief_operator'
+              ? 'Local costs, regulations, and situations similar to the decision-maker’s profile.'
+              : 'Market statistics, regulations, and verifiable facts for your domain and geography.',
+        },
       });
       raw = toolResult.text;
       searchCitations = toolResult.searchCitations;
@@ -365,7 +471,7 @@ async function callAgent(
     } else {
       raw = await callClaude({
         systemPrompt: agent.systemPrompt,
-        userMessage,
+        userMessage: effectiveUser,
         maxTokens,
         tier: agentTier,
       });
@@ -377,8 +483,8 @@ async function callAgent(
   } finally {
     if (audit && roundNum !== undefined && phase) {
       const latency = Date.now() - start;
-      const inputTokens = Math.ceil((agent.systemPrompt.length + userMessage.length) / 4);
-      const outputTokens = success ? Math.ceil((raw!?.length || 0) / 4) : 0;
+      const inputTokens = Math.ceil((agent.systemPrompt.length + effectiveUser.length) / 4);
+      const outputTokens = success ? Math.ceil((raw.length || 0) / 4) : 0;
       addRound(audit, {
         round: roundNum,
         phase,
@@ -394,19 +500,19 @@ async function callAgent(
     }
   }
 
-  console.log(`[${agent.id}] response: ${raw!.length} chars${searchCount > 0 ? ` (${searchCount} searches, ${searchCitations.length} sources)` : ''}`);
+  console.log(`[${agent.id}] response: ${raw.length} chars${searchCount > 0 ? ` (${searchCount} searches, ${searchCitations.length} sources)` : ''}`);
   let parsed: Partial<AgentReport>;
   try {
-    parsed = parseJSON<Partial<AgentReport>>(raw!);
+    parsed = parseJSON<Partial<AgentReport>>(raw);
   } catch (parseErr) {
     console.warn(`[${agent.id}] JSON parse failed, extracting from raw text`);
-    const posMatch = raw!.match(/"position"\s*:\s*"(proceed|delay|abandon)"/);
-    const confMatch = raw!.match(/"confidence"\s*:\s*(\d+)/);
-    const argMatch = raw!.match(/"key_argument"\s*:\s*"([^"]{10,})"/);
+    const posMatch = raw.match(/"position"\s*:\s*"(proceed|delay|abandon)"/);
+    const confMatch = raw.match(/"confidence"\s*:\s*(\d+)/);
+    const argMatch = raw.match(/"key_argument"\s*:\s*"([^"]{10,})"/);
     parsed = {
       position: (posMatch?.[1] as AgentReport['position']) || 'delay',
       confidence: confMatch ? Number(confMatch[1]) : 5,
-      key_argument: argMatch?.[1] || raw!.substring(0, 200).replace(/[{}"]/g, '').trim() || `Analysis from ${agent.name}`,
+      key_argument: argMatch?.[1] || raw.substring(0, 200).replace(/[{}"]/g, '').trim() || `Analysis from ${agent.name}`,
     };
   }
   return {
@@ -1042,12 +1148,20 @@ Respond with valid JSON only:
   {
     const batchItems = thoroughWave1.map(({ agent, task }) => {
       const debateCtx = buildDebateContext(state, agent.id, undefined, undefined, fieldScans, memory, networkMemoryText, buildAgentContext(agent.id, preSim.agentKnowledgeMap, preSim.agentLessonsMap, preSim.agentRulesMap), undefined, domainConstraintsText, behavioralContextText, operatorContextText, ragContextMap.get(agent.id));
-      const userMsg = `Question: ${question}\n\nYour task: ${task}\n\n${debateCtx}\n\nAnalyze from your perspective as ${agent.role}. Be specific with data. Respond with valid JSON only.`;
+      const userMsg = buildDebateUserMessageForAgent({
+        agent,
+        chiefDesign,
+        chiefMode,
+        debateRoundLabel: 3,
+        state,
+        question,
+        task,
+        debateCtx,
+      });
       const promise = callAgent(
         agent, userMsg,
         kernel.config.maxTokensPerAgent,
         audit, 3, 'opening',
-        true, // web search enabled for thorough specialist pass
         agentDebateTier,
       ).catch((err) => {
         console.error(`[${agent.id}] specialist pass failed:`, err);
@@ -1071,6 +1185,14 @@ Respond with valid JSON only:
             sources: report._searchCitations.length,
             domains: Array.from(new Set(report._searchCitations.map(c => c.source_domain))) as string[],
           }};
+          yield {
+            event: 'agent_sources',
+            data: {
+              agent: report.agent_id,
+              count: report._searchCitations.length,
+              sources: report._searchCitations.slice(0, 3).map((c) => ({ url: c.url, title: c.title || '' })),
+            },
+          };
         }
         let filtered = false;
         for (const filter of kernel.agentFilters) {
@@ -1190,12 +1312,20 @@ Respond with valid JSON only:
   {
     const batchItems2 = thoroughWave2.map(({ agent, task }) => {
       const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText, buildAgentContext(agent.id, preSim.agentKnowledgeMap, preSim.agentLessonsMap, preSim.agentRulesMap), userCorrectionText, domainConstraintsText, behavioralContextText, operatorContextText, ragContextMap.get(agent.id));
-      const userMsg = `Question: ${question}\n\nYour task: ${task}\n\n${debateCtx}\n\nAnalyze from your perspective as ${agent.role}. Be specific with data. Respond with valid JSON only.`;
+      const userMsg = buildDebateUserMessageForAgent({
+        agent,
+        chiefDesign,
+        chiefMode,
+        debateRoundLabel: 5,
+        state,
+        question,
+        task,
+        debateCtx,
+      });
       const promise = callAgent(
         agent, userMsg,
         kernel.config.maxTokensPerAgent,
         audit, 5, 'opening',
-        true, // web search enabled for thorough specialist pass
         agentDebateTier,
       ).catch((err) => {
         console.error(`[${agent.id}] specialist pass failed:`, err);
@@ -1219,6 +1349,14 @@ Respond with valid JSON only:
             sources: report._searchCitations.length,
             domains: Array.from(new Set(report._searchCitations.map(c => c.source_domain))) as string[],
           }};
+          yield {
+            event: 'agent_sources',
+            data: {
+              agent: report.agent_id,
+              count: report._searchCitations.length,
+              sources: report._searchCitations.slice(0, 3).map((c) => ({ url: c.url, title: c.title || '' })),
+            },
+          };
         }
         let filtered = false;
         for (const filter of kernel.agentFilters) {
@@ -1270,26 +1408,91 @@ Respond with valid JSON only:
         .map(([id, r]) => `${id}: ${r.position} (${r.confidence}/10)`)
         .join('; ') || 'Specialist analysis in progress; partial positions forming.';
     enqueueCrowdSse({ event: 'crowd_round_started', data: { advisorCount: godTarget } });
-    godViewPipeline = runGodViewMarketPipeline({
-      question,
-      specialistSummary: specSummary,
-      targetCount: godTarget,
-      onVoice: (v) =>
-        enqueueCrowdSse({
-          event: 'crowd_voice',
-          data: {
-            persona: v.persona,
-            role: v.role,
-            sentiment: v.sentiment,
-            statement: v.statement,
-          },
+
+    const compareSwarmSplit =
+      options?.simMode === 'compare' &&
+      chiefTier === 'swarm' &&
+      chiefDesign?.kind === 'swarm' &&
+      (chiefDesign.segments_a?.length ?? 0) > 0 &&
+      (chiefDesign.segments_b?.length ?? 0) > 0;
+
+    if (compareSwarmSplit && chiefDesign.kind === 'swarm') {
+      const { a: optA, b: optB } = splitCompareOptions(question);
+      const hintA = formatChiefCrowdSegmentBootstrap(chiefDesign.segments_a);
+      const hintB = formatChiefCrowdSegmentBootstrap(chiefDesign.segments_b);
+      const half = Math.floor(godTarget / 2);
+      const qA = `${hintA}OPTION A / TEAM A ONLY — every voice must react to Option A (not B).\n\nOption A:\n${optA}\n\nFull decision context:\n${question.slice(0, 1800)}`;
+      const qB = `${hintB}OPTION B / TEAM B ONLY — every voice must react to Option B (not A).\n\nOption B:\n${optB}\n\nFull decision context:\n${question.slice(0, 1800)}`;
+      godViewPipeline = Promise.all([
+        runGodViewMarketPipeline({
+          question: qA,
+          specialistSummary: specSummary,
+          targetCount: Math.max(1, half),
+          onVoice: (v) =>
+            enqueueCrowdSse({
+              event: 'crowd_voice',
+              data: {
+                persona: v.persona,
+                role: v.role,
+                sentiment: v.sentiment,
+                statement: v.statement,
+                team: 'A',
+              },
+            }),
         }),
-    })
-      .then(({ votes, summary }) => ({ votes, summary }))
-      .catch((err) => {
-        console.error('[god_view] pipeline failed:', err);
-        return null;
-      });
+        runGodViewMarketPipeline({
+          question: qB,
+          specialistSummary: specSummary,
+          targetCount: Math.max(1, godTarget - half),
+          onVoice: (v) =>
+            enqueueCrowdSse({
+              event: 'crowd_voice',
+              data: {
+                persona: v.persona,
+                role: v.role,
+                sentiment: v.sentiment,
+                statement: v.statement,
+                team: 'B',
+              },
+            }),
+        }),
+      ])
+        .then(async ([pa, pb]) => {
+          const voices = [...pa.voices, ...pb.voices];
+          const votes = [...pa.votes, ...pb.votes];
+          const summary = await finalizeGodViewSummary(voices);
+          return { votes, summary };
+        })
+        .catch((err) => {
+          console.error('[god_view] compare split pipeline failed:', err);
+          return null;
+        });
+    } else {
+      const segmentHint =
+        chiefDesign?.kind === 'swarm' && chiefDesign.segments.length > 0
+          ? formatChiefCrowdSegmentBootstrap(chiefDesign.segments)
+          : '';
+      godViewPipeline = runGodViewMarketPipeline({
+        question: segmentHint ? `${segmentHint}${question}` : question,
+        specialistSummary: specSummary,
+        targetCount: godTarget,
+        onVoice: (v) =>
+          enqueueCrowdSse({
+            event: 'crowd_voice',
+            data: {
+              persona: v.persona,
+              role: v.role,
+              sentiment: v.sentiment,
+              statement: v.statement,
+            },
+          }),
+      })
+        .then(({ votes, summary }) => ({ votes, summary }))
+        .catch((err) => {
+          console.error('[god_view] pipeline failed:', err);
+          return null;
+        });
+    }
   }
   yield* drainCrowdSse();
 
@@ -1347,14 +1550,18 @@ Respond with valid JSON only:
 
   const quickBatch1Promises = quickBatch1.map(({ agent, task }) => {
     const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryWithDiscoveries, buildAgentContext(agent.id, preSim.agentKnowledgeMap, preSim.agentLessonsMap, preSim.agentRulesMap), userCorrectionText, domainConstraintsText, behavioralContextText, operatorContextText, ragContextMap.get(agent.id));
-    return callAgentWithRetry(
+    const userMsg = buildDebateUserMessageForAgent({
       agent,
-      `Question: ${question}\n\n${debateCtx}\n\nAs ${agent.role}, add your perspective. Focus on what others MISSED or got wrong. React to their specific arguments. Respond with valid JSON only.`,
-      512, audit, 6, 'quick_takes',
-      2,
-      false,
-      agentDebateTier,
-    );
+      chiefDesign,
+      chiefMode,
+      debateRoundLabel: 6,
+      state,
+      question,
+      task,
+      debateCtx,
+      instructionSuffix: `As ${agent.role}, add your perspective. Focus on what others MISSED or got wrong. React to their specific arguments.`,
+    });
+    return callAgentWithRetry(agent, userMsg, 512, audit, 6, 'quick_takes', 2, agentDebateTier);
   });
   const quickResults1 = await Promise.allSettled(quickBatch1Promises);
 
@@ -1363,14 +1570,18 @@ Respond with valid JSON only:
 
   const quickBatch2Promises = quickBatch2.map(({ agent, task }) => {
     const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryWithDiscoveries, buildAgentContext(agent.id, preSim.agentKnowledgeMap, preSim.agentLessonsMap, preSim.agentRulesMap), userCorrectionText, domainConstraintsText, behavioralContextText, operatorContextText, ragContextMap.get(agent.id));
-    return callAgentWithRetry(
+    const userMsg = buildDebateUserMessageForAgent({
       agent,
-      `Question: ${question}\n\n${debateCtx}\n\nAs ${agent.role}, add your perspective. Focus on what others MISSED or got wrong. React to their specific arguments. Respond with valid JSON only.`,
-      512, audit, 6, 'quick_takes',
-      2,
-      false,
-      agentDebateTier,
-    );
+      chiefDesign,
+      chiefMode,
+      debateRoundLabel: 6,
+      state,
+      question,
+      task,
+      debateCtx,
+      instructionSuffix: `As ${agent.role}, add your perspective. Focus on what others MISSED or got wrong. React to their specific arguments.`,
+    });
+    return callAgentWithRetry(agent, userMsg, 512, audit, 6, 'quick_takes', 2, agentDebateTier);
   });
   const quickResults2 = await Promise.allSettled(quickBatch2Promises);
 
@@ -1378,6 +1589,23 @@ Respond with valid JSON only:
   for (const result of quickResults) {
     if (result.status === 'fulfilled' && result.value) {
       let report = result.value;
+      if (report._searchCitations && report._searchCitations.length > 0) {
+        allSearchCitations.push(...report._searchCitations);
+        yield { event: 'agent_searched', data: {
+          agent_id: report.agent_id,
+          searches: report._searchCount || 0,
+          sources: report._searchCitations.length,
+          domains: Array.from(new Set(report._searchCitations.map((c) => c.source_domain))) as string[],
+        }};
+        yield {
+          event: 'agent_sources',
+          data: {
+            agent: report.agent_id,
+            count: report._searchCitations.length,
+            sources: report._searchCitations.slice(0, 3).map((c) => ({ url: c.url, title: c.title || '' })),
+          },
+        };
+      }
       let filtered = false;
       for (const filter of kernel.agentFilters) {
         const check = filter.run(report);
@@ -1494,19 +1722,37 @@ Respond with valid JSON only:
     if (!pair) {
       yield { event: 'round_start', data: { round: roundNum, title: `Devil's Advocate \u2014 Round ${pairIdx + 1}`, description: `Chair challenges the ${majorityPosition} consensus`, total_rounds: 10 } };
 
-      const debatedAgentIds = new Set(pairs.flatMap((p) => [p.challenger_id, p.defender_id]));
-      const availableAgents = specialistAgents().filter((a) => !debatedAgentIds.has(a.id));
-      const targetAgent = availableAgents[pairIdx] || availableAgents[0] || specialistAgents()[pairIdx];
+      const debatedAgentIds = new Set(
+        pairs.flatMap((p) => (p ? [p.challenger_id, p.defender_id] : [])),
+      );
+      const activeSpecialistConfigs = [...activeAgentIds]
+        .filter((id) => id !== 'decision_chair')
+        .map((id) => applyPromptOverride(resolveAgent(id)));
+      const availableAgents = activeSpecialistConfigs.filter((a) => !debatedAgentIds.has(a.id));
+      const targetAgent = availableAgents[pairIdx] || availableAgents[0] || activeSpecialistConfigs[pairIdx];
 
       if (targetAgent) {
         try {
           const devilCtx = buildDebateContext(state, targetAgent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryWithDiscoveries, buildAgentContext(targetAgent.id, preSim.agentKnowledgeMap, preSim.agentLessonsMap, preSim.agentRulesMap), userCorrectionText, domainConstraintsText, behavioralContextText, operatorContextText, ragContextMap.get(targetAgent.id));
+          const devilTask =
+            plan.tasks.find((t) => t.assigned_agent === targetAgent.id)?.description ||
+            `Perspective: ${targetAgent.role}`;
+          const devilUser = buildDebateUserMessageForAgent({
+            agent: targetAgent,
+            chiefDesign,
+            chiefMode,
+            debateRoundLabel: roundNum,
+            state,
+            question,
+            task: devilTask,
+            debateCtx: devilCtx,
+            instructionSuffix: `All agents currently lean toward "${majorityPosition}". The Chair demands a devil's advocate: give the STRONGEST argument AGAINST "${majorityPosition}". Reference specific claims others made. What could go catastrophically wrong?`,
+          });
           const devilReport = await callAgent(
             targetAgent,
-            `Question: ${question}\n\n${devilCtx}\n\nAll agents currently agree on "${majorityPosition}". The Decision Chair is forcing a devil's advocate round. As ${targetAgent.role}, present the STRONGEST possible argument AGAINST "${majorityPosition}". Reference specific claims from other agents and explain why they're wrong or incomplete. What could go catastrophically wrong? Respond with valid JSON only.`,
+            devilUser,
             kernel.config.maxTokensPerAgent,
             audit, roundNum, 'adversarial',
-            false,
             agentDebateTier,
           );
           allReports.push(devilReport);
@@ -1526,8 +1772,8 @@ Respond with valid JSON only:
     let challengerAgent: AgentConfig;
     let defenderAgent: AgentConfig;
     try {
-      challengerAgent = applyPromptOverride(getAgentById(pair.challenger_id as AgentId));
-      defenderAgent = applyPromptOverride(getAgentById(pair.defender_id as AgentId));
+      challengerAgent = applyPromptOverride(resolveAgent(pair.challenger_id));
+      defenderAgent = applyPromptOverride(resolveAgent(pair.defender_id));
     } catch {
       yield { event: 'round_complete', data: { round: roundNum } };
       continue;
@@ -1540,12 +1786,25 @@ Respond with valid JSON only:
 
     try {
       const challengerCtx = buildDebateContext(state, pair.challenger_id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryWithDiscoveries, buildAgentContext(pair.challenger_id, preSim.agentKnowledgeMap, preSim.agentLessonsMap, preSim.agentRulesMap), userCorrectionText, domainConstraintsText, behavioralContextText, operatorContextText, ragContextMap.get(pair.challenger_id));
+      const chTask =
+        plan.tasks.find((t) => t.assigned_agent === challengerAgent.id)?.description ||
+        challengerAgent.role;
+      const challengeUser = buildDebateUserMessageForAgent({
+        agent: challengerAgent,
+        chiefDesign,
+        chiefMode,
+        debateRoundLabel: roundNum,
+        state,
+        question,
+        task: chTask,
+        debateCtx: challengerCtx,
+        instructionSuffix: `You CHALLENGE ${defenderAgent.name}. They argued: "${defenderReport?.key_argument || 'their position'}". Attack the weakest point with counter-evidence; cite other agents where useful.`,
+      });
       const challengeReport = await callAgent(
         challengerAgent,
-        `Question: ${question}\n\n${challengerCtx}\n\nYou are CHALLENGING ${defenderAgent.name}'s position. They said: "${defenderReport?.key_argument || 'their position'}"\n\nAttack their weakest point with specific counter-evidence. Reference what other agents said to support your challenge. Be direct. Respond with valid JSON only.`,
+        challengeUser,
         kernel.config.maxTokensPerAgent,
         audit, roundNum, 'adversarial',
-        false,
         agentDebateTier,
       );
       allReports.push(challengeReport);
@@ -1557,12 +1816,24 @@ Respond with valid JSON only:
 
     try {
       const defenderCtx = buildDebateContext(state, pair.defender_id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryWithDiscoveries, buildAgentContext(pair.defender_id, preSim.agentKnowledgeMap, preSim.agentLessonsMap, preSim.agentRulesMap), userCorrectionText, domainConstraintsText, behavioralContextText, operatorContextText, ragContextMap.get(pair.defender_id));
+      const defTask =
+        plan.tasks.find((t) => t.assigned_agent === defenderAgent.id)?.description || defenderAgent.role;
+      const defenseUser = buildDebateUserMessageForAgent({
+        agent: defenderAgent,
+        chiefDesign,
+        chiefMode,
+        debateRoundLabel: roundNum,
+        state,
+        question,
+        task: defTask,
+        debateCtx: defenderCtx,
+        instructionSuffix: `${challengerAgent.name} CHALLENGED you: "${challengerReport?.key_argument || 'disagreement'}". Defend with stronger evidence or update your position if the challenge is valid.`,
+      });
       const defenseReport = await callAgent(
         defenderAgent,
-        `Question: ${question}\n\n${defenderCtx}\n\n${challengerAgent.name} CHALLENGED your position: "${challengerReport?.key_argument || 'disagreement'}"\n\nDefend your position with stronger evidence, or update your position if the challenge is valid. Be honest \u2014 if you changed your mind, say what convinced you. Respond with valid JSON only.`,
+        defenseUser,
         kernel.config.maxTokensPerAgent,
         audit, roundNum, 'adversarial',
-        false,
         agentDebateTier,
       );
       allReports.push(defenseReport);
@@ -1605,21 +1876,30 @@ Respond with valid JSON only:
   yield { event: 'round_start', data: { round: 9, title: 'Final Convergence', description: `All ${activeAgentCount} specialists declare final positions${fieldScans.length > 0 ? ' informed by field intelligence' : ''}`, total_rounds: 10 } };
 
   // Stagger convergence into 2 batches to avoid rate limits
-  const specialists = specialistAgents().filter(a => activeAgentIds.has(a.id));
+  const specialists = [...activeAgentIds]
+    .filter((id) => id !== 'decision_chair')
+    .map((id) => applyPromptOverride(resolveAgent(id)));
   const convMid = Math.ceil(specialists.length / 2);
   const convBatch1 = specialists.slice(0, convMid);
   const convBatch2 = specialists.slice(convMid);
 
   const convBatch1Promises = convBatch1.map((agent) => {
     const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryWithDiscoveries, buildAgentContext(agent.id, preSim.agentKnowledgeMap, preSim.agentLessonsMap, preSim.agentRulesMap), userCorrectionText, domainConstraintsText, behavioralContextText, operatorContextText, ragContextMap.get(agent.id));
-    return callAgentWithRetry(
+    const convTask =
+      plan.tasks.find((t) => t.assigned_agent === agent.id)?.description || `Final position as ${agent.role}`;
+    const convUser = buildDebateUserMessageForAgent({
       agent,
-      `Question: ${question}\n\n${convergenceCtx}\n\nThe debate is concluding. Declare your FINAL position. If you changed your mind from your earlier analysis, explain what argument convinced you. Reference specific agents or evidence that influenced your final stance. Respond with valid JSON only.`,
-      256, audit, 9, 'convergence',
-      2,
-      false,
-      agentDebateTier,
-    );
+      chiefDesign,
+      chiefMode,
+      debateRoundLabel: 9,
+      state,
+      question,
+      task: convTask,
+      debateCtx: convergenceCtx,
+      instructionSuffix:
+        'The debate is concluding. Declare your FINAL position. If you changed your mind, explain what convinced you. Reference specific agents or evidence.',
+    });
+    return callAgentWithRetry(agent, convUser, 256, audit, 9, 'convergence', 2, agentDebateTier);
   });
   const convResults1 = await Promise.allSettled(convBatch1Promises);
 
@@ -1627,14 +1907,21 @@ Respond with valid JSON only:
 
   const convBatch2Promises = convBatch2.map((agent) => {
     const convergenceCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryWithDiscoveries, buildAgentContext(agent.id, preSim.agentKnowledgeMap, preSim.agentLessonsMap, preSim.agentRulesMap), userCorrectionText, domainConstraintsText, behavioralContextText, operatorContextText, ragContextMap.get(agent.id));
-    return callAgentWithRetry(
+    const convTask =
+      plan.tasks.find((t) => t.assigned_agent === agent.id)?.description || `Final position as ${agent.role}`;
+    const convUser = buildDebateUserMessageForAgent({
       agent,
-      `Question: ${question}\n\n${convergenceCtx}\n\nThe debate is concluding. Declare your FINAL position. If you changed your mind from your earlier analysis, explain what argument convinced you. Reference specific agents or evidence that influenced your final stance. Respond with valid JSON only.`,
-      256, audit, 9, 'convergence',
-      2,
-      false,
-      agentDebateTier,
-    );
+      chiefDesign,
+      chiefMode,
+      debateRoundLabel: 9,
+      state,
+      question,
+      task: convTask,
+      debateCtx: convergenceCtx,
+      instructionSuffix:
+        'The debate is concluding. Declare your FINAL position. If you changed your mind, explain what convinced you. Reference specific agents or evidence.',
+    });
+    return callAgentWithRetry(agent, convUser, 256, audit, 9, 'convergence', 2, agentDebateTier);
   });
   const convResults2 = await Promise.allSettled(convBatch2Promises);
 
@@ -1642,6 +1929,23 @@ Respond with valid JSON only:
   for (const result of convergenceResults) {
     if (result.status === 'fulfilled' && result.value) {
       let report = result.value;
+      if (report._searchCitations && report._searchCitations.length > 0) {
+        allSearchCitations.push(...report._searchCitations);
+        yield { event: 'agent_searched', data: {
+          agent_id: report.agent_id,
+          searches: report._searchCount || 0,
+          sources: report._searchCitations.length,
+          domains: Array.from(new Set(report._searchCitations.map((c) => c.source_domain))) as string[],
+        }};
+        yield {
+          event: 'agent_sources',
+          data: {
+            agent: report.agent_id,
+            count: report._searchCitations.length,
+            sources: report._searchCitations.slice(0, 3).map((c) => ({ url: c.url, title: c.title || '' })),
+          },
+        };
+      }
       let filtered = false;
       for (const filter of kernel.agentFilters) {
         const check = filter.run(report);
@@ -1666,10 +1970,11 @@ Respond with valid JSON only:
     }
   }
 
-  // Use latest_reports for consensus if some convergence calls failed
-  const consensusReports = finalReports.length >= 8
-    ? finalReports
-    : Array.from(state.latest_reports.values());
+  // Use latest_reports for consensus if too few convergence calls succeeded
+  const consensusReports =
+    finalReports.length >= activeAgentCount
+      ? finalReports
+      : Array.from(state.latest_reports.values());
   const convergenceConsensus = calculateConsensus(consensusReports);
   state.consensus_history.push({ phase: 'convergence', ...convergenceConsensus });
   yield { event: 'consensus_update', data: convergenceConsensus };
@@ -1737,6 +2042,7 @@ Respond with valid JSON only:
     .join('\n');
 
   let verdict: DecisionObject;
+  let isOpusPremiumVerdict = false;
   try {
     const verdictStart = Date.now();
     const taskLedgerSection = `\nTASK LEDGER (verified through multi-agent debate):
@@ -1760,37 +2066,151 @@ DEBATE PROGRESS:
       ? `\n\nDECISION-MAKER CONTEXT:\n${memory.profile ? memory.profile.profile_text : 'Limited user context available.'}\nPast simulations: ${memory.previousSimCount}\nKnown facts: ${memory.relevantFacts.slice(0, 5).map(f => f.content).join('; ')}${networkMemoryText ? '\n' + networkMemoryText : ''}\n`
       : '';
 
-    const verdictPrompt = `QUESTION: ${question}${memoryForVerdict}\n\nFINAL AGENT POSITIONS:\n${finalSummary}\n\nFULL DEBATE HISTORY (${allReports.length} total reports across all rounds):\n${reportSummaryForChair}\n${taskLedgerSection}${consensusDirective}${crowdSignalText ? '\n' + crowdSignalText : ''}\n\nSynthesize ALL agent positions into a final Decision Object. Tailor your recommendation to the specific decision-maker's context if known. Weight by confidence and evidence quality. Use the Task Ledger to distinguish verified facts from assumptions — your verdict should rely on VERIFIED facts and flag unresolved assumptions as risks.${crowdSignalText ? ' Consider the crowd signal as an additional data point — it reflects diverse perspectives beyond the specialist panel.' : ''}\n\nRespond with valid JSON only:\n{\n  "recommendation": "proceed" | "proceed_with_conditions" | "delay" | "abandon",\n  "probability": 0-100,\n  "main_risk": "the single biggest risk",\n  "leverage_point": "the one thing that changes everything",\n  "next_action": "specific, actionable, doable this week",\n  "grade": "A" | "B+" | "B" | "C" | "D" | "F",\n  "grade_score": 0-100,\n  "citations": [{ "id": 1, "agent_id": "agent_id", "agent_name": "name", "claim": "specific claim", "confidence": 1-10 }],\n  "one_liner": "optional — one short user-facing headline"\n}${getModeVerdictAppendix(options?.simMode)}`;
-    const verdictMaxTokens =
-      options?.simMode === 'compare'
-        ? 4096
-        : options?.simMode === 'stress_test' || options?.simMode === 'premortem'
-          ? 3072
-          : 2048;
-    const verdictRaw = await callClaude({
-      systemPrompt: chair.systemPrompt,
-      userMessage: verdictPrompt,
-      maxTokens: verdictMaxTokens,
-      tier: 'orchestrator',
-    });
-    addRound(audit, {
-      round: 10, phase: 'verdict', agent_id: 'decision_chair',
-      model: getModel('orchestrator'),
-      input_tokens: Math.ceil((chair.systemPrompt.length + verdictPrompt.length) / 4),
-      output_tokens: Math.ceil(verdictRaw.length / 4),
-      latency_ms: Date.now() - verdictStart, success: true,
-      timestamp: new Date().toISOString(),
-    });
-    console.log(`[decision_chair] verdict: ${verdictRaw.length} chars`);
-    const parsedVerdict = parseJSON<Record<string, unknown>>(verdictRaw);
-    verdict = coerceVerdictCore(parsedVerdict) as DecisionObject;
-    Object.assign(verdict, mergeModeVerdictFields(parsedVerdict, options?.simMode));
-    ensureVerdictOneLiner(verdict as Record<string, unknown>, options?.simMode);
-    if (godViewSummaryForVerdict) {
-      (verdict as Record<string, unknown>).god_view = godViewSummaryForVerdict;
+    const uniqueVerdictSourceLines: string[] = [];
+    const seenVerdictUrl = new Set<string>();
+    for (const c of allSearchCitations) {
+      if (!c.url || seenVerdictUrl.has(c.url)) continue;
+      seenVerdictUrl.add(c.url);
+      uniqueVerdictSourceLines.push(`- ${c.title || c.url}: ${c.url}`);
+      if (uniqueVerdictSourceLines.length >= 12) break;
+    }
+    const specialistSourcesBlock =
+      uniqueVerdictSourceLines.length > 0
+        ? `\n\nSOURCES FROM SPECIALIST WEB SEARCHES (deduped):\n${uniqueVerdictSourceLines.join('\n')}\n`
+        : '';
+
+    const simMode = options?.simMode;
+
+    if (usesOpusPremiumVerdict(simMode)) {
+      isOpusPremiumVerdict = true;
+      const premiumMode = simMode;
+      const genMessage =
+        premiumMode === 'compare'
+          ? 'Chief is comparing all perspectives…'
+          : premiumMode === 'stress_test'
+            ? 'Chief is compiling vulnerability audit…'
+            : 'Chief is writing the failure autopsy…';
+      yield { event: 'verdict_generating', data: { message: genMessage } };
+
+      const opusSystem =
+        premiumMode === 'compare'
+          ? buildOpusCompareVerdictPrompt()
+          : premiumMode === 'stress_test'
+            ? buildOpusStressVerdictPrompt()
+            : buildOpusPremortemVerdictPrompt();
+
+      const opusUser = buildOpusVerdictUserPayload({
+        mode: premiumMode,
+        question,
+        chiefDesign,
+        consensusReports,
+        allReports,
+        reportSummaryForChair,
+        taskLedgerSection,
+        crowdSignalText,
+        godViewSummary: godViewSummaryForVerdict,
+        operatorContext: operatorContextText,
+        memoryForVerdict,
+        specialistSourcesBlock,
+      });
+
+      const opusMaxTokens = premiumMode === 'compare' ? 8192 : 6144;
+
+      const opusTool = await callAgentWithSearch({
+        model: getModel('chief'),
+        systemPrompt: opusSystem,
+        userMessage: opusUser,
+        agentId: 'decision_chair_opus_verdict',
+        maxTokens: opusMaxTokens,
+        tier: 'chief',
+        maxSearchUses: 3,
+        searchContext:
+          'Verify prices, regulations, market conditions, and timelines that materially affect the JSON verdict.',
+      });
+
+      const verdictRaw = opusTool.text;
+      for (const c of opusTool.searchCitations ?? []) {
+        allSearchCitations.push(c);
+      }
+
+      addRound(audit, {
+        round: 10,
+        phase: 'verdict',
+        agent_id: 'decision_chair',
+        model: getModel('chief'),
+        input_tokens: Math.ceil((opusSystem.length + opusUser.length) / 4),
+        output_tokens: Math.ceil(verdictRaw.length / 4),
+        latency_ms: Date.now() - verdictStart,
+        success: true,
+        timestamp: new Date().toISOString(),
+      });
+      console.log(`[decision_chair] opus premium verdict: ${verdictRaw.length} chars`);
+
+      let parsedOpus: Record<string, unknown>;
+      try {
+        parsedOpus = parseOpusVerdictJson(verdictRaw);
+      } catch {
+        console.error('[opus_verdict] JSON parse failed; using fallback shell');
+        parsedOpus = buildOpusParseFallbackParsed(premiumMode, verdictRaw);
+      }
+      mergeToolSourcesIntoParsedVerdict(parsedOpus, opusTool.searchCitations ?? []);
+
+      verdict =
+        premiumMode === 'compare'
+          ? mapCompareOpusToDecision(parsedOpus)
+          : premiumMode === 'stress_test'
+            ? mapStressOpusToDecision(parsedOpus)
+            : mapPremortemOpusToDecision(parsedOpus);
+
+      attachOpusPremiumPayload(verdict, premiumMode, parsedOpus);
+      Object.assign(verdict, mergeModeVerdictFields(parsedOpus, premiumMode));
+      ensureVerdictOneLiner(verdict as Record<string, unknown>, premiumMode);
+      if (godViewSummaryForVerdict) {
+        (verdict as Record<string, unknown>).god_view = godViewSummaryForVerdict;
+      }
+    } else {
+      const verdictPrompt = `QUESTION: ${question}${memoryForVerdict}\n\nFINAL AGENT POSITIONS:\n${finalSummary}\n\nFULL DEBATE HISTORY (${allReports.length} total reports across all rounds):\n${reportSummaryForChair}\n${taskLedgerSection}${consensusDirective}${crowdSignalText ? '\n' + crowdSignalText : ''}${specialistSourcesBlock}\n\nSynthesize ALL agent positions into a final Decision Object. Tailor your recommendation to the specific decision-maker's context if known. Weight by confidence and evidence quality. Use the Task Ledger to distinguish verified facts from assumptions — your verdict should rely on VERIFIED facts and flag unresolved assumptions as risks.${crowdSignalText ? ' Consider the crowd signal as an additional data point — it reflects diverse perspectives beyond the specialist panel.' : ''}\n\nRespond with valid JSON only:\n{\n  "recommendation": "proceed" | "proceed_with_conditions" | "delay" | "abandon",\n  "probability": 0-100,\n  "main_risk": "the single biggest risk",\n  "leverage_point": "the one thing that changes everything",\n  "next_action": "specific, actionable, doable this week",\n  "grade": "A" | "B+" | "B" | "C" | "D" | "F",\n  "grade_score": 0-100,\n  "citations": [{ "id": 1, "agent_id": "agent_id", "agent_name": "name", "claim": "specific claim", "confidence": 1-10 }],\n  "one_liner": "optional — one short user-facing headline",\n  "sources": [{ "url": "https://...", "title": "..." }]\n}\nOptional "sources": 3–5 most important URLs supporting the verdict (from the list above and/or your verification searches).\n${getModeVerdictAppendix(options?.simMode)}`;
+      const verdictMaxTokens =
+        options?.simMode === 'compare'
+          ? 4096
+          : options?.simMode === 'stress_test' || options?.simMode === 'premortem'
+            ? 3072
+            : 2048;
+      const verdictTool = await callClaudeWithTools({
+        systemPrompt: chair.systemPrompt,
+        userMessage:
+          verdictPrompt +
+          '\n\nYou have web search (max ~2 uses). Verify critical factual claims where needed before the final JSON.',
+        agentId: 'decision_chair',
+        maxTokens: verdictMaxTokens,
+        tier: 'orchestrator',
+        forceWebSearch: {
+          maxUses: 2,
+          searchContext:
+            'Verify prices, regulations, or recent events that materially affect the recommendation.',
+        },
+      });
+      const verdictRaw = verdictTool.text;
+      addRound(audit, {
+        round: 10, phase: 'verdict', agent_id: 'decision_chair',
+        model: getModel('orchestrator'),
+        input_tokens: Math.ceil((chair.systemPrompt.length + verdictPrompt.length) / 4),
+        output_tokens: Math.ceil(verdictRaw.length / 4),
+        latency_ms: Date.now() - verdictStart, success: true,
+        timestamp: new Date().toISOString(),
+      });
+      console.log(`[decision_chair] verdict: ${verdictRaw.length} chars`);
+      const parsedVerdict = parseJSON<Record<string, unknown>>(verdictRaw);
+      verdict = coerceVerdictCore(parsedVerdict) as DecisionObject;
+      Object.assign(verdict, mergeModeVerdictFields(parsedVerdict, options?.simMode));
+      ensureVerdictOneLiner(verdict as Record<string, unknown>, options?.simMode);
+      if (godViewSummaryForVerdict) {
+        (verdict as Record<string, unknown>).god_view = godViewSummaryForVerdict;
+      }
     }
   } catch (error) {
     console.error('Verdict synthesis failed:', error);
+    isOpusPremiumVerdict = false;
     verdict = {
       recommendation: 'delay',
       probability: 50,
@@ -1813,17 +2233,19 @@ DEBATE PROGRESS:
     }
   }
 
-  // Apply output filters (Semantic Kernel #19)
-  for (const filter of kernel.outputFilters) {
-    const check = filter.run(verdict);
-    if (check.patched) {
-      console.log(`[filter:${filter.name}] patched verdict: ${check.reason}`);
-      verdict = check.patched;
+  // Apply output filters (Semantic Kernel #19) — skip for Opus premium JSON verdicts
+  if (!isOpusPremiumVerdict) {
+    for (const filter of kernel.outputFilters) {
+      const check = filter.run(verdict);
+      if (check.patched) {
+        console.log(`[filter:${filter.name}] patched verdict: ${check.reason}`);
+        verdict = check.patched;
+      }
     }
   }
 
   // ━━ Self-Evolving #13: Critique → Refine ━━━━━━━━━━━━━━━━━━
-  try {
+  if (!isOpusPremiumVerdict) try {
     const critique = await critiqueVerdict(question, verdict, state);
     yield { event: 'verdict_critique', data: critique };
     console.log(`[self-refine] critique: actionability=${critique.actionability_score}, should_refine=${critique.should_refine}`);
@@ -1855,7 +2277,7 @@ DEBATE PROGRESS:
   }
 
   // ━━ CONSENSUS OVERRIDE CHECK — verdict must not contradict agents ━━
-  if (agentConsensusPercent >= 70) {
+  if (!isOpusPremiumVerdict && agentConsensusPercent >= 70) {
     const verdictAligns = (
       (agentConsensusPosition === 'proceed' && (verdict.recommendation === 'proceed' || verdict.recommendation === 'proceed_with_conditions')) ||
       (agentConsensusPosition === 'delay' && verdict.recommendation === 'delay') ||
@@ -1897,8 +2319,8 @@ DEBATE PROGRESS:
   // Palantir #4: Build traceable citations from state
   const enrichedCitations = buildCitations(state);
 
-  // Replace Chair-generated citations with algorithmic ones
-  if (verdict.citations !== undefined) {
+  // Replace Chair-generated citations with algorithmic ones (keep Opus premium payloads intact)
+  if (!isOpusPremiumVerdict && verdict.citations !== undefined) {
     verdict.citations = enrichedCitations.map((c) => ({
       id: c.id,
       agent_id: c.agent_id as AgentId,
@@ -1909,7 +2331,7 @@ DEBATE PROGRESS:
   }
 
   // ═══ CONFIDENCE HEATMAP — decompose verdict into graded claims ═══
-  try {
+  if (!isOpusPremiumVerdict) try {
     const heatmap = await extractVerdictClaims(question, verdict, state.latest_reports);
     if (heatmap.total_claims > 0) {
       (verdict as any).confidence_heatmap = heatmap;
@@ -1920,7 +2342,7 @@ DEBATE PROGRESS:
   }
 
   // Apply behavioral modifiers to verdict (probability calibration, risk framing)
-  if (behavioralProfile && behavioralProfile.inference_confidence >= 0.2) {
+  if (!isOpusPremiumVerdict && behavioralProfile && behavioralProfile.inference_confidence >= 0.2) {
     verdict = applyBehavioralModifiers(behavioralProfile, verdict);
     if ((verdict as any).calibration_adjusted) {
       console.log(`BEHAVIORAL: Verdict probability adjusted — ${(verdict as any).calibration_note}`);
@@ -2002,7 +2424,7 @@ DEBATE PROGRESS:
   yield { event: 'evaluation', data: evaluation };
 
   // Override verdict grade with algorithmic eval grade (more objective)
-  if (evaluation.grade && evaluation.overall_score) {
+  if (!isOpusPremiumVerdict && evaluation.grade && evaluation.overall_score) {
     verdict.grade = evaluation.grade;
     verdict.grade_score = Math.round(evaluation.overall_score);
     // Re-yield updated verdict so frontend gets the final grade

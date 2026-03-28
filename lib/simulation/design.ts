@@ -1,6 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { getModel } from '@/lib/config/model-tiers';
 import { buildChiefOrchestratorPrompt } from '@/lib/prompts/chief-orchestrator';
+import { callAgentWithSearch } from '@/lib/simulation/agent-call';
 import type { OperatorProfile } from '@/lib/operator/types';
 import type {
   ChiefSimulationMode,
@@ -287,12 +287,10 @@ export async function designSimulation(
   tier: ChiefTier,
   operatorProfile: OperatorProfile | null,
 ): Promise<SimulationDesign> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
+  if (!process.env.ANTHROPIC_API_KEY) {
     return buildFallbackChiefDesign(question, operatorProfile, mode, tier);
   }
 
-  const anthropic = new Anthropic({ apiKey });
   const operatorContext = formatProfileForChief(operatorProfile);
   const system = buildChiefOrchestratorPrompt(mode, tier);
   const userContent = `SIMULATION MODE: ${mode}
@@ -302,18 +300,21 @@ USER QUESTION: ${question}
 USER PROFILE:
 ${operatorContext}
 
+Search the web for current market data relevant to this question BEFORE designing the simulation. Use findings in your JSON design (see market_context in instructions).
+
 Design the optimal simulation. Return ONLY JSON.`;
 
   try {
-    const response = await anthropic.messages.create({
+    const { text } = await callAgentWithSearch({
       model: getModel('chief'),
-      max_tokens: 4000,
-      system: system,
-      messages: [{ role: 'user', content: userContent }],
+      systemPrompt: system,
+      userMessage: userContent,
+      agentId: 'chief_orchestrator',
+      maxTokens: 4000,
+      maxSearchUses: 5,
+      searchContext:
+        'Current market conditions, recent industry news, pricing and regulations for the user’s geography and sector.',
     });
-
-    const text =
-      response.content[0]?.type === 'text' ? response.content[0].text : '';
     const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const raw = JSON.parse(cleaned) as Record<string, unknown>;
 

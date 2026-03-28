@@ -128,7 +128,8 @@ export default function ConversationPage() {
   // ─── HANDLE SIMULATION ───
   const handleSimulate = useCallback(
     (question: string, simMode?: SimulationChargeType) => {
-      triggerSimulation(question, simMode);
+      const { selectedPanelTier } = useChatStore.getState();
+      triggerSimulation(question, simMode, { panelTier: selectedPanelTier });
     },
     [triggerSimulation],
   );

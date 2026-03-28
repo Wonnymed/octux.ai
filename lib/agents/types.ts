@@ -68,6 +68,8 @@ export type DecisionObject = {
   action_plan?: string[];
   /** Stress-mode legacy list shape (also used when mapping structured stress vectors). */
   risk_matrix?: LegacyRiskEntry[];
+  /** Web sources supporting the verdict (from specialist searches + chair verification). */
+  sources?: { url: string; title: string }[];
 };
 
 export type Citation = {

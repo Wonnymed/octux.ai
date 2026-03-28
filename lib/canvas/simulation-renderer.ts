@@ -572,6 +572,11 @@ export function createSimulationRenderer(
         ctx.textAlign = 'center';
         const short = ag.name.length > 18 ? `${ag.name.slice(0, 16)}…` : ag.name;
         ctx.fillText(short, pt.x, pt.y + rDraw + 14);
+        if (ag.webSourceCount && ag.webSourceCount > 0) {
+          ctx.font = '10px system-ui, sans-serif';
+          ctx.fillStyle = 'rgba(147,197,253,0.85)';
+          ctx.fillText('\u{1F50D}', pt.x + rDraw + 2, pt.y - rDraw + 4);
+        }
       }
     }
 

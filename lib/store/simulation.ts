@@ -24,6 +24,8 @@ export interface AgentStreamState {
   trend?: 'up' | 'down' | 'stable';
   partialResponse: string;
   report?: any;
+  /** Count of web sources returned for this agent (canvas indicator). */
+  webSearchSourceCount?: number;
 }
 
 export interface ConsensusState {
@@ -43,6 +45,7 @@ export interface CrowdVoiceStreamEntry {
   role: string;
   sentiment: string;
   statement: string;
+  team?: 'A' | 'B';
 }
 
 export type ChiefAssemblyState =
@@ -104,6 +107,9 @@ interface SimulationState {
 
   /** Opus Chief assembly animation (pre-debate). */
   chiefAssembly: ChiefAssemblyState | null;
+
+  /** Shown during round 10 while Opus Chief builds compare / stress / pre-mortem verdict JSON. */
+  verdictGeneratingMessage: string | null;
 
   startedAt: number | null;
   elapsed: number;
@@ -218,6 +224,8 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
 
   chiefAssembly: null,
 
+  verdictGeneratingMessage: null,
+
   startedAt: null,
   elapsed: 0,
   setElapsed: (elapsed) => set({ elapsed }),
@@ -245,6 +253,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
       error: null,
       activeChargeType,
       chiefAssembly: null,
+      verdictGeneratingMessage: null,
       startedAt: Date.now(),
       elapsed: 0,
     });
@@ -401,6 +410,14 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
               break;
             }
 
+            case 'agent_sources': {
+              const d = data.data as { agent?: string; count?: number };
+              const id = String(d?.agent || '');
+              if (!id) break;
+              updateAgent(id, { webSearchSourceCount: Math.max(0, Number(d?.count) || 0) });
+              break;
+            }
+
             case 'consensus_update':
               setConsensus(data.data as ConsensusState);
               break;
@@ -415,6 +432,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
                 role?: string;
                 sentiment?: string;
                 statement?: string;
+                team?: 'A' | 'B';
               };
               set((s) => ({
                 crowdVoices: [
@@ -425,6 +443,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
                     role: String(d.role || ''),
                     sentiment: String(d.sentiment || 'neutral'),
                     statement: String(d.statement || ''),
+                    team: d.team === 'A' || d.team === 'B' ? d.team : undefined,
                   },
                 ],
               }));
@@ -438,6 +457,14 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
             case 'crowd_round_complete':
               break;
 
+            case 'verdict_generating': {
+              const d = (data.data || {}) as { message?: string };
+              set({
+                verdictGeneratingMessage: typeof d.message === 'string' ? d.message : 'Chief is analyzing…',
+              });
+              break;
+            }
+
             case 'verdict_token':
               appendVerdictToken((data.data as { token?: string })?.token || '');
               break;
@@ -446,6 +473,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
             case 'simulation_complete': {
               const d = data.data as { simulation_id?: string };
               setResult(data.data, d?.simulation_id || '');
+              set({ verdictGeneratingMessage: null });
               set((s) => ({
                 phases: s.phases.map((p) => ({ ...p, status: 'complete' as const })),
               }));
@@ -456,6 +484,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
               set({
                 error: (data.data as { message?: string })?.message || 'Simulation failed',
                 status: 'error',
+                verdictGeneratingMessage: null,
               });
               break;
 
@@ -526,6 +555,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
       error: null,
       activeChargeType: null,
       chiefAssembly: null,
+      verdictGeneratingMessage: null,
       startedAt: null,
       elapsed: 0,
     });

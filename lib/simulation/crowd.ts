@@ -7,6 +7,7 @@
  */
 
 import { callClaude, parseJSON } from './claude';
+import type { CrowdSegment } from '@/lib/simulation/types';
 
 // ═══════════════════════════════════════════
 // TYPES
@@ -72,6 +73,26 @@ export type CrowdSignal = {
 };
 
 const CONCURRENCY = 20;
+
+/** Split framed compare questions into Option A / Option B text for dual crowd pipelines. */
+export function splitCompareOptions(fullQuestion: string): { a: string; b: string } {
+  const optB = fullQuestion.match(/Option B:\s*([\s\S]+)/i);
+  const optA = fullQuestion.match(/Option A:\s*([\s\S]+?)(?=Option B:|$)/i);
+  return {
+    a: (optA?.[1]?.trim() || 'Option A').slice(0, 2000),
+    b: (optB?.[1]?.trim() || 'Option B').slice(0, 2000),
+  };
+}
+
+export function formatChiefCrowdSegmentBootstrap(segments: CrowdSegment[] | undefined): string {
+  if (!segments?.length) return '';
+  return `Chief-designed audience segments (stay faithful; voices should sound like these buckets):\n${segments
+    .map(
+      (s) =>
+        `• ${s.segment} (~${s.count} voices): ${s.behavior}. Context: ${s.context}. Sample: "${s.sample_voice}"`,
+    )
+    .join('\n')}\n\n`;
+}
 
 function stripJsonFence(s: string): string {
   return s.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();

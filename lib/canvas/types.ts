@@ -20,6 +20,8 @@ export interface AgentNode {
   confidence: number;
   argument: string;
   isActive: boolean;
+  /** Specialist used web search (count > 0). */
+  webSourceCount?: number;
 }
 
 export interface CrowdParticle {

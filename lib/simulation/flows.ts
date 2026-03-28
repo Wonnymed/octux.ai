@@ -7,7 +7,8 @@ import type {
   SpecialistPlan,
 } from '@/lib/simulation/types';
 
-const JSON_SUFFIX = `
+/** Appended to per-round user prompts so models return parseable AgentReport JSON. */
+export const CHIEF_DEBATE_JSON_SUFFIX = `
 
 Respond with valid JSON only:
 {
@@ -18,6 +19,8 @@ Respond with valid JSON only:
   "risks_identified": ["specific risk"],
   "recommendation": "one sentence, specific action"
 }`;
+
+const JSON_SUFFIX = CHIEF_DEBATE_JSON_SUFFIX;
 
 export function mapChargeTypeToChiefMode(simMode?: SimulationChargeType): ChiefSimulationMode {
   switch (simMode) {

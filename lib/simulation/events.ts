@@ -10,6 +10,7 @@ import type {
   StressVerdictData,
   PremortemFailureAnalysis,
 } from './mode-verdict';
+import type { CompareVerdict, PremortemOpusVerdict, StressOpusVerdict } from './types';
 
 export type SSEEvent =
   | PhaseStartEvent
@@ -163,6 +164,14 @@ export interface VerdictResult {
   compare_data?: CompareVerdictData;
   stress_data?: StressVerdictData;
   failure_analysis?: PremortemFailureAnalysis;
+  /** URLs surfaced from web search during the simulation / verdict. */
+  sources?: { url: string; title: string }[];
+
+  /** Opus Chief premium JSON (compare / stress / pre-mortem). */
+  _mode?: 'compare' | 'stress_test' | 'premortem';
+  opus_compare?: CompareVerdict;
+  opus_stress?: StressOpusVerdict;
+  opus_premortem?: PremortemOpusVerdict;
 }
 
 export interface Citation {

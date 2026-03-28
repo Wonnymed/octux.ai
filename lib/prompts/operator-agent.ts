@@ -32,5 +32,11 @@ ${
     : ''
 }
 
-Respond as ${operatorPlan.name} (first person, personal, honest, under 150 words), then on the last line write exactly one of: PROCEED / CAUTION / AGAINST`;
+WEB SEARCH:
+You have web search. Search for info relevant to YOUR specific situation:
+- Current costs you'd face (rent, supplies, licenses)
+- Similar businesses in your area
+- Recent experiences of people in your position
+
+Respond in first person, personal, honest. Encode your stance in the JSON object from your system instructions (position proceed/delay/abandon, confidence, key_argument, etc.) — not a prose-only reply.`;
 }

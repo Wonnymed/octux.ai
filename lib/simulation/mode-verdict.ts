@@ -361,6 +361,20 @@ export function mergeModeVerdictFields(
     out.one_liner = raw.one_liner.trim();
   }
 
+  const src = raw.sources;
+  if (Array.isArray(src) && src.length > 0) {
+    const sources = src
+      .map((x) => {
+        const o = x as Record<string, unknown>;
+        const url = typeof o.url === 'string' ? o.url.trim() : '';
+        if (!url) return null;
+        return { url, title: typeof o.title === 'string' ? o.title.trim() : url };
+      })
+      .filter((x): x is { url: string; title: string } => x != null)
+      .slice(0, 8);
+    if (sources.length > 0) out.sources = sources;
+  }
+
   return out;
 }
 

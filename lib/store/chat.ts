@@ -28,6 +28,9 @@ interface ChatState {
   selectedSimMode: SimulationChargeType;
   setSelectedSimMode: (mode: SimulationChargeType) => void;
 
+  /** Chief panel depth for modes like compare/stress (persists when sim mode chip is not swarm/specialist). */
+  selectedPanelTier: 'swarm' | 'specialist';
+
   entityState: 'dormant' | 'active' | 'thinking' | 'diving' | 'resting';
   setEntityState: (state: ChatState['entityState']) => void;
 
@@ -61,7 +64,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
   setSending: (sending) => set({ sending }),
 
   selectedSimMode: 'swarm',
-  setSelectedSimMode: (mode) => set({ selectedSimMode: mode }),
+  selectedPanelTier: 'swarm',
+  setSelectedSimMode: (mode) =>
+    set((s) => ({
+      selectedSimMode: mode,
+      selectedPanelTier:
+        mode === 'swarm' || mode === 'specialist' ? mode : s.selectedPanelTier,
+    })),
 
   entityState: 'dormant',
   setEntityState: (state) => set({ entityState: state }),

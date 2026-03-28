@@ -55,6 +55,10 @@ function mapAgents(map: Map<string, AgentStreamState>): AgentNode[] {
       confidence: typeof a.confidence === 'number' ? a.confidence : 5,
       argument: (a.partialResponse || '').slice(0, 160),
       isActive: a.status === 'streaming',
+      webSourceCount:
+        typeof a.webSearchSourceCount === 'number' && a.webSearchSourceCount > 0
+          ? a.webSearchSourceCount
+          : undefined,
     }));
 }
 

@@ -130,6 +130,8 @@ export type CallClaudeWithToolsOptions = {
   maxTokens?: number;
   model?: string;
   tier?: ModelTier;
+  /** When set with maxUses > 0, enables web search regardless of AGENT_SEARCH_CONFIG. */
+  forceWebSearch?: { maxUses: number; searchContext?: string };
 };
 
 /**
@@ -140,8 +142,16 @@ export type CallClaudeWithToolsOptions = {
 export async function callClaudeWithTools(
   options: CallClaudeWithToolsOptions,
 ): Promise<ToolCallResult> {
+  const forced = options.forceWebSearch;
   const searchConfig = AGENT_SEARCH_CONFIG[options.agentId];
-  const searchEnabled = searchConfig?.enabled ?? false;
+  const maxUsesFromForced = forced && forced.maxUses > 0 ? forced.maxUses : 0;
+  const maxUsesFromConfig = searchConfig?.enabled ? searchConfig.maxSearches : 0;
+  const maxUses = maxUsesFromForced > 0 ? maxUsesFromForced : maxUsesFromConfig;
+  const searchEnabled = maxUses > 0;
+  const searchContext =
+    (forced && forced.maxUses > 0 ? forced.searchContext : undefined) ||
+    searchConfig?.searchContext ||
+    'Search for current, verifiable data relevant to your task. Prefer primary sources.';
 
   if (!searchEnabled) {
     const text = await callClaude({
@@ -170,13 +180,13 @@ export async function callClaudeWithTools(
       client.messages.create({
         model,
         max_tokens: options.maxTokens || 1500,
-        system: `${options.systemPrompt}\n\nWEB SEARCH: You have access to web search. ${searchConfig.searchContext}\nUse search to VERIFY your claims with real, current data. Cite your sources. If search returns no useful results, state that clearly and proceed with your best analysis.`,
+        system: `${options.systemPrompt}\n\nWEB SEARCH: You have access to web search. ${searchContext}\nUse search to VERIFY your claims with real, current data. Cite your sources. If search returns no useful results, state that clearly and proceed with your best analysis.`,
         messages: [{ role: 'user', content: options.userMessage }],
         tools: [
           {
             type: 'web_search_20250305' as any,
             name: 'web_search',
-            max_uses: searchConfig.maxSearches,
+            max_uses: maxUses,
           } as any,
         ],
       }),

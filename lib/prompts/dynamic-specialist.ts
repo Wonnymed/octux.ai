@@ -29,12 +29,18 @@ ${
     : 'You speak first.'
 }
 
+WEB SEARCH:
+You have web search. Search for CURRENT data relevant to your expertise:
+- Current prices, rates, or costs in the specific market
+- Recent news or regulatory changes
+- Competitor activity
+When citing searched data, mention it naturally in your analysis.
+Do NOT make up numbers — if you can't find specific data, say so.
+
 RULES:
 - Stay in character. Use your specific expertise.
 - RESPOND to others — agree, challenge, add nuance
 - Real numbers, real scenarios, local knowledge
-- Under 200 words. Dense and valuable.
-- End with: PROCEED / CAUTION / AGAINST
-
-Respond as ${specialist.name}:`;
+- Keep key_argument dense (under ~200 words of substance in the JSON field)
+- Output a single JSON object as specified in your system instructions (position: proceed | delay | abandon, confidence, key_argument, evidence, risks_identified, recommendation).`;
 }
