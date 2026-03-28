@@ -7,10 +7,10 @@ import SimulationInput from '@/components/dashboard/SimulationInput';
 import SimulationCanvas from '@/components/dashboard/SimulationCanvas';
 
 export default function DashboardHome({
-  onSubmit,
+  onRunDashboard,
   loading,
 }: {
-  onSubmit: (message: string) => void | Promise<void>;
+  onRunDashboard: () => void | Promise<void>;
   loading: boolean;
 }) {
   const tier = useBillingStore((s) => s.tier);
@@ -20,13 +20,7 @@ export default function DashboardHome({
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <TopBar activeTier={activeTier} onTierChange={setActiveTier} billingTier={tier} />
-      <SimulationInput
-        loading={loading}
-        billingTier={tier}
-        onRun={async ({ message }) => {
-          await onSubmit(message);
-        }}
-      />
+      <SimulationInput loading={loading} billingTier={tier} onRun={onRunDashboard} />
       <SimulationCanvas />
     </div>
   );

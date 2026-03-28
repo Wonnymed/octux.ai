@@ -1,4 +1,5 @@
-import type { SimulationDashboardState } from '@/lib/store/dashboard-ui';
+import type { SimulationChargeType } from '@/lib/billing/token-costs';
+import type { DashboardMode, DashboardTier, SimulationDashboardState } from '@/lib/store/dashboard-ui';
 import type { AgentStreamState, ConsensusState } from '@/lib/store/simulation';
 import type { AgentNode, CanvasSimStatus, CanvasSnapshot, DebateEdge, VerdictData } from './types';
 
@@ -9,7 +10,24 @@ type SimSlice = {
   consensus: ConsensusState | null;
   result: unknown;
   elapsed: number;
+  activeChargeType: SimulationChargeType | null;
 };
+
+function effectiveModeTier(
+  dash: SimulationDashboardState,
+  sim: SimSlice,
+): { mode: DashboardMode; tier: DashboardTier } {
+  const ct = sim.activeChargeType;
+  if (!ct || sim.status === 'idle') {
+    return { mode: dash.activeMode, tier: dash.activeTier };
+  }
+  if (ct === 'swarm') return { mode: 'simulate', tier: 'swarm' };
+  if (ct === 'specialist') return { mode: 'simulate', tier: 'specialist' };
+  if (ct === 'compare') return { mode: 'compare', tier: dash.activeTier };
+  if (ct === 'stress_test') return { mode: 'stress', tier: dash.activeTier };
+  if (ct === 'premortem') return { mode: 'premortem', tier: dash.activeTier };
+  return { mode: dash.activeMode, tier: dash.activeTier };
+}
 
 const RUNNING: CanvasSimStatus[] = [
   'connecting',
@@ -101,10 +119,11 @@ function fallbackRound(status: CanvasSimStatus, c: ConsensusState | null): numbe
 function verdictFromResult(r: unknown): VerdictData | null {
   if (!r || typeof r !== 'object') return null;
   const o = r as Record<string, unknown>;
-  const rec = o.recommendation;
+  let rec = o.recommendation;
+  if (rec === 'proceed_with_conditions') rec = 'proceed';
   if (rec !== 'proceed' && rec !== 'delay' && rec !== 'abandon') return null;
   return {
-    recommendation: rec,
+    recommendation: rec as VerdictData['recommendation'],
     probability: typeof o.probability === 'number' ? o.probability : 0,
     grade: typeof o.grade === 'string' ? o.grade : undefined,
     one_liner: typeof o.one_liner === 'string' ? o.one_liner : undefined,
@@ -113,11 +132,12 @@ function verdictFromResult(r: unknown): VerdictData | null {
 
 /** Merge dashboard UI + simulation store into a single canvas snapshot. */
 export function buildCanvasSnapshot(dash: SimulationDashboardState, sim: SimSlice): CanvasSnapshot {
+  const { mode: viewMode, tier: viewTier } = effectiveModeTier(dash, sim);
   const simStatus = sim.status;
   const isRunning = RUNNING.includes(simStatus);
   let agents = mapAgents(sim.agents);
 
-  if (dash.activeMode === 'simulate' && dash.activeTier === 'specialist') {
+  if (viewMode === 'simulate' && viewTier === 'specialist') {
     agents = padSpecialistSlots(agents, isRunning, 10);
   }
 
@@ -133,13 +153,13 @@ export function buildCanvasSnapshot(dash: SimulationDashboardState, sim: SimSlic
 
   const completed = agents.filter((a) => a.position !== 'pending').length;
   const voiceCount = Math.min(
-    dash.activeTier === 'swarm' && dash.activeMode === 'simulate' ? 1000 : 520,
+    viewTier === 'swarm' && viewMode === 'simulate' ? 1000 : 520,
     completed * 14 + Math.floor(sim.elapsed * 6),
   );
 
   return {
-    mode: dash.activeMode,
-    tier: dash.activeTier,
+    mode: viewMode,
+    tier: viewTier,
     demo: false,
     isRunning,
     simStatus,

@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
   );
   const tokenCost = getTokenCost(simMode);
 
+  // `question` is usually client-framed (see lib/simulation/mode-framing.ts) before POST.
   const {
     question,
     engine,

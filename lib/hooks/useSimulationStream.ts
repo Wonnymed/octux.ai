@@ -160,6 +160,7 @@ export function useSimulationStream(
   const setEntityState = useChatStore((s) => s.setEntityState);
 
   const updateConversation = useAppStore((s) => s.updateConversation);
+  const fetchConversations = useAppStore((s) => s.fetchConversations);
   const fetchBalance = useBillingStore((s) => s.fetchBalance);
 
   const lastSimModeRef = useRef<SimulationChargeType>('swarm');
@@ -331,10 +332,11 @@ export function useSimulationStream(
       }
 
       void fetchBalance();
+      void fetchConversations({ silent: true });
     }
   }, [
     simStatus, simResult, simulationId, conversationId,
-    addMessage, setEntityState, updateConversation, fetchBalance,
+    addMessage, setEntityState, updateConversation, fetchBalance, fetchConversations,
   ]);
 
   // ─── HANDLE ERROR ───

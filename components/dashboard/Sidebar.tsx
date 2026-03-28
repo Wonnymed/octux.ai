@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useBillingStore } from '@/lib/store/billing';
 import { useDashboardUiStore } from '@/lib/store/dashboard-ui';
+import { useSimulationStore } from '@/lib/store/simulation';
 import type { TierType } from '@/lib/billing/tiers';
 import { DARK_THEME } from '@/lib/dashboard/theme';
 import SidebarModes from '@/components/dashboard/SidebarModes';
@@ -71,6 +72,7 @@ export default function DashboardSidebar() {
           type="button"
           onClick={() => {
             resetSession();
+            useSimulationStore.getState().reset();
             router.push('/');
           }}
           className="w-full rounded-[10px] border py-2.5 text-[13px] font-medium transition-colors hover:bg-white/[0.04]"

@@ -16,7 +16,10 @@ import LiveExample from '@/components/landing/LiveExample';
 import WhyNotChatGPT from '@/components/landing/WhyNotChatGPT';
 import PricingPreview from '@/components/landing/PricingPreview';
 import SiteFooter from '@/components/landing/LandingFooter';
-import { pendingFirstMessageKey } from '@/lib/chat/firstMessageBootstrap';
+import { pendingFirstMessageKey, pendingSimulationKey } from '@/lib/chat/firstMessageBootstrap';
+import { dashboardModeToChargeType, useDashboardUiStore } from '@/lib/store/dashboard-ui';
+import { useBillingStore } from '@/lib/store/billing';
+import { frameQuestionForMode } from '@/lib/simulation/mode-framing';
 
 export default function HomePage() {
   const { isAuthenticated, isLoading, checkGuestLimit } = useAuth();
@@ -105,14 +108,68 @@ export default function HomePage() {
     router.refresh();
   };
 
-  // ─── Logged-in: dark simulation dashboard (shell only; canvas = placeholder) ───
+  const handleDashboardRun = useCallback(async () => {
+    const { activeMode, activeTier, inputA, inputB } = useDashboardUiStore.getState();
+    if (activeMode === 'compare' && (!inputA.trim() || !inputB.trim())) return;
+
+    const chargeType = dashboardModeToChargeType(activeMode, activeTier);
+    if (!useBillingStore.getState().canAffordMode(chargeType)) return;
+
+    const framed = frameQuestionForMode(activeMode, inputA, inputB);
+    const titleSeed =
+      activeMode === 'compare'
+        ? `${inputA.trim().slice(0, 24)} vs ${inputB.trim().slice(0, 24)}`
+        : inputA.trim().slice(0, 80);
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/c', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstMessage: titleSeed }),
+      });
+      const data = await res.json();
+      const id = data.id || data.conversation?.id;
+      if (!id) throw new Error('No conversation created');
+
+      const displayTitle =
+        titleSeed.length > 50 ? `${titleSeed.slice(0, 47)}...` : titleSeed;
+
+      addConversation({
+        id,
+        title: displayTitle,
+        domain: 'general',
+        has_simulation: false,
+        latest_verdict: null,
+        latest_verdict_probability: null,
+        is_pinned: false,
+        message_count: 0,
+        simulation_count: 0,
+        updated_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+      });
+
+      try {
+        sessionStorage.setItem(
+          pendingSimulationKey(id),
+          JSON.stringify({ question: framed, simMode: chargeType }),
+        );
+      } catch {
+        /* private mode */
+      }
+
+      void useAppStore.getState().fetchConversations({ silent: true });
+      router.push(`/c/${id}`);
+    } catch (err) {
+      console.error('Failed to start simulation:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [addConversation, router]);
+
+  // ─── Logged-in: dark simulation dashboard ───
   if (isAuthenticated && !isLoading) {
-    return (
-      <DashboardHome
-        onSubmit={(msg) => handleSend(msg)}
-        loading={loading}
-      />
-    );
+    return <DashboardHome onRunDashboard={handleDashboardRun} loading={loading} />;
   }
 
   // ─── Loading / logged-out: marketing landing (light theme) ───

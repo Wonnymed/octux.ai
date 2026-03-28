@@ -12,8 +12,9 @@ import { cn } from '@/lib/design/cn';
 import EntityVisual from '@/components/chat/EntityVisual';
 import ChatInput from '@/components/chat/ChatInput';
 import { MessageRenderer, ThinkingIndicator } from '@/components/chat';
-import { pendingFirstMessageKey } from '@/lib/chat/firstMessageBootstrap';
+import { pendingFirstMessageKey, pendingSimulationKey } from '@/lib/chat/firstMessageBootstrap';
 import type { SimulationChargeType } from '@/lib/billing/token-costs';
+import SimulationCanvas from '@/components/dashboard/SimulationCanvas';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -43,6 +44,34 @@ export default function ConversationPage() {
     const run = async () => {
       await loadConversation(conversationId);
       if (cancelled) return;
+
+      let pendingSimRaw: string | null = null;
+      try {
+        pendingSimRaw = sessionStorage.getItem(pendingSimulationKey(conversationId));
+      } catch {
+        /* ignore */
+      }
+
+      if (pendingSimRaw) {
+        try {
+          sessionStorage.removeItem(pendingSimulationKey(conversationId));
+        } catch {
+          /* ignore */
+        }
+        try {
+          const parsed = JSON.parse(pendingSimRaw) as {
+            question?: string;
+            simMode?: SimulationChargeType;
+          };
+          const q = parsed.question?.trim();
+          if (q) {
+            await triggerSimulation(q, parsed.simMode);
+          }
+        } catch {
+          /* bad payload */
+        }
+        return;
+      }
 
       const key = pendingFirstMessageKey(conversationId);
       let pending: string | null = null;
@@ -83,7 +112,7 @@ export default function ConversationPage() {
       simReset();
       setActiveConversationId(null);
     };
-  }, [conversationId, loadConversation, sendMessage, clear, simReset, setActiveConversationId]);
+  }, [conversationId, loadConversation, sendMessage, clear, simReset, setActiveConversationId, triggerSimulation]);
 
   // ─── AUTO-SCROLL ───
   useEffect(() => {
@@ -141,8 +170,12 @@ export default function ConversationPage() {
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className="flex min-h-0 flex-1 flex-col bg-[#0a0a0f]"
     >
+      <div className="flex min-h-[min(38vh,420px)] max-h-[min(52vh,560px)] shrink-0 border-b border-white/[0.06]">
+        <SimulationCanvas />
+      </div>
+
       {/* ─── MESSAGES AREA ─── */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">
         <div className="mx-auto w-full max-w-[720px] px-4 sm:px-6 py-6">
           <div className={cn(
             'flex justify-center shrink-0 transition-all duration-300',

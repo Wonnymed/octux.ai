@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import type { SimulationChargeType } from '@/lib/billing/token-costs';
+import { parseSimulationChargeType } from '@/lib/billing/token-costs';
 
 export type SimPhaseStatus = 'pending' | 'active' | 'complete';
 
@@ -69,6 +71,9 @@ interface SimulationState {
 
   error: string | null;
   setError: (error: string) => void;
+
+  /** Set when a simulation starts; drives canvas layout vs dashboard toggles. */
+  activeChargeType: SimulationChargeType | null;
 
   startedAt: number | null;
   elapsed: number;
@@ -174,6 +179,8 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   error: null,
   setError: (error) => set({ error, status: 'error' }),
 
+  activeChargeType: null,
+
   startedAt: null,
   elapsed: 0,
   setElapsed: (elapsed) => set({ elapsed }),
@@ -184,6 +191,8 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   startSimulation: (streamBody) => {
     get().stopSimulation();
 
+    const activeChargeType = parseSimulationChargeType(streamBody.simMode);
+
     set({
       status: 'connecting',
       phases: freshPhases(),
@@ -193,6 +202,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
       result: null,
       simulationId: null,
       error: null,
+      activeChargeType,
       startedAt: Date.now(),
       elapsed: 0,
     });
@@ -394,6 +404,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
       result: null,
       simulationId: null,
       error: null,
+      activeChargeType: null,
       startedAt: null,
       elapsed: 0,
     });

@@ -38,6 +38,8 @@ export default function SimulationCanvas() {
   const result = useSimulationStore((s) => s.result);
   const elapsed = useSimulationStore((s) => s.elapsed);
 
+  const activeChargeType = useSimulationStore((s) => s.activeChargeType);
+
   const getSnapshot = useCallback(() => {
     const dash = useDashboardUiStore.getState();
     const sim = useSimulationStore.getState();
@@ -48,6 +50,7 @@ export default function SimulationCanvas() {
       consensus: sim.consensus,
       result: sim.result,
       elapsed: sim.elapsed,
+      activeChargeType: sim.activeChargeType,
     });
   }, []);
 
@@ -60,8 +63,9 @@ export default function SimulationCanvas() {
         consensus,
         result,
         elapsed,
+        activeChargeType,
       }),
-    [simStatus, simError, agents, consensus, result, elapsed, activeMode, activeTier],
+    [simStatus, simError, agents, consensus, result, elapsed, activeChargeType, activeMode, activeTier],
   );
 
   useEffect(() => {

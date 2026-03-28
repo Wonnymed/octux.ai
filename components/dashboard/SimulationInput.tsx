@@ -66,7 +66,8 @@ export default function SimulationInput({
   loading,
   billingTier,
 }: {
-  onRun: (payload: { message: string; mode: DashboardMode; tier: 'swarm' | 'specialist' }) => void;
+  /** Starts simulation: parent reads dashboard store (inputs, mode, tier). */
+  onRun: () => void | Promise<void>;
   loading: boolean;
   billingTier: TierType;
 }) {
@@ -161,13 +162,7 @@ export default function SimulationInput({
         <button
           type="button"
           disabled={disabled}
-          onClick={() =>
-            onRun({
-              message: messageForSubmit,
-              mode: activeMode,
-              tier: activeTier,
-            })
-          }
+          onClick={() => void onRun()}
           className={cn(
             'inline-flex min-h-[44px] items-center justify-center rounded-xl px-5 text-[13px] font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40',
           )}
