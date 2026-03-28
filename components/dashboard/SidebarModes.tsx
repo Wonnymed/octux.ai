@@ -11,40 +11,35 @@ export const DASHBOARD_SIDEBAR_MODES: {
   name: string;
   description: string;
   Icon: LucideIcon;
-  iconBoxClass: string;
-  iconClass: string;
+  accent: string;
 }[] = [
   {
     id: 'simulate',
     name: 'Simulate',
     description: '10 specialists analyze your decision',
     Icon: Zap,
-    iconBoxClass: 'bg-[rgba(232,89,60,0.12)]',
-    iconClass: 'text-[#e8593c]',
+    accent: '#e8593c',
   },
   {
     id: 'compare',
     name: 'Compare',
     description: 'A vs B — which path wins?',
     Icon: ArrowLeftRight,
-    iconBoxClass: 'bg-[rgba(96,165,250,0.12)]',
-    iconClass: 'text-[#60a5fa]',
+    accent: '#60a5fa',
   },
   {
     id: 'stress',
     name: 'Stress test',
     description: 'Find every way this plan can fail',
     Icon: ShieldAlert,
-    iconBoxClass: 'bg-[rgba(248,113,113,0.12)]',
-    iconClass: 'text-[#f87171]',
+    accent: '#f87171',
   },
   {
     id: 'premortem',
     name: 'Pre-mortem',
     description: 'It failed in 1 year. Why?',
     Icon: Skull,
-    iconBoxClass: 'bg-[rgba(251,191,36,0.12)]',
-    iconClass: 'text-[#fbbf24]',
+    accent: '#fbbf24',
   },
 ];
 
@@ -63,36 +58,52 @@ export default function SidebarModes({
       >
         Simulation modes
       </p>
-      <ul className="flex flex-col gap-1">
+      <ul className="flex flex-col gap-0.5">
         {DASHBOARD_SIDEBAR_MODES.map((m) => {
           const active = activeMode === m.id;
+          const Icon = m.Icon;
           return (
             <li key={m.id}>
               <button
                 type="button"
                 onClick={() => onSelect(m.id)}
                 className={cn(
-                  'flex w-full items-start gap-2.5 rounded-[10px] border px-2.5 py-2 text-left transition-colors',
+                  'group flex w-full items-start gap-3 rounded-lg border-l-2 px-3 py-2.5 text-left transition-all duration-150',
+                  active ? 'bg-white/[0.03]' : 'border-transparent hover:bg-white/[0.04]',
                 )}
-                style={{
-                  borderColor: active ? DARK_THEME.accent_border : DARK_THEME.border_default,
-                  backgroundColor: active ? DARK_THEME.accent_soft : 'transparent',
-                }}
+                style={
+                  active
+                    ? { borderLeftColor: m.accent }
+                    : { borderLeftColor: 'transparent' }
+                }
               >
-                <span
+                <Icon
+                  size={18}
+                  strokeWidth={1.5}
                   className={cn(
-                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
-                    m.iconBoxClass,
+                    'mt-0.5 shrink-0 transition-colors',
+                    active ? '' : 'text-white/[0.35] group-hover:text-white/60',
                   )}
-                >
-                  <m.Icon size={16} strokeWidth={1.75} className={m.iconClass} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[12px] font-medium text-white/90">{m.name}</span>
-                  <span className="mt-0.5 block text-[10px] leading-snug" style={{ color: DARK_THEME.text_secondary }}>
+                  style={active ? { color: m.accent } : undefined}
+                />
+                <div className="min-w-0 flex-1">
+                  <div
+                    className={cn(
+                      'text-[13px] font-medium transition-colors',
+                      active ? 'text-white/80' : 'text-white/50 group-hover:text-white/60',
+                    )}
+                  >
+                    {m.name}
+                  </div>
+                  <div
+                    className={cn(
+                      'mt-0.5 text-[11px] leading-snug transition-colors',
+                      active ? 'text-white/35' : 'text-white/25 group-hover:text-white/35',
+                    )}
+                  >
                     {m.description}
-                  </span>
-                </span>
+                  </div>
+                </div>
               </button>
             </li>
           );

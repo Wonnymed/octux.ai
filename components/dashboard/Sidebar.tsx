@@ -88,9 +88,10 @@ export default function DashboardSidebar({
           </button>
         </div>
 
-        <div className="mt-2 flex w-full flex-col items-center gap-1 px-2">
+        <div className="mt-1 flex w-full flex-col items-stretch px-0">
           {DASHBOARD_SIDEBAR_MODES.map((m) => {
             const active = activeMode === m.id;
+            const Icon = m.Icon;
             return (
               <button
                 key={m.id}
@@ -98,16 +99,24 @@ export default function DashboardSidebar({
                 title={m.name}
                 aria-label={m.name}
                 onClick={() => setActiveMode(m.id)}
-                className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-lg border transition-colors',
-                  m.iconBoxClass,
-                )}
-                style={{
-                  borderColor: active ? DARK_THEME.accent_border : 'transparent',
-                  backgroundColor: active ? DARK_THEME.accent_soft : undefined,
-                }}
+                className="group relative flex w-full items-center justify-center py-2.5 transition-colors hover:bg-white/[0.04]"
               >
-                <m.Icon size={16} strokeWidth={1.75} className={m.iconClass} />
+                {active ? (
+                  <span
+                    className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r"
+                    style={{ backgroundColor: m.accent }}
+                    aria-hidden
+                  />
+                ) : null}
+                <Icon
+                  size={18}
+                  strokeWidth={1.5}
+                  className={cn(
+                    'transition-colors',
+                    active ? '' : 'text-white/[0.35] group-hover:text-white/60',
+                  )}
+                  style={active ? { color: m.accent } : undefined}
+                />
               </button>
             );
           })}
