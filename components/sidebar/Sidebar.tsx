@@ -46,9 +46,12 @@ const ICON_STROKE = 1.5;
 const EXPANDED_W = 288;
 /** BUILD PLAN §2.1 / §3.1 collapsed rail */
 const COLLAPSED_W = 56;
-/** Top chrome — same as ChatLayout header (h-12, px-3 sm:px-4) */
-const TOP_BAR_H = 'h-12';
-const TOP_BAR_PAD = 'px-3 sm:px-4';
+/** Sidebar header — roomier than main shell bar (Okara-style breathing room) */
+const SIDEBAR_HEADER_PAD = 'px-3 sm:px-4 py-4';
+/** Brand mark — matches wordmark scale (Okara-like prominence) */
+const BRAND_LOGO_BOX = 'h-11 w-11';
+const BRAND_LOGO_EMOJI = 'text-[20px]';
+const BRAND_WORDMARK = 'text-[16px]';
 /** Claude-style nav: compact icons */
 const NAV_ICON = 18;
 /** Match conversation title styling in the history list */
@@ -95,23 +98,31 @@ function SidebarCollapsed() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex h-full w-full flex-col items-center">
-        <div className={cn('flex w-full shrink-0 items-center justify-center border-b border-border-subtle/60', TOP_BAR_H)}>
+        <div
+          className={cn(
+            'flex w-full shrink-0 items-center justify-center border-b border-border-subtle/60',
+            SIDEBAR_HEADER_PAD,
+          )}
+        >
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 type="button"
                 onClick={toggleSidebar}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent/70 to-cyan-500/40 shadow-sm transition-transform hover:scale-[1.02]"
+                className={cn(
+                  'flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent/70 to-cyan-500/40 shadow-sm transition-transform hover:scale-[1.02]',
+                  BRAND_LOGO_BOX,
+                )}
                 aria-label="Open sidebar"
               >
-                <span className="text-[14px] leading-none">🐙</span>
+                <span className={cn('leading-none', BRAND_LOGO_EMOJI)}>🐙</span>
               </button>
             </TooltipTrigger>
             <TooltipContent side="right">Open sidebar</TooltipContent>
           </Tooltip>
         </div>
 
-        <div className="h-2 shrink-0" />
+        <div className="h-5 shrink-0" />
 
         <CollapsedIconButton
           onClick={() => router.push('/')}
@@ -225,28 +236,33 @@ function SidebarExpanded() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex h-full w-full min-w-0 flex-col overflow-hidden">
-        {/* Header — aligned 1:1 with main shell header (Log in / Sign up row) */}
-        <div className={cn('flex shrink-0 items-center justify-between border-b border-border-subtle/60', TOP_BAR_H, TOP_BAR_PAD)}>
-          <div className="flex min-w-0 items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent/70 to-cyan-500/40 shadow-sm">
-              <span className="text-[13px] leading-none">🐙</span>
+        {/* Header — taller than main shell bar so logo + nav can breathe (Okara-style) */}
+        <div className={cn('flex shrink-0 items-center justify-between border-b border-border-subtle/60', SIDEBAR_HEADER_PAD)}>
+          <div className="flex min-w-0 items-center gap-3">
+            <div
+              className={cn(
+                'flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent/70 to-cyan-500/40 shadow-sm',
+                BRAND_LOGO_BOX,
+              )}
+            >
+              <span className={cn('leading-none', BRAND_LOGO_EMOJI)}>🐙</span>
             </div>
-            <span className="truncate text-[15px] font-semibold tracking-tight text-txt-primary lowercase">
+            <span className={cn('truncate font-semibold tracking-tight text-txt-primary lowercase', BRAND_WORDMARK)}>
               octux
             </span>
           </div>
           <button
             type="button"
             onClick={toggleSidebar}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-txt-disabled transition-all hover:bg-surface-2 hover:text-txt-secondary"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-txt-disabled transition-all hover:bg-surface-2 hover:text-txt-secondary"
             aria-label="Close sidebar"
             title="Close sidebar"
           >
-            <PanelLeftClose size={18} strokeWidth={ICON_STROKE} />
+            <PanelLeftClose size={20} strokeWidth={ICON_STROKE} />
           </button>
         </div>
 
-        <div className="space-y-0.5 px-2.5 pt-1.5">
+        <div className="space-y-0.5 px-2.5 pt-7">
           <NavItemButton
             icon={Plus}
             label="New chat"
