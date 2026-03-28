@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useMemo, useRef, useState, useEffect, useCallback, type KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/design/cn';
 import { Plus, ArrowUp, Paperclip, Camera, FolderPlus, Globe, Bot, Lock } from 'lucide-react';
@@ -60,9 +60,12 @@ interface HomeComposerProps {
   loading?: boolean;
 }
 
+const MAX_TEXTAREA_HEIGHT = 200;
+
 export default function HomeComposer({ onSend, loading = false }: HomeComposerProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [message, setMessage] = useState('');
   const [webSearch, setWebSearch] = useState(true);
   const [agentCategoryMode, setAgentCategoryMode] = useState<AgentCategoryMode>('auto');
@@ -73,6 +76,18 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
 
   const canSend = useMemo(() => message.trim().length > 0 && !loading, [message, loading]);
 
+  const autoResize = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
+    el.style.overflowY = el.scrollHeight > MAX_TEXTAREA_HEIGHT ? 'auto' : 'hidden';
+  }, []);
+
+  useEffect(() => {
+    autoResize();
+  }, [message, autoResize]);
+
   function send() {
     if (!canSend) return;
     const resolvedCategory = agentCategoryMode === 'auto' ? inferAgentCategory(message) : agentCategoryMode;
@@ -82,6 +97,12 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
     } catch {}
     onSend(message.trim(), { tier: selectedTier });
     setMessage('');
+    requestAnimationFrame(() => {
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.overflowY = 'hidden';
+      }
+    });
   }
 
   function handleTierClick(tier: ModelTier) {
@@ -112,21 +133,21 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
   }
 
   return (
-    <div className="mx-auto w-full max-w-[min(100%,760px)]">
+    <div className="mx-auto w-full max-w-[720px]">
       <input ref={fileInputRef} type="file" multiple className="hidden" />
-      {/* Claude-scale composer: wide pill, tall input, soft shadow */}
-      <div className="rounded-[28px] border border-border-subtle/90 bg-surface-raised shadow-[0_2px_16px_rgba(15,23,42,0.06)] dark:shadow-[0_2px_20px_rgba(0,0,0,0.25)]">
+      <div className="rounded-2xl border border-border-subtle/90 bg-surface-raised shadow-[0_2px_16px_rgba(15,23,42,0.06)] dark:shadow-[0_2px_20px_rgba(0,0,0,0.25)]">
         <textarea
+          ref={textareaRef}
           data-chat-input
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={onKeyDown}
-          rows={5}
+          rows={1}
           placeholder="How can I help you today?"
-          className="min-h-[132px] w-full resize-none rounded-t-[28px] bg-transparent px-6 pb-2 pt-5 text-[15px] leading-[1.55] text-txt-primary outline-none placeholder:text-txt-tertiary/80"
+          className="min-h-[52px] max-h-[200px] w-full resize-none rounded-t-2xl bg-transparent px-5 py-4 text-[15px] leading-[1.5] text-txt-primary outline-none placeholder:text-txt-tertiary/80"
         />
 
-        <div className="flex items-center justify-between px-4 pb-3.5 pt-1">
+        <div className="flex items-center justify-between px-5 pb-4 pt-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button

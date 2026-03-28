@@ -29,8 +29,8 @@ interface ChatInputProps {
   className?: string;
 }
 
-const MAX_ROWS = 6;
-const LINE_HEIGHT = 22;
+/** Claude-like composer: max growth before scroll */
+const MAX_TEXTAREA_HEIGHT = 200;
 
 export default function ChatInput({
   onSend,
@@ -61,9 +61,8 @@ export default function ChatInput({
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    const maxHeight = LINE_HEIGHT * MAX_ROWS;
-    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
-    el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
+    el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
+    el.style.overflowY = el.scrollHeight > MAX_TEXTAREA_HEIGHT ? 'auto' : 'hidden';
   }, []);
 
   useEffect(() => { autoResize(); }, [value, autoResize]);
@@ -146,7 +145,7 @@ export default function ChatInput({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.2 }}
-            className="px-4 pt-3 pb-0 max-w-3xl mx-auto w-full"
+            className="mx-auto w-full max-w-[720px] px-4 pt-3 pb-0"
           >
             <div className="flex flex-wrap gap-2 justify-center">
               {SUGGESTION_CHIP_CONFIG.map((chip, i) => {
@@ -183,7 +182,7 @@ export default function ChatInput({
         )}
       </AnimatePresence>
 
-      <div className="p-4 max-w-3xl mx-auto w-full">
+      <div className="mx-auto w-full max-w-[720px] p-4">
         <motion.div
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
@@ -216,15 +215,12 @@ export default function ChatInput({
               disabled={sending || disabled}
               rows={1}
               className={cn(
-                'w-full min-h-[52px] max-h-[120px] resize-none bg-transparent',
-                'px-5 py-3.5 pr-14 text-[15px] text-txt-primary placeholder:text-txt-tertiary',
+                'w-full min-h-[52px] max-h-[200px] resize-none bg-transparent',
+                'px-5 py-4 pr-14 text-[15px] leading-[1.5] text-txt-primary placeholder:text-txt-tertiary',
                 'outline-none',
                 'disabled:cursor-not-allowed disabled:opacity-50',
               )}
-              style={{
-                lineHeight: `${LINE_HEIGHT}px`,
-                overflow: 'hidden',
-              }}
+              style={{ overflow: 'hidden' }}
             />
             <button
               type="button"

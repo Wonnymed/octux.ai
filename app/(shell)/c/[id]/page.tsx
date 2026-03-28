@@ -112,7 +112,7 @@ export default function ConversationPage() {
     >
       {/* ─── MESSAGES AREA ─── */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-6">
+        <div className="mx-auto w-full max-w-[720px] px-4 sm:px-6 py-6">
           <div className={cn(
             'flex justify-center shrink-0 transition-all duration-300',
             hasMessages ? 'py-2' : 'py-6',
