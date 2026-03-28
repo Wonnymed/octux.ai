@@ -63,6 +63,7 @@ export async function ensureUserSubscription(userId: string): Promise<void> {
     status: 'active',
     tokens_used: 0,
     tokens_total: TIERS.free.limits.tokensPerMonth,
+    bonus_tokens: 0,
   });
 
   if (error) console.error('[billing] ensureUserSubscription insert failed:', error);
@@ -76,7 +77,7 @@ export async function checkSimulationStart(
 
   const { data: sub } = await getSupabase()
     .from('user_subscriptions')
-    .select('tier, tokens_used, tokens_total')
+    .select('tier, tokens_used, tokens_total, bonus_tokens')
     .eq('user_id', userId)
     .maybeSingle();
 
@@ -93,7 +94,8 @@ export async function checkSimulationStart(
   const cost = getTokenCost(simMode);
   const tokensUsed = sub.tokens_used || 0;
   const tokensTotal = sub.tokens_total || TIERS[tier].limits.tokensPerMonth;
-  const remaining = tokensTotal - tokensUsed;
+  const bonusTokens = Number((sub as { bonus_tokens?: number }).bonus_tokens) || 0;
+  const remaining = Math.max(0, tokensTotal + bonusTokens - tokensUsed);
 
   if (!isModeAllowedForTier(tier, simMode)) {
     return {
@@ -163,7 +165,7 @@ export async function reserveSimulationTokens(
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const { data: sub, error: readErr } = await getSupabase()
       .from('user_subscriptions')
-      .select('tokens_used, tokens_total')
+      .select('tokens_used, tokens_total, bonus_tokens')
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -172,7 +174,9 @@ export async function reserveSimulationTokens(
     }
 
     const used = sub.tokens_used || 0;
-    const total = sub.tokens_total || 0;
+    const planTotal = sub.tokens_total || 0;
+    const bonusTokens = Number((sub as { bonus_tokens?: number }).bonus_tokens) || 0;
+    const total = planTotal + bonusTokens;
     const remaining = total - used;
 
     if (remaining < amount) {
@@ -196,7 +200,7 @@ export async function reserveSimulationTokens(
 
     if (rows && rows.length > 0) {
       const newUsed = rows[0].tokens_used ?? nextUsed;
-      return { ok: true, balanceAfter: Math.max(0, total - newUsed) };
+      return { ok: true, balanceAfter: Math.max(0, planTotal + bonusTokens - newUsed) };
     }
   }
 
@@ -227,6 +231,7 @@ export async function refundSimulationTokens(userId: string, amount: number): Pr
 export async function getTokenBalance(userId: string): Promise<{
   tokensUsed: number;
   tokensTotal: number;
+  bonusTokens: number;
   tokensRemaining: number;
   tier: TierType;
   currentPeriodEnd: string | null;
@@ -234,15 +239,17 @@ export async function getTokenBalance(userId: string): Promise<{
 }> {
   const { data: sub } = await getSupabase()
     .from('user_subscriptions')
-    .select('tier, tokens_used, tokens_total, current_period_end, stripe_customer_id')
+    .select('tier, tokens_used, tokens_total, bonus_tokens, current_period_end, stripe_customer_id')
     .eq('user_id', userId)
     .maybeSingle();
 
   if (!sub) {
+    const plan = TIERS.free.limits.tokensPerMonth;
     return {
       tokensUsed: 0,
-      tokensTotal: TIERS.free.limits.tokensPerMonth,
-      tokensRemaining: TIERS.free.limits.tokensPerMonth,
+      tokensTotal: plan,
+      bonusTokens: 0,
+      tokensRemaining: plan,
       tier: 'free',
       currentPeriodEnd: null,
       stripeCustomerId: null,
@@ -252,11 +259,13 @@ export async function getTokenBalance(userId: string): Promise<{
   const tier = normalizeTierType(sub.tier as string);
   const tokensUsed = sub.tokens_used || 0;
   const tokensTotal = sub.tokens_total || TIERS[tier].limits.tokensPerMonth;
+  const bonusTokens = Number((sub as { bonus_tokens?: number }).bonus_tokens) || 0;
 
   return {
     tokensUsed,
     tokensTotal,
-    tokensRemaining: Math.max(0, tokensTotal - tokensUsed),
+    bonusTokens,
+    tokensRemaining: Math.max(0, tokensTotal + bonusTokens - tokensUsed),
     tier,
     currentPeriodEnd: (sub as { current_period_end?: string }).current_period_end || null,
     stripeCustomerId: (sub as { stripe_customer_id?: string }).stripe_customer_id || null,

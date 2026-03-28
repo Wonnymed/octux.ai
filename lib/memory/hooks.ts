@@ -49,6 +49,9 @@ import {
   type BehavioralProfile,
 } from './behavioral';
 import { supabase } from './supabase';
+import { fetchOperatorProfileForUser } from '@/lib/operator/db';
+import { formatOperatorContext } from '@/lib/operator/context';
+import type { OperatorProfile } from '@/lib/operator/types';
 
 // Re-export for engine convenience
 export { formatRoundDiscoveries, type RoundLearning } from './agent-improvement';
@@ -78,6 +81,10 @@ export type PreSimResult = {
   /** Loaded in preSim (same as engine behavioral modulation). */
   behavioralProfile: BehavioralProfile | null;
   behavioralContextText: string;
+  /** My Operator profile (explicit user-provided context). */
+  operatorProfile: OperatorProfile | null;
+  operatorContextText: string;
+  operatorCompleteness: number;
 };
 
 /** When set, postAgentHook persists per-agent buffer rows and incremental facts. */
@@ -149,6 +156,9 @@ export async function preSimHook(
   let walFactsExtracted = 0;
   let behavioralProfile: BehavioralProfile | null = null;
   let behavioralContextText = '';
+  let operatorProfile: OperatorProfile | null = null;
+  let operatorContextText = '';
+  let operatorCompleteness = 0;
 
   // 1. Core memory (Letta blocks)
   try {
@@ -333,6 +343,22 @@ export async function preSimHook(
     `[MEMORY:PRE] Complete — returningUser: ${memory.isReturningUser}, knowledge agents: ${agentKnowledgeMap.size}, lessons: ${agentLessonsMap.size}, thread: ${activeThreadId || 'none'}`,
   );
 
+  if (userId && !userId.startsWith('anon_')) {
+    try {
+      const row = await fetchOperatorProfileForUser(userId);
+      if (row) {
+        operatorProfile = row.profile;
+        operatorCompleteness = row.completeness;
+        operatorContextText = formatOperatorContext(row.profile);
+        if (operatorContextText) {
+          console.log('[MEMORY:PRE] Operator profile loaded, completeness:', operatorCompleteness);
+        }
+      }
+    } catch (err) {
+      memErr('fetchOperatorProfileForUser', err, { userId, simulationId: simId });
+    }
+  }
+
   return {
     memory,
     networkMemoryText,
@@ -346,6 +372,9 @@ export async function preSimHook(
     walFactsExtracted,
     behavioralProfile,
     behavioralContextText,
+    operatorProfile,
+    operatorContextText,
+    operatorCompleteness,
   };
 }
 

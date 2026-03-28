@@ -196,6 +196,8 @@ function SidebarExpanded() {
   const tier = useBillingStore((s) => s.tier);
   const tokensRemaining = useBillingStore((s) => s.tokensRemaining);
   const tokensTotal = useBillingStore((s) => s.tokensTotal);
+  const bonusTokens = useBillingStore((s) => s.bonusTokens);
+  const tokenPoolMax = tokensTotal + bonusTokens;
 
   useEffect(() => {
     const match = pathname?.match(/^\/c\/(.+)/);
@@ -327,7 +329,7 @@ function SidebarExpanded() {
                         : 'bg-accent',
                   )}
                   style={{
-                    width: `${tokensTotal > 0 ? (tokensRemaining / tokensTotal) * 100 : 0}%`,
+                    width: `${tokenPoolMax > 0 ? (tokensRemaining / tokenPoolMax) * 100 : 0}%`,
                   }}
                 />
               </div>

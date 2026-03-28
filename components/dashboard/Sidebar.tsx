@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { PanelLeftClose, Home, Gem } from 'lucide-react';
+import { PanelLeftClose, Home, Gem, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import { useBillingStore } from '@/lib/store/billing';
 import { useDashboardUiStore, type DashboardMode } from '@/lib/store/dashboard-ui';
@@ -25,6 +25,7 @@ export default function DashboardSidebar({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const operatorActive = pathname === '/operator';
   const tier = useBillingStore((s) => s.tier);
   const fetchBalance = useBillingStore((s) => s.fetchBalance);
 
@@ -79,7 +80,7 @@ export default function DashboardSidebar({
           </button>
         </div>
 
-        <div className="mt-3 flex w-full flex-col items-center px-2">
+        <div className="mt-3 flex w-full flex-col items-center gap-1 px-2">
           <Link
             href="/home"
             title="Home"
@@ -87,6 +88,17 @@ export default function DashboardSidebar({
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white/80"
           >
             <Home size={18} strokeWidth={1.75} />
+          </Link>
+          <Link
+            href="/operator"
+            title="My Operator"
+            aria-label="My Operator"
+            className={cn(
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white/80',
+              operatorActive ? 'border-[#e8593c]/50 bg-[rgba(232,89,60,0.08)] text-white/90' : 'border-white/10',
+            )}
+          >
+            <UserCircle size={16} strokeWidth={1.75} />
           </Link>
         </div>
 
@@ -174,13 +186,30 @@ export default function DashboardSidebar({
         </button>
       </div>
 
-      <div className="px-3 pt-3">
+      <div className="space-y-2 px-3 pt-3">
         <Link
           href="/home"
-          className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.08] px-3 py-2.5 text-[13px] font-medium text-white/60 transition-all hover:bg-white/[0.04] hover:text-white/70"
+          className={cn(
+            'flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[13px] font-medium transition-all',
+            pathname === '/home'
+              ? 'border-[#e8593c]/40 bg-[rgba(232,89,60,0.06)] text-white/85'
+              : 'border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white/70',
+          )}
         >
           <Home size={16} strokeWidth={1.5} />
           Home
+        </Link>
+        <Link
+          href="/operator"
+          className={cn(
+            'flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[13px] font-medium transition-all',
+            operatorActive
+              ? 'border-[#e8593c]/40 bg-[rgba(232,89,60,0.06)] text-white/85'
+              : 'border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white/70',
+          )}
+        >
+          <UserCircle size={16} strokeWidth={1.5} />
+          My Operator
         </Link>
       </div>
 

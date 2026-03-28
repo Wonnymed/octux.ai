@@ -11,7 +11,10 @@ export async function GET() {
     const balance = await getTokenBalance(user.id);
     return NextResponse.json({
       tier: balance.tier,
+      /** Monthly plan allocation (excluding bonus pool). */
+      planTokens: balance.tokensTotal,
       total: balance.tokensTotal,
+      bonusTokens: balance.bonusTokens,
       used: balance.tokensUsed,
       remaining: balance.tokensRemaining,
       tokensTotal: balance.tokensTotal,
