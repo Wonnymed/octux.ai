@@ -11,8 +11,8 @@ const tiers = [
     description: 'Try the simulation engine',
     features: [
       '2 simulation tokens/month',
-      'Swarm mode (1000 agents)',
-      'Basic verdict + chat',
+      'Swarm mode (1,000 market voices)',
+      'Verdict dashboard + follow-up',
     ],
     cta: 'Start free',
     popular: false,
@@ -61,7 +61,7 @@ export default function PricingPreview({ onSignIn }: PricingPreviewProps) {
             Simple pricing
           </h2>
           <p className="text-sm text-txt-tertiary">
-            Three tiers. Tokens for simulations. Chat included.
+            Three tiers. Tokens power simulations; follow-up Q&amp;A is included where noted.
           </p>
         </div>
 

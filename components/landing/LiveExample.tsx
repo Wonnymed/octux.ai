@@ -21,7 +21,7 @@ export default function LiveExample({ onSignIn }: LiveExampleProps) {
       { name: 'Regulatory Gatekeeper', position: 'DELAY', confidence: 9 },
       { name: 'Demand Signal Analyst', position: 'PROCEED', confidence: 7 },
       { name: 'Unit Economics Auditor', position: 'PROCEED', confidence: 6 },
-      { name: 'Execution Operator', position: 'PROCEED', confidence: 7 },
+      { name: 'Execution Engineer', position: 'PROCEED', confidence: 7 },
     ],
   };
 
@@ -31,10 +31,11 @@ export default function LiveExample({ onSignIn }: LiveExampleProps) {
         {/* Header */}
         <div className="text-center mb-10">
           <h2 className="text-2xl sm:text-3xl font-medium text-txt-primary mb-3">
-            See a real analysis
+            See a real simulation result
           </h2>
-          <p className="text-sm text-txt-tertiary">
-            This is actual Octux output. Hover the citations. Explore the agents.
+          <p className="text-sm text-txt-tertiary max-w-lg mx-auto leading-relaxed">
+            This is actual Octux output. Ten specialists debated this question.{' '}
+            <span className="text-txt-secondary">127 market voices</span> fed the God&apos;s view layer before the verdict locked.
           </p>
         </div>
 
@@ -47,10 +48,10 @@ export default function LiveExample({ onSignIn }: LiveExampleProps) {
         {/* Verdict card */}
         <div className="rounded-radius-xl border border-accent/15 bg-surface-1 overflow-hidden shadow-premium">
           <div className="grid grid-cols-2 gap-0 border-b border-border-subtle sm:grid-cols-4">
-            <Metric label="Probabilidade" value={`${verdict.probability}%`} />
-            <Metric label="Grau" value={verdict.grade} />
-            <Metric label="Posicao" value={verdict.recommendation} />
-            <Metric label="Agentes" value="10" />
+            <Metric label="Probability" value={`${verdict.probability}%`} />
+            <Metric label="Grade" value={verdict.grade} />
+            <Metric label="Position" value={verdict.recommendation} />
+            <Metric label="Specialists" value="10" />
           </div>
           <div className="p-6 flex flex-col sm:flex-row items-start gap-6">
             <div className="w-20 h-20 rounded-full border-4 border-verdict-proceed flex items-center justify-center shrink-0">

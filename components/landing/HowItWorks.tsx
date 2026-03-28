@@ -3,24 +3,27 @@ import { cn } from '@/lib/design/cn';
 const steps = [
   {
     number: '01',
-    title: 'You ask',
-    description: 'Type any business decision — investment, career, or company strategy. No formatting needed.',
+    title: 'Describe your decision',
+    description:
+      'Frame the business move you are considering — market, geography, capital, and timing. Octux turns it into a structured simulation, not a free-form chat.',
     visual: 'input',
-    example: '"Should I invest $50K in rental property in Gangnam?"',
+    example: '"Should I import 1,000 smartphones from China to Brazil?"',
   },
   {
     number: '02',
-    title: '10 specialists debate',
-    description: 'AI agents with distinct expertise analyze, challenge, and stress-test your decision in real-time.',
+    title: 'Watch 10 specialists debate',
+    description:
+      'Base Rate, Demand, Regulatory, Unit Economics, and more each argue from their expertise. You see positions, confidence, and tension on the simulation canvas.',
     visual: 'agents',
     example: 'Base Rate Archivist \u00B7 Regulatory Gatekeeper \u00B7 Demand Signal Analyst \u00B7 7 more',
   },
   {
     number: '03',
-    title: 'You get a verdict',
-    description: 'A probability-graded verdict with every claim traceable to the agent who made it.',
+    title: 'Get a structured verdict',
+    description:
+      'Probability, letter grade, top risks, and a recommended next action — grounded in what the specialists argued, plus aggregate market-voice signals.',
     visual: 'verdict',
-    example: 'PROCEED WITH CONDITIONS (72%) \u00B7 Grade B+ \u00B7 4 citations',
+    example: '72% PROCEED \u00B7 Grade B+ \u00B7 Risk + action blocks',
   },
 ];
 
@@ -34,7 +37,7 @@ export default function HowItWorks() {
             How it works
           </h2>
           <p className="text-sm text-txt-tertiary max-w-md mx-auto">
-            From question to verdict in 60 seconds. Every claim backed by a specialist.
+            From decision brief to simulation-backed verdict in about a minute — built for operators, not casual prompts.
           </p>
         </div>
 
@@ -69,7 +72,7 @@ export default function HowItWorks() {
           ))}
         </div>
         <p className="mt-10 text-center text-xs text-txt-tertiary">
-          Full flow: question &rarr; adversarial debate &rarr; probability-graded verdict.
+          Full flow: decision input &rarr; multi-agent simulation &rarr; structured verdict.
         </p>
       </div>
     </section>
@@ -81,7 +84,9 @@ function StepVisual({ type }: { type: string }) {
     return (
       <div className="rounded-xl border border-border-subtle bg-surface-1 p-4">
         <div className="flex items-center gap-3 rounded-lg border border-border-default bg-surface-0 px-4 py-3">
-          <span className="text-sm text-txt-secondary flex-1">Should I invest $50K in rental property?</span>
+          <span className="text-sm text-txt-secondary flex-1">
+            Should I import 1,000 smartphones from China to Brazil?
+          </span>
           <div className="w-7 h-7 rounded-md bg-accent flex items-center justify-center shrink-0">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="1.5"><path d="M6 10V2M3 5l3-3 3 3" /></svg>
           </div>

@@ -3,17 +3,17 @@ export default function TrustStrip() {
     <section className="py-12 border-y border-border-subtle/30">
       <div className="max-w-landing mx-auto px-6">
         <p className="mb-6 text-center text-xs text-txt-tertiary">
-          "Decisions analyzed" counts completed simulations with saved verdicts and citations.
+          Counts reflect completed simulations with structured verdicts and specialist positions.
         </p>
         {/* Stats */}
         <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 mb-8">
-          <Stat value="1,247" label="decisions analyzed" />
+          <Stat value="1,247" label="decisions simulated" />
           <StatDivider />
-          <Stat value="30" label="specialist agents" />
+          <Stat value="10" label="AI specialists" />
           <StatDivider />
-          <Stat value="3" label="business categories" />
+          <Stat value="1,000" label="market voices (swarm)" />
           <StatDivider />
-          <Stat value="10" label="debate rounds per sim" />
+          <Stat value="4" label="simulation modes" />
         </div>
 
         {/* Tech logos */}

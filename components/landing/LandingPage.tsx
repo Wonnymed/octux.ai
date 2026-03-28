@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import HeroSection from './HeroSection';
+import SimulationPreviewBand from './SimulationPreviewBand';
+import SimulationModes from './SimulationModes';
 import TrustStrip from './TrustStrip';
 import HowItWorks from './HowItWorks';
 import LiveExample from './LiveExample';
@@ -12,6 +14,15 @@ import AuthModal from '@/components/auth/AuthModal';
 
 export default function LandingPage() {
   const [showAuth, setShowAuth] = useState(false);
+
+  const handleHeroSubmit = (message: string) => {
+    try {
+      localStorage.setItem('octux_pending_question', message.substring(0, 200));
+    } catch {
+      /* quota / private mode */
+    }
+    setShowAuth(true);
+  };
 
   return (
     <div className="min-h-screen bg-surface-0 text-txt-primary overflow-x-hidden">
@@ -27,12 +38,14 @@ export default function LandingPage() {
         </button>
       </header>
 
-      <HeroSection onSignIn={() => setShowAuth(true)} />
+      <HeroSection onSubmit={handleHeroSubmit} />
 
       <div className="landing-marketing-stack">
+        <SimulationPreviewBand />
         <TrustStrip />
-        <HowItWorks />
+        <SimulationModes />
         <LiveExample onSignIn={() => setShowAuth(true)} />
+        <HowItWorks />
         <WhyNotChatGPT />
         <PricingPreview onSignIn={() => setShowAuth(true)} />
         <LandingFooter onSignIn={() => setShowAuth(true)} />

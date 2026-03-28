@@ -4,81 +4,12 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { cn } from '@/lib/design/cn';
 
-type Score = 'strong' | 'partial' | 'weak';
-
-const ROWS = [
-  {
-    feature: 'Analysis structure',
-    chatgpt: 'Single response',
-    consultants: 'Manual review',
-    octux: 'Multi-perspective simulation',
-    chatgptScore: 'weak' as Score,
-    consultantsScore: 'partial' as Score,
-    octuxScore: 'strong' as Score,
-  },
-  {
-    feature: 'Time to useful output',
-    chatgpt: 'Seconds, unstructured',
-    consultants: 'Days to weeks',
-    octux: 'Under 1 minute',
-    chatgptScore: 'partial' as Score,
-    consultantsScore: 'weak' as Score,
-    octuxScore: 'strong' as Score,
-  },
-  {
-    feature: 'Explicit risk handling',
-    chatgpt: 'Prompt-dependent',
-    consultants: 'Varies by engagement',
-    octux: 'Native downside scanning',
-    chatgptScore: 'weak' as Score,
-    consultantsScore: 'partial' as Score,
-    octuxScore: 'strong' as Score,
-  },
-  {
-    feature: 'Fast option comparison',
-    chatgpt: 'Partial',
-    consultants: 'Slow',
-    octux: 'Yes',
-    chatgptScore: 'partial' as Score,
-    consultantsScore: 'weak' as Score,
-    octuxScore: 'strong' as Score,
-  },
-  {
-    feature: 'Probability and confidence',
-    chatgpt: 'Rare',
-    consultants: 'Not always',
-    octux: 'In every verdict',
-    chatgptScore: 'weak' as Score,
-    consultantsScore: 'partial' as Score,
-    octuxScore: 'strong' as Score,
-  },
-  {
-    feature: 'Traceability',
-    chatgpt: 'No clear trail',
-    consultants: 'Team-dependent',
-    octux: 'Every claim linked to an agent',
-    chatgptScore: 'weak' as Score,
-    consultantsScore: 'partial' as Score,
-    octuxScore: 'strong' as Score,
-  },
-  {
-    feature: 'Explicit disagreement',
-    chatgpt: 'Usually no',
-    consultants: 'Variable',
-    octux: 'Adversarial by design',
-    chatgptScore: 'weak' as Score,
-    consultantsScore: 'partial' as Score,
-    octuxScore: 'strong' as Score,
-  },
-  {
-    feature: 'Long-term decision infrastructure',
-    chatgpt: 'No',
-    consultants: 'Rare',
-    octux: 'Designed for this',
-    chatgptScore: 'weak' as Score,
-    consultantsScore: 'weak' as Score,
-    octuxScore: 'strong' as Score,
-  },
+const ROWS: { chatgpt: string; octux: string }[] = [
+  { chatgpt: '1 AI, 1 opinion', octux: '10 specialists, adversarial rounds' },
+  { chatgpt: 'No fixed structure', octux: 'Probability, grade, and risk blocks every time' },
+  { chatgpt: 'Forgets prior sessions', octux: 'Memory across your simulations (paid tiers)' },
+  { chatgpt: 'Generic business advice', octux: 'Role-based specialists (economics, regulation, demand…)' },
+  { chatgpt: 'Chat interface', octux: 'Visual simulation dashboard + verdict panel' },
 ];
 
 export default function WhyNotChatGPT() {
@@ -86,197 +17,77 @@ export default function WhyNotChatGPT() {
   const isInView = useInView(ref, { once: true, margin: '-60px' });
 
   return (
-    <section ref={ref} className="px-6 py-20 sm:py-24">
-      <div className="mx-auto max-w-[1020px]">
-
-        {/* ─── HEADER ─── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-10 text-center sm:mb-12"
-        >
-          <p className="mb-4 text-xs font-medium uppercase tracking-[0.15em] text-accent">
-            Why Octux
-          </p>
-          <h2 className="mb-3 text-2xl font-medium tracking-tight text-txt-primary sm:text-3xl">
-            Not another chatbot. A decision engine.
-          </h2>
-          <p className="mx-auto max-w-reading text-sm leading-relaxed text-txt-tertiary sm:text-base">
-            Octux is designed to structure decisions, pressure-test uncertainty, and deliver actionable output.
-          </p>
-        </motion.div>
-
-        {/* Desktop compact table */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.4, delay: 0.15 }}
-          className="mx-auto mb-1 hidden max-w-[940px] grid-cols-[1.2fr_0.95fr_0.95fr_0.95fr] gap-0 lg:grid"
-        >
-          <div />
-          <ColumnHeader label="General chatbot" sublabel="Single response" />
-          <ColumnHeader label="Traditional advisory" sublabel="Manual review" />
-          <ColumnHeader label="Octux" sublabel="Decision OS" highlighted />
-        </motion.div>
-
-        <div className="mx-auto hidden max-w-[940px] overflow-hidden rounded-radius-xl border border-border-subtle/70 bg-surface-0 lg:block">
-          {ROWS.map((row, i) => (
-            <motion.div
-              key={row.feature}
-              initial={{ opacity: 0, y: 6 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.35, delay: 0.2 + i * 0.04, ease: [0.16, 1, 0.3, 1] }}
-              className={cn(
-                'grid grid-cols-[1.2fr_0.95fr_0.95fr_0.95fr] gap-0',
-                i > 0 && 'border-t border-border-subtle/60',
-              )}
-            >
-              <div className="flex items-start px-4 py-3.5">
-                <span className="text-[13px] font-medium leading-snug text-txt-primary">
-                  {row.feature}
-                </span>
-              </div>
-              <ComparisonCell text={row.chatgpt} score={row.chatgptScore} />
-              <ComparisonCell text={row.consultants} score={row.consultantsScore} />
-              <ComparisonCell text={row.octux} score={row.octuxScore} winner />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Mobile compact cards */}
-        <div className="space-y-4 lg:hidden">
-          {ROWS.map((row, i) => (
-            <motion.div
-              key={row.feature}
-              initial={{ opacity: 0, y: 8 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.35, delay: 0.15 + i * 0.04 }}
-              className="overflow-hidden rounded-radius-lg border border-border-subtle"
-            >
-              <div className="border-b border-border-subtle/60 px-4 py-3">
-                <span className="text-sm font-medium text-txt-primary">{row.feature}</span>
-              </div>
-              <div className="divide-y divide-border-subtle/40">
-                <MobileRow label="General chatbot" text={row.chatgpt} score={row.chatgptScore} />
-                <MobileRow label="Traditional advisory" text={row.consultants} score={row.consultantsScore} />
-                <MobileRow label="Octux" text={row.octux} score={row.octuxScore} winner />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
+    <section ref={ref} className="px-6 py-20 sm:py-28">
+      <div className="mx-auto max-w-[720px]">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.45, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-8 text-center"
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center"
         >
-          <p className="text-xs italic text-txt-disabled">
-            Illustrative table for product positioning.
-          </p>
-          <p className="mt-3 text-sm text-txt-secondary sm:text-base">
-            Built for decisions that need more than one answer.
+          <h2 className="text-2xl font-medium tracking-tight text-txt-primary sm:text-3xl">
+            ChatGPT gives you an opinion.
+            <br />
+            <span className="text-accent">Octux gives you a simulation.</span>
+          </h2>
+          <p className="mx-auto mt-3 max-w-reading text-sm text-txt-tertiary sm:text-base">
+            Same LLM era — different product shape. Octux is built for decisions that need tension, structure, and traceability.
           </p>
         </motion.div>
+
+        {/* Desktop */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ delay: 0.1, duration: 0.4 }}
+          className="mt-10 hidden overflow-hidden rounded-2xl border border-border-subtle bg-surface-1 shadow-premium sm:block"
+        >
+          <div className="grid grid-cols-[1fr_1fr] gap-0 border-b border-border-subtle bg-surface-0/80">
+            <div className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-txt-disabled">
+              ChatGPT
+            </div>
+            <div className="border-l border-border-subtle px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-accent">
+              Octux
+            </div>
+          </div>
+          {ROWS.map((row, i) => (
+            <div
+              key={i}
+              className={cn(
+                'grid grid-cols-[1fr_1fr] gap-0 text-sm',
+                i > 0 && 'border-t border-border-subtle/80',
+              )}
+            >
+              <div className="px-5 py-3.5 text-txt-tertiary leading-relaxed">{row.chatgpt}</div>
+              <div className="border-l border-border-subtle bg-accent-subtle/25 px-5 py-3.5 font-medium leading-relaxed text-txt-primary">
+                {row.octux}
+              </div>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Mobile */}
+        <div className="mt-8 space-y-3 sm:hidden">
+          {ROWS.map((row, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 8 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.08 * i, duration: 0.35 }}
+              className="overflow-hidden rounded-xl border border-border-subtle bg-surface-1"
+            >
+              <div className="border-b border-border-subtle/80 bg-surface-0/60 px-4 py-2">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-txt-disabled">ChatGPT</span>
+                <p className="mt-1 text-sm text-txt-tertiary">{row.chatgpt}</p>
+              </div>
+              <div className="bg-accent-subtle/20 px-4 py-2">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-accent">Octux</span>
+                <p className="mt-1 text-sm font-medium text-txt-primary">{row.octux}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
-
-// ═══ COLUMN HEADER ═══
-
-function ColumnHeader({
-  label, sublabel, highlighted = false,
-}: {
-  label: string; sublabel: string; highlighted?: boolean;
-}) {
-  return (
-    <div className={cn(
-      'px-4 py-3 text-center',
-      highlighted && 'rounded-t-radius-xl border-x border-t border-accent/25 bg-gradient-to-b from-accent-subtle to-accent-subtle/35 shadow-accent-ring',
-    )}>
-      <span className={cn(
-        'block text-[13px] font-semibold',
-        highlighted ? 'text-accent' : 'text-txt-disabled',
-      )}>
-        {label}
-      </span>
-      <span className="mt-0.5 block text-[10px] text-txt-disabled">{sublabel}</span>
-    </div>
-  );
-}
-
-// ═══ COMPARISON CELL ═══
-
-function ComparisonCell({
-  text, score, winner = false,
-}: {
-  text: string; score: Score; winner?: boolean;
-}) {
-  return (
-    <div className={cn(
-      'flex items-start gap-2 border-l px-4 py-3.5',
-      winner ? 'border-accent/25 bg-gradient-to-b from-accent-subtle/75 to-accent-subtle/15 shadow-[inset_0_0_0_1px_rgba(124,58,237,0.08)]' : 'border-border-subtle/40',
-    )}>
-      <ScoreDot score={score} />
-      <span className={cn(
-        'text-[12px] leading-relaxed',
-        winner ? 'text-txt-primary' :
-        score === 'strong' ? 'text-txt-secondary' :
-        score === 'partial' ? 'text-txt-tertiary' : 'text-txt-disabled',
-      )}>
-        {text}
-      </span>
-    </div>
-  );
-}
-
-// ═══ SCORE DOT — 6px. Bloomberg uses dots. So do we. ═══
-
-function ScoreDot({ score }: { score: Score }) {
-  return (
-    <span className={cn(
-      'mt-[7px] h-[6px] w-[6px] shrink-0 rounded-full',
-      score === 'strong' && 'bg-verdict-proceed',
-      score === 'partial' && 'bg-verdict-delay',
-      score === 'weak' && 'bg-verdict-abandon/60',
-    )} />
-  );
-}
-
-// ═══ MOBILE ROW ═══
-
-function MobileRow({
-  label, text, score, winner = false,
-}: {
-  label: string; text: string; score: Score; winner?: boolean;
-}) {
-  return (
-    <div className={cn(
-      'flex items-start gap-3 px-4 py-3',
-      winner && 'bg-accent-subtle',
-    )}>
-      <ScoreDot score={score} />
-      <div className="min-w-0 flex-1">
-        <span className={cn(
-          'mb-0.5 block text-[10px] font-medium uppercase tracking-wider',
-          winner ? 'text-accent' : 'text-txt-disabled',
-        )}>
-          {label}
-        </span>
-        <span className={cn(
-          'block text-[13px] leading-relaxed',
-          winner ? 'text-txt-primary' :
-          score === 'strong' ? 'text-txt-secondary' :
-          score === 'partial' ? 'text-txt-tertiary' : 'text-txt-disabled',
-        )}>
-          {text}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ═══ OUTCOME VERDICT CARDS (landing — not simulation VerdictCard) ═══
-

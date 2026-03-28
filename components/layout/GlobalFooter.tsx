@@ -47,9 +47,9 @@ const groups = [
 
 export default function GlobalFooter({
   className,
-  ctaLabel = 'Comecar com uma decisao',
+  ctaLabel = 'View pricing',
   ctaHref = '/pricing',
-  oneLiner = 'Decision AI: 10 especialistas debatendo a sua decisao em segundos.',
+  oneLiner = 'Business simulation engine — 10 specialists stress-testing your decisions in seconds.',
   compact = false,
 }: GlobalFooterProps) {
   return (
@@ -57,7 +57,7 @@ export default function GlobalFooter({
       <div className="mx-auto w-full max-w-landing px-6 py-10">
         <div className="mb-8 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <div>
-            <p className="text-xs uppercase tracking-[0.12em] text-accent">Decision AI</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-accent">Octux</p>
             <p className="mt-1 max-w-reading text-sm text-txt-secondary">{oneLiner}</p>
           </div>
           <a
