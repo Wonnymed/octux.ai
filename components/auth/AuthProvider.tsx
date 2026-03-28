@@ -76,8 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAuthModalDefaultTab(tab);
       setShowAuthModal(true);
     };
-    window.addEventListener('octux:show-auth', onShowAuth);
-    return () => window.removeEventListener('octux:show-auth', onShowAuth);
+    window.addEventListener('sukgo:show-auth', onShowAuth);
+    return () => window.removeEventListener('sukgo:show-auth', onShowAuth);
   }, []);
 
   const signOut = useCallback(async () => {

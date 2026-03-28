@@ -25,7 +25,7 @@ import { useBillingStore } from '@/lib/store/billing';
 import { frameQuestionForMode } from '@/lib/simulation/mode-framing';
 import { HERO_QUESTION_KEY, openAuthModal } from '@/lib/auth/openAuthModal';
 
-function parseOctuxPendingQuestion(raw: string):
+function parseSukgoPendingQuestion(raw: string):
   | { kind: 'dashboard'; question: string; mode?: DashboardMode; tier?: DashboardTier }
   | { kind: 'plain'; text: string } {
   const t = raw.trim();
@@ -124,11 +124,11 @@ export default function HomePage() {
       /* private mode */
     }
 
-    const raw = localStorage.getItem('octux_pending_question');
+    const raw = localStorage.getItem('sukgo_pending_question');
     if (!raw) return;
-    localStorage.removeItem('octux_pending_question');
+    localStorage.removeItem('sukgo_pending_question');
 
-    const parsed = parseOctuxPendingQuestion(raw);
+    const parsed = parseSukgoPendingQuestion(raw);
     if (parsed.kind === 'dashboard') {
       const { setActiveMode, setActiveTier, setInputA } = useDashboardUiStore.getState();
       if (parsed.mode) setActiveMode(parsed.mode);

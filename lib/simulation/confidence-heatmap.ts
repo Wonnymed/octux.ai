@@ -1,5 +1,5 @@
 /**
- * Simulation Confidence Heatmap — Octux OVERKILL innovation.
+ * Simulation Confidence Heatmap — Sukgo OVERKILL innovation.
  *
  * Decomposes a verdict into individual CLAIMS, each graded:
  *   GREEN:  High confidence — 3+ agents agree, evidence cited

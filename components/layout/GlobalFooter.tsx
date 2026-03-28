@@ -83,7 +83,7 @@ export default function GlobalFooter({
       <div className="mx-auto w-full max-w-landing px-6 py-10">
         <div className="mb-8 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <div>
-            <p className="text-xs uppercase tracking-[0.12em] text-accent">Octux</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-accent">Sukgo</p>
             <p className="mt-1 max-w-reading text-sm text-txt-secondary">{oneLiner}</p>
           </div>
           {onCtaClick ? (
@@ -133,7 +133,9 @@ export default function GlobalFooter({
         )}
 
         <div className="mt-8 flex flex-col items-start justify-between gap-2 border-t border-border-subtle/70 pt-4 text-xs text-txt-disabled sm:flex-row sm:items-center">
-          <p>© 2026 Octux AI</p>
+          <p>
+            © 2026 Sukgo AI · 숙고 (sukgo) — deep deliberation before an important decision
+          </p>
           <p className="flex items-center gap-2">
             <span>Infra:</span>
             <a href="https://supabase.com" className="hover:text-txt-tertiary">Supabase</a>

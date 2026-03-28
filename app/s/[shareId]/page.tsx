@@ -22,14 +22,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const base = getPublicAppUrl();
 
   if (!row) {
-    return { title: 'Octux — Shared simulation' };
+    return { title: 'Sukgo — Shared simulation' };
   }
 
   const v = (row.verdict || {}) as Record<string, unknown>;
   const rec = String(v.recommendation || 'unknown').toUpperCase().replace(/_/g, ' ');
   const prob = v.probability ?? '?';
   const grade = v.grade || '';
-  const title = `Octux: ${(row.question || 'Simulation').slice(0, 80)}${(row.question || '').length > 80 ? '…' : ''}`;
+  const title = `Sukgo: ${(row.question || 'Simulation').slice(0, 80)}${(row.question || '').length > 80 ? '…' : ''}`;
   const description = `${prob}% ${rec} · Grade ${grade} · 10 specialists`;
 
   return {
@@ -45,10 +45,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           url: `${base}/api/og/share/${shareId}`,
           width: 1200,
           height: 630,
-          alt: 'Octux simulation summary',
+          alt: 'Sukgo simulation summary',
         },
       ],
-      siteName: 'Octux',
+      siteName: 'Sukgo',
     },
     twitter: {
       card: 'summary_large_image',
@@ -122,7 +122,7 @@ export default async function SharedSimulationPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
       <div className="mx-auto max-w-2xl px-6 py-12 pb-24">
-        <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-[#e8593c]">Octux</p>
+        <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-[#e8593c]">Sukgo</p>
         <h1 className="mt-2 text-2xl font-semibold leading-snug text-white/95">Simulation report</h1>
         <p className="mt-1 text-xs text-white/35">
           Shared read-only view · {pdfInput.generatedAtLabel}
@@ -257,7 +257,7 @@ export default async function SharedSimulationPage({ params }: Props) {
           >
             Run your own simulation
           </Link>
-          <p className="mt-4 text-xs text-white/30">octux.ai · {pdfInput.roundCount} rounds · {pdfInput.specialistCount} specialists</p>
+          <p className="mt-4 text-xs text-white/30">sukgo.ai · {pdfInput.roundCount} rounds · {pdfInput.specialistCount} specialists</p>
         </div>
       </div>
     </div>

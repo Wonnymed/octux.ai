@@ -47,7 +47,7 @@ export const MILESTONES: Record<MilestoneId, Milestone> = {
     title: 'First question asked',
     description: "You're on your way",
     emoji: '🐙',
-    triggeredBy: 'octux:message-sent',
+    triggeredBy: 'sukgo:message-sent',
     celebration: 'none',
   },
   first_simulation: {
@@ -55,15 +55,15 @@ export const MILESTONES: Record<MilestoneId, Milestone> = {
     title: 'First simulation launched',
     description: '10 specialists are debating your decision',
     emoji: '⚡',
-    triggeredBy: 'octux:simulation-started',
+    triggeredBy: 'sukgo:simulation-started',
     celebration: 'subtle',
   },
   first_verdict: {
     id: 'first_verdict',
     title: 'First verdict received',
-    description: 'This is your first decision on Octux',
+    description: 'This is your first decision on Sukgo',
     emoji: '🎯',
-    triggeredBy: 'octux:verdict-received',
+    triggeredBy: 'sukgo:verdict-received',
     celebration: 'toast',
   },
   first_agent_chat: {
@@ -71,7 +71,7 @@ export const MILESTONES: Record<MilestoneId, Milestone> = {
     title: 'First agent conversation',
     description: 'You went deeper with a specialist',
     emoji: '🗣️',
-    triggeredBy: 'octux:agent-chat',
+    triggeredBy: 'sukgo:agent-chat',
     celebration: 'subtle',
   },
   first_share: {
@@ -79,15 +79,15 @@ export const MILESTONES: Record<MilestoneId, Milestone> = {
     title: 'First share',
     description: 'Your analysis is out in the world',
     emoji: '🔗',
-    triggeredBy: 'octux:share',
+    triggeredBy: 'sukgo:share',
     celebration: 'toast',
   },
   third_conversation: {
     id: 'third_conversation',
     title: 'Decision streak',
-    description: 'Octux is learning your decision style',
+    description: 'Sukgo is learning your decision style',
     emoji: '🧠',
-    triggeredBy: 'octux:conversation-count-3',
+    triggeredBy: 'sukgo:conversation-count-3',
     celebration: 'toast',
   },
   fifth_simulation: {
@@ -95,7 +95,7 @@ export const MILESTONES: Record<MilestoneId, Milestone> = {
     title: 'Power analyst',
     description: "You've run 5 simulations",
     emoji: '🏆',
-    triggeredBy: 'octux:simulation-count-5',
+    triggeredBy: 'sukgo:simulation-count-5',
     celebration: 'toast',
   },
   first_refine: {
@@ -103,7 +103,7 @@ export const MILESTONES: Record<MilestoneId, Milestone> = {
     title: 'First refinement',
     description: "You asked 'what if' — that's how better decisions happen",
     emoji: '🔀',
-    triggeredBy: 'octux:refine-sent',
+    triggeredBy: 'sukgo:refine-sent',
     celebration: 'subtle',
   },
   free_limit_reached: {
@@ -111,7 +111,7 @@ export const MILESTONES: Record<MilestoneId, Milestone> = {
     title: 'Free simulations used',
     description: "You've used your free simulation this month",
     emoji: '📊',
-    triggeredBy: 'octux:free-limit-reached',
+    triggeredBy: 'sukgo:free-limit-reached',
     celebration: 'none',
   },
 };
@@ -166,7 +166,7 @@ export const TIPS: Record<TipId, Tip> = {
   },
   tip_decision_style: {
     id: 'tip_decision_style',
-    text: '🧠 Octux is learning your decision style → See your decision personality',
+    text: '🧠 Sukgo is learning your decision style → See your decision personality',
     triggeredAfter: 'third_conversation',
     position: 'top-right',
     dismissible: true,

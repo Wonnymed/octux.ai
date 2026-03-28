@@ -1,5 +1,5 @@
 /**
- * Adaptive Agent Selection — Octux OVERKILL innovation.
+ * Adaptive Agent Selection — Sukgo OVERKILL innovation.
  *
  * Instead of running ALL 10 agents on every question,
  * the Chair picks the 4-6 most relevant based on:

@@ -51,7 +51,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ shareId
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '28px' }}>
-          <span style={{ fontSize: '22px', fontWeight: 700, color: '#e8593c', letterSpacing: '0.12em' }}>OCTUX</span>
+          <span style={{ fontSize: '22px', fontWeight: 700, color: '#e8593c', letterSpacing: '0.12em' }}>SUKGO</span>
           <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.25)' }}>Shared simulation</span>
         </div>
 

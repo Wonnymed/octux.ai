@@ -1,5 +1,5 @@
 /**
- * Per-Agent Self-Reflection — PraisonAI pattern for Octux.
+ * Per-Agent Self-Reflection — PraisonAI pattern for Sukgo.
  *
  * Evaluator-Optimizer loop:
  *   Agent generates report → Haiku evaluates (score 1-10) → score < threshold?

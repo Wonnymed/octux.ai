@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
       );
 
       await getResend().emails.send({
-        from: "Signux AI <notifications@signux-ai.vercel.app>",
+        from: "Sukgo AI <notifications@sukgo.ai>",
         to: userData.user.email,
         subject: `How did it go? Your decision from ${daysAgo} days ago`,
         html: `
@@ -81,13 +81,13 @@ export async function GET(req: NextRequest) {
     ${decision.decision_category ? `<p style="font-size: 12px; color: #666; margin: 8px 0 0; text-transform: capitalize;">${decision.decision_category}</p>` : ""}
   </div>
   <p style="font-size: 14px; color: #666; margin-bottom: 24px; line-height: 1.6;">
-    How did it turn out? Your feedback helps Signux learn and give better recommendations.
+    How did it turn out? Your feedback helps Sukgo learn and give better recommendations.
   </p>
   <a href="${appUrl}/decisions" style="display: inline-block; padding: 12px 28px; border-radius: 50px; background: #D4AF37; color: #000; font-weight: 600; font-size: 14px; text-decoration: none;">
     Share the outcome
   </a>
   <p style="font-size: 11px; color: #999; margin-top: 32px; line-height: 1.5;">
-    You received this because Signux AI tracked a decision for you.<br/>
+    You received this because Sukgo AI tracked a decision for you.<br/>
     <a href="${appUrl}/settings" style="color: #999;">Manage notifications</a>
   </p>
 </div>`,

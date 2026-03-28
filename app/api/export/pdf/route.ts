@@ -58,7 +58,7 @@ export async function POST(req: Request) {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="octux-report-${conversationId.slice(0, 8)}.pdf"`,
+        'Content-Disposition': `attachment; filename="sukgo-report-${conversationId.slice(0, 8)}.pdf"`,
       },
     });
   } catch (e) {

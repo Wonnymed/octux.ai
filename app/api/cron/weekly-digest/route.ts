@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "Signux AI <intel@signux.ai>",
+            from: "Sukgo AI <intel@sukgo.ai>",
             to: email,
             subject: `Your weekly intelligence brief — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
             html: emailBody,
@@ -105,7 +105,7 @@ function generateDigestEmail(contexts: any[], watches: any[]): string {
       </div>
 
       <div style="text-align:center;margin-top:24px;font-size:11px;color:#444">
-        Signux AI — See what happens before it happens
+        Sukgo AI — See what happens before it happens
       </div>
     </div>
   `;

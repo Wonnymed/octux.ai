@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Signux i18n — 4 core languages
+   Sukgo i18n — 4 core languages
    - Global state: setLanguage() / getLanguage() / t()
    - Bridge t() supports both old t(key, lang, params?) and new t(key, params?)
    - To add a language: create the translation file and add it here

@@ -1,9 +1,9 @@
 /**
- * Bi-Temporal Fact Tracking — Graphiti pattern for Octux.
+ * Bi-Temporal Fact Tracking — Graphiti pattern for Sukgo.
  *
  * Two time dimensions per fact:
  *   Real-world: valid_from → valid_until (when TRUE in the world)
- *   System:     learned_at → expired_at  (when Octux knew about it)
+ *   System:     learned_at → expired_at  (when Sukgo knew about it)
  *
  * Three operations:
  *   addFact()               — insert with both timestamp dimensions

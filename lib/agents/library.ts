@@ -296,7 +296,7 @@ Varies by phase — follow the specific format requested in each user message.`
 
   const sopText = agent.sop || 'Analyze the situation systematically and provide your assessment.';
 
-  const systemPrompt = `You are the ${agent.name} at Octux AI — a multi-agent adversarial decision system.
+  const systemPrompt = `You are the ${agent.name} at Sukgo AI — a multi-agent adversarial decision system.
 
 ROLE: ${agent.role}
 GOAL: ${agent.goal}

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { cn } from '@/lib/design/cn';
-import { OctButton } from '@/components/octux';
+import { OctButton } from '@/components/sukgo';
 import { openAuthModal } from '@/lib/auth/openAuthModal';
 
 export default function LiveExample({ forLoggedInUser = false }: { forLoggedInUser?: boolean }) {
@@ -32,7 +32,7 @@ export default function LiveExample({ forLoggedInUser = false }: { forLoggedInUs
             See a real simulation result
           </h2>
           <p className="text-sm text-txt-tertiary max-w-lg mx-auto leading-relaxed">
-            This is actual Octux output. Ten specialists debated this question.{' '}
+            This is actual Sukgo output. Ten specialists debated this question.{' '}
             <span className="text-txt-secondary">1,000 market voices</span> fed the God&apos;s view layer before the verdict locked.
           </p>
         </div>

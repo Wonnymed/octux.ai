@@ -18,8 +18,8 @@ import {
   UserRound,
   LogIn,
   LogOut,
-  Sparkles,
 } from 'lucide-react';
+import SukgoLogo from '@/components/brand/SukgoLogo';
 import { cn } from '@/lib/design/cn';
 import { useAppStore, type ConversationSummary } from '@/lib/store/app';
 import { useBillingStore } from '@/lib/store/billing';
@@ -102,13 +102,10 @@ function SidebarCollapsed() {
               <button
                 type="button"
                 onClick={toggleSidebar}
-                className="flex cursor-pointer items-center justify-center rounded-full p-0 transition-transform hover:scale-[1.04]"
+                className="flex cursor-pointer items-center justify-center rounded-lg p-0 transition-transform hover:opacity-90"
                 aria-label="Open sidebar"
               >
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#e8593c] transition-shadow hover:shadow-[0_0_12px_rgba(232,89,60,0.55)]"
-                  style={{ boxShadow: '0 0 8px rgba(232,89,60,0.4)' }}
-                />
+                <SukgoLogo variant="dark" size="sm" showWordmark={false} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" sideOffset={8} className={SHELL_RAIL_TOOLTIP}>
@@ -274,18 +271,8 @@ function SidebarExpanded() {
             SIDEBAR_HEADER_PAD,
           )}
         >
-          <div className="flex min-w-0 items-center gap-3">
-            <div
-              className={cn(
-                'flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-surface-3 to-surface-2 shadow-sm',
-                BRAND_LOGO_BOX,
-              )}
-            >
-              <Sparkles className="text-txt-secondary" size={20} strokeWidth={1.75} aria-hidden />
-            </div>
-            <span className={cn('truncate font-semibold tracking-tight text-txt-primary lowercase', BRAND_WORDMARK)}>
-              octux
-            </span>
+          <div className="flex min-w-0 items-center gap-2">
+            <SukgoLogo variant="dark" size="md" showWordmark />
           </div>
           <button
             type="button"
@@ -604,7 +591,7 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
           <>
             <div className="px-4 pb-2 pt-4">
               <p className="text-[15px] font-semibold text-[#1A1A1A] dark:text-txt-primary">Account required</p>
-              <p className="mt-1 text-[13px] text-[#6B6560] dark:text-txt-secondary">Sign in to use Octux</p>
+              <p className="mt-1 text-[13px] text-[#6B6560] dark:text-txt-secondary">Sign in to use Sukgo</p>
             </div>
             <DropdownMenuSeparator className="m-0 bg-[#E5E5E5] dark:bg-border-subtle" />
             <div className="p-1.5">
@@ -614,7 +601,7 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
               <DropdownMenuItem
                 className={PROFILE_MENU_ITEM}
                 onSelect={() =>
-                  window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'login' } }))
+                  window.dispatchEvent(new CustomEvent('sukgo:show-auth', { detail: { mode: 'login' } }))
                 }
               >
                 <LogIn strokeWidth={ICON_STROKE} aria-hidden />

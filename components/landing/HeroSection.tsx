@@ -82,6 +82,9 @@ export default function HeroSection({
         <h1 className="text-balance text-[2rem] font-semibold leading-[1.12] tracking-[-0.03em] text-txt-primary sm:text-[2.75rem]">
           Simulate before you invest.
         </h1>
+        <p className="mt-2 text-xs font-normal tracking-wide text-txt-tertiary sm:text-sm">
+          숙고 (sukgo) — deliberate deeply before acting
+        </p>
 
         <p className="mx-auto mt-5 max-w-[540px] text-pretty text-base leading-relaxed text-txt-secondary sm:text-lg">
           <span className="text-txt-primary font-medium">10 AI specialists</span> debate your business decision.{' '}

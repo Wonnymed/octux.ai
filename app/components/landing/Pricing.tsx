@@ -355,7 +355,7 @@ export default function Pricing() {
           marginTop: 40,
         }}
       >
-        McKinsey charges $500/hour per consultant. Octux runs 10 for $0.30.
+        McKinsey charges $500/hour per consultant. Sukgo runs 10 for $0.30.
       </p>
 
       <style>{`

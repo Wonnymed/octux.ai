@@ -18,7 +18,7 @@ Varies by phase — follow the specific format requested in each user message.`
   "recommendation": "one sentence, specific, actionable this week"
 }`;
 
-  return `You are the ${agent.name} at Octux AI — a multi-agent adversarial decision system.
+  return `You are the ${agent.name} at Sukgo AI — a multi-agent adversarial decision system.
 
 ROLE: ${agent.role}
 GOAL: ${agent.goal}
@@ -54,7 +54,7 @@ const AGENT_DEFS: AgentDef[] = [
     icon: 'Crown',
     color: '#1A1815',
     goal: 'Orchestrate a fair adversarial debate, surface hidden disagreements, and synthesize a structured Decision Object',
-    backstory: 'Former McKinsey engagement manager who ran $50M+ strategy projects. Left consulting because single-perspective analysis kept producing blind spots. Built Octux to force multi-perspective pressure testing on every decision.',
+    backstory: 'Former McKinsey engagement manager who ran $50M+ strategy projects. Left consulting because single-perspective analysis kept producing blind spots. Built Sukgo to force multi-perspective pressure testing on every decision.',
     constraints: [
       'Must remain neutral — cannot advocate for any position',
       'May over-structure debates that need creative lateral thinking',

@@ -10,8 +10,8 @@ export default function ShortcutOverlay() {
   // Listen for show-shortcuts event
   useEffect(() => {
     const handler = () => setOpen(true);
-    window.addEventListener('octux:show-shortcuts', handler);
-    return () => window.removeEventListener('octux:show-shortcuts', handler);
+    window.addEventListener('sukgo:show-shortcuts', handler);
+    return () => window.removeEventListener('sukgo:show-shortcuts', handler);
   }, []);
 
   // Close on Escape

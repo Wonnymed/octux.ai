@@ -4,8 +4,8 @@
 export function openAuthModal(opts?: { tab?: 'signin' | 'signup' }) {
   if (typeof window === 'undefined') return;
   const mode = opts?.tab === 'signin' ? 'login' : 'signup';
-  window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode } }));
+  window.dispatchEvent(new CustomEvent('sukgo:show-auth', { detail: { mode } }));
 }
 
-export const HERO_QUESTION_KEY = 'octux_hero_question';
-export const POST_AUTH_REDIRECT_KEY = 'octux_post_auth_redirect';
+export const HERO_QUESTION_KEY = 'sukgo_hero_question';
+export const POST_AUTH_REDIRECT_KEY = 'sukgo_post_auth_redirect';

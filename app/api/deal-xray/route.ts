@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       model: models.deal_xray,
       max_tokens: 3000,
       tools: [{ type: "web_search_20250305" as any, name: "web_search" }],
-      system: SECURITY_PREFIX + CHAT_KB + INVEST_KB + `\n\nYou are Signux Deal X-Ray — a forensic deal analysis engine that combines deception detection, game theory, causal reasoning, and negotiation intelligence.
+      system: SECURITY_PREFIX + CHAT_KB + INVEST_KB + `\n\nYou are Sukgo Deal X-Ray — a forensic deal analysis engine that combines deception detection, game theory, causal reasoning, and negotiation intelligence.
 
 The user describes a deal, partnership, investment, or business opportunity. You SEARCH THE WEB to verify claims, check counterparty reputation, and find relevant market data.
 
@@ -87,20 +87,20 @@ In red flags, verified claims, and analysis, cite the source of each finding:
 
 At the end of your response, include these hidden metadata blocks:
 
-<!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
+<!-- sukgo_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
 
-<!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+<!-- sukgo_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
 List actual reasoning steps taken, not generic descriptions.
 
-<!-- signux_domains: domain1, domain2, domain3 -->
-<!-- signux_domain_count: X -->
+<!-- sukgo_domains: domain1, domain2, domain3 -->
+<!-- sukgo_domain_count: X -->
 
-<!-- signux_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
+<!-- sukgo_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
 
-<!-- signux_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
+<!-- sukgo_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
 
-<!-- signux_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
+<!-- sukgo_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
       messages: [{ role: "user", content: `X-Ray this deal:\n\n${dealContent}\n\nVerify all claims via web search. Respond in ${lang || "en"}.` }],
     });
 

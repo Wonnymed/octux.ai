@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/design/cn';
-import { OctBadge, OctButton, OctCard } from '@/components/octux';
+import { OctBadge, OctButton, OctCard } from '@/components/sukgo';
 import { OctTabs, OctAvatar } from '@/components/ui';
 import { CircularProgress } from '@/components/ui';
 import { CitatedText, CitationFootnotes } from '@/components/citations';

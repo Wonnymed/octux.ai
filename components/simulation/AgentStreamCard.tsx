@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/design/cn';
-import { OctBadge } from '@/components/octux';
+import { OctBadge } from '@/components/sukgo';
 import { OctAvatar } from '@/components/ui';
 import { CitatedText } from '@/components/citations';
 import type { StreamingAgent } from '@/lib/hooks/useSimulationStream';

@@ -5,7 +5,7 @@ const steps = [
     number: '01',
     title: 'Describe your decision',
     description:
-      'Frame the business move you are considering — market, geography, capital, and timing. Octux turns it into a structured simulation, not a free-form chat.',
+      'Frame the business move you are considering — market, geography, capital, and timing. Sukgo turns it into a structured simulation, not a free-form chat.',
     visual: 'input',
     example: '"Should I import 1,000 smartphones from China to Brazil?"',
   },

@@ -159,7 +159,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signup' }: Pr
                 </>
               ) : (
                 <>
-                  New to Octux?{' '}
+                  New to Sukgo?{' '}
                   <button
                     type="button"
                     onClick={() => setMode('signup')}

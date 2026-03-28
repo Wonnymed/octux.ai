@@ -4,13 +4,14 @@ import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
+import SukgoLogo from '@/components/brand/SukgoLogo';
 import { cn } from '@/lib/design/cn';
 import { DARK_THEME } from '@/lib/dashboard/theme';
 import DashboardSidebar from '@/components/dashboard/Sidebar';
 
 const MD = 768;
-const STORAGE_EXPANDED = 'octux_sidebar_expanded';
-const LEGACY_OPEN = 'octux_sidebar_open';
+const STORAGE_EXPANDED = 'sukgo_sidebar_expanded';
+const LEGACY_OPEN = 'sukgo_sidebar_open';
 
 function readDesktopExpanded(): boolean {
   if (typeof window === 'undefined') return true;
@@ -75,8 +76,8 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         });
       }
     };
-    window.addEventListener('octux:dashboard-sidebar-toggle', onToggle);
-    return () => window.removeEventListener('octux:dashboard-sidebar-toggle', onToggle);
+    window.addEventListener('sukgo:dashboard-sidebar-toggle', onToggle);
+    return () => window.removeEventListener('sukgo:dashboard-sidebar-toggle', onToggle);
   }, []);
 
   const openMobileDrawer = useCallback(() => setMobileDrawerOpen(true), []);
@@ -143,7 +144,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
             >
               <Menu size={20} strokeWidth={1.75} />
             </button>
-            <span className="text-[14px] font-medium text-white/90">Octux</span>
+            <SukgoLogo variant="dark" size="sm" showWordmark className="min-w-0 shrink" />
           </header>
         )}
 

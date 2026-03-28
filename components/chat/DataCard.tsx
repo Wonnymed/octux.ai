@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctCard, OctBadge, OctButton } from '@/components/octux';
+import { OctCard, OctBadge, OctButton } from '@/components/sukgo';
 
 interface DataCardProps {
   data: any;

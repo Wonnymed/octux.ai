@@ -9,6 +9,7 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import Sidebar from '@/components/sidebar/Sidebar';
 import DashboardShell from '@/components/dashboard/DashboardShell';
 import LandingNav from '@/components/landing/LandingNav';
+import SukgoLogo from '@/components/brand/SukgoLogo';
 import GuestMobileDrawer from '@/components/landing/GuestMobileDrawer';
 import { PageTransition } from '@/components/transitions/PageTransition';
 import { Menu } from 'lucide-react';
@@ -87,7 +88,7 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
   const useDashboardShell = isAuthenticated && !isLoading;
 
   const toggleDashboardSidebar = useCallback(() => {
-    window.dispatchEvent(new CustomEvent('octux:dashboard-sidebar-toggle'));
+    window.dispatchEvent(new CustomEvent('sukgo:dashboard-sidebar-toggle'));
   }, []);
 
   const handleToggleSidebar = useCallback(() => {
@@ -101,11 +102,11 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
   useKeyboardShortcuts({
     onToggleSidebar: handleToggleSidebar,
     onFocusInput: () => document.querySelector<HTMLTextAreaElement>('[data-chat-input]')?.focus(),
-    onExpandVerdict: () => window.dispatchEvent(new CustomEvent('octux:toggle-verdict-expand')),
+    onExpandVerdict: () => window.dispatchEvent(new CustomEvent('sukgo:toggle-verdict-expand')),
     onStartSpecialistSim: () =>
-      window.dispatchEvent(new CustomEvent('octux:auto-simulate', { detail: { simMode: 'specialist' } })),
+      window.dispatchEvent(new CustomEvent('sukgo:auto-simulate', { detail: { simMode: 'specialist' } })),
     onStartCompareSim: () =>
-      window.dispatchEvent(new CustomEvent('octux:auto-simulate', { detail: { simMode: 'compare' } })),
+      window.dispatchEvent(new CustomEvent('sukgo:auto-simulate', { detail: { simMode: 'compare' } })),
   });
 
   const showAuthButtons = !isLoading && !isAuthenticated;
@@ -171,21 +172,21 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
               >
                 <Menu size={20} strokeWidth={1.75} />
               </button>
-              <span className="truncate text-sm font-medium tracking-tight text-txt-primary">octux</span>
+              <SukgoLogo variant="light" size="sm" showWordmark className="min-w-0 shrink" />
             </div>
 
             {showAuthButtons && (
               <div className="ml-auto flex shrink-0 items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'login' } }))}
+                  onClick={() => window.dispatchEvent(new CustomEvent('sukgo:show-auth', { detail: { mode: 'login' } }))}
                   className="inline-flex h-8 items-center justify-center rounded-lg border border-border-default bg-surface-0 px-3 text-sm font-medium text-txt-primary transition-colors duration-normal ease-out hover:bg-surface-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0 sm:px-4"
                 >
                   Log in
                 </button>
                 <button
                   type="button"
-                  onClick={() => window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'signup' } }))}
+                  onClick={() => window.dispatchEvent(new CustomEvent('sukgo:show-auth', { detail: { mode: 'signup' } }))}
                   className="inline-flex h-8 items-center justify-center rounded-lg border border-border-default bg-surface-0 px-3 text-sm font-medium text-txt-primary transition-colors duration-normal ease-out hover:bg-surface-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0 sm:px-4"
                 >
                   <span className="sm:hidden">Sign up</span>

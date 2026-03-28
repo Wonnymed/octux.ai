@@ -1,6 +1,6 @@
 import type { ConversationSummary } from '@/lib/store/app';
 
-const CACHE_KEY = 'octux:conversations-cache';
+const CACHE_KEY = 'sukgo:conversations-cache';
 
 export function readConversationCache(): ConversationSummary[] | null {
   if (typeof window === 'undefined') return null;

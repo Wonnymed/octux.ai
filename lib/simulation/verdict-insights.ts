@@ -39,7 +39,7 @@ export async function generateCounterFactualFlip(
 
   const response = await callClaude({
     tier: 'orchestrator',
-    systemPrompt: `You are the Counter-Factual Analyst for Octux AI. Your job is to identify the SPECIFIC CONDITIONS that would FLIP this decision.
+    systemPrompt: `You are the Counter-Factual Analyst for Sukgo AI. Your job is to identify the SPECIFIC CONDITIONS that would FLIP this decision.
 
 This is the most valuable part of the analysis — transforming "no" into "not yet, unless..." Users don't want a flat verdict. They want: "Here's exactly what would need to change."
 
@@ -124,7 +124,7 @@ export async function detectBlindSpots(
 
   const response = await callClaude({
     tier: 'orchestrator',
-    systemPrompt: `You are the Blind Spot Detector for Octux AI. After 10 specialist agents debated a decision, your job is to identify what they ALL MISSED.
+    systemPrompt: `You are the Blind Spot Detector for Sukgo AI. After 10 specialist agents debated a decision, your job is to identify what they ALL MISSED.
 
 This is about UNKNOWN UNKNOWNS — the risks and factors that nobody thought to analyze.
 

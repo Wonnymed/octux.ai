@@ -81,7 +81,7 @@ CRITICAL: Write ONLY natural text — no JSON, no code blocks, no markdown forma
         const impactResponse = await client.messages.create({
           model: models.gods_eye,
           max_tokens: 1500,
-          system: SECURITY_PREFIX + `You are the Signux Impact Analyzer. Based on agent recalculations after a variable injection, produce a concise impact report. Respond in ${lang || "English"}.`,
+          system: SECURITY_PREFIX + `You are the Sukgo Impact Analyzer. Based on agent recalculations after a variable injection, produce a concise impact report. Respond in ${lang || "English"}.`,
           messages: [{
             role: "user",
             content: `ORIGINAL SCENARIO: ${originalScenario}

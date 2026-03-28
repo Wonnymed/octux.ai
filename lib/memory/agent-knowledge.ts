@@ -11,8 +11,8 @@
 import {
   getEntities,
   getTriplets,
-  type OctuxEntityType,
-  type OctuxRelationType,
+  type SukgoEntityType,
+  type SukgoRelationType,
 } from './knowledge-graph';
 
 // ═══════════════════════════════════════════
@@ -20,9 +20,9 @@ import {
 // ═══════════════════════════════════════════
 
 type AgentKnowledgeProfile = {
-  primaryEntityTypes: OctuxEntityType[];
-  secondaryEntityTypes: OctuxEntityType[];
-  primaryRelationTypes: OctuxRelationType[];
+  primaryEntityTypes: SukgoEntityType[];
+  secondaryEntityTypes: SukgoEntityType[];
+  primaryRelationTypes: SukgoRelationType[];
   contextLabel: string;
 };
 
@@ -113,13 +113,13 @@ export async function buildAllAgentKnowledge(
 
   for (const [agentId, profile] of Object.entries(AGENT_KNOWLEDGE_MAP)) {
     const primaryEnts = allEntities
-      .filter((e: Record<string, unknown>) => profile.primaryEntityTypes.includes(e.entity_type as OctuxEntityType))
+      .filter((e: Record<string, unknown>) => profile.primaryEntityTypes.includes(e.entity_type as SukgoEntityType))
       .slice(0, 8);
     const secondaryEnts = allEntities
-      .filter((e: Record<string, unknown>) => profile.secondaryEntityTypes.includes(e.entity_type as OctuxEntityType))
+      .filter((e: Record<string, unknown>) => profile.secondaryEntityTypes.includes(e.entity_type as SukgoEntityType))
       .slice(0, 4);
     const relevantRels = allTriplets
-      .filter((t: Record<string, unknown>) => profile.primaryRelationTypes.includes(t.relation_type as OctuxRelationType))
+      .filter((t: Record<string, unknown>) => profile.primaryRelationTypes.includes(t.relation_type as SukgoRelationType))
       .slice(0, 8);
 
     if (primaryEnts.length === 0 && secondaryEnts.length === 0 && relevantRels.length === 0) {

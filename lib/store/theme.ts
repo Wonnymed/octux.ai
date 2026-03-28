@@ -17,7 +17,7 @@ function resolveTheme(mode: ThemeMode): 'light' | 'dark' {
   return mode;
 }
 
-const THEME_STORAGE_KEYS = ['octux_theme', 'octux:theme'] as const;
+const THEME_STORAGE_KEYS = ['sukgo_theme', 'sukgo:theme'] as const;
 
 function readStoredThemeMode(): ThemeMode | null {
   if (typeof window === 'undefined') return null;
@@ -51,8 +51,8 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
   setMode: (mode) => {
     set({ mode });
     if (typeof window === 'undefined') return;
-    localStorage.setItem('octux_theme', mode);
-    localStorage.setItem('octux:theme', mode);
+    localStorage.setItem('sukgo_theme', mode);
+    localStorage.setItem('sukgo:theme', mode);
     const resolved = resolveTheme(mode);
     applyThemeToDOM(resolved);
     set({ resolved });

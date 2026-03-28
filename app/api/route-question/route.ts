@@ -6,7 +6,7 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export const maxDuration = 15;
 
-const SYSTEM_PROMPT = `You are Signux's question router. Given a user's business question, classify it into exactly ONE primary engine.
+const SYSTEM_PROMPT = `You are Sukgo's question router. Given a user's business question, classify it into exactly ONE primary engine.
 
 THE 6 ENGINES:
 - simulate: "Should I do this?" — yes/no decisions, tradeoffs, strategic judgment calls, comparing options, go/no-go, risk vs reward, evaluating a bet

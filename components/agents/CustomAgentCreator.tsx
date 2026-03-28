@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { OctButton } from '@/components/octux';
+import { OctButton } from '@/components/sukgo';
 import { OctDialog, OctInput, OctTextarea, OctToggle } from '@/components/ui';
 
 export interface CustomAgent {

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { cn } from '@/lib/design/cn';
-import { OctButton } from '@/components/octux';
+import { OctButton } from '@/components/sukgo';
 import { OctAvatar, OctDialog, OctInput, OctCollapsible } from '@/components/ui';
 import { getCategoryColor } from '@/lib/design/tokens';
 import type { CategoryType } from '@/lib/design/tokens';

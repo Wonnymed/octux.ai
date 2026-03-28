@@ -4,12 +4,12 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { cn } from '@/lib/design/cn';
 
-const ROWS: { chatgpt: string; octux: string }[] = [
-  { chatgpt: '1 AI, 1 opinion', octux: '10 specialists, adversarial rounds' },
-  { chatgpt: 'No fixed structure', octux: 'Probability, grade, and risk blocks every time' },
-  { chatgpt: 'Forgets prior sessions', octux: 'Memory across your simulations (paid tiers)' },
-  { chatgpt: 'Generic business advice', octux: 'Role-based specialists (economics, regulation, demand…)' },
-  { chatgpt: 'Chat interface', octux: 'Visual simulation dashboard + verdict panel' },
+const ROWS: { chatgpt: string; sukgo: string }[] = [
+  { chatgpt: '1 AI, 1 opinion', sukgo: '10 specialists, adversarial rounds' },
+  { chatgpt: 'No fixed structure', sukgo: 'Probability, grade, and risk blocks every time' },
+  { chatgpt: 'Forgets prior sessions', sukgo: 'Memory across your simulations (paid tiers)' },
+  { chatgpt: 'Generic business advice', sukgo: 'Role-based specialists (economics, regulation, demand…)' },
+  { chatgpt: 'Chat interface', sukgo: 'Visual simulation dashboard + verdict panel' },
 ];
 
 export default function WhyNotChatGPT() {
@@ -28,10 +28,10 @@ export default function WhyNotChatGPT() {
           <h2 className="text-2xl font-medium tracking-tight text-txt-primary sm:text-3xl">
             ChatGPT gives you an opinion.
             <br />
-            <span className="text-accent">Octux gives you a simulation.</span>
+            <span className="text-accent">Sukgo gives you a simulation.</span>
           </h2>
           <p className="mx-auto mt-3 max-w-reading text-sm text-txt-tertiary sm:text-base">
-            Same LLM era — different product shape. Octux is built for decisions that need tension, structure, and traceability.
+            Same LLM era — different product shape. Sukgo is built for decisions that need tension, structure, and traceability.
           </p>
         </motion.div>
 
@@ -47,7 +47,7 @@ export default function WhyNotChatGPT() {
               ChatGPT
             </div>
             <div className="border-l border-border-subtle px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-accent">
-              Octux
+              Sukgo
             </div>
           </div>
           {ROWS.map((row, i) => (
@@ -60,7 +60,7 @@ export default function WhyNotChatGPT() {
             >
               <div className="px-5 py-3.5 text-txt-tertiary leading-relaxed">{row.chatgpt}</div>
               <div className="border-l border-border-subtle bg-accent-subtle/25 px-5 py-3.5 font-medium leading-relaxed text-txt-primary">
-                {row.octux}
+                {row.sukgo}
               </div>
             </div>
           ))}
@@ -81,8 +81,8 @@ export default function WhyNotChatGPT() {
                 <p className="mt-1 text-sm text-txt-tertiary">{row.chatgpt}</p>
               </div>
               <div className="bg-accent-subtle/20 px-4 py-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-accent">Octux</span>
-                <p className="mt-1 text-sm font-medium text-txt-primary">{row.octux}</p>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-accent">Sukgo</span>
+                <p className="mt-1 text-sm font-medium text-txt-primary">{row.sukgo}</p>
               </div>
             </motion.div>
           ))}

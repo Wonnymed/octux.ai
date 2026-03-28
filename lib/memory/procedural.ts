@@ -1,5 +1,5 @@
 /**
- * Procedural Memory — LangMem pattern for Octux.
+ * Procedural Memory — LangMem pattern for Sukgo.
  *
  * Agents learn RULES (behavioral patterns) from analyzing trajectories
  * across multiple simulations. Unlike P13 lessons (corrective),

@@ -39,9 +39,9 @@ export type DomainClassification = {
 // ═══════════════════════════════════════════
 
 export const DOMAIN_DISCLAIMERS: Record<string, string> = {
-  investment: '⚠ Octux provides decision analysis, not financial advice. Past performance does not guarantee future results. Consult a licensed financial advisor before making investment decisions.',
-  legal: '⚠ Octux provides decision analysis, not legal advice. This analysis does not constitute legal counsel. Consult a licensed attorney for legal matters.',
-  health: '⚠ Octux provides decision analysis, not medical advice. This analysis is informational only. Consult a qualified healthcare professional for medical decisions.',
+  investment: '⚠ Sukgo provides decision analysis, not financial advice. Past performance does not guarantee future results. Consult a licensed financial advisor before making investment decisions.',
+  legal: '⚠ Sukgo provides decision analysis, not legal advice. This analysis does not constitute legal counsel. Consult a licensed attorney for legal matters.',
+  health: '⚠ Sukgo provides decision analysis, not medical advice. This analysis is informational only. Consult a qualified healthcare professional for medical decisions.',
 };
 
 // ═══════════════════════════════════════════

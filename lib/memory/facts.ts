@@ -51,7 +51,7 @@ export async function extractFacts(
 
   const response = await callClaude({
     tier: 'extraction',
-    systemPrompt: `You are a fact extraction system for Octux AI. After each simulation, you extract BUSINESS FACTS about the user that would be useful in future simulations.
+    systemPrompt: `You are a fact extraction system for Sukgo AI. After each simulation, you extract BUSINESS FACTS about the user that would be useful in future simulations.
 
 WHAT TO EXTRACT:
 - Business details: industry, location, target market, business model
@@ -225,7 +225,7 @@ export async function parseQuestionForFacts(
 
   const response = await callClaude({
     tier: 'extraction',
-    systemPrompt: `You are a fact pre-processor for Octux AI. Before a simulation runs, you scan the user's question for EXPLICIT facts about them or their situation.
+    systemPrompt: `You are a fact pre-processor for Sukgo AI. Before a simulation runs, you scan the user's question for EXPLICIT facts about them or their situation.
 
 EXTRACT ONLY facts that are DIRECTLY STATED in the question:
 - Budget amounts: "$50K budget" → ADD financial fact

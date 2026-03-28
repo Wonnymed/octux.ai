@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
         const reportResponse = await client.messages.create({
           model: models.research_synthesis,
           max_tokens: 4000,
-          system: SECURITY_PREFIX + `You are Signux ResearchAgent. Synthesize multiple search results into a comprehensive, well-structured research report. When synthesizing from multiple sources, naturally indicate parallel analysis: 'Analyzing from N research threads simultaneously...' as a transition. Use markdown formatting. Include: executive summary, key findings organized by theme, comparative analysis where relevant, risks and considerations, and actionable recommendations. Respond in ${lang || "en"}.
+          system: SECURITY_PREFIX + `You are Sukgo ResearchAgent. Synthesize multiple search results into a comprehensive, well-structured research report. When synthesizing from multiple sources, naturally indicate parallel analysis: 'Analyzing from N research threads simultaneously...' as a transition. Use markdown formatting. Include: executive summary, key findings organized by theme, comparative analysis where relevant, risks and considerations, and actionable recommendations. Respond in ${lang || "en"}.
 
 CITATION FORMAT:
 For every significant finding, cite the source inline:
@@ -92,20 +92,20 @@ Citations should be inline at the end of the relevant sentence, in brackets.
 
 At the end of your response, include these hidden metadata blocks:
 
-<!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
+<!-- sukgo_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
 
-<!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+<!-- sukgo_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
 List actual reasoning steps taken, not generic descriptions.
 
-<!-- signux_domains: domain1, domain2, domain3 -->
-<!-- signux_domain_count: X -->
+<!-- sukgo_domains: domain1, domain2, domain3 -->
+<!-- sukgo_domain_count: X -->
 
-<!-- signux_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
+<!-- sukgo_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
 
-<!-- signux_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
+<!-- sukgo_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
 
-<!-- signux_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
+<!-- sukgo_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
           messages: [{
             role: "user",
             content: `RESEARCH TOPIC: ${query}\n\nSEARCH RESULTS:\n${results.map((r, i) => `--- Source ${i + 1}: ${r.query} ---\n${r.summary}`).join("\n\n")}\n\nSynthesize into a comprehensive report.`,

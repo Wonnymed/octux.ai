@@ -36,7 +36,7 @@ export default function Footer() {
                 color: "var(--text-tertiary)",
               }}
             >
-              OCTUX AI
+              Sukgo AI
             </span>
           </div>
           <p
@@ -47,7 +47,7 @@ export default function Footer() {
               margin: "8px 0 0",
             }}
           >
-            © 2026 Octux AI. All rights reserved.
+            © 2026 Sukgo AI. All rights reserved.
           </p>
         </div>
 

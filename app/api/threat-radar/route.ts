@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       model: models.threat_radar,
       max_tokens: 2500,
       tools: [{ type: "web_search_20250305" as any, name: "web_search" }],
-      system: SECURITY_PREFIX + KNOWLEDGE + `\n\nYou are Signux Threat Radar — an intelligence-grade threat assessment engine. The user describes their business or operation. You SEARCH THE WEB for current threats, regulatory changes, market risks, and geopolitical events affecting them.
+      system: SECURITY_PREFIX + KNOWLEDGE + `\n\nYou are Sukgo Threat Radar — an intelligence-grade threat assessment engine. The user describes their business or operation. You SEARCH THE WEB for current threats, regulatory changes, market risks, and geopolitical events affecting them.
 
 Analyze across 5 axes: Market, Regulatory, Operational, Cyber, Geopolitical.
 
@@ -75,10 +75,10 @@ In threat descriptions, cite the source of each finding:
 
 At the end of your response, include these hidden metadata blocks:
 
-<!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
+<!-- sukgo_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
 
-<!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+<!-- sukgo_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
 List actual reasoning steps taken, not generic descriptions.
 
 COMPETITIVE INTELLIGENCE:
@@ -103,16 +103,16 @@ When the user mentions specific competitors or companies by name, PROACTIVELY in
 3. [Specific action]
 
 Include hidden metadata:
-<!-- signux_competitive: {"competitor": "Company X", "threat_level": "high|medium|low", "signals": ["signal1", "signal2"], "recommended_actions": ["action1", "action2"]} -->
+<!-- sukgo_competitive: {"competitor": "Company X", "threat_level": "high|medium|low", "signals": ["signal1", "signal2"], "recommended_actions": ["action1", "action2"]} -->
 
-<!-- signux_domains: domain1, domain2, domain3 -->
-<!-- signux_domain_count: X -->
+<!-- sukgo_domains: domain1, domain2, domain3 -->
+<!-- sukgo_domain_count: X -->
 
-<!-- signux_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
+<!-- sukgo_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
 
-<!-- signux_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
+<!-- sukgo_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
 
-<!-- signux_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
+<!-- sukgo_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
       messages: [{ role: "user", content: `Threat assessment for: ${description}. Search for the latest threats, risks, and regulatory changes. Respond in ${lang || "en"}.` }],
     });
 

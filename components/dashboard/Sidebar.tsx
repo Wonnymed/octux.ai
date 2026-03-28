@@ -18,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/shadcn/tooltip';
+import SukgoLogo from '@/components/brand/SukgoLogo';
 
 const TERRA = '#e8593c';
 
@@ -139,13 +140,10 @@ export default function DashboardSidebar({
                 <button
                   type="button"
                   onClick={onExpand}
-                  className="flex cursor-pointer items-center justify-center rounded-full p-0 transition-transform hover:scale-[1.04]"
+                  className="flex cursor-pointer items-center justify-center rounded-lg p-0 transition-opacity hover:opacity-90"
                   aria-label="Open sidebar"
                 >
-                  <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#e8593c] transition-shadow hover:shadow-[0_0_12px_rgba(232,89,60,0.75)]"
-                    style={{ boxShadow: '0 0 8px rgba(232,89,60,0.45)' }}
-                  />
+                  <SukgoLogo variant="dark" size="sm" showWordmark={false} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right" sideOffset={8} className={RAIL_TOOLTIP}>
@@ -243,11 +241,7 @@ export default function DashboardSidebar({
         style={{ borderColor: DARK_THEME.border_default }}
       >
         <div className="flex min-w-0 items-center gap-2">
-          <span
-            className="h-[10px] w-[10px] shrink-0 rounded-full bg-[#e8593c]"
-            style={{ boxShadow: '0 0 8px rgba(232,89,60,0.5)' }}
-          />
-          <span className="truncate text-[14px] font-medium tracking-tight text-white/90">Octux</span>
+          <SukgoLogo variant="dark" size="md" showWordmark />
         </div>
         <button
           type="button"

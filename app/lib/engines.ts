@@ -1,6 +1,6 @@
 import type { Mode } from "./types";
 
-/** Signux accent gold — used for Home, brand elements, AND Simulate (flagship) */
+/** Sukgo accent gold — used for Home, brand elements, AND Simulate (flagship) */
 export const SIGNUX_GOLD = "#C8A84E";
 
 export const ENGINES = {

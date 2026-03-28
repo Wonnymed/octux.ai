@@ -44,14 +44,14 @@ export default function VerdictCard({ verdict, simulationId, conversationId, onR
   const handleShare = useCallback(() => {
     const url = `${window.location.origin}/c/${conversationId}/report`;
     if (navigator.share) {
-      navigator.share({ title: 'Octux Decision Report', url }).catch(() => {});
+      navigator.share({ title: 'Sukgo Decision Report', url }).catch(() => {});
     } else {
       navigator.clipboard.writeText(url);
     }
   }, [conversationId]);
 
   const handleAgentChat = useCallback((agentId: string, agentName: string) => {
-    window.dispatchEvent(new CustomEvent('octux:agent-chat', {
+    window.dispatchEvent(new CustomEvent('sukgo:agent-chat', {
       detail: { agentId, agentName, simulationId, conversationId },
     }));
   }, [simulationId, conversationId]);
@@ -104,7 +104,7 @@ export default function VerdictCard({ verdict, simulationId, conversationId, onR
             suggestions={suggestions}
             loading={sugLoading}
             onSelect={(text) => {
-              window.dispatchEvent(new CustomEvent('octux:send-message', { detail: { text } }));
+              window.dispatchEvent(new CustomEvent('sukgo:send-message', { detail: { text } }));
             }}
             onRefresh={() => refresh('post_verdict', {
               verdict: {

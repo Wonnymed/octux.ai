@@ -33,7 +33,7 @@ export async function critiqueVerdict(
 
   const response = await callClaude({
     tier: 'orchestrator',
-    systemPrompt: `You are the Quality Critic for Octux AI. You evaluate Decision Objects synthesized from multi-agent adversarial debates.
+    systemPrompt: `You are the Quality Critic for Sukgo AI. You evaluate Decision Objects synthesized from multi-agent adversarial debates.
 
 You are harsh but fair. You check:
 1. COHERENCE: Does the recommendation match the evidence? If 8/10 agents said "delay" but verdict says "proceed", flag it.

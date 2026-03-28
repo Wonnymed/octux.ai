@@ -5,7 +5,7 @@ import { AGENTS, getAgentById } from '../agents/prompts';
 import { getAgentsByIds, suggestAgentsForDomain, buildSelfAgent, libraryAgentToConfig, type LibraryAgent } from '../agents/library';
 import { generateAdvisorPersonas } from '../agents/advisors';
 import { selectRelevantAdvisors, runFieldScan, formatFieldIntelligence, type FieldScan } from './field-intelligence';
-import { createKernel, type OctuxKernel } from './kernel';
+import { createKernel, type SukgoKernel } from './kernel';
 import { createAudit, addRound, finalizeAudit, type SimulationAudit, type AuditRound } from './audit';
 import { createInitialState, transitionPhase, addAgentReport, selectDebatePairs, recordHandoff, type SimulationState } from './state';
 import { buildCitations, type EnrichedCitation } from './citations';

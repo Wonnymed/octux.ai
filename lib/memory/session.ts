@@ -1,5 +1,5 @@
 /**
- * Session Memory + Working Buffer for Octux.
+ * Session Memory + Working Buffer for Sukgo.
  *
  * SessionMemory: Per-thread context that accumulates across follow-up sims.
  *   Follow-up: "What if budget was 2x?" inherits summary of the previous sim.

@@ -1,6 +1,6 @@
 "use client";
 import { createSupabaseBrowser } from "./supabase-browser";
-import { signuxFetch } from "../lib/api-client";
+import { sukgoFetch } from "../lib/api-client";
 import type { Conversation, DBMessage } from "./database";
 
 export type { Conversation, DBMessage };
@@ -95,7 +95,7 @@ export async function generateTitle(firstMessage: string): Promise<string> {
 
 export async function generateSmartTitle(firstMessage: string, firstResponse: string): Promise<string> {
   try {
-    const res = await signuxFetch("/api/title", {
+    const res = await sukgoFetch("/api/title", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: firstMessage, response: firstResponse?.slice(0, 200) }),

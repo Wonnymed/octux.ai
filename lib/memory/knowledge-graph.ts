@@ -1,5 +1,5 @@
 /**
- * Knowledge Graph — Cognee cognify equivalent for Octux.
+ * Knowledge Graph — Cognee cognify equivalent for Sukgo.
  * Extracts entities + relationships from simulations and stores as navigable graph.
  *
  * Refs: Cognee (#22 — ECL pipeline, ontology grounding)
@@ -15,7 +15,7 @@ import { supabase } from './supabase';
 // Cognee pattern: grounded types make the graph QUERYABLE
 // ═══════════════════════════════════════════
 
-export const OCTUX_ENTITY_TYPES = [
+export const SUKGO_ENTITY_TYPES = [
   'person',       // founders, team members, advisors, competitors' leaders
   'company',      // startups, competitors, partners, suppliers
   'market',       // target markets, segments, niches
@@ -30,9 +30,9 @@ export const OCTUX_ENTITY_TYPES = [
   'resource',     // budget, team, equipment, technology
 ] as const;
 
-export type OctuxEntityType = typeof OCTUX_ENTITY_TYPES[number];
+export type SukgoEntityType = typeof SUKGO_ENTITY_TYPES[number];
 
-export const OCTUX_RELATION_TYPES = [
+export const SUKGO_RELATION_TYPES = [
   'targets_market',    // company → market
   'competes_with',     // company → company
   'requires',          // action → regulation/resource
@@ -50,7 +50,7 @@ export const OCTUX_RELATION_TYPES = [
   'regulated_by',      // market/product → regulation
 ] as const;
 
-export type OctuxRelationType = typeof OCTUX_RELATION_TYPES[number];
+export type SukgoRelationType = typeof SUKGO_RELATION_TYPES[number];
 
 // ═══════════════════════════════════════════
 // TYPES
@@ -58,7 +58,7 @@ export type OctuxRelationType = typeof OCTUX_RELATION_TYPES[number];
 
 export type ExtractedEntity = {
   name: string;
-  entity_type: OctuxEntityType;
+  entity_type: SukgoEntityType;
   description: string;
   properties?: Record<string, string | number>;
 };
@@ -66,7 +66,7 @@ export type ExtractedEntity = {
 export type ExtractedRelation = {
   source: string;      // entity name (must match an extracted entity)
   target: string;      // entity name (must match an extracted entity)
-  relation_type: OctuxRelationType;
+  relation_type: SukgoRelationType;
   description: string; // human-readable: "Gangnam requires food permit from Korean FDA"
   confidence: number;  // 0-1
 };
@@ -94,12 +94,12 @@ export async function cognify(
     return { entities: [], relations: [], entity_count: 0, relation_count: 0, triplet_count: 0 };
   }
 
-  const entityTypes = OCTUX_ENTITY_TYPES.join(', ');
-  const relationTypes = OCTUX_RELATION_TYPES.join(', ');
+  const entityTypes = SUKGO_ENTITY_TYPES.join(', ');
+  const relationTypes = SUKGO_RELATION_TYPES.join(', ');
 
   const response = await callClaude({
     tier: 'extraction',
-    systemPrompt: `You are a knowledge graph extractor for Octux AI. Given a business decision simulation, extract ENTITIES (people, companies, markets, locations, regulations, metrics, risks, etc.) and RELATIONSHIPS between them.
+    systemPrompt: `You are a knowledge graph extractor for Sukgo AI. Given a business decision simulation, extract ENTITIES (people, companies, markets, locations, regulations, metrics, risks, etc.) and RELATIONSHIPS between them.
 
 ONTOLOGY — use ONLY these types:
 
@@ -159,13 +159,13 @@ Extract entities and relationships. Return JSON:
 
     // Validate entity types
     const validEntities = extracted.entities.filter(e =>
-      OCTUX_ENTITY_TYPES.includes(e.entity_type as OctuxEntityType)
+      SUKGO_ENTITY_TYPES.includes(e.entity_type as SukgoEntityType)
     );
 
     // Validate relation types and that source/target exist
     const entityNames = new Set(validEntities.map(e => e.name));
     const validRelations = extracted.relations.filter(r =>
-      OCTUX_RELATION_TYPES.includes(r.relation_type as OctuxRelationType) &&
+      SUKGO_RELATION_TYPES.includes(r.relation_type as SukgoRelationType) &&
       entityNames.has(r.source) &&
       entityNames.has(r.target)
     );
@@ -387,7 +387,7 @@ async function upsertKnowledgeTriplets(
 
 export async function getEntities(
   userId: string,
-  entityType?: OctuxEntityType,
+  entityType?: SukgoEntityType,
   limit: number = 50
 ): Promise<Record<string, unknown>[]> {
   if (!supabase) return [];
@@ -467,8 +467,8 @@ export async function getConnected(
 
 export async function queryByTypeAndRelation(
   userId: string,
-  entityType: OctuxEntityType,
-  relationType: OctuxRelationType
+  entityType: SukgoEntityType,
+  relationType: SukgoRelationType
 ): Promise<Record<string, unknown>[]> {
   if (!supabase) return [];
 

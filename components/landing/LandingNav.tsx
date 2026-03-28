@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import SukgoLogo from '@/components/brand/SukgoLogo';
 
 /**
  * Top bar for logged-out desktop shell: full-width landing, no sidebar (FIX G).
@@ -14,21 +15,14 @@ export default function LandingNav() {
       }}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 text-white/90 transition-opacity hover:opacity-90">
-          <span
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={{
-              backgroundColor: '#e8593c',
-              boxShadow: '0 0 12px rgba(232,89,60,0.55)',
-            }}
-          />
-          <span className="text-[15px] font-medium tracking-tight">Octux</span>
+        <Link href="/" className="flex items-center text-white/90 transition-opacity hover:opacity-90">
+          <SukgoLogo variant="dark" size="lg" showWordmark />
         </Link>
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() =>
-              window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'login' } }))
+              window.dispatchEvent(new CustomEvent('sukgo:show-auth', { detail: { mode: 'login' } }))
             }
             className="px-3 py-2 text-[13px] font-medium text-white/75 transition-colors hover:text-white sm:px-4"
           >
@@ -37,7 +31,7 @@ export default function LandingNav() {
           <button
             type="button"
             onClick={() =>
-              window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'signup' } }))
+              window.dispatchEvent(new CustomEvent('sukgo:show-auth', { detail: { mode: 'signup' } }))
             }
             className="rounded-lg bg-[#e8593c] px-4 py-2 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#d64d32] sm:px-5"
           >

@@ -1,5 +1,5 @@
 /**
- * Quorum calculation — BFT threshold for Octux consensus.
+ * Quorum calculation — BFT threshold for Sukgo consensus.
  *
  * quorum_threshold = floor(2 * total_nodes / 3) + 1
  * Tolerates up to floor(n/3) Byzantine (malicious) nodes.

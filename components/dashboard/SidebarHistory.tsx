@@ -10,7 +10,7 @@ import type { ConversationSummary } from '@/lib/store/app';
 import { DARK_THEME } from '@/lib/dashboard/theme';
 import DeleteConfirmDialog from '@/components/sidebar/DeleteConfirmDialog';
 
-const PINNED_IDS_KEY = 'octux_pinned_sims';
+const PINNED_IDS_KEY = 'sukgo_pinned_sims';
 
 const MENU_SURFACE = 'rgba(15,15,20,0.95)';
 const MENU_BORDER = 'rgba(255,255,255,0.1)';

@@ -1,5 +1,5 @@
 /**
- * Self-Improving Agent Eval — OpenClaw + MiroFish patterns for Octux.
+ * Self-Improving Agent Eval — OpenClaw + MiroFish patterns for Sukgo.
  *
  * evaluateAgentPerformance() — post-sim, grade each agent's report
  * writeAgentLessons()        — persist lessons to agent_lessons table

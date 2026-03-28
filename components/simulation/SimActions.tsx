@@ -66,7 +66,7 @@ export default function SimActions({ simulationId, question, conversationId, sha
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Octux AI — Decision Analysis',
+          title: 'Sukgo AI — Decision Analysis',
           text: shareDigest || 'Check out this AI-powered decision analysis',
           url: publicUrl,
         });

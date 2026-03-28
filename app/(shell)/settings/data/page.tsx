@@ -28,7 +28,7 @@ export default function SettingsDataPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `octux-export-${Date.now()}.json`;
+      a.download = `sukgo-export-${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -116,7 +116,7 @@ export default function SettingsDataPage() {
                   Delete all simulations?
                 </h3>
                 <p className="mt-1 text-sm text-gray-500 dark:text-white/40">
-                  This removes every simulation and related messages from Octux. Exported files are not affected
+                  This removes every simulation and related messages from Sukgo. Exported files are not affected
                   until you delete your account.
                 </p>
               </div>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, ArrowUpRight } from 'lucide-react';
-import { OctButton } from '@/components/octux';
+import { OctButton } from '@/components/sukgo';
 import { TIERS, type TierType } from '@/lib/billing/tiers';
 
 interface UpgradeMessageProps {

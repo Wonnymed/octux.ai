@@ -1,5 +1,5 @@
 /**
- * Memory Scoring + Multi-Strategy Recall for Octux.
+ * Memory Scoring + Multi-Strategy Recall for Sukgo.
  *
  * Pipeline: recallMemories() → reciprocalRankFusion() → scoreMemory() → top K
  *

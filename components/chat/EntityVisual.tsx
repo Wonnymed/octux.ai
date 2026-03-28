@@ -107,7 +107,7 @@ export default function EntityVisual({ state, compact = false, size, className }
 
       {/* Wordmark */}
       <div className="text-center">
-        <h1 className="oct-wordmark text-2xl text-txt-primary">octux</h1>
+        <h1 className="oct-wordmark text-2xl text-txt-primary">sukgo</h1>
         <p className="text-xs text-txt-tertiary mt-1 tracking-wide uppercase">
           Never decide alone again
         </p>

@@ -85,7 +85,7 @@ export default function ProjectsPage() {
   }
 
   const openLogin = () =>
-    window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'login' } }));
+    window.dispatchEvent(new CustomEvent('sukgo:show-auth', { detail: { mode: 'login' } }));
 
   function openNewProject() {
     if (!isAuthenticated) {

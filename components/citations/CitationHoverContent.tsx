@@ -2,7 +2,7 @@
 
 /** Phase 1.2 — citation hover card: Decision OS depth + readable claim width. */
 import { cn } from '@/lib/design/cn';
-import { OctBadge } from '@/components/octux';
+import { OctBadge } from '@/components/sukgo';
 import { OctAvatar } from '@/components/ui';
 import { type Citation, type CitationGroup, getConfidenceLevel } from '@/lib/citations/types';
 

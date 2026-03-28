@@ -64,7 +64,7 @@ export default function HowItWorks() {
             margin: 0,
           }}
         >
-          How Octux Works
+          How Sukgo Works
         </h2>
         <p
           style={{

@@ -44,7 +44,7 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers = {}) {
         // Handled by individual modals
         break;
       case 'show-shortcuts':
-        window.dispatchEvent(new CustomEvent('octux:show-shortcuts'));
+        window.dispatchEvent(new CustomEvent('sukgo:show-shortcuts'));
         break;
 
       // Navigation
@@ -52,19 +52,19 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers = {}) {
         router.push('/');
         break;
       case 'navigate-settings':
-        window.dispatchEvent(new CustomEvent('octux:open-settings'));
+        window.dispatchEvent(new CustomEvent('sukgo:open-settings'));
         break;
       case 'navigate-profile':
-        window.dispatchEvent(new CustomEvent('octux:open-profile'));
+        window.dispatchEvent(new CustomEvent('sukgo:open-profile'));
         break;
       case 'filter-investment':
-        window.dispatchEvent(new CustomEvent('octux:category-filter', { detail: { category: 'investment' } }));
+        window.dispatchEvent(new CustomEvent('sukgo:category-filter', { detail: { category: 'investment' } }));
         break;
       case 'filter-career':
-        window.dispatchEvent(new CustomEvent('octux:category-filter', { detail: { category: 'career' } }));
+        window.dispatchEvent(new CustomEvent('sukgo:category-filter', { detail: { category: 'career' } }));
         break;
       case 'filter-business':
-        window.dispatchEvent(new CustomEvent('octux:category-filter', { detail: { category: 'business' } }));
+        window.dispatchEvent(new CustomEvent('sukgo:category-filter', { detail: { category: 'business' } }));
         break;
 
       // Conversation
@@ -94,7 +94,7 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers = {}) {
         toggleTheme();
         break;
       case 'open-settings':
-        window.dispatchEvent(new CustomEvent('octux:open-settings'));
+        window.dispatchEvent(new CustomEvent('sukgo:open-settings'));
         break;
       case 'search-conversations':
         // Handled by SidebarSearch directly (Cmd+F)
@@ -104,7 +104,7 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers = {}) {
     // Visual feedback
     const shortcut = SHORTCUTS.find(s => s.action === action);
     if (shortcut && action !== 'command-palette' && action !== 'close-modal') {
-      window.dispatchEvent(new CustomEvent('octux:shortcut-executed', {
+      window.dispatchEvent(new CustomEvent('sukgo:shortcut-executed', {
         detail: { label: shortcut.label, keys: shortcut.keys },
       }));
     }

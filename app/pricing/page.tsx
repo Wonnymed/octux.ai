@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/design/cn';
-import { OctButton } from '@/components/octux';
+import { OctButton } from '@/components/sukgo';
 import { TIERS, type TierType } from '@/lib/billing/tiers';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { openAuthModal, POST_AUTH_REDIRECT_KEY } from '@/lib/auth/openAuthModal';
@@ -47,7 +47,7 @@ export default function PricingPage() {
 
         {/* Dollar anchor */}
         <p className="text-center text-xs text-txt-disabled mb-12">
-          A $50K McKinsey engagement. Or 60 seconds on Octux &mdash; starting free.
+          A $50K McKinsey engagement. Or 60 seconds on Sukgo &mdash; starting free.
         </p>
 
         {/* Tier cards */}

@@ -1,5 +1,5 @@
 /**
- * Team Memory — Agno pattern for Octux.
+ * Team Memory — Agno pattern for Sukgo.
  *
  * Insights that emerge from agent INTERACTION, not individual analysis.
  * "When Regulatory and Unit Economics disagree, Regulatory is right 70% of the time."

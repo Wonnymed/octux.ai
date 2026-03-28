@@ -1,5 +1,5 @@
 /**
- * What-If Forking — Octux OVERKILL innovation.
+ * What-If Forking — Sukgo OVERKILL innovation.
  *
  * "What if budget was $100K instead of $50K?"
  * → Fork the sim → modify the parameter → re-run → compare verdicts

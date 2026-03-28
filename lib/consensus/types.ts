@@ -1,5 +1,5 @@
 /**
- * Consensus Tracker Types — pBFT adapted for Octux protocol.
+ * Consensus Tracker Types — pBFT adapted for Sukgo protocol.
  *
  * Quorum: floor(2n/3) + 1
  * Phases: PREPARE → PRE-COMMIT → COMMIT

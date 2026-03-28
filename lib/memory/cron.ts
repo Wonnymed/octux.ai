@@ -1,5 +1,5 @@
 /**
- * Autonomous Cron Jobs — OpenClaw pattern for Octux.
+ * Autonomous Cron Jobs — OpenClaw pattern for Sukgo.
  *
  * Background maintenance that runs INDEPENDENTLY of user activity:
  *   - Prune stale facts (>60 days, low confidence, low evidence)

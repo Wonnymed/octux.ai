@@ -236,7 +236,7 @@ export default function AgentLabPage() {
     <div className="flex-1 overflow-y-auto">
       <div className="mx-auto max-w-landing px-6 py-10">
         <div className="mb-8 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 text-sm leading-relaxed text-txt-secondary">
-          These specialists power every Octux simulation.{' '}
+          These specialists power every Sukgo simulation.{' '}
           <Link href="/" className="font-medium text-accent underline-offset-2 hover:underline">
             Start a simulation on the dashboard
           </Link>{' '}
@@ -544,7 +544,7 @@ function AgentDetailPanel({
     const { mode, tier } = agentLabDashboardDefaults(agent.domain);
     try {
       localStorage.setItem(
-        'octux_pending_question',
+        'sukgo_pending_question',
         JSON.stringify({
           question: seed.slice(0, 500),
           mode,

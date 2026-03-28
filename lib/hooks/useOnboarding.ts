@@ -139,31 +139,31 @@ export function useOnboarding(userId: string | undefined) {
     if (!state.loaded) return;
 
     const handlers: Record<string, () => void> = {
-      'octux:message-sent': () => {
+      'sukgo:message-sent': () => {
         if (!state.milestonesCompleted.has('first_message')) completeMilestone('first_message');
       },
-      'octux:simulation-started': () => {
+      'sukgo:simulation-started': () => {
         if (!state.milestonesCompleted.has('first_simulation')) completeMilestone('first_simulation');
         incrementCounter('simulation');
       },
-      'octux:verdict-received': () => {
+      'sukgo:verdict-received': () => {
         if (!state.milestonesCompleted.has('first_verdict')) completeMilestone('first_verdict');
         incrementCounter('verdict');
       },
-      'octux:agent-chat-opened': () => {
+      'sukgo:agent-chat-opened': () => {
         if (!state.milestonesCompleted.has('first_agent_chat')) completeMilestone('first_agent_chat');
       },
-      'octux:share': () => {
+      'sukgo:share': () => {
         if (!state.milestonesCompleted.has('first_share')) completeMilestone('first_share');
         incrementCounter('share');
       },
-      'octux:refine-sent': () => {
+      'sukgo:refine-sent': () => {
         if (!state.milestonesCompleted.has('first_refine')) completeMilestone('first_refine');
       },
-      'octux:free-limit-reached': () => {
+      'sukgo:free-limit-reached': () => {
         if (!state.milestonesCompleted.has('free_limit_reached')) completeMilestone('free_limit_reached');
       },
-      'octux:conversation-created': () => {
+      'sukgo:conversation-created': () => {
         incrementCounter('conversation');
       },
     };

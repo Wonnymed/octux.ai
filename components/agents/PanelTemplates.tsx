@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctBadge } from '@/components/octux';
+import { OctBadge } from '@/components/sukgo';
 
 export interface PanelTemplate {
   id: string;

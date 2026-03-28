@@ -18,7 +18,7 @@ import { resolveEngineParams } from "@/lib/billing/sim-engine-params";
    POST /api/simulate/stream
    Returns: text/event-stream (SSE)
 
-   Octux AI — 10-agent adversarial debate engine
+   Sukgo AI — 10-agent adversarial debate engine
    Uses Claude Sonnet for specialist agents,
    Claude Haiku for crowd wisdom advisors.
    ═══════════════════════════════════════ */

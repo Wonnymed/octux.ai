@@ -307,7 +307,7 @@ export default function VerdictPanel({ visible }: { visible: boolean }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `octux-report-${simulationId.slice(0, 8)}.pdf`;
+      a.download = `sukgo-report-${simulationId.slice(0, 8)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {

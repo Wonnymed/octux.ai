@@ -1,5 +1,5 @@
 /**
- * Decision Replay — Octux OVERKILL innovation.
+ * Decision Replay — Sukgo OVERKILL innovation.
  *
  * Re-run a past simulation with CURRENT memory state.
  * Compare verdicts to prove the system got smarter.

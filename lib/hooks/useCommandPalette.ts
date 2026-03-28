@@ -92,16 +92,16 @@ export function useCommandPalette(): UseCommandPaletteReturn {
             break;
           case 'action:new-simulation':
             router.push('/');
-            window.dispatchEvent(new CustomEvent('octux:auto-simulate'));
+            window.dispatchEvent(new CustomEvent('sukgo:auto-simulate'));
             break;
           case 'action:toggle-dark-mode':
             toggleTheme();
             break;
           case 'action:shortcuts':
-            window.dispatchEvent(new CustomEvent('octux:show-shortcuts'));
+            window.dispatchEvent(new CustomEvent('sukgo:show-shortcuts'));
             break;
           case 'action:settings':
-            window.dispatchEvent(new CustomEvent('octux:open-settings'));
+            window.dispatchEvent(new CustomEvent('sukgo:open-settings'));
             break;
           case 'action:switch-sim-mode':
             document.querySelector<HTMLElement>('[data-chat-input]')?.focus();
@@ -115,14 +115,14 @@ export function useCommandPalette(): UseCommandPaletteReturn {
 
       case 'agent':
         router.push('/');
-        window.dispatchEvent(new CustomEvent('octux:agent-context', {
+        window.dispatchEvent(new CustomEvent('sukgo:agent-context', {
           detail: { agentId: command.metadata?.agentId, agentName: command.label },
         }));
         break;
 
       case 'category':
         router.push('/');
-        window.dispatchEvent(new CustomEvent('octux:category-filter', {
+        window.dispatchEvent(new CustomEvent('sukgo:category-filter', {
           detail: { category: command.category },
         }));
         break;

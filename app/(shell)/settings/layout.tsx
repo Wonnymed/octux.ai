@@ -21,7 +21,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
   return (
     <div
-      data-octux-settings
+      data-sukgo-settings
       className="flex min-h-0 w-full flex-1 flex-col bg-white transition-colors dark:bg-[#0a0a0f]"
     >
       <div className="shrink-0 border-b border-gray-200 px-6 py-8 dark:border-white/[0.06] md:px-10">
@@ -29,7 +29,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
           Settings
         </h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-white/40">
-          Manage your Octux account and preferences.
+          Manage your Sukgo account and preferences.
         </p>
       </div>
 
@@ -39,7 +39,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
           <button
             type="button"
             className="ml-2 font-medium text-accent underline-offset-2 hover:underline"
-            onClick={() => window.dispatchEvent(new CustomEvent('octux:show-auth', { detail: { mode: 'login' } }))}
+            onClick={() => window.dispatchEvent(new CustomEvent('sukgo:show-auth', { detail: { mode: 'login' } }))}
           >
             Sign in
           </button>

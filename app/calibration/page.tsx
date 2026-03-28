@@ -72,7 +72,7 @@ export default function CalibrationPage() {
       <div style={{ marginBottom: '32px' }}>
         <div style={{ fontSize: '24px', fontWeight: 300, color: 'var(--text-primary)' }}>Calibration Lab</div>
         <div style={{ fontSize: '14px', color: 'var(--text-tertiary)', marginTop: '4px' }}>
-          System intelligence metrics — how Octux evolves with every simulation
+          System intelligence metrics — how Sukgo evolves with every simulation
         </div>
       </div>
 

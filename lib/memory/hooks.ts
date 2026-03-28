@@ -1,5 +1,5 @@
 /**
- * Memory Hooks — PraisonAI lifecycle pattern for Octux.
+ * Memory Hooks — PraisonAI lifecycle pattern for Sukgo.
  *
  * Three hooks consolidate ALL memory operations:
  *   preSimHook:    Everything that happens BEFORE the simulation runs

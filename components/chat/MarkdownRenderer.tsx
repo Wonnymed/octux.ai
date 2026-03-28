@@ -19,7 +19,7 @@ export default function MarkdownRenderer({ content, className }: MarkdownRendere
 
   return (
     <div
-      className={cn('octux-markdown', className)}
+      className={cn('sukgo-markdown', className)}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

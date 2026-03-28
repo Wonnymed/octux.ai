@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       model: models.simulate_report,
       max_tokens: 2500,
       tools: [{ type: "web_search_20250305" as any, name: "web_search" }],
-      system: SECURITY_PREFIX + SIM_KB + RESEARCH_KB + `\n\nYou are Signux Causal Analyst — an expert in causal reasoning, counterfactual analysis, and evidence evaluation.
+      system: SECURITY_PREFIX + SIM_KB + RESEARCH_KB + `\n\nYou are Sukgo Causal Analyst — an expert in causal reasoning, counterfactual analysis, and evidence evaluation.
 
 The user describes a situation where they believe X caused Y. Your job is to:
 1. Map the causal chain (A → B → C → outcome)
@@ -78,20 +78,20 @@ In causal chain links, confounders, and verdicts, cite the reasoning framework:
 
 At the end of your response, include these hidden metadata blocks:
 
-<!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
+<!-- sukgo_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
 
-<!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+<!-- sukgo_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
 List actual reasoning steps taken, not generic descriptions.
 
-<!-- signux_domains: domain1, domain2, domain3 -->
-<!-- signux_domain_count: X -->
+<!-- sukgo_domains: domain1, domain2, domain3 -->
+<!-- sukgo_domain_count: X -->
 
-<!-- signux_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
+<!-- sukgo_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
 
-<!-- signux_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
+<!-- sukgo_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
 
-<!-- signux_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
+<!-- sukgo_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
       messages: [{
         role: "user",
         content: `Analyze this causal claim:\n\n${situation}\n\nSearch for relevant industry data and base rates. Respond in ${lang || "en"}.`,

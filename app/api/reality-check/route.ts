@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       model: models.reality_check,
       max_tokens: 1500,
       tools: [{ type: "web_search_20250305" as any, name: "web_search" }],
-      system: SECURITY_PREFIX + RC_KNOWLEDGE + `\n\nYou are Signux Reality Check — a brutally honest verdict engine. The user asks "Is it still worth it to X?" and you give a data-backed answer in 10 seconds.
+      system: SECURITY_PREFIX + RC_KNOWLEDGE + `\n\nYou are Sukgo Reality Check — a brutally honest verdict engine. The user asks "Is it still worth it to X?" and you give a data-backed answer in 10 seconds.
 
 SEARCH THE WEB for current data before answering. Use real numbers.
 
@@ -66,20 +66,20 @@ For every significant finding or claim, cite the source inline:
 
 At the end of your response, include these hidden metadata blocks:
 
-<!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
+<!-- sukgo_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
 
-<!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+<!-- sukgo_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
 List actual reasoning steps taken, not generic descriptions.
 
-<!-- signux_domains: market-analysis, data-verification, trend-detection, risk-assessment -->
-<!-- signux_domain_count: 4 -->
+<!-- sukgo_domains: market-analysis, data-verification, trend-detection, risk-assessment -->
+<!-- sukgo_domain_count: 4 -->
 
-<!-- signux_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
+<!-- sukgo_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
 
-<!-- signux_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
+<!-- sukgo_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
 
-<!-- signux_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
+<!-- sukgo_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
       messages: [{ role: "user", content: `Reality check: ${question}. Search for the latest data. Respond in ${lang || "en"}.` }],
     });
 

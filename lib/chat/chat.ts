@@ -1,5 +1,5 @@
 /**
- * Octux Decision Chat — Memory-aware conversational AI.
+ * Sukgo Decision Chat — Memory-aware conversational AI.
  * User memory is optional context: injected with strict “use only when relevant” rules.
  */
 
@@ -188,7 +188,7 @@ export async function chatWithMemory(
         minSimilarity: 0.4,
       });
       if (chunks.length > 0) {
-        ragContext = formatKnowledgeForAgent(chunks, 'Octux Chat');
+        ragContext = formatKnowledgeForAgent(chunks, 'Sukgo Chat');
       }
     }
   } catch {} // non-blocking
@@ -220,7 +220,7 @@ export async function chatWithMemory(
 
   const response = await callClaude({
     systemPrompt,
-    userMessage: messages.map(m => `${m.role === 'user' ? 'User' : 'Octux'}: ${m.content}`).join('\n\n') + '\n\nOctux:',
+    userMessage: messages.map(m => `${m.role === 'user' ? 'User' : 'Sukgo'}: ${m.content}`).join('\n\n') + '\n\nSukgo:',
     maxTokens: CHAT_MAX_TOKENS,
     tier: 'chat',
   });
@@ -273,7 +273,7 @@ The user asked to ignore stored personal context or to answer without using prio
     ? `Optional user-specific background may appear below in "## User context". It is **supplementary**, not a script to read aloud.`
     : `No long-form user memory block is attached for this turn — answer from the question and recent chat turns only.`;
 
-  return `You are Octux AI — a Decision Operating System.
+  return `You are Sukgo AI — a Decision Operating System.
 Chat is fast and efficient; full multi-agent simulation is available separately when the user runs a simulation.
 
 You help people think through decisions clearly. ${memoryPreamble}

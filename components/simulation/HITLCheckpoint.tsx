@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/design/cn';
-import { OctButton, OctCard } from '@/components/octux';
+import { OctButton, OctCard } from '@/components/sukgo';
 import { OctInput } from '@/components/ui';
 import type { HITLState } from '@/lib/hooks/useSimulationStream';
 

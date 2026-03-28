@@ -1,4 +1,4 @@
-// Custom Octux components (not replaced by shadcn)
+// Custom Sukgo components (not replaced by shadcn)
 export { default as OctInput } from './OctInput';
 export { default as OctTextarea } from './OctTextarea';
 export { default as OctTooltip } from './OctTooltip';

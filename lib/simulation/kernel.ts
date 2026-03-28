@@ -29,7 +29,7 @@ export type AgentFilter = {
   run: (report: AgentReport) => { pass: boolean; patched?: AgentReport; reason?: string };
 };
 
-export type OctuxKernel = {
+export type SukgoKernel = {
   config: SimulationConfig;
   inputFilters: InputFilter[];
   outputFilters: OutputFilter[];
@@ -46,7 +46,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   convergenceThreshold: 0.6,
 };
 
-export function createKernel(overrides?: Partial<SimulationConfig>): OctuxKernel {
+export function createKernel(overrides?: Partial<SimulationConfig>): SukgoKernel {
   return {
     config: { ...DEFAULT_CONFIG, ...overrides },
     inputFilters: [contentGuardrail, lengthGuardrail],

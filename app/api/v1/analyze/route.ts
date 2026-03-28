@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const apiKey = req.headers.get("x-api-key");
   if (!apiKey) {
     return NextResponse.json(
-      { error: "Missing API key. Get one at signux.ai/settings", docs: "https://signux.ai/docs/api" },
+      { error: "Missing API key. Get one at sukgo.ai/settings", docs: "https://sukgo.ai/docs/api" },
       { status: 401 }
     );
   }
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     const validModes = ["chat", "simulate", "compete", "hire", "build", "protect", "grow"];
     const selectedMode = validModes.includes(mode) ? mode : "chat";
 
-    const systemPrompt = `You are Signux AI, a decision intelligence platform. Mode: ${selectedMode}.${context ? ` Additional context: ${context}` : ""} Provide structured analysis with actionable insights. Include positive factors and key concerns.`;
+    const systemPrompt = `You are Sukgo AI, a decision intelligence platform. Mode: ${selectedMode}.${context ? ` Additional context: ${context}` : ""} Provide structured analysis with actionable insights. Include positive factors and key concerns.`;
 
     const model = DEFAULT_MODEL;
 

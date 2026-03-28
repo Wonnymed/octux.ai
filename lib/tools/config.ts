@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import { BookOpen, GitCompare, Shield, FileText } from 'lucide-react';
 
-export interface OctuxTool {
+export interface SukgoTool {
   slug: string;
   name: string;
   href: string;
@@ -13,7 +13,7 @@ export interface OctuxTool {
 
 const NEUTRAL_TOOL = '#8a8578';
 
-export const OCTUX_TOOLS: OctuxTool[] = [
+export const SUKGO_TOOLS: SukgoTool[] = [
   {
     slug: 'journal',
     name: 'Decision Journal',

@@ -1,5 +1,5 @@
 /**
- * Reflect Loop — Hindsight pattern for Octux.
+ * Reflect Loop — Hindsight pattern for Sukgo.
  *
  * The system periodically REASONS about its own memories:
  *   reflectOnExperiences() — orchestrator, runs every 5 sims
@@ -7,7 +7,7 @@
  *   deriveObservations()   — extract patterns from accumulated experiences
  *   memoryOfMisses()       — identify wrong predictions, save as observations
  *
- * This is the loop that makes Octux LEARN, not just REMEMBER.
+ * This is the loop that makes Sukgo LEARN, not just REMEMBER.
  *
  * Ref: Hindsight (#28 — retain/recall/reflect, opinion confidence evolution,
  *       memory of misses, 91.4% LongMemEval)

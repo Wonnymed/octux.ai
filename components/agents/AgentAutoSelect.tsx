@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctBadge, OctButton } from '@/components/octux';
+import { OctBadge, OctButton } from '@/components/sukgo';
 import { OctAvatar, OctCollapsible } from '@/components/ui';
 
 export interface SelectedAgent {

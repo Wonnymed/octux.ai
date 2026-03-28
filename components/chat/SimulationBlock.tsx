@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctCard } from '@/components/octux';
+import { OctCard } from '@/components/sukgo';
 import { useSimulationStream } from '@/lib/hooks/useSimulationStream';
 import PlanDisclosure from '@/components/simulation/PlanDisclosure';
 import AgentStreamCard from '@/components/simulation/AgentStreamCard';

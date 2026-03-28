@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { OctButton, OctCard } from '@/components/octux';
+import { OctButton, OctCard } from '@/components/sukgo';
 import { TIERS, type TierType } from '@/lib/billing/tiers';
 
 interface UpgradePromptProps {

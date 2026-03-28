@@ -5,48 +5,48 @@ const ROWS = [
     dimension: "Agents",
     chatgpt: "1 (GPT)",
     claude: "1 (Claude)",
-    octux: "10 specialists + Chair",
+    sukgo: "10 specialists + Chair",
   },
   {
     dimension: "Output",
     chatgpt: "Free text",
     claude: "Free text",
-    octux: "Structured verdict",
+    sukgo: "Structured verdict",
   },
   {
     dimension: "Self-eval",
     chatgpt: "None",
     claude: "Limited",
-    octux: "Grade A–F + metrics",
+    sukgo: "Grade A–F + metrics",
   },
   {
     dimension: "Audit trail",
     chatgpt: "None",
     claude: "Thinking mode",
-    octux: "Full trace + citations",
+    sukgo: "Full trace + citations",
   },
   {
     dimension: "Progress",
     chatgpt: "Spinner",
     claude: '"Thinking..."',
-    octux: "Phase-by-phase live",
+    sukgo: "Phase-by-phase live",
   },
   {
     dimension: "Learning",
     chatgpt: "Static",
     claude: "Basic memory",
-    octux: "Self-evolving system",
+    sukgo: "Self-evolving system",
   },
 ];
 
 const WEAK = "rgba(255,255,255,0.50)";
 const DIM_LABEL = "rgba(255,255,255,0.70)";
 const PURPLE = "#6B6560";
-const OCTUX_BG = "rgba(124,58,237,0.08)";
+const SUKGO_BG = "rgba(124,58,237,0.08)";
 const BORDER_ROW = "rgba(255,255,255,0.08)";
 const BORDER_HEADER = "rgba(255,255,255,0.10)";
 
-export default function WhyOctux() {
+export default function WhySukgo() {
   return (
     <section
       style={{
@@ -68,12 +68,12 @@ export default function WhyOctux() {
         }}
       >
         ChatGPT gives you an answer.{" "}
-        <span style={{ color: PURPLE }}>Octux gives you a decision.</span>
+        <span style={{ color: PURPLE }}>Sukgo gives you a decision.</span>
       </h2>
 
       {/* Table container */}
       <div
-        className="why-octux-scroll"
+        className="why-sukgo-scroll"
         style={{
           maxWidth: 1000,
           margin: "0 auto",
@@ -136,7 +136,7 @@ export default function WhyOctux() {
                   width: "26%",
                 }}
               >
-                Octux
+                Sukgo
               </th>
             </tr>
           </thead>
@@ -189,18 +189,18 @@ export default function WhyOctux() {
                   {row.claude}
                 </td>
 
-                {/* Octux — highlighted */}
+                {/* Sukgo — highlighted */}
                 <td
                   style={{
                     padding: "16px",
                     fontSize: 14,
                     fontWeight: 500,
                     color: "#FFFFFF",
-                    background: OCTUX_BG,
+                    background: SUKGO_BG,
                     borderLeft: `2px solid ${PURPLE}`,
                   }}
                 >
-                  {row.octux}
+                  {row.sukgo}
                 </td>
               </tr>
             ))}
@@ -209,13 +209,13 @@ export default function WhyOctux() {
       </div>
 
       <style>{`
-        .why-octux-scroll::-webkit-scrollbar {
+        .why-sukgo-scroll::-webkit-scrollbar {
           height: 4px;
         }
-        .why-octux-scroll::-webkit-scrollbar-track {
+        .why-sukgo-scroll::-webkit-scrollbar-track {
           background: transparent;
         }
-        .why-octux-scroll::-webkit-scrollbar-thumb {
+        .why-sukgo-scroll::-webkit-scrollbar-thumb {
           background: rgba(255,255,255,0.15);
           border-radius: 999px;
         }

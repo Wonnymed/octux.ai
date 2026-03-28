@@ -88,7 +88,7 @@ export default function SettingsProfilePage() {
               autoComplete="name"
             />
           </SettingField>
-          <SettingField label="Display name" hint="How Octux addresses you">
+          <SettingField label="Display name" hint="How Sukgo addresses you">
             <input
               className="field-input w-full text-sm"
               value={displayName}
@@ -111,7 +111,7 @@ export default function SettingsProfilePage() {
 
       <SettingSection
         title="Decision context"
-        description="Tell Octux about your situation so simulations are more personalized."
+        description="Tell Sukgo about your situation so simulations are more personalized."
       >
         <textarea
           className="field-input min-h-[104px] w-full resize-y text-sm leading-relaxed"

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { cn } from '@/lib/design/cn';
-import { OctButton } from '@/components/octux';
+import { OctButton } from '@/components/sukgo';
 import { openAuthModal, POST_AUTH_REDIRECT_KEY } from '@/lib/auth/openAuthModal';
 import { useBillingStore } from '@/lib/store/billing';
 import type { TierType } from '@/lib/billing/tiers';

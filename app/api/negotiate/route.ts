@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         model: models.negotiate,
         max_tokens: 2000,
         tools: [{ type: "web_search_20250305" as any, name: "web_search" }],
-        system: SECURITY_PREFIX + CHAT_KB + `\n\nYou are Signux Negotiation Intel — a pre-negotiation intelligence engine. Research the counterparty and prepare a tactical briefing.
+        system: SECURITY_PREFIX + CHAT_KB + `\n\nYou are Sukgo Negotiation Intel — a pre-negotiation intelligence engine. Research the counterparty and prepare a tactical briefing.
 
 Apply these frameworks:
 - BATNA analysis: what's the best alternative for each side?
@@ -67,11 +67,11 @@ For every significant finding or claim, cite the source inline:
 - [framework: BATNA/ZOPA/game-theory] for analytical frameworks
 - [web: source] for web-verified data
 
-<!-- signux_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
+<!-- sukgo_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
 
-<!-- signux_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
+<!-- sukgo_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
 
-<!-- signux_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
+<!-- sukgo_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
         messages: [{ role: "user", content: `Negotiation context: ${context}\n\nResearch the other party and prepare intel. Respond in ${lang || "en"}.` }],
       });
       const text = response.content.filter((c: any) => c.type === "text").map((c: any) => c.text).join("");
@@ -90,7 +90,7 @@ For every significant finding or claim, cite the source inline:
       const response = await client.messages.create({
         model: models.negotiate,
         max_tokens: 2000,
-        system: SECURITY_PREFIX + CHAT_KB + `\n\nYou are Signux Strategy Engine — build a complete negotiation strategy using game theory, mechanism design, and behavioral psychology.
+        system: SECURITY_PREFIX + CHAT_KB + `\n\nYou are Sukgo Strategy Engine — build a complete negotiation strategy using game theory, mechanism design, and behavioral psychology.
 
 Return ONLY valid JSON:
 {
@@ -128,11 +128,11 @@ For every significant finding or claim, cite the source inline:
 - [framework: game-theory/mechanism-design/behavioral-psychology] for analytical frameworks
 - [web: source] for web-verified data
 
-<!-- signux_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
+<!-- sukgo_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
 
-<!-- signux_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
+<!-- sukgo_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
 
-<!-- signux_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
+<!-- sukgo_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
         messages: [{ role: "user", content: `Negotiation context: ${context}\n\nBuild complete strategy. Respond in ${lang || "en"}.` }],
       });
       const text = (response.content[0] as any).text || "{}";
@@ -241,7 +241,7 @@ Give feedback in this format:
       const response = await client.messages.create({
         model: models.negotiate,
         max_tokens: 2000,
-        system: SECURITY_PREFIX + CHAT_KB + `\n\nYou are Signux Debrief Analyst. The user just completed a real negotiation and is reporting back. Analyze their performance honestly.
+        system: SECURITY_PREFIX + CHAT_KB + `\n\nYou are Sukgo Debrief Analyst. The user just completed a real negotiation and is reporting back. Analyze their performance honestly.
 
 Return ONLY valid JSON:
 {
@@ -267,11 +267,11 @@ For every significant finding or claim, cite the source inline:
 - [framework: BATNA/game-theory/behavioral-psychology] for analytical frameworks
 - [web: source] for web-verified data
 
-<!-- signux_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
+<!-- sukgo_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
 
-<!-- signux_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
+<!-- sukgo_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
 
-<!-- signux_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
+<!-- sukgo_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
         messages: [{ role: "user", content: `ORIGINAL CONTEXT: ${context}\n\nWHAT HAPPENED:\n${debrief_notes}\n\nAnalyze my negotiation. Respond in ${lang || "en"}.` }],
       });
       const text = (response.content[0] as any).text || "{}";

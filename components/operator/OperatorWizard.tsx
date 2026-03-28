@@ -355,7 +355,7 @@ export default function OperatorWizard() {
               Back
             </button>
             <header className="space-y-1">
-              <p className="text-[15px] font-medium text-white">What brings you to Octux?</p>
+              <p className="text-[15px] font-medium text-white">What brings you to Sukgo?</p>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[12px] text-white/35">Step 2 of 3</span>
                 <StepDots active={2} />

@@ -99,8 +99,8 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
     if (!canSend) return;
     const resolvedCategory = agentCategoryMode === 'auto' ? inferAgentCategory(message) : agentCategoryMode;
     try {
-      localStorage.setItem('octux_agent_category', resolvedCategory);
-      localStorage.setItem('octux_agent_category_mode', agentCategoryMode);
+      localStorage.setItem('sukgo_agent_category', resolvedCategory);
+      localStorage.setItem('sukgo_agent_category_mode', agentCategoryMode);
     } catch {}
     onSend(message.trim(), { simMode: selectedSimMode });
     setMessage('');
@@ -115,7 +115,7 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
   function handleModeClick(mode: SimulationChargeType) {
     if (modeLockedByTier(subscriptionTier, mode)) {
       window.dispatchEvent(
-        new CustomEvent('octux:show-upgrade', {
+        new CustomEvent('sukgo:show-upgrade', {
           detail: {
             suggestedTier: 'pro',
             reason: 'Upgrade to Pro for specialist, compare, stress test, and pre-mortem modes.',
@@ -127,7 +127,7 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
     const cost = getTokenCost(mode);
     if (cost > 0 && !canAffordMode(mode)) {
       window.dispatchEvent(
-        new CustomEvent('octux:show-upgrade', {
+        new CustomEvent('sukgo:show-upgrade', {
           detail: {
             suggestedTier: subscriptionTier === 'free' ? 'pro' : 'max',
             reason: `Not enough tokens. This mode needs ${cost} tokens (${tokensRemaining} remaining).`,

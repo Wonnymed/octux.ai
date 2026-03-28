@@ -125,7 +125,7 @@ export default function ChatInput({
     (mode: SimulationChargeType) => {
       if (modeLockedByTier(subscriptionTier, mode)) {
         window.dispatchEvent(
-          new CustomEvent('octux:show-upgrade', {
+          new CustomEvent('sukgo:show-upgrade', {
             detail: {
               suggestedTier: 'pro',
               reason: 'Upgrade to Pro for specialist, compare, stress test, and pre-mortem modes.',
@@ -137,7 +137,7 @@ export default function ChatInput({
       const cost = getTokenCost(mode);
       if (cost > 0 && !canAffordMode(mode)) {
         window.dispatchEvent(
-          new CustomEvent('octux:show-upgrade', {
+          new CustomEvent('sukgo:show-upgrade', {
             detail: {
               suggestedTier: subscriptionTier === 'free' ? 'pro' : 'max',
               reason: `Not enough tokens. This mode needs ${cost} tokens (${tokensRemaining} remaining).`,

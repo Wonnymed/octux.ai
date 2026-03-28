@@ -19,8 +19,8 @@ export default function ShortcutToast() {
       setTimeout(() => setVisible(false), 1500);
       setTimeout(() => setToast(null), 1800);
     };
-    window.addEventListener('octux:shortcut-executed', handler as EventListener);
-    return () => window.removeEventListener('octux:shortcut-executed', handler as EventListener);
+    window.addEventListener('sukgo:shortcut-executed', handler as EventListener);
+    return () => window.removeEventListener('sukgo:shortcut-executed', handler as EventListener);
   }, []);
 
   if (!toast) return null;

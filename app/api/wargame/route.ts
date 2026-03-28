@@ -107,7 +107,7 @@ RULES:
         const reportResponse = await client.messages.create({
           model: models.simulate_report,
           max_tokens: 2500,
-          system: SECURITY_PREFIX + SIM_KB + `\n\nYou are the Signux War Game Analyst. Analyze a 3-round competitive simulation and deliver a game theory report.
+          system: SECURITY_PREFIX + SIM_KB + `\n\nYou are the Sukgo War Game Analyst. Analyze a 3-round competitive simulation and deliver a game theory report.
 
 Return ONLY valid JSON:
 {
@@ -142,8 +142,8 @@ In all analysis, cite the reasoning framework:
 - [framework: dominant strategy] for strategy identification
 
 At the end, include hidden metadata:
-<!-- signux_verification: {"confidence": 0.XX, "checked": ["list verified"], "caveats": ["limitations"]} -->
-<!-- signux_worklog: {"steps": [{"action": "type", "detail": "detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+<!-- sukgo_verification: {"confidence": 0.XX, "checked": ["list verified"], "caveats": ["limitations"]} -->
+<!-- sukgo_worklog: {"steps": [{"action": "type", "detail": "detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
 COMPETITIVE INTELLIGENCE:
 When the user mentions specific competitors or companies by name, PROACTIVELY include competitive intelligence:
 
@@ -166,16 +166,16 @@ When the user mentions specific competitors or companies by name, PROACTIVELY in
 3. [Specific action]
 
 Include hidden metadata:
-<!-- signux_competitive: {"competitor": "Company X", "threat_level": "high|medium|low", "signals": ["signal1", "signal2"], "recommended_actions": ["action1", "action2"]} -->
+<!-- sukgo_competitive: {"competitor": "Company X", "threat_level": "high|medium|low", "signals": ["signal1", "signal2"], "recommended_actions": ["action1", "action2"]} -->
 
-<!-- signux_domains: domain1, domain2 -->
-<!-- signux_domain_count: X -->
+<!-- sukgo_domains: domain1, domain2 -->
+<!-- sukgo_domain_count: X -->
 
-<!-- signux_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
+<!-- sukgo_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
 
-<!-- signux_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
+<!-- sukgo_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
 
-<!-- signux_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
+<!-- sukgo_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
           messages: [{
             role: "user",
             content: `MARKET:\n${market}\n\nALL MOVES:\n${allMoves.map(m => `[${m.agent} - Round ${m.round}]: ${m.content}`).join("\n\n")}\n\nAnalyze and deliver the war game report. Respond in ${lang || "en"}.`,

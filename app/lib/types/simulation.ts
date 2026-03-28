@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════
-   Octux AI — Simulation Types
+   Sukgo AI — Simulation Types
    ═══════════════════════════════════════ */
 
 export type SimulationPhase =

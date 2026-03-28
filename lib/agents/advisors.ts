@@ -186,7 +186,7 @@ export async function generateAdvisorPersonas(question: string, userGuidance?: s
 
   const response = await callClaude({
     tier: 'crowd',
-    systemPrompt: `You are the Crowd Wisdom Architect for Octux AI. You generate hyper-realistic local advisor personas for business decision validation.
+    systemPrompt: `You are the Crowd Wisdom Architect for Sukgo AI. You generate hyper-realistic local advisor personas for business decision validation.
 
 CRITICAL RULES:
 1. CONTEXTUAL GENERATION: Analyze the question to extract geographic context, industry, decision type, and cultural context. ALL personas must be relevant to THESE specifics.

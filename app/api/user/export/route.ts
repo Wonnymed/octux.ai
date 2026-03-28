@@ -68,7 +68,7 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Content-Disposition': `attachment; filename="octux-export-${userId.slice(0, 8)}.json"`,
+        'Content-Disposition': `attachment; filename="sukgo-export-${userId.slice(0, 8)}.json"`,
       },
     });
   } catch (e) {

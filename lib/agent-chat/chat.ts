@@ -195,7 +195,7 @@ ${verdict.one_liner || ''}`
   ].filter(Boolean).join('\n');
 
   // Build system prompt
-  const systemPrompt = `You are the ${persona.name} from Octux AI — a Decision Operating System.
+  const systemPrompt = `You are the ${persona.name} from Sukgo AI — a Decision Operating System.
 
 ROLE: ${persona.chatStyle}
 
@@ -317,7 +317,7 @@ export async function chatWithAgentEphemeral(
     /* optional */
   }
 
-  const systemPrompt = `You are the ${persona.name} from Octux AI — a Decision Operating System.
+  const systemPrompt = `You are the ${persona.name} from Sukgo AI — a Decision Operating System.
 
 ROLE: ${persona.chatStyle}
 

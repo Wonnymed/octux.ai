@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       model: models.simulate_report,
       max_tokens: 4000,
       tools: [{ type: "web_search_20250305" as any, name: "web_search" }],
-      system: SECURITY_PREFIX + SIM_KB + RESEARCH_KB + `\n\nYou are Signux Scenario Planner — an expert in scenario planning, forecasting, and strategic foresight.
+      system: SECURITY_PREFIX + SIM_KB + RESEARCH_KB + `\n\nYou are Sukgo Scenario Planner — an expert in scenario planning, forecasting, and strategic foresight.
 
 Generate 4 scenarios on a 2x2 matrix:
 - X-axis: Continuity (things stay similar) ← → Disruption (major changes)
@@ -86,20 +86,20 @@ In scenario narratives and strategies, cite the analytical source:
 
 At the end of your response, include these hidden metadata blocks:
 
-<!-- signux_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
+<!-- sukgo_verification: {"confidence": 0.82, "checked": ["list what you verified"], "caveats": ["list limitations"]} -->
 Confidence must be honest: 0.9+ very high, 0.7-0.9 good, 0.5-0.7 moderate, below 0.5 low. Never inflate.
 
-<!-- signux_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
+<!-- sukgo_worklog: {"steps": [{"action": "step type", "detail": "specific detail"}], "sources_count": N, "domains_used": N, "reasoning_steps": N} -->
 List actual reasoning steps taken, not generic descriptions.
 
-<!-- signux_domains: domain1, domain2, domain3 -->
-<!-- signux_domain_count: X -->
+<!-- sukgo_domains: domain1, domain2, domain3 -->
+<!-- sukgo_domain_count: X -->
 
-<!-- signux_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
+<!-- sukgo_sentiment: {"signal": "bullish|bearish|neutral|mixed", "confidence": 0.XX, "reason": "1-sentence explanation"} -->
 
-<!-- signux_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
+<!-- sukgo_sources: [{"title": "Source name", "type": "web|kb|framework|data", "relevance": "1-sentence"}] -->
 
-<!-- signux_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
+<!-- sukgo_followups: [{"question": "Follow-up question", "why": "Why this matters"}] -->`,
       messages: [{ role: "user", content: `Context: ${context}\n\nSearch for current market data and trends. Generate 4 scenarios for the next 12 months. Respond in ${lang || "en"}.` }],
     });
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/design/cn';
 import { CircularProgress } from '@/components/ui';
-import { OctBadge } from '@/components/octux';
+import { OctBadge } from '@/components/sukgo';
 import { verdictColors, type VerdictType } from '@/lib/design/tokens';
 import type { VerdictState } from '@/lib/hooks/useSimulationStream';
 import { getSimulationStatusLabel } from '@/lib/simulation/streamingCopy';

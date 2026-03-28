@@ -10,7 +10,7 @@ import { cn } from '@/lib/design/cn';
 import { EASE_SPRING, TRANSITION } from '@/lib/motion/constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs';
 import { Separator } from '@/components/ui/shadcn/separator';
-import { OctButton } from '@/components/octux';
+import { OctButton } from '@/components/sukgo';
 import { verdictColors, verdictLabels } from '@/lib/design/tokens';
 import type { VerdictResult, Citation, RiskEntry } from '@/lib/simulation/events';
 import AgentScoreboard from '@/components/simulation/AgentScoreboard';

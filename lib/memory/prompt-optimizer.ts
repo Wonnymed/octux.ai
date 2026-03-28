@@ -1,5 +1,5 @@
 /**
- * Auto Prompt Optimization — LangMem gradient pattern for Octux.
+ * Auto Prompt Optimization — LangMem gradient pattern for Sukgo.
  *
  * The gradient algorithm:
  *   1. Load trajectory (agent's reports across recent sims + eval scores)
@@ -582,7 +582,7 @@ export function buildSystemPromptFromOverride(
   override: { role: string; goal: string; backstory: string; sop: string; extra_constraints: string[] },
   agentName: string
 ): string {
-  let prompt = `You are the ${agentName} at Octux AI — a multi-agent adversarial decision system.
+  let prompt = `You are the ${agentName} at Sukgo AI — a multi-agent adversarial decision system.
 
 ROLE: ${override.role}
 GOAL: ${override.goal}

@@ -1,5 +1,5 @@
 // ── Hindsight Network 2: Decision Experiences ───────────────
-// Logs what Octux recommended and what the outcome was.
+// Logs what Sukgo recommended and what the outcome was.
 // Each completed simulation = 1 experience.
 
 import { supabase } from './supabase';

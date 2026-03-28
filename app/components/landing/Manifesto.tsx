@@ -5,7 +5,7 @@ import { useState } from "react";
 const PARAGRAPHS = [
   "Every day, founders make decisions worth millions based on one AI's opinion, a gut feeling, or a consultant who takes six weeks and charges more than your runway.",
   "We think that's broken.",
-  "Octux exists because the most important decisions deserve adversarial pressure-testing, structured output, and a system that gets smarter with every use.",
+  "Sukgo exists because the most important decisions deserve adversarial pressure-testing, structured output, and a system that gets smarter with every use.",
   "Ten specialist agents. Real debate. Structured verdict. Full audit trail. And a system that learns from every decision it touches.",
   "Not a chatbot. A Decision Operating System.",
 ];
