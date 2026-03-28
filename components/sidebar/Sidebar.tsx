@@ -46,8 +46,8 @@ const ICON_STROKE = 1.5;
 const EXPANDED_W = 288;
 /** BUILD PLAN §2.1 / §3.1 collapsed rail */
 const COLLAPSED_W = 56;
-/** Sidebar header — roomier than main shell bar (Okara-style breathing room) */
-const SIDEBAR_HEADER_PAD = 'px-3 sm:px-4 py-4';
+/** Sidebar header — compact gap to first nav item (Okara-style, ≤12px below header) */
+const SIDEBAR_HEADER_PAD = 'px-3 sm:px-4 py-3';
 /** Brand mark — matches wordmark scale (Okara-like prominence) */
 const BRAND_LOGO_BOX = 'h-11 w-11';
 const BRAND_LOGO_EMOJI = 'text-[20px]';
@@ -122,7 +122,7 @@ function SidebarCollapsed() {
           </Tooltip>
         </div>
 
-        <div className="h-5 shrink-0" />
+        <div className="h-3 shrink-0" />
 
         <CollapsedIconButton
           onClick={() => router.push('/')}
@@ -238,8 +238,13 @@ function SidebarExpanded() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex h-full w-full min-w-0 flex-col overflow-hidden">
-        {/* Header — taller than main shell bar so logo + nav can breathe (Okara-style) */}
-        <div className={cn('flex shrink-0 items-center justify-between border-b border-border-subtle/60', SIDEBAR_HEADER_PAD)}>
+        {/* Header — tight stack to first nav item (Okara-style) */}
+        <div
+          className={cn(
+            'mb-3 flex shrink-0 items-center justify-between border-b border-border-subtle/60',
+            SIDEBAR_HEADER_PAD,
+          )}
+        >
           <div className="flex min-w-0 items-center gap-3">
             <div
               className={cn(
@@ -264,7 +269,7 @@ function SidebarExpanded() {
           </button>
         </div>
 
-        <div className="space-y-0.5 px-2.5 pt-7">
+        <div className="space-y-0.5 px-2.5 pt-0">
           <NavItemButton
             icon={Plus}
             label="New chat"
