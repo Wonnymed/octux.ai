@@ -2,6 +2,7 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { Zap, ArrowLeftRight, ShieldAlert, Skull } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/design/cn';
 import { DARK_THEME } from '@/lib/dashboard/theme';
 import type { DashboardMode } from '@/lib/store/dashboard-ui';
@@ -50,6 +51,16 @@ export default function SidebarModes({
   activeMode: DashboardMode;
   onSelect: (mode: DashboardMode) => void;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  function handleModeClick(mode: DashboardMode) {
+    onSelect(mode);
+    if (pathname !== '/') {
+      router.push('/');
+    }
+  }
+
   return (
     <div className="px-3">
       <p
@@ -66,7 +77,7 @@ export default function SidebarModes({
             <li key={m.id}>
               <button
                 type="button"
-                onClick={() => onSelect(m.id)}
+                onClick={() => handleModeClick(m.id)}
                 className={cn(
                   'group flex w-full items-start gap-3 rounded-lg border-l-2 px-3 py-2.5 text-left transition-all duration-150',
                   active ? 'bg-white/[0.03]' : 'border-transparent hover:bg-white/[0.04]',

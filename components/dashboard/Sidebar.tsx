@@ -2,11 +2,11 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { PanelLeftClose, Plus, Gem } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import { useBillingStore } from '@/lib/store/billing';
-import { useDashboardUiStore } from '@/lib/store/dashboard-ui';
+import { useDashboardUiStore, type DashboardMode } from '@/lib/store/dashboard-ui';
 import { useSimulationStore } from '@/lib/store/simulation';
 import { DARK_THEME } from '@/lib/dashboard/theme';
 import SidebarModes, { DASHBOARD_SIDEBAR_MODES } from '@/components/dashboard/SidebarModes';
@@ -25,6 +25,7 @@ export default function DashboardSidebar({
   onExpand: () => void;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const tier = useBillingStore((s) => s.tier);
   const fetchBalance = useBillingStore((s) => s.fetchBalance);
 
@@ -46,7 +47,15 @@ export default function DashboardSidebar({
   const newSimulation = () => {
     resetSession();
     useSimulationStore.getState().reset();
+    setActiveMode('simulate');
     router.push('/');
+  };
+
+  const selectMode = (mode: DashboardMode) => {
+    setActiveMode(mode);
+    if (pathname !== '/') {
+      router.push('/');
+    }
   };
 
   const asideBase = {
@@ -98,7 +107,7 @@ export default function DashboardSidebar({
                 type="button"
                 title={m.name}
                 aria-label={m.name}
-                onClick={() => setActiveMode(m.id)}
+                onClick={() => selectMode(m.id)}
                 className="group relative flex w-full items-center justify-center py-2.5 transition-colors hover:bg-white/[0.04]"
               >
                 {active ? (
