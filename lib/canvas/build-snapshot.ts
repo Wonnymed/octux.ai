@@ -180,27 +180,45 @@ export function buildCanvasSnapshot(dash: SimulationDashboardState, sim: SimSlic
   };
 }
 
+/** Idle demo specialists — named ring layout (matches product storytelling). */
 export const DEMO_AGENTS: AgentNode[] = [
-  { id: 'd1', name: 'Demand Signal', position: 'proceed', confidence: 7, argument: 'Strong pull from core segments.', isActive: false },
-  { id: 'd2', name: 'Unit Economics', position: 'proceed', confidence: 8, argument: 'Margins hold at scale.', isActive: false },
-  { id: 'd3', name: 'Base Rate', position: 'delay', confidence: 6, argument: 'Historical failure rate elevated.', isActive: false },
+  { id: 'd1', name: 'Base Rate', position: 'delay', confidence: 6, argument: 'Historical failure rate elevated.', isActive: false },
+  { id: 'd2', name: 'Demand', position: 'proceed', confidence: 7, argument: 'Strong pull from core segments.', isActive: false },
+  { id: 'd3', name: 'Unit Econ', position: 'proceed', confidence: 8, argument: 'Margins hold at scale.', isActive: false },
   { id: 'd4', name: 'Regulatory', position: 'delay', confidence: 5, argument: 'Compliance timeline unclear.', isActive: false },
-  { id: 'd5', name: 'Execution', position: 'proceed', confidence: 7, argument: 'Team has shipped before.', isActive: false },
-  { id: 'd6', name: 'Competition', position: 'abandon', confidence: 4, argument: 'Incumbents can undercut.', isActive: false },
-  { id: 'd7', name: 'Brand', position: 'proceed', confidence: 6, argument: 'Narrative resonates.', isActive: false },
-  { id: 'd8', name: 'Capital', position: 'delay', confidence: 5, argument: 'Runway tight if revenue slips.', isActive: false },
-  { id: 'd9', name: 'Tech risk', position: 'proceed', confidence: 6, argument: 'Stack is proven.', isActive: false },
-  { id: 'd10', name: 'Market timing', position: 'proceed', confidence: 7, argument: 'Window is open.', isActive: false },
+  { id: 'd5', name: 'Competitive', position: 'abandon', confidence: 4, argument: 'Incumbents can undercut.', isActive: false },
+  { id: 'd6', name: 'Execution', position: 'proceed', confidence: 7, argument: 'Team has shipped before.', isActive: false },
+  { id: 'd7', name: 'Capital', position: 'delay', confidence: 5, argument: 'Runway tight if revenue slips.', isActive: false },
+  { id: 'd8', name: 'Scenario', position: 'proceed', confidence: 6, argument: 'Base case still plausible.', isActive: false },
+  { id: 'd9', name: 'Customer', position: 'proceed', confidence: 7, argument: 'Retention signals positive.', isActive: false },
+  { id: 'd10', name: 'Intervention', position: 'proceed', confidence: 6, argument: 'Mitigations are actionable.', isActive: false },
 ];
 
+/**
+ * Idle ambient demo: tier for **simulate** follows `previewTier` so free users can preview
+ * specialist layout while billing stays on swarm; swarm uses particle field (empty agents).
+ */
 export function demoSnapshot(dash: SimulationDashboardState): CanvasSnapshot {
-  const swarmDemo = dash.activeMode === 'simulate' && dash.activeTier === 'swarm';
-  const layoutDemo = swarmDemo || dash.activeMode === 'compare' || dash.activeMode === 'stress' || dash.activeMode === 'premortem';
+  const simulateTier: DashboardTier =
+    dash.activeMode === 'simulate' ? dash.previewTier : dash.activeTier;
+
+  const swarmSimulate = dash.activeMode === 'simulate' && simulateTier === 'swarm';
+  const layoutDemo =
+    swarmSimulate ||
+    dash.activeMode === 'compare' ||
+    dash.activeMode === 'stress' ||
+    dash.activeMode === 'premortem';
+
   const agents = layoutDemo ? [] : DEMO_AGENTS;
   const edges = layoutDemo ? [] : buildEdges(DEMO_AGENTS, 9, 10);
+
+  let voiceCount = 127;
+  if (swarmSimulate) voiceCount = 1000;
+  else if (dash.activeMode === 'simulate' && simulateTier === 'specialist') voiceCount = 80;
+
   return {
     mode: dash.activeMode,
-    tier: dash.activeTier,
+    tier: simulateTier,
     demo: true,
     isRunning: false,
     simStatus: 'idle',
@@ -216,7 +234,7 @@ export function demoSnapshot(dash: SimulationDashboardState): CanvasSnapshot {
       grade: 'B+',
       one_liner: 'Strong upside with manageable risks.',
     },
-    voiceCount: dash.activeTier === 'swarm' && dash.activeMode === 'simulate' ? 1000 : 127,
+    voiceCount,
     elapsedSec: 0,
   };
 }

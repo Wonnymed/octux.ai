@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useDashboardUiStore } from '@/lib/store/dashboard-ui';
+import { useBillingStore } from '@/lib/store/billing';
 import { useSimulationStore } from '@/lib/store/simulation';
 import { useDeepDiveStore } from '@/lib/store/deep-dive';
 import { getCanvasSnapshot } from '@/lib/canvas/build-snapshot';
@@ -41,6 +42,9 @@ export default function SimulationCanvas() {
 
   const deepDiveOpen = useDeepDiveStore((s) => s.isOpen);
   const activeMode = useDashboardUiStore((s) => s.activeMode);
+  /** Subscribe so idle demo updates when tier preview toggles. */
+  useDashboardUiStore((s) => s.previewTier);
+  const billingTier = useBillingStore((s) => s.tier);
 
   const getSnapshot = useCallback(() => {
     const dash = useDashboardUiStore.getState();
@@ -121,6 +125,12 @@ export default function SimulationCanvas() {
     borderColor: 'rgba(255,255,255,0.07)',
   } as const;
 
+  const showSpecialistProPreviewBadge =
+    snap.demo &&
+    snap.mode === 'simulate' &&
+    snap.tier === 'specialist' &&
+    billingTier === 'free';
+
   return (
     <div
       ref={containerRef}
@@ -152,6 +162,11 @@ export default function SimulationCanvas() {
             transition={TRANSITIONS.component}
             className="pointer-events-none absolute inset-0 z-10"
           >
+          {showSpecialistProPreviewBadge ? (
+            <div className="pointer-events-none absolute left-3 top-14 z-[11] rounded-md border border-[#e8593c]/35 bg-[#0a0a0f]/80 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-[#e8593c] backdrop-blur-sm">
+              Pro preview
+            </div>
+          ) : null}
           <div className="pointer-events-none absolute left-3 top-3 flex flex-wrap items-center gap-2">
             <span
               className={cn(

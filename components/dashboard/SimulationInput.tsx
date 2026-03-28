@@ -43,6 +43,13 @@ const PLACEHOLDER: Record<DashboardMode, string> = {
   premortem: 'Imagine this failed in 12 months. What plan?',
 };
 
+const MODE_HEADING: Record<DashboardMode, string> = {
+  simulate: 'What would you like to simulate?',
+  compare: 'Which two options are you weighing?',
+  stress: 'What plan needs stress testing?',
+  premortem: 'What plan might fail?',
+};
+
 const RUN_LABEL: Record<DashboardMode, string> = {
   simulate: 'Run simulation',
   compare: 'Compare',
@@ -79,7 +86,9 @@ export default function SimulationInput({
 }) {
   const activeMode = useDashboardUiStore((s) => s.activeMode);
   const activeTier = useDashboardUiStore((s) => s.activeTier);
+  const previewTier = useDashboardUiStore((s) => s.previewTier);
   const setActiveTier = useDashboardUiStore((s) => s.setActiveTier);
+  const setPreviewTier = useDashboardUiStore((s) => s.setPreviewTier);
   const inputA = useDashboardUiStore((s) => s.inputA);
   const inputB = useDashboardUiStore((s) => s.inputB);
   const setInputA = useDashboardUiStore((s) => s.setInputA);
@@ -91,8 +100,6 @@ export default function SimulationInput({
 
   const [specialistBlockedHint, setSpecialistBlockedHint] = useState(false);
   const freeUser = billingTier === 'free';
-  /** Free accounts always run swarm; keep toggle UI aligned before sidebar sync effect. */
-  const tierForUi: 'swarm' | 'specialist' = freeUser ? 'swarm' : activeTier;
 
   const chargeType = useMemo(
     () => dashboardModeToChargeType(activeMode, activeTier),
@@ -105,16 +112,19 @@ export default function SimulationInput({
   const onPickSwarm = useCallback(() => {
     setSpecialistBlockedHint(false);
     setActiveTier('swarm');
-  }, [setActiveTier]);
+    setPreviewTier('swarm');
+  }, [setActiveTier, setPreviewTier]);
 
   const onPickSpecialist = useCallback(() => {
     if (freeUser) {
       setSpecialistBlockedHint(true);
+      setPreviewTier('specialist');
       return;
     }
     setSpecialistBlockedHint(false);
     setActiveTier('specialist');
-  }, [freeUser, setActiveTier]);
+    setPreviewTier('specialist');
+  }, [freeUser, setActiveTier, setPreviewTier]);
 
   const hasInput =
     Boolean(inputA.trim()) || (activeMode === 'compare' && Boolean(inputB.trim()));
@@ -142,7 +152,9 @@ export default function SimulationInput({
   const { bg, hover } = runButtonStyle(activeMode);
 
   return (
-    <div className="shrink-0 space-y-3 border-b px-4 py-3 sm:px-5" style={{ borderColor: DARK_THEME.border_default }}>
+    <div className="shrink-0 space-y-4 px-4 pb-4 pt-6 sm:px-5">
+      <p className="mx-auto w-full max-w-[720px] text-[15px] font-medium text-white/50">{MODE_HEADING[activeMode]}</p>
+
       {activeMode === 'compare' ? (
         <div className="mx-auto w-full max-w-[720px] space-y-2">
           <label className="block text-[11px] font-medium" style={{ color: DARK_THEME.text_secondary }}>
@@ -223,7 +235,7 @@ export default function SimulationInput({
               onClick={onPickSwarm}
               className={cn(
                 'rounded-md px-3 py-1.5 text-[12px] font-medium transition-all',
-                tierForUi === 'swarm'
+                previewTier === 'swarm'
                   ? 'bg-white/[0.08] text-white/80'
                   : 'text-white/35 hover:text-white/50',
               )}
@@ -235,7 +247,7 @@ export default function SimulationInput({
               onClick={onPickSpecialist}
               className={cn(
                 'inline-flex items-center rounded-md px-3 py-1.5 text-[12px] font-medium transition-all',
-                tierForUi === 'specialist'
+                previewTier === 'specialist'
                   ? 'bg-white/[0.08] text-white/80'
                   : 'text-white/35 hover:text-white/50',
               )}

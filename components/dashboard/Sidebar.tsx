@@ -31,16 +31,19 @@ export default function DashboardSidebar({
   const activeMode = useDashboardUiStore((s) => s.activeMode);
   const setActiveMode = useDashboardUiStore((s) => s.setActiveMode);
   const setActiveTier = useDashboardUiStore((s) => s.setActiveTier);
+  const setPreviewTier = useDashboardUiStore((s) => s.setPreviewTier);
 
   useEffect(() => {
     void fetchBalance();
   }, [fetchBalance]);
 
+  /** Free accounts bill at swarm; align preview canvas to swarm on load/tier sync. */
   useEffect(() => {
     if (tier === 'free') {
       setActiveTier('swarm');
+      setPreviewTier('swarm');
     }
-  }, [tier, setActiveTier]);
+  }, [tier, setActiveTier, setPreviewTier]);
 
   const selectMode = (mode: DashboardMode) => {
     setActiveMode(mode);

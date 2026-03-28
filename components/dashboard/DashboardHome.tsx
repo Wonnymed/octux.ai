@@ -31,6 +31,11 @@ export default function DashboardHome({
           <SimulationInput loading={loading} billingTier={tier} onRun={onRunDashboard} />
         </motion.div>
       </AnimatePresence>
+      <div
+        className="mx-4 my-3 shrink-0 border-t sm:mx-5"
+        style={{ borderColor: 'rgba(255,255,255,0.04)' }}
+        aria-hidden
+      />
       <SimulationCanvas />
     </div>
   );

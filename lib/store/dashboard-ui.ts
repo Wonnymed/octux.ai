@@ -17,6 +17,8 @@ export function dashboardModeToChargeType(
 export interface SimulationDashboardState {
   activeMode: DashboardMode;
   activeTier: DashboardTier;
+  /** Idle canvas + tier toggle UI: which simulate visualization to show (free users can preview specialist). */
+  previewTier: DashboardTier;
   inputA: string;
   inputB: string;
   isRunning: boolean;
@@ -39,6 +41,7 @@ const initial: Omit<
   SimulationDashboardState,
   | 'setActiveMode'
   | 'setActiveTier'
+  | 'setPreviewTier'
   | 'setInputA'
   | 'setInputB'
   | 'setSimulationProgress'
@@ -47,6 +50,7 @@ const initial: Omit<
 > = {
   activeMode: 'simulate',
   activeTier: 'specialist',
+  previewTier: 'specialist',
   inputA: '',
   inputB: '',
   isRunning: false,
@@ -62,12 +66,13 @@ export const useDashboardUiStore = create<SimulationDashboardState>((set) => ({
 
   setActiveMode: (activeMode) => set({ activeMode }),
   setActiveTier: (activeTier) => set({ activeTier }),
+  setPreviewTier: (previewTier) => set({ previewTier }),
   setInputA: (inputA) => set({ inputA }),
   setInputB: (inputB) => set({ inputB }),
   setSimulationProgress: (currentRound, totalRounds) => set({ currentRound, totalRounds }),
   setRunning: (isRunning) => set({ isRunning }),
   resetSession: () =>
-    set({
+    set((s) => ({
       inputA: '',
       inputB: '',
       isRunning: false,
@@ -76,5 +81,6 @@ export const useDashboardUiStore = create<SimulationDashboardState>((set) => ({
       verdict: null,
       agentReports: [],
       crowdVoices: [],
-    }),
+      previewTier: s.activeTier,
+    })),
 }));
