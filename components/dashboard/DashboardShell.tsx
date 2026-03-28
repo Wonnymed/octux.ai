@@ -178,7 +178,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     );
   }
 
-  const railWidth = desktopExpanded ? 250 : 48;
+  const railWidth = desktopExpanded ? 250 : 56;
 
   return (
     <div

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { PanelLeftClose, Home, Gem, UserCircle } from 'lucide-react';
@@ -19,63 +19,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/shadcn/tooltip';
 import SukgoLogo from '@/components/brand/SukgoLogo';
-
-const TERRA = '#e8593c';
+import RailIcon from '@/components/shell/RailIcon';
 
 const RAIL_TOOLTIP =
-  'border border-white/[0.08] bg-[#1a1a1f] px-2 py-1 text-[12px] text-white/80 shadow-md';
-
-function CollapsedRailIconWrap({
-  label,
-  active,
-  href,
-  onClick,
-  children,
-}: {
-  label: string;
-  active?: boolean;
-  href?: string;
-  onClick?: () => void;
-  children: ReactNode;
-}) {
-  const body = (
-    <>
-      {active ? (
-        <span
-          className="pointer-events-none absolute left-0 top-1/2 z-0 h-5 w-[3px] -translate-y-1/2 rounded-r-[2px]"
-          style={{ backgroundColor: TERRA }}
-          aria-hidden
-        />
-      ) : null}
-      <span className="relative z-[1] flex h-[18px] w-[18px] items-center justify-center">{children}</span>
-    </>
-  );
-
-  const className = cn(
-    'group relative mx-auto flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-[background,color] duration-150',
-    active ? 'text-white/90' : 'text-white/40 hover:bg-white/[0.06] hover:text-white/55',
-  );
-
-  const trigger =
-    href !== undefined ? (
-      <Link href={href} className={className} aria-label={label}>
-        {body}
-      </Link>
-    ) : (
-      <button type="button" onClick={onClick} className={className} aria-label={label}>
-        {body}
-      </button>
-    );
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{trigger}</TooltipTrigger>
-      <TooltipContent side="right" sideOffset={8} className={RAIL_TOOLTIP}>
-        {label}
-      </TooltipContent>
-    </Tooltip>
-  );
-}
+  'border border-white/[0.08] bg-[#1a1a1f] px-2.5 py-1.5 text-[12px] text-white/80 shadow-lg';
 
 export type DashboardSidebarLayout = 'expanded' | 'collapsed' | 'drawer';
 
@@ -131,102 +78,71 @@ export default function DashboardSidebar({
     return (
       <TooltipProvider delayDuration={200}>
         <aside
-          className="flex h-full w-full flex-col items-center border-r py-2 font-sans antialiased"
+          className="flex h-full w-full flex-col items-center border-r py-3 font-sans antialiased"
           style={asideBase}
         >
-          <div className="flex w-full flex-col items-center pt-4">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={onExpand}
-                  className="flex cursor-pointer items-center justify-center rounded-lg p-0 transition-opacity hover:opacity-90"
-                  aria-label="Open sidebar"
-                >
-                  <SukgoLogo variant="dark" size="sm" showWordmark={false} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={8} className={RAIL_TOOLTIP}>
-                Open sidebar
-              </TooltipContent>
-            </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={onExpand}
+                className="mb-2 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg p-0 transition-opacity hover:opacity-90"
+                aria-label="Open sidebar"
+              >
+                <SukgoLogo variant="dark" size="md" showWordmark={false} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={10} className={RAIL_TOOLTIP}>
+              Open sidebar
+            </TooltipContent>
+          </Tooltip>
+
+          <div className="flex flex-col items-center gap-1">
+            <RailIcon tone="dark" icon={Home} label="Home" active={homeActive} href="/home" />
+            <RailIcon
+              tone="dark"
+              icon={UserCircle}
+              label="My Operator"
+              active={operatorActive}
+              href="/operator"
+            />
           </div>
 
-          <div className="h-3 shrink-0" aria-hidden />
+          <div className="my-2 h-px w-5 shrink-0 bg-white/[0.08]" role="presentation" aria-hidden />
 
-          <div className="flex w-full flex-col items-center gap-0.5">
-            <CollapsedRailIconWrap label="Home" active={homeActive} href="/home">
-              <Home size={18} strokeWidth={1.5} />
-            </CollapsedRailIconWrap>
-            <CollapsedRailIconWrap label="My Operator" active={operatorActive} href="/operator">
-              <UserCircle size={18} strokeWidth={1.5} />
-            </CollapsedRailIconWrap>
-          </div>
-
-          <div
-            className="my-2 h-px w-6 shrink-0 bg-white/[0.06]"
-            role="presentation"
-            aria-hidden
-          />
-
-          <div className="flex w-full flex-col items-stretch gap-0.5 px-0">
+          <div className="flex flex-col items-center gap-1">
             {DASHBOARD_SIDEBAR_MODES.map((m) => {
               const active = activeMode === m.id;
-              const Icon = m.Icon;
               return (
-                <Tooltip key={m.id}>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => selectMode(m.id)}
-                      className={cn(
-                        'group relative flex h-8 w-full shrink-0 items-center justify-center rounded-lg transition-[background,color] duration-150',
-                        active ? 'text-white/90' : 'text-white/40 hover:bg-white/[0.06] hover:text-white/55',
-                      )}
-                      aria-label={m.name}
-                    >
-                      {active ? (
-                        <span
-                          className="pointer-events-none absolute left-0 top-1/2 z-0 h-5 w-[3px] -translate-y-1/2 rounded-r-[2px]"
-                          style={{ backgroundColor: TERRA }}
-                          aria-hidden
-                        />
-                      ) : null}
-                      <Icon size={18} strokeWidth={1.5} className="relative z-[1]" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" sideOffset={8} className={RAIL_TOOLTIP}>
-                    {m.name}
-                  </TooltipContent>
-                </Tooltip>
+                <RailIcon
+                  key={m.id}
+                  tone="dark"
+                  icon={m.Icon}
+                  label={m.name}
+                  active={active}
+                  onClick={() => selectMode(m.id)}
+                />
               );
             })}
           </div>
 
-          <div className="min-h-0 w-full flex-1 overflow-hidden">
+          <div className="my-2 h-px w-5 shrink-0 bg-white/[0.08]" role="presentation" aria-hidden />
+
+          <div className="min-h-0 w-full min-w-0 flex-1 overflow-hidden">
             <SidebarHistory variant="rail" />
           </div>
 
-          {isFreeTier ? (
-            <div className="flex w-full shrink-0 justify-center py-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="/pricing"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-white/30 transition-colors hover:bg-white/[0.06] hover:text-white/45"
-                    aria-label="Upgrade"
-                  >
-                    <Gem size={18} strokeWidth={1.5} />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8} className={RAIL_TOOLTIP}>
-                  Upgrade
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          ) : null}
-
-          <div className="mt-auto w-full shrink-0 pb-1 pt-0.5">
+          <div className="mt-auto flex w-full flex-col items-center gap-2 pb-1 pt-1">
+            {isFreeTier ? (
+              <RailIcon
+                tone="dark"
+                icon={Gem}
+                label="Upgrade"
+                href="/pricing"
+                iconSize={20}
+                tooltipClassName={RAIL_TOOLTIP}
+              />
+            ) : null}
             <UserProfilePopover variant="rail" />
           </div>
         </aside>

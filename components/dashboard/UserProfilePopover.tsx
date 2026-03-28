@@ -79,8 +79,11 @@ export default function UserProfilePopover({ variant = 'full' }: { variant?: 'fu
     <button
       type="button"
       onClick={() => setOpen((v) => !v)}
-      className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-[11px] font-semibold leading-none text-white transition-colors hover:opacity-95"
-      style={{ backgroundColor: '#e8593c' }}
+      className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-[12px] font-medium leading-none transition-colors hover:opacity-95"
+      style={{
+        backgroundColor: 'rgba(232, 89, 60, 0.15)',
+        color: '#e8593c',
+      }}
       aria-expanded={open}
       aria-label={name}
     >

@@ -20,6 +20,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import SukgoLogo from '@/components/brand/SukgoLogo';
+import RailIcon from '@/components/shell/RailIcon';
 import { cn } from '@/lib/design/cn';
 import { useAppStore, type ConversationSummary } from '@/lib/store/app';
 import { useBillingStore } from '@/lib/store/billing';
@@ -50,11 +51,11 @@ import { ThemeToggleCompact } from '@/components/theme/ThemeToggle';
 const ICON_STROKE = 1.5;
 /** Expanded rail — Okara-scale width (matches --sidebar-width-expanded) */
 const EXPANDED_W = 288;
-/** Collapsed icon rail — tight 48px (VS Code / Linear style) */
-const COLLAPSED_W = 48;
+/** Collapsed icon rail — centered targets, 22px icons */
+const COLLAPSED_W = 56;
 const RAIL_TERRA = '#e8593c';
 const SHELL_RAIL_TOOLTIP =
-  'border border-white/[0.08] bg-[#1a1a1f] px-2 py-1 text-[12px] text-white/80 shadow-md';
+  'border border-white/[0.08] bg-[#1a1a1f] px-2.5 py-1.5 text-[12px] text-white/80 shadow-lg';
 /** Sidebar header — compact gap to first nav item (Okara-style, ≤12px below header) */
 const SIDEBAR_HEADER_PAD = 'px-3 sm:px-4 py-3';
 /** Brand mark — matches wordmark scale (Okara-like prominence) */
@@ -95,125 +96,69 @@ function SidebarCollapsed() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex h-full w-full flex-col items-center py-2">
-        <div className="flex w-full shrink-0 flex-col items-center pt-4">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                className="flex cursor-pointer items-center justify-center rounded-lg p-0 transition-transform hover:opacity-90"
-                aria-label="Open sidebar"
-              >
-                <SukgoLogo variant="dark" size="sm" showWordmark={false} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8} className={SHELL_RAIL_TOOLTIP}>
-              Open sidebar
-            </TooltipContent>
-          </Tooltip>
-        </div>
+      <div className="flex h-full w-full flex-col items-center py-3">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="mb-2 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg p-0 transition-opacity hover:opacity-90"
+              aria-label="Open sidebar"
+            >
+              <SukgoLogo variant="dark" size="md" showWordmark={false} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={10} className={SHELL_RAIL_TOOLTIP}>
+            Open sidebar
+          </TooltipContent>
+        </Tooltip>
 
-        <div className="h-3 shrink-0" aria-hidden />
-
-        <div className="flex w-full flex-col items-center gap-0.5">
-          <CollapsedIconButton
-            onClick={() => router.push('/')}
-            tooltip="New simulation"
+        <div className="flex flex-col items-center gap-1">
+          <RailIcon
+            tone="app"
+            tooltipClassName={SHELL_RAIL_TOOLTIP}
+            icon={Plus}
+            label="New simulation"
             active={pathname === '/'}
-          >
-            <Plus size={NAV_ICON} strokeWidth={ICON_STROKE} />
-          </CollapsedIconButton>
-
-          <CollapsedIconButton
-            onClick={() => router.push('/agents')}
-            tooltip="Agent Lab"
+            onClick={() => router.push('/')}
+          />
+          <RailIcon
+            tone="app"
+            tooltipClassName={SHELL_RAIL_TOOLTIP}
+            icon={Dna}
+            label="Agent Lab"
             active={agentLabActive}
-          >
-            <Dna size={NAV_ICON} strokeWidth={ICON_STROKE} />
-          </CollapsedIconButton>
-
-          <CollapsedIconButton
-            onClick={() => router.push('/operator')}
-            tooltip="My Operator"
+            onClick={() => router.push('/agents')}
+          />
+          <RailIcon
+            tone="app"
+            tooltipClassName={SHELL_RAIL_TOOLTIP}
+            icon={UserRound}
+            label="My Operator"
             active={operatorActive}
-          >
-            <UserRound size={NAV_ICON} strokeWidth={ICON_STROKE} />
-          </CollapsedIconButton>
+            onClick={() => router.push('/operator')}
+          />
         </div>
 
-        <div
-          className="my-2 h-px w-6 shrink-0 bg-border-subtle/80"
-          role="presentation"
-          aria-hidden
-        />
+        <div className="my-2 h-px w-5 shrink-0 bg-border-subtle/80" role="presentation" aria-hidden />
 
         <div className="min-h-0 flex-1" />
 
-        {normalizeTierType(tier) === 'free' ? (
-          <div className="flex w-full shrink-0 justify-center py-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => router.push('/pricing')}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white/30 transition-colors hover:bg-surface-2 hover:text-white/45"
-                  aria-label="Upgrade"
-                >
-                  <Gem size={18} strokeWidth={ICON_STROKE} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={8} className={SHELL_RAIL_TOOLTIP}>
-                Upgrade
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        ) : null}
-
-        <div className="w-full shrink-0 pb-1 pt-0.5">
+        <div className="mt-auto flex w-full flex-col items-center gap-2 pb-1 pt-1">
+          {normalizeTierType(tier) === 'free' ? (
+            <RailIcon
+              tone="app"
+              tooltipClassName={SHELL_RAIL_TOOLTIP}
+              icon={Gem}
+              label="Upgrade"
+              href="/pricing"
+              iconSize={20}
+            />
+          ) : null}
           <ProfileMenu variant="collapsed" tier={tier} />
         </div>
       </div>
     </TooltipProvider>
-  );
-}
-
-function CollapsedIconButton({
-  children,
-  onClick,
-  tooltip,
-  active = false,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  tooltip: string;
-  active?: boolean;
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          onClick={onClick}
-          className={cn(
-            'relative mx-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-[background,color] duration-150',
-            active ? 'text-txt-primary' : 'text-txt-primary/40 hover:bg-surface-2 hover:text-txt-primary/80',
-          )}
-        >
-          {active ? (
-            <span
-              className="pointer-events-none absolute left-0 top-1/2 z-0 h-5 w-[3px] -translate-y-1/2 rounded-r-[2px]"
-              style={{ backgroundColor: RAIL_TERRA }}
-              aria-hidden
-            />
-          ) : null}
-          <span className="relative z-[1] flex items-center justify-center">{children}</span>
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="right" sideOffset={8} className={SHELL_RAIL_TOOLTIP}>
-        {tooltip}
-      </TooltipContent>
-    </Tooltip>
   );
 }
 
@@ -492,8 +437,11 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
   const triggerCollapsed = (
     <button
       type="button"
-      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold leading-none text-white transition-opacity hover:opacity-95"
-      style={{ backgroundColor: RAIL_TERRA }}
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-medium leading-none transition-opacity hover:opacity-95"
+      style={{
+        backgroundColor: 'rgba(232, 89, 60, 0.15)',
+        color: RAIL_TERRA,
+      }}
       aria-label={displayName}
     >
       {initial}
