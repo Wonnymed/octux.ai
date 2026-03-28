@@ -39,8 +39,8 @@ export default function OptimizationLog({ cycles }: { cycles: Cycle[] }) {
           disabled={triggering}
           style={{
             padding: '8px 16px', borderRadius: '8px',
-            border: '1px solid #C75B2A', background: 'transparent',
-            color: '#C75B2A', fontSize: '13px', fontWeight: 500,
+            border: '1px solid #1A1815', background: 'transparent',
+            color: '#1A1815', fontSize: '13px', fontWeight: 500,
             cursor: triggering ? 'wait' : 'pointer',
             opacity: triggering ? 0.6 : 1,
           }}

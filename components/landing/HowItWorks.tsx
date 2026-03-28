@@ -4,7 +4,7 @@ const steps = [
   {
     number: '01',
     title: 'You ask',
-    description: 'Type any decision — investment, career, relationship, business. No formatting needed.',
+    description: 'Type any business decision — investment, career, or company strategy. No formatting needed.',
     visual: 'input',
     example: '"Should I invest $50K in rental property in Gangnam?"',
   },

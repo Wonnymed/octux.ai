@@ -1,5 +1,5 @@
 /**
- * Upsert the canonical 60-agent catalog into public.agents (Supabase).
+ * Upsert the canonical 30-agent catalog into public.agents (Supabase).
  * Source of truth remains lib/agents/catalog.ts — re-run POST /api/agents/seed after edits.
  */
 

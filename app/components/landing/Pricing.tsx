@@ -18,10 +18,9 @@ const PLANS: Plan[] = [
     monthly: 0,
     annual: 0,
     features: [
-      "5 simulations/month",
-      "Basic verdict",
-      "Single engine",
-      "No audit trail",
+      "2 simulation tokens/month",
+      "Swarm mode",
+      "Basic verdict + chat",
     ],
     buttonLabel: "Get started free",
     featured: false,
@@ -31,11 +30,10 @@ const PLANS: Plan[] = [
     monthly: 29,
     annual: 23,
     features: [
-      "100 simulations/month",
-      "All 6 engines",
-      "Deep analysis + self-refine",
-      "Full audit trail + citations",
-      "Agent ELO tracking",
+      "30 simulation tokens/month",
+      "Specialist + advanced modes",
+      "Full verdict + citations",
+      "PDF export & cross-sim memory",
     ],
     buttonLabel: "Start Pro",
     featured: true,
@@ -45,11 +43,10 @@ const PLANS: Plan[] = [
     monthly: 99,
     annual: 79,
     features: [
-      "Unlimited simulations",
+      "120 simulation tokens/month",
       "Everything in Pro",
-      "Human intervention mid-sim",
-      "API access",
-      "Priority support",
+      "Priority processing",
+      "API & custom agents (roadmap)",
     ],
     buttonLabel: "Go Max",
     featured: false,
@@ -122,7 +119,7 @@ export default function Pricing() {
             height: 24,
             borderRadius: 12,
             border: "none",
-            background: annual ? "#C75B2A" : "var(--surface-3)",
+            background: annual ? "#1A1815" : "var(--surface-3)",
             cursor: "pointer",
             position: "relative",
             transition: "background 150ms ease-out",
@@ -156,7 +153,7 @@ export default function Pricing() {
             style={{
               fontSize: 11,
               fontWeight: 500,
-              color: "#C75B2A",
+              color: "#1A1815",
               opacity: annual ? 1 : 0.6,
             }}
           >
@@ -181,7 +178,7 @@ export default function Pricing() {
                 padding: 32,
                 borderRadius: 12,
                 border: plan.featured
-                  ? "2px solid #C75B2A"
+                  ? "2px solid #1A1815"
                   : `1px solid ${isHovered ? "var(--border-strong)" : "var(--border-default)"}`,
                 background: "#FFFFFF",
                 display: "flex",
@@ -203,7 +200,7 @@ export default function Pricing() {
                     transform: "translateX(-50%)",
                     padding: "4px 14px",
                     borderRadius: "var(--radius-full)",
-                    background: "#C75B2A",
+                    background: "#1A1815",
                     color: "#FFFFFF",
                     fontSize: 11,
                     fontWeight: 600,
@@ -300,7 +297,7 @@ export default function Pricing() {
                       size={15}
                       strokeWidth={2}
                       style={{
-                        color: plan.featured ? "#C75B2A" : "var(--icon-secondary)",
+                        color: plan.featured ? "#1A1815" : "var(--icon-secondary)",
                         flexShrink: 0,
                         marginTop: 2,
                       }}
@@ -326,7 +323,7 @@ export default function Pricing() {
                   ...(plan.featured
                     ? {
                         background:
-                          hoveredBtn === plan.name ? "#C75B2A" : "#C75B2A",
+                          hoveredBtn === plan.name ? "#1A1815" : "#1A1815",
                         color: "#FFFFFF",
                         border: "none",
                       }
@@ -334,9 +331,9 @@ export default function Pricing() {
                         background: "transparent",
                         color:
                           hoveredBtn === plan.name
-                            ? "#C75B2A"
+                            ? "#1A1815"
                             : "var(--text-primary)",
-                        border: `1px solid ${hoveredBtn === plan.name ? "#C75B2A" : "var(--border-default)"}`,
+                        border: `1px solid ${hoveredBtn === plan.name ? "#1A1815" : "var(--border-default)"}`,
                       }),
                 }}
               >

@@ -22,12 +22,12 @@ const typeIcons: Record<string, string> = {
 };
 
 const typeStyles: Record<string, string> = {
-  what_if: 'border-accent/30 hover:border-accent/50 hover:bg-accent-subtle/50',
-  deep_dive: 'border-category-career/30 hover:border-category-career/50 hover:bg-category-career/5',
-  compare: 'border-category-business/30 hover:border-category-business/50 hover:bg-category-business/5',
-  simulate: 'border-accent/30 hover:border-accent/50 hover:bg-accent-subtle/50',
+  what_if: 'border-border-default hover:border-border-strong hover:bg-surface-2',
+  deep_dive: 'border-border-default hover:border-border-strong hover:bg-surface-2',
+  compare: 'border-border-default hover:border-border-strong hover:bg-surface-2',
+  simulate: 'border-border-default hover:border-border-strong hover:bg-surface-2',
   explore: 'border-border-default hover:border-border-strong hover:bg-surface-1',
-  challenge: 'border-confidence-contested/30 hover:border-confidence-contested/50 hover:bg-confidence-contested/5',
+  challenge: 'border-border-default hover:border-border-strong hover:bg-surface-2',
 };
 
 export default function SuggestionChips({
@@ -55,7 +55,7 @@ export default function SuggestionChips({
             'shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border',
             'text-xs text-txt-secondary transition-all duration-normal ease-out',
             'hover:text-txt-primary active:scale-[0.98]',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(255,255,255,0.08)]',
             typeStyles[suggestion.type] || typeStyles.explore,
             `stagger-${Math.min(i + 1, 10)} animate-fade-in`,
           )}

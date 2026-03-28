@@ -21,7 +21,7 @@ export type SimulationState = {
   simulation_id: string;
   question: string;
   engine: string;
-  tier: 'free' | 'pro' | 'max' | 'octopus';
+  tier: 'free' | 'pro' | 'max';
 
   // LangGraph #2: Phase state machine
   current_phase: PhaseId;
@@ -82,7 +82,7 @@ export function createInitialState(
     simulation_id: simId,
     question,
     engine,
-    tier: (['free', 'pro', 'max', 'octopus'].includes(tier) ? tier : 'free') as SimulationState['tier'],
+    tier: (['free', 'pro', 'max'].includes(tier) ? tier : 'free') as SimulationState['tier'],
 
     current_phase: 'input',
     phase_history: [{ phase: 'input', started_at: new Date().toISOString() }],

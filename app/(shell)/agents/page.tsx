@@ -20,10 +20,13 @@ import {
 import { cn } from '@/lib/design/cn';
 import {
   AGENT_CATALOG,
+  CATALOG_AGENT_COUNT,
   DOMAIN_COLORS as CATALOG_DOMAIN_COLORS,
   DOMAIN_LABELS as CATALOG_DOMAIN_LABELS,
   type AgentDomain as CatalogAgentDomain,
 } from '@/lib/agents/catalog';
+
+const ALLOWED_SPECIALIST_DOMAINS = new Set<CatalogAgentDomain>(['investment', 'career', 'business']);
 import { LEGACY_AGENT_IDS } from '@/lib/agents/legacy-ids';
 
 type AgentDomain = CatalogAgentDomain | 'custom' | 'self';
@@ -61,8 +64,8 @@ const FALLBACK_DOMAIN_LABELS: Record<AgentDomain, string> = {
 
 const DOMAIN_COLORS: Record<AgentDomain, string> = {
   ...CATALOG_DOMAIN_COLORS,
-  custom: '#D4A843',
-  self: '#E8784A',
+  custom: '#8a8578',
+  self: '#6b6560',
 };
 
 /** Stable order for catalog agents (symmetric 5×2 grids per category). */
@@ -90,7 +93,7 @@ export default function AgentLabPage() {
     const requested = new URLSearchParams(window.location.search).get('category');
     if (!requested) return;
     const normalized = requested.toLowerCase();
-    const allowed = new Set(['life', 'relationships', 'career', 'business', 'health', 'investment']);
+    const allowed = new Set(['career', 'business', 'investment']);
     if (allowed.has(normalized)) {
       setFilterDomain(normalized as AgentDomain);
     }
@@ -158,11 +161,13 @@ export default function AgentLabPage() {
         const merged = [...fromApi, ...fromCatalog];
         const seen = new Set<string>();
         setAllAgents(
-          merged.filter((a) => {
-            if (seen.has(a.id)) return false;
-            seen.add(a.id);
-            return true;
-          })
+          merged
+            .filter((a) => ALLOWED_SPECIALIST_DOMAINS.has(a.domain as CatalogAgentDomain))
+            .filter((a) => {
+              if (seen.has(a.id)) return false;
+              seen.add(a.id);
+              return true;
+            })
         );
       } catch {
         setAllAgents([]);
@@ -224,7 +229,7 @@ export default function AgentLabPage() {
             <h1 className="text-xl font-medium text-txt-primary">Agent Lab</h1>
           </div>
           <p className="max-w-lg text-sm text-txt-tertiary">
-            Your simulation team. Create your personal agent, customize specialists, and make every simulation personal.
+            Your business simulation team. Create your personal agent, tune specialist lenses, and run every simulation with context.
           </p>
         </motion.div>
 
@@ -242,7 +247,9 @@ export default function AgentLabPage() {
               }}
               className={cn(
                 'flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all',
-                joker.joker_enabled ? 'border-accent/20 bg-accent/10 text-accent' : 'border-border-subtle bg-surface-2 text-txt-tertiary'
+                joker.joker_enabled
+                  ? 'border-[1.5px] border-txt-primary bg-accent-light text-txt-primary'
+                  : 'border border-border-default bg-transparent text-txt-secondary'
               )}
             >
               {joker.joker_enabled ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
@@ -270,7 +277,7 @@ export default function AgentLabPage() {
             <h2 className="flex items-center gap-2 text-sm font-medium text-txt-primary">
               <Brain size={15} className="text-accent" />
               Specialist Agents
-              <span className="text-xs font-normal text-txt-disabled">({allAgents.length})</span>
+              <span className="text-xs font-normal text-txt-disabled">({CATALOG_AGENT_COUNT})</span>
             </h2>
             {saving && <span className="text-xs text-txt-tertiary">Saving...</span>}
           </div>
@@ -286,18 +293,18 @@ export default function AgentLabPage() {
               />
             </div>
             <div className="flex flex-wrap gap-1">
-              {(['all', 'life', 'relationships', 'career', 'business', 'health', 'investment'] as const).map((domain) => (
+              {(['all', 'business', 'career', 'investment'] as const).map((domain) => (
                 <button
                   key={domain}
                   onClick={() => setFilterDomain(domain)}
                   className={cn(
                     'rounded-lg px-2.5 py-1 text-[11px] transition-all',
                     filterDomain === domain
-                      ? 'border border-accent/20 bg-accent/10 text-accent'
-                      : 'text-txt-tertiary hover:bg-surface-2 hover:text-txt-secondary'
+                      ? 'border-[1.5px] border-txt-primary bg-accent-light text-txt-primary'
+                      : 'border border-border-default bg-transparent text-txt-secondary hover:bg-surface-2 hover:text-txt-primary'
                   )}
                 >
-                  {domain === 'all' ? 'All' : domainLabels[domain] || domain}
+                  {domain === 'all' ? `All (${CATALOG_AGENT_COUNT})` : domainLabels[domain] || domain}
                 </button>
               ))}
             </div>
@@ -361,7 +368,7 @@ function JokerCard({ joker, onEdit }: { joker: JokerProfile; onEdit: () => void 
   return (
     <div className={cn('rounded-xl border p-5 transition-all', joker.joker_enabled ? 'border-accent/15 bg-accent-subtle' : 'border-border-subtle bg-surface-1')}>
       <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent/60 to-amber-600/30">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2">
           <span className="text-xl">🃏</span>
         </div>
         <div className="min-w-0 flex-1">
@@ -443,7 +450,9 @@ function JokerEditor({
                 onClick={() => onChange({ ...joker, joker_priorities: active ? joker.joker_priorities.filter((x) => x !== p) : [...joker.joker_priorities, p] })}
                 className={cn(
                   'rounded-lg border px-2.5 py-1 text-[11px] transition-all',
-                  active ? 'border-accent/20 bg-accent/10 font-medium text-accent' : 'border-border-subtle text-txt-tertiary hover:border-border-default'
+                  active
+                    ? 'border-[1.5px] border-txt-primary bg-accent-light font-medium text-txt-primary'
+                    : 'border border-border-default bg-transparent text-txt-secondary hover:border-border-strong'
                 )}
               >
                 {p}

@@ -243,6 +243,7 @@ export async function resolveContradictions(
 
     try {
       const response = await callClaude({
+        tier: 'memory',
         systemPrompt: `You detect contradictions between facts about a user's business.
 A contradiction = two facts that CANNOT both be true at the same time.
 

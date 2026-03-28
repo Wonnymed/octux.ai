@@ -1,8 +1,6 @@
 /**
- * Octux Decision Chat — Memory-powered conversational AI.
- *
- * Every response is informed by the user's COMPLETE decision history,
- * behavioral profile, knowledge graph, and accumulated facts.
+ * Octux Decision Chat — Memory-aware conversational AI.
+ * User memory is optional context: injected with strict “use only when relevant” rules.
  */
 
 import { supabase } from '../memory/supabase';
@@ -10,11 +8,31 @@ import { callClaude } from '../simulation/claude';
 import { loadMemoryForSimulation, formatMemoryContext } from '../memory/core-memory';
 import { getTopKMemories } from '../memory/recall';
 import { getOrCreateProfile, formatBehavioralContext } from '../memory/behavioral';
-import { formatGraphForContext } from '../memory/knowledge-graph';
 import { detectDomain, getDisclaimer } from '../simulation/domain';
 import { searchKnowledge, formatKnowledgeForAgent } from '../knowledge/search';
 import { parseQuestionForFacts, applyFactActions } from '../memory/facts';
-import { getModelForTier, type ModelTier, TIER_CONFIGS } from './tiers';
+import type { ModelTier } from './tiers';
+import { userRequestedContextFree } from './memoryPolicy';
+
+export type ChatWithMemoryOptions = {
+  /** Settings → Profile → Decision context (user-written); injected with "use sparingly" rules */
+  settingsDecisionContext?: string;
+};
+
+function formatSettingsDecisionContextBlock(text: string): string {
+  const t = text.trim();
+  if (!t) return '';
+  return `## User-written background (from Settings)
+The user chose to save this as general decision context. It is **reference only**.
+
+RULES:
+- Use it **sparingly** and only when it clearly improves the answer to the **current** message.
+- Do **not** open responses by restating this block.
+- If the current question is unrelated, ignore it.
+
+Decision context:
+${t}`;
+}
 
 // ═══════════════════════════════════════════
 // TYPES
@@ -40,11 +58,10 @@ export type ChatResponse = {
 // ═══════════════════════════════════════════
 
 async function buildChatContext(userId: string, currentMessage: string): Promise<string> {
-  const [memoryPayload, topKMemories, behavioralProfile, graphContext] = await Promise.all([
+  const [memoryPayload, topKMemories, behavioralProfile] = await Promise.all([
     loadMemoryForSimulation(userId, currentMessage),
-    getTopKMemories(userId, currentMessage, 10),
+    getTopKMemories(userId, currentMessage, 5),
     getOrCreateProfile(userId),
-    formatGraphForContext(userId, 10, 8),
   ]);
 
   const sections: string[] = [];
@@ -62,45 +79,92 @@ async function buildChatContext(userId: string, currentMessage: string): Promise
   // Relevant memories (facts, experiences, opinions related to this question)
   if (topKMemories) sections.push(topKMemories);
 
-  // Knowledge graph (entities and relationships)
-  if (graphContext) sections.push(graphContext);
+  // Knowledge graph is already folded into the core memory BUSINESS block via loadMemoryForSimulation
 
-  // Recent simulations summary (last 3)
+  // Recent simulations — only list lines that overlap the current question (avoid dumping unrelated past runs)
   if (supabase) {
     const { data: recentSims } = await supabase
       .from('simulations')
       .select('id, question, verdict, domain, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(3);
+      .limit(8);
 
     if (recentSims && recentSims.length > 0) {
-      const simSummary = recentSims.map(s => {
-        const v = s.verdict as any;
-        const q = (s.question || '').substring(0, 60);
-        const rec = (v?.recommendation || '?').toUpperCase();
-        const prob = v?.probability || 0;
-        return `  • "${q}..." → ${rec} (${prob}%) [${s.domain || 'business'}]`;
-      }).join('\n');
-      sections.push(`\nRECENT SIMULATIONS:\n${simSummary}`);
+      const msgWords = currentMessage
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((w) => w.length > 3);
+      const relevant = recentSims.filter((s) => {
+        const q = ((s.question || '') as string).toLowerCase();
+        return msgWords.some((w) => q.includes(w));
+      });
+      const list = (relevant.length > 0 ? relevant : []).slice(0, 3);
+      if (list.length > 0) {
+        const simSummary = list
+          .map((s) => {
+            const v = s.verdict as Record<string, unknown> | null;
+            const q = (s.question || '').substring(0, 60);
+            const rec = String(v?.recommendation || '?').toUpperCase();
+            const prob = v?.probability ?? 0;
+            return `  • "${q}..." → ${rec} (${prob}%) [${s.domain || 'business'}]`;
+          })
+          .join('\n');
+        sections.push(`\nRELATED PAST SIMULATIONS (topic overlap with current message):\n${simSummary}`);
+      } else {
+        sections.push(
+          `\nNOTE: User has ${recentSims.length} past simulation(s) on file — do not list or assume topics unless they clearly match the current question.`,
+        );
+      }
     }
   }
 
   return sections.filter(Boolean).join('\n\n');
 }
 
+/** Wraps raw DB-derived context with explicit conditional-use rules for the model. */
+function wrapUserContextForPrompt(rawBody: string): string {
+  const body = rawBody.trim();
+  if (!body) return '';
+
+  return `## User context (use ONLY when directly relevant)
+The following is background from past sessions, profile, and stored facts.
+
+RULES FOR USING THIS CONTEXT:
+- Only reference it if the user's **current** message is **directly** related to it.
+- For general or factual questions, answer directly first. Do **not** open with a biography, budget list, or recap of every past topic.
+- If the user asked to ignore or forget prior context this turn, none of this applies (it should not have been injected — if you still see stale chat history above, ignore it for personalization).
+- Never refuse to answer because stored context is incomplete — give a direct, useful answer first.
+- Do **not** pad responses by restating everything you know about the user.
+- Keep most answers under ~200 words unless the user clearly needs depth; offer to go deeper if useful.
+
+Context:
+${body}
+`;
+}
+
 // ═══════════════════════════════════════════
 // chatWithMemory() — Main chat function
 // ═══════════════════════════════════════════
+
+const CHAT_MAX_TOKENS = 2048;
 
 export async function chatWithMemory(
   userId: string,
   message: string,
   history: ChatMessage[],
-  tier: ModelTier = 'ink'
+  tier: ModelTier = 'default',
+  options?: ChatWithMemoryOptions,
 ): Promise<ChatResponse> {
-  // 1. Build full memory context
-  const memoryContext = await buildChatContext(userId, message);
+  const contextFree = userRequestedContextFree(message);
+
+  // 1. User-specific memory (skip entirely when they ask for a clean answer)
+  let rawUserContext = contextFree ? '' : await buildChatContext(userId, message);
+  if (!contextFree && options?.settingsDecisionContext?.trim()) {
+    const block = formatSettingsDecisionContextBlock(options.settingsDecisionContext);
+    rawUserContext = rawUserContext ? `${rawUserContext}\n\n${block}` : block;
+  }
+  const memoryContext = contextFree ? '' : wrapUserContextForPrompt(rawUserContext);
 
   // 2. Detect domain for potential disclaimer
   const domain = await detectDomain(message);
@@ -139,9 +203,12 @@ export async function chatWithMemory(
     }
   } catch {} // non-blocking
 
-  // 5. Build conversation with memory + RAG
-  const fullContext = ragContext ? ragContext + '\n\n' + memoryContext : memoryContext;
-  const systemPrompt = buildChatSystemPrompt(fullContext, tier);
+  // 5. Build conversation with memory + RAG (RAG is domain knowledge, not user biography)
+  const fullContext = [ragContext, memoryContext].filter(Boolean).join('\n\n');
+  const systemPrompt = buildChatSystemPrompt(fullContext, tier, {
+    contextFree,
+    hasUserMemory: memoryContext.length > 0,
+  });
 
   const messages = [
     ...history.slice(-8).map(m => ({
@@ -151,15 +218,11 @@ export async function chatWithMemory(
     { role: 'user' as const, content: message },
   ];
 
-  // 5. Call Claude with appropriate model
-  const model = getModelForTier(tier);
-  const maxTokens = TIER_CONFIGS[tier].maxTokens;
-
   const response = await callClaude({
     systemPrompt,
     userMessage: messages.map(m => `${m.role === 'user' ? 'User' : 'Octux'}: ${m.content}`).join('\n\n') + '\n\nOctux:',
-    maxTokens,
-    model,
+    maxTokens: CHAT_MAX_TOKENS,
+    tier: 'chat',
   });
 
   // 6. Detect if this question deserves a full simulation
@@ -192,27 +255,63 @@ export async function chatWithMemory(
 // System prompt builder
 // ═══════════════════════════════════════════
 
-function buildChatSystemPrompt(memoryContext: string, tier: ModelTier): string {
-  const tierLabel = TIER_CONFIGS[tier].label;
+function buildChatSystemPrompt(
+  referenceContext: string,
+  _tier: ModelTier,
+  opts: { contextFree: boolean; hasUserMemory: boolean },
+): string {
+  const contextFreeBlock = opts.contextFree
+    ? `
+## This turn: context-free answer
+The user asked to ignore stored personal context or to answer without using prior profile/history.
+- Give a direct, clean answer. Do **not** cite their saved profile, locations, employers, budgets, or past simulations unless they explicitly ask about those.
+- Do **not** say you "won't forget" their context or lecture them about why memory matters.
+`
+    : '';
 
-  return `You are Octux AI — a Decision Operating System with memory.
-You are currently in ${tierLabel} mode (${tier === 'kraken' ? 'maximum reasoning power' : tier === 'deep' ? 'deep analysis' : 'fast and smart'}).
+  const memoryPreamble = opts.hasUserMemory
+    ? `Optional user-specific background may appear below in "## User context". It is **supplementary**, not a script to read aloud.`
+    : `No long-form user memory block is attached for this turn — answer from the question and recent chat turns only.`;
 
-You are NOT a generic chatbot. You are a decision advisor who KNOWS this user personally from accumulated interaction history. Use the context below to give PERSONALIZED responses.
+  return `You are Octux AI — a Decision Operating System.
+Chat is fast and efficient; full multi-agent simulation is available separately when the user runs a simulation.
 
-${memoryContext}
+You help people think through decisions clearly. ${memoryPreamble}
 
-BEHAVIOR RULES:
-1. ALWAYS reference the user's known context when relevant. "Based on your F&B plans in Gangnam..." not "In general, Gangnam..."
-2. If the user mentions NEW facts about themselves (budget change, new plans, etc.), acknowledge them — the system will save these automatically.
-3. If the question is SMALL (factual, quick opinion), answer directly. Be concise.
-4. If the question is BIG (major decision, multiple factors, high stakes), answer but ALSO suggest: "This looks like a decision worth a full simulation. Want me to run one?" Include a suggested simulation prompt.
-5. If the user asks about a PAST simulation, reference the specific verdict, probability, and key risk.
-6. If the user wants to TWEAK a past simulation ("what if budget was $100K?"), provide a quick analysis based on the existing simulation data — don't suggest re-running the whole thing unless the change is fundamental.
-7. Adapt your tone to the user's behavioral profile (if loaded above).
-8. For investment/legal/health questions, always include the appropriate disclaimer.
-9. Be warm but professional. You're a trusted advisor, not a sycophant.
-10. If you don't know something, say so. Don't hallucinate facts about the user.`;
+${contextFreeBlock}
+
+## Response guidelines
+
+1. **Answer the question first.** Give a direct, useful answer before adding nuance or follow-ups.
+
+2. **Context is supplementary.** Stored memory and past simulations are background — use them only when they **change** or **sharpen** the recommendation. Never open by listing everything you know about the user.
+
+3. **Respect "forget / ignore / just answer".** If this turn is context-free (see above), comply fully.
+
+4. **Match length to complexity.**
+   - Simple or factual question → short answer (about 2–5 sentences).
+   - Big life/career/business decision → structured analysis, still avoid pointless recap of unrelated stored facts.
+   - Yes/no questions → give **yes or no first**, then briefly why.
+
+5. **Do not:**
+   - Open with a summary of the user's entire situation
+   - Refuse to answer without many clarifying questions — give your best answer, then offer optional follow-ups
+   - Pad with unrelated context ("You also mentioned Miami…") unless the current question ties to it
+
+6. **Do:**
+   - Be concise by default (often under ~200 words)
+   - Mention stored context **only** when it is genuinely relevant
+   - Offer a simulation or deeper pass when the decision is high-stakes
+
+7. If the user states **new** facts about themselves, acknowledge briefly — the system may persist them.
+
+8. If they ask about a **specific past simulation**, then reference verdict, probability, and main risk.
+
+9. For investment / legal / medical topics, include the appropriate disclaimer when needed.
+
+10. If you don't know, say so. Do not invent facts about the user.
+
+${referenceContext ? `\n---\n${referenceContext}\n---\n` : ''}`;
 }
 
 // ═══════════════════════════════════════════

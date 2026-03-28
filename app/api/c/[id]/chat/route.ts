@@ -7,64 +7,64 @@ import { NextRequest, NextResponse } from 'next/server';
 import { addMessage, getConversationMessages } from '@/lib/conversation/manager';
 import { chatWithMemory } from '@/lib/chat/chat';
 import { refineSimulation } from '@/lib/chat/refine';
-import { getUserIdFromRequest } from '@/lib/auth/supabase-server';
-import { canUseTier, getDefaultTier, type ModelTier, type UserPlan } from '@/lib/chat/tiers';
-import { getKrakenBalance } from '@/lib/chat/kraken';
+import { getUserDecisionContextFromMetadata, getUserIdFromRequest } from '@/lib/auth/supabase-server';
+import {
+  checkSimulationStart,
+  ensureUserSubscription,
+  getTokenBalance,
+} from '@/lib/billing/usage';
+import { parseSimulationChargeType, getTokenCost } from '@/lib/billing/token-costs';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { userId, isAuthenticated } = await getUserIdFromRequest(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id: conversationId } = await params;
   const body = await req.json();
-  const { message, action, tier: requestedTier, simulationId, modification } = body;
-
-  // Determine plan + tier
-  const plan: UserPlan = isAuthenticated ? 'pro' : 'free';
-  const krakenBalance = await getKrakenBalance(userId);
-  let tier: ModelTier = requestedTier || getDefaultTier(plan);
-
-  const access = canUseTier(plan, tier, krakenBalance);
-  if (!access.allowed) tier = getDefaultTier(plan);
+  const { message, action, simulationId, modification } = body;
 
   // ═══ ACTION: CHAT MESSAGE ═══
   if (!action || action === 'chat') {
     if (!message) return NextResponse.json({ error: 'Message required' }, { status: 400 });
 
-    // Save user message
     await addMessage(conversationId, userId, {
       message_type: 'text',
       role: 'user',
       content: message,
-      model_tier: tier,
+      model_tier: 'default',
     });
 
-    // Load recent messages for context
     const recentMsgs = await getConversationMessages(conversationId, 20);
     const history = recentMsgs
-      .filter(m => m.message_type === 'text' && m.content)
+      .filter((m) => m.message_type === 'text' && m.content)
       .slice(-10)
-      .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content! }));
+      .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content! }));
 
-    // Chat with memory
-    const result = await chatWithMemory(userId, message, history, tier);
+    const settingsDecisionContext = isAuthenticated ? await getUserDecisionContextFromMetadata() : '';
 
-    // Save assistant response
+    const result = await chatWithMemory(userId, message, history, 'default', {
+      settingsDecisionContext,
+    });
+
     const msgType = result.suggestSimulation ? 'decision_card' : 'text';
     await addMessage(conversationId, userId, {
       message_type: msgType,
       role: 'assistant',
       content: result.response,
       model_tier: result.tier,
-      structured_data: result.suggestSimulation ? {
-        suggest_simulation: true,
-        simulation_prompt: result.simulationPrompt,
-        related_simulations: result.relatedSimulations,
-        disclaimer: result.disclaimer,
-      } : result.disclaimer ? { disclaimer: result.disclaimer } : undefined,
+      structured_data: result.suggestSimulation
+        ? {
+            suggest_simulation: true,
+            simulation_prompt: result.simulationPrompt,
+            related_simulations: result.relatedSimulations,
+            disclaimer: result.disclaimer,
+          }
+        : result.disclaimer
+          ? { disclaimer: result.disclaimer }
+          : undefined,
     });
 
     return NextResponse.json(result);
@@ -72,38 +72,76 @@ export async function POST(
 
   // ═══ ACTION: TRIGGER SIMULATION ═══
   if (action === 'simulate') {
+    if (!isAuthenticated) {
+      return NextResponse.json(
+        { error: 'Sign in required to run simulations.' },
+        { status: 401 },
+      );
+    }
+
     const question = message || body.question;
     if (!question) return NextResponse.json({ error: 'Question required' }, { status: 400 });
+
+    await ensureUserSubscription(userId);
+
+    const simMode = parseSimulationChargeType(body.simMode);
+    const gate = await checkSimulationStart(userId, simMode);
+    if (!gate.allowed) {
+      return NextResponse.json(
+        {
+          error: 'forbidden',
+          message: gate.reason,
+          upgradeRequired: gate.upgradeRequired,
+          tokensUsed: gate.tokensUsed,
+          tokensTotal: gate.tokensTotal,
+        },
+        { status: 403 },
+      );
+    }
+
+    const balance = await getTokenBalance(userId);
+    const tokenCost = getTokenCost(simMode);
 
     const agentIds: string[] | undefined = body.agentIds;
     const includeSelf: boolean | undefined = body.includeSelf;
     const joker: Record<string, unknown> | null | undefined = body.joker;
     const agentOverrides: Record<string, unknown> | undefined = body.agentOverrides;
 
-    // Save simulation start message
     await addMessage(conversationId, userId, {
       message_type: 'simulation_start',
       role: 'system',
       content: question,
-      structured_data: { tier, question, agentIds, includeSelf, joker, agentOverrides },
+      structured_data: {
+        simMode,
+        tokenCost,
+        tokensRemaining: balance.tokensRemaining,
+        question,
+        agentIds,
+        includeSelf,
+        joker,
+        agentOverrides,
+      },
     });
 
-    // Build stream URL with optional params
-    let streamUrl = `/api/simulate/stream?q=${encodeURIComponent(question)}&conversationId=${conversationId}&tier=${tier}`;
-    if (agentIds?.length) streamUrl += `&agentIds=${agentIds.join(',')}`;
-    if (includeSelf) streamUrl += `&includeSelf=true`;
+    const streamBody = {
+      question,
+      engine: 'simulate',
+      conversationId,
+      simMode,
+      joker: joker ?? null,
+      agentOverrides: agentOverrides ?? {},
+      agentIds,
+      includeSelf,
+    };
 
-    // Return the simulation config — frontend will connect to SSE
     return NextResponse.json({
       action: 'simulate',
       question,
       conversationId,
-      tier,
-      agentIds,
-      includeSelf,
-      joker,
-      agentOverrides,
-      streamUrl,
+      simMode,
+      tokenCost,
+      tokensRemaining: balance.tokensRemaining,
+      streamBody,
     });
   }
 
@@ -113,15 +151,19 @@ export async function POST(
       return NextResponse.json({ error: 'simulationId and modification required' }, { status: 400 });
     }
 
-    const result = await refineSimulation({ simulationId, modification, userId, tier });
+    const result = await refineSimulation({
+      simulationId,
+      modification,
+      userId,
+      tier: 'default',
+    });
     if (!result) return NextResponse.json({ error: 'Refinement failed' }, { status: 500 });
 
-    // Save refinement as special message
     await addMessage(conversationId, userId, {
       message_type: 'refinement',
       role: 'assistant',
       structured_data: result,
-      model_tier: tier,
+      model_tier: 'default',
       simulation_id: simulationId,
     });
 

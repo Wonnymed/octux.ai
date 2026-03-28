@@ -52,7 +52,7 @@ const AGENT_DEFS: AgentDef[] = [
     name: 'Decision Chair',
     role: 'Orchestrator & Synthesizer',
     icon: 'Crown',
-    color: '#C75B2A',
+    color: '#1A1815',
     goal: 'Orchestrate a fair adversarial debate, surface hidden disagreements, and synthesize a structured Decision Object',
     backstory: 'Former McKinsey engagement manager who ran $50M+ strategy projects. Left consulting because single-perspective analysis kept producing blind spots. Built Octux to force multi-perspective pressure testing on every decision.',
     constraints: [
@@ -178,7 +178,7 @@ const AGENT_DEFS: AgentDef[] = [
     name: 'Execution Operator',
     role: 'Operations & Implementation',
     icon: 'Wrench',
-    color: '#E8784A',
+    color: '#6B6560',
     goal: 'Determine whether this plan can actually be executed given real-world operational constraints',
     backstory: 'Former operations director who scaled a food delivery startup from 10 to 500 employees across 3 cities. Learned that brilliant strategies die in execution every day. Now evaluates every plan through the lens of what it actually takes to DO the thing.',
     constraints: [
@@ -262,7 +262,7 @@ const AGENT_DEFS: AgentDef[] = [
     name: 'Customer Lens',
     role: 'Customer Perspective & Product-Market Fit',
     icon: 'UserCheck',
-    color: '#E8784A',
+    color: '#6B6560',
     goal: 'Determine whether real customers would actually pay for this, use it repeatedly, and recommend it to others — cutting through founder optimism with brutal customer empathy',
     backstory: 'Former head of user research at a consumer tech company that pivoted 3 times before finding product-market fit. Interviewed over 5,000 customers across 4 industries. Learned that what founders think customers want and what customers actually pay for are almost never the same thing. Now obsessively validates every assumption about customer behavior with evidence.',
     constraints: [

@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { cn } from '@/lib/design/cn';
 import { OctButton } from '@/components/octux';
 import { OctAvatar, OctDialog, OctInput, OctCollapsible } from '@/components/ui';
-import { categoryColors } from '@/lib/design/tokens';
+import { getCategoryColor } from '@/lib/design/tokens';
 import type { CategoryType } from '@/lib/design/tokens';
 
 export interface AgentDefinition {
@@ -26,7 +26,7 @@ interface AgentBrowserProps {
   maxAgents?: number;
 }
 
-const CATEGORY_ORDER: CategoryType[] = ['investment', 'business', 'career', 'relationships', 'life'];
+const CATEGORY_ORDER: CategoryType[] = ['investment', 'business', 'career'];
 
 export default function AgentBrowser({
   open, onClose, allAgents, selectedIds, onToggle, onCreateCustom, maxAgents = 12,
@@ -133,7 +133,7 @@ export default function AgentBrowser({
                   <div className="flex items-center gap-2 w-full py-0.5">
                     <span
                       className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: categoryColors[cat] }}
+                      style={{ backgroundColor: getCategoryColor(cat) }}
                     />
                     <span className="text-xs font-medium text-txt-primary capitalize flex-1">{cat}</span>
                     <span className="text-micro text-txt-disabled">

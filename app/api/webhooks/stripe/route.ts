@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { constructWebhookEvent, getStripe } from '@/lib/billing/stripe';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { TIERS, type TierType, getTierByPrice } from '@/lib/billing/tiers';
+import { TIERS, type TierType, getTierByPrice, getTierConfig } from '@/lib/billing/tiers';
 
 let _supabase: SupabaseClient | null = null;
 function getSupabase() {
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
             .single();
 
           if (sub) {
-            const tierConfig = TIERS[sub.tier as TierType] || TIERS.free;
+            const tierConfig = getTierConfig(String(sub.tier));
             await getSupabase()
               .from('user_subscriptions')
               .update({

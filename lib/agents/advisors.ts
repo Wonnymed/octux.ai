@@ -1,4 +1,4 @@
-import { callClaude, parseJSON, MODELS } from '@/lib/simulation/claude';
+import { callClaude, parseJSON } from '@/lib/simulation/claude';
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -185,6 +185,7 @@ export async function generateAdvisorPersonas(question: string, userGuidance?: s
   }
 
   const response = await callClaude({
+    tier: 'crowd',
     systemPrompt: `You are the Crowd Wisdom Architect for Octux AI. You generate hyper-realistic local advisor personas for business decision validation.
 
 CRITICAL RULES:
@@ -227,6 +228,7 @@ Return JSON array where each object has:
     if (count > 20) {
       try {
         const fallbackResponse = await callClaude({
+          tier: 'crowd',
           systemPrompt: `Generate ${count} advisor personas as a JSON array. Each object: { "id": "advisor_N", "name": "Full Name, Title", "role": "role", "goal": "goal", "backstory": "1 sentence", "constraints": "bias", "perspective": "unique angle", "icon": "LucideIconName", "stakeholder_type": "customer|competitor|expert|community|supply_chain|indirect|wildcard" }. Return ONLY valid JSON array.`,
           userMessage: `Decision: "${question}"\n\nGenerate ${count} diverse personas. Keep each persona concise (1 sentence backstory). Cover all 7 stakeholder types proportionally.`,
           maxTokens,

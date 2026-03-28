@@ -51,3 +51,18 @@ export async function getUserIdFromRequest(req: Request): Promise<{
 
   return { userId: anonId, isAuthenticated: false };
 }
+
+/** Free-text "Decision context" from Settings (user_metadata.decision_context). */
+export async function getUserDecisionContextFromMetadata(): Promise<string> {
+  try {
+    const supabase = await createAuthServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const meta = (user?.user_metadata || {}) as Record<string, unknown>;
+    const raw = meta.decision_context;
+    return typeof raw === 'string' ? raw.trim() : '';
+  } catch {
+    return '';
+  }
+}

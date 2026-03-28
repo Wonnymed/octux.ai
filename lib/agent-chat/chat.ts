@@ -250,6 +250,7 @@ export async function chatWithAgent(
 
   try {
     const response = await callClaude({
+      tier: 'specialist',
       systemPrompt: context.systemPrompt,
       userMessage,
       maxTokens: 800,

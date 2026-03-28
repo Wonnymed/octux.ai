@@ -5,7 +5,7 @@ import { useSimulationStore } from '@/lib/store/simulation';
 import { useChatStore } from '@/lib/store/chat';
 import { useAppStore } from '@/lib/store/app';
 import { useBillingStore } from '@/lib/store/billing';
-import { TOKEN_COSTS } from '@/lib/billing/tiers';
+import type { SimulationChargeType } from '@/lib/billing/token-costs';
 import { SIMULATION_TIMEOUT_MS } from '@/lib/simulation/phases';
 import type { VerdictResult } from '@/lib/simulation/events';
 
@@ -106,7 +106,7 @@ export function useSimulationStream(
 export function useSimulationStream(
   options: UseSimulationStreamOptions,
 ): {
-  triggerSimulation: (question: string, tier: string) => Promise<void>;
+  triggerSimulation: (question: string, simMode?: SimulationChargeType) => Promise<void>;
   cancel: () => void;
   isSimulating: boolean;
   status: string;
@@ -160,11 +160,13 @@ export function useSimulationStream(
   const setEntityState = useChatStore((s) => s.setEntityState);
 
   const updateConversation = useAppStore((s) => s.updateConversation);
-  const consumeTokens = useBillingStore((s) => s.consumeTokens);
+  const fetchBalance = useBillingStore((s) => s.fetchBalance);
+
+  const lastSimModeRef = useRef<SimulationChargeType>('swarm');
 
   // ─── TRIGGER SIMULATION ───
   const triggerSimulation = useCallback(
-    async (question: string, tier: string) => {
+    async (question: string, simModeArg?: SimulationChargeType) => {
       completedRef.current = false;
 
       try {
@@ -194,13 +196,16 @@ export function useSimulationStream(
           agentOverridesPayload = {};
         }
 
+        const simMode = simModeArg ?? useChatStore.getState().selectedSimMode;
+        lastSimModeRef.current = simMode;
+
         const res = await fetch(`/api/c/${conversationId}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'simulate',
             question,
-            tier,
+            simMode,
             joker: jokerPayload,
             agentOverrides: agentOverridesPayload,
           }),
@@ -209,7 +214,24 @@ export function useSimulationStream(
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
 
-          // Token gate
+          if (res.status === 401) {
+            addMessage({
+              id: `upgrade-${Date.now()}`,
+              message_type: 'system',
+              role: 'system',
+              content: null,
+              structured_data: {
+                type: 'upgrade_prompt',
+                reason: errData.error || 'Sign in to run simulations.',
+                suggestedTier: 'pro',
+              },
+              model_tier: simMode,
+              simulation_id: null,
+              created_at: new Date().toISOString(),
+            });
+            return;
+          }
+
           if (res.status === 403) {
             addMessage({
               id: `upgrade-${Date.now()}`,
@@ -218,10 +240,10 @@ export function useSimulationStream(
               content: null,
               structured_data: {
                 type: 'upgrade_prompt',
-                reason: errData.message || 'Insufficient tokens',
-                suggestedTier: errData.suggestedTier || 'pro',
+                reason: errData.message || 'Not enough tokens. Upgrade to Pro for 30/month.',
+                suggestedTier: errData.upgradeRequired || 'pro',
               },
-              model_tier: tier,
+              model_tier: simMode,
               simulation_id: null,
               created_at: new Date().toISOString(),
             });
@@ -232,25 +254,20 @@ export function useSimulationStream(
         }
 
         const data = await res.json();
-        if (!data.streamUrl) throw new Error('No stream URL returned');
+        if (!data.streamBody) throw new Error('No simulation payload returned');
 
-        // Add simulation_start message to chat
-        addMessage({
-          id: `sim-start-${Date.now()}`,
-          message_type: 'simulation_start',
-          role: 'system',
-          content: question,
-          structured_data: { streamUrl: data.streamUrl, tier },
-          model_tier: tier,
-          simulation_id: null,
-          created_at: new Date().toISOString(),
-        });
+        await useChatStore.getState().loadConversation(conversationId);
 
-        // Set entity state
         setEntityState('diving');
 
-        // Start SSE via Zustand store
-        startSimulation(data.streamUrl);
+        startSimulation({
+          ...data.streamBody,
+          joker: jokerPayload ?? data.streamBody.joker,
+          agentOverrides: {
+            ...(data.streamBody.agentOverrides as object),
+            ...agentOverridesPayload,
+          },
+        });
 
         // Set timeout
         timeoutRef.current = setTimeout(() => {
@@ -268,7 +285,7 @@ export function useSimulationStream(
           role: 'assistant',
           content: `Failed to start simulation: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
           structured_data: null,
-          model_tier: tier,
+          model_tier: lastSimModeRef.current,
           simulation_id: null,
           created_at: new Date().toISOString(),
           _error: true,
@@ -295,7 +312,7 @@ export function useSimulationStream(
         role: 'assistant',
         content: null,
         structured_data: simResult,
-        model_tier: 'deep',
+        model_tier: lastSimModeRef.current,
         simulation_id: simulationId,
         created_at: new Date().toISOString(),
       });
@@ -313,11 +330,11 @@ export function useSimulationStream(
         });
       }
 
-      consumeTokens(TOKEN_COSTS.deep);
+      void fetchBalance();
     }
   }, [
     simStatus, simResult, simulationId, conversationId,
-    addMessage, setEntityState, updateConversation, consumeTokens,
+    addMessage, setEntityState, updateConversation, fetchBalance,
   ]);
 
   // ─── HANDLE ERROR ───
@@ -336,7 +353,7 @@ export function useSimulationStream(
         role: 'assistant',
         content: `Simulation error: ${simError}`,
         structured_data: null,
-        model_tier: 'deep',
+        model_tier: lastSimModeRef.current,
         simulation_id: null,
         created_at: new Date().toISOString(),
         _error: true,

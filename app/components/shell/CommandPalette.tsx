@@ -19,7 +19,7 @@ type Props = {
 };
 
 const ENGINE_COLORS: Record<string, string> = {
-  simulate: '#C75B2A',
+  simulate: '#1A1815',
   build: '#10B981',
   grow: '#F59E0B',
   hire: '#06B6D4',
@@ -254,10 +254,10 @@ export default function CommandPalette({ isOpen, onClose }: Props) {
                       width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '14px', borderRadius: '6px',
                       background: item.section === 'engine'
-                        ? (ENGINE_COLORS[item.id.replace('engine-', '')] || '#C75B2A') + '18'
+                        ? (ENGINE_COLORS[item.id.replace('engine-', '')] || '#1A1815') + '18'
                         : 'var(--surface-2, #f2f2ef)',
                       color: item.section === 'engine'
-                        ? ENGINE_COLORS[item.id.replace('engine-', '')] || '#C75B2A'
+                        ? ENGINE_COLORS[item.id.replace('engine-', '')] || '#1A1815'
                         : 'var(--text-secondary)',
                     }}>
                       {item.icon}

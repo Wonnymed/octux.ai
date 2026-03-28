@@ -1,31 +1,27 @@
 import { create } from 'zustand';
 import type { TierType } from '@/lib/billing/tiers';
-import { TOKEN_COSTS } from '@/lib/billing/tiers';
+import { getTokenCost, type SimulationChargeType } from '@/lib/billing/token-costs';
+import { TIERS } from '@/lib/billing/tiers';
 
 interface BillingState {
-  // Current subscription
   tier: TierType;
   tokensTotal: number;
   tokensUsed: number;
   tokensRemaining: number;
-
-  // Loading
   loading: boolean;
 
-  // Actions
   setBalance: (data: { tier: TierType; total: number; used: number; remaining: number }) => void;
   consumeTokens: (cost: number) => void;
-  canAfford: (simType: 'deep' | 'kraken') => boolean;
+  canAffordMode: (mode: SimulationChargeType) => boolean;
 
-  // Fetch from API
   fetchBalance: () => Promise<void>;
 }
 
 export const useBillingStore = create<BillingState>((set, get) => ({
   tier: 'free',
-  tokensTotal: 1,
+  tokensTotal: TIERS.free.limits.tokensPerMonth,
   tokensUsed: 0,
-  tokensRemaining: 1,
+  tokensRemaining: TIERS.free.limits.tokensPerMonth,
   loading: false,
 
   setBalance: ({ tier, total, used, remaining }) =>
@@ -37,8 +33,8 @@ export const useBillingStore = create<BillingState>((set, get) => ({
       tokensRemaining: Math.max(0, s.tokensRemaining - cost),
     })),
 
-  canAfford: (simType) => {
-    const cost = TOKEN_COSTS[simType];
+  canAffordMode: (mode) => {
+    const cost = getTokenCost(mode);
     return get().tokensRemaining >= cost;
   },
 
@@ -50,12 +46,12 @@ export const useBillingStore = create<BillingState>((set, get) => ({
       const data = await res.json();
       set({
         tier: data.tier || 'free',
-        tokensTotal: data.total ?? 1,
+        tokensTotal: data.total ?? TIERS.free.limits.tokensPerMonth,
         tokensUsed: data.used ?? 0,
-        tokensRemaining: data.remaining ?? 1,
+        tokensRemaining: data.remaining ?? TIERS.free.limits.tokensPerMonth,
       });
     } catch {
-      // Silent — default to free/1 token
+      // Silent — keep defaults
     } finally {
       set({ loading: false });
     }

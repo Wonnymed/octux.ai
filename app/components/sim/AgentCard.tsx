@@ -5,32 +5,32 @@ import { ChevronDown } from "lucide-react";
 import type { AgentReport } from "@/app/lib/types/simulation";
 
 const AGENT_COLORS: Record<string, string> = {
-  decision_chair: "#C75B2A",
+  decision_chair: "#1A1815",
   base_rate_archivist: "#8B6F4E",
   demand_signal_analyst: "#F59E0B",
   unit_economics_auditor: "#10B981",
   regulatory_gatekeeper: "#C9970D",
   competitive_intel: "#F97316",
-  execution_operator: "#E8784A",
+  execution_operator: "#6B6560",
   capital_allocator: "#06B6D4",
   scenario_planner: "#B8860B",
   intervention_optimizer: "#14B8A6",
-  customer_reality: "#E8784A",
+  customer_reality: "#6B6560",
   // Legacy mock IDs
   "base-rate": "#8B6F4E",
   "demand-signal": "#F59E0B",
   "unit-econ": "#10B981",
   regulatory: "#C9970D",
   "competitive-intel": "#F97316",
-  execution: "#E8784A",
+  execution: "#6B6560",
   capital: "#06B6D4",
   scenario: "#B8860B",
   intervention: "#14B8A6",
-  chair: "#C75B2A",
+  chair: "#1A1815",
 };
 
 function getAgentColor(id: string): string {
-  return AGENT_COLORS[id] || "#C75B2A";
+  return AGENT_COLORS[id] || "#1A1815";
 }
 
 function getPositionStyle(position: string) {

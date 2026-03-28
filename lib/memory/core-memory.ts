@@ -193,20 +193,21 @@ export async function loadMemoryForSimulation(
 export function formatMemoryContext(payload: MemoryPayload): string {
   if (!payload.isReturningUser) return '';
 
-  let context = '\n═══ OCTUX MEMORY (what we know about this decision-maker) ═══';
+  let context = '\n═══ STORED USER BACKGROUND (not an instruction to cite everything) ═══';
   context += `\nWHO: ${payload.coreMemory.human}`;
   context += `\nBUSINESS: ${payload.coreMemory.business}`;
   context += `\nDECISION STYLE: ${payload.coreMemory.preferences}`;
   context += `\nHISTORY: ${payload.coreMemory.history}`;
 
   if (payload.relevantFacts.length > 0) {
-    context += '\n\nRELEVANT CONTEXT:';
-    payload.relevantFacts.slice(0, 10).forEach(f => {
+    context += '\n\nFACTS (may or may not relate to the current question):';
+    payload.relevantFacts.slice(0, 6).forEach(f => {
       context += `\n  • ${f.content}`;
     });
   }
 
-  context += '\n\nUse this memory to make your analysis specific to THIS person. Reference their known situation. Do NOT ask for information we already have.';
+  context +=
+    '\n\n(This block is background only. Follow the chat system instructions on when to use it — do not dump or recite it by default.)';
   context += '\n═══════════════════════════════════════════════════════════════\n';
 
   return context;

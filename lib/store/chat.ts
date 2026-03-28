@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ModelTier } from '@/lib/chat/tiers';
+import type { SimulationChargeType } from '@/lib/billing/token-costs';
 
 export interface ChatMessage {
   id: string;
@@ -10,38 +10,31 @@ export interface ChatMessage {
   model_tier: string;
   simulation_id: string | null;
   created_at: string;
-  // Client-only fields
   _optimistic?: boolean;
   _error?: boolean;
 }
 
 interface ChatState {
-  // Messages for current conversation
   messages: ChatMessage[];
   setMessages: (msgs: ChatMessage[]) => void;
   addMessage: (msg: ChatMessage) => void;
   replaceOptimistic: (tempId: string, realMsg: ChatMessage) => void;
   markError: (tempId: string) => void;
 
-  // Loading
   sending: boolean;
   setSending: (sending: boolean) => void;
 
-  // Selected tier
-  selectedTier: ModelTier;
-  setSelectedTier: (tier: ModelTier) => void;
+  /** Next simulation billing mode (swarm vs specialist, etc.) */
+  selectedSimMode: SimulationChargeType;
+  setSelectedSimMode: (mode: SimulationChargeType) => void;
 
-  // Entity state (derived from chat/sim activity)
   entityState: 'dormant' | 'active' | 'thinking' | 'diving' | 'resting';
   setEntityState: (state: ChatState['entityState']) => void;
 
-  // Load conversation messages from API
   loadConversation: (conversationId: string) => Promise<void>;
 
-  // Send a chat message
   sendMessage: (conversationId: string, message: string) => Promise<void>;
 
-  // Clear (when navigating away)
   clear: () => void;
 }
 
@@ -60,15 +53,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
   markError: (tempId) =>
     set((s) => ({
       messages: s.messages.map((m) =>
-        m.id === tempId ? { ...m, _error: true } : m
+        m.id === tempId ? { ...m, _error: true } : m,
       ),
     })),
 
   sending: false,
   setSending: (sending) => set({ sending }),
 
-  selectedTier: 'ink',
-  setSelectedTier: (tier) => set({ selectedTier: tier }),
+  selectedSimMode: 'swarm',
+  setSelectedSimMode: (mode) => set({ selectedSimMode: mode }),
 
   entityState: 'dormant',
   setEntityState: (state) => set({ entityState: state }),
@@ -81,7 +74,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const msgs: ChatMessage[] = data.messages || [];
       set({ messages: msgs });
 
-      // Determine entity state from messages
       const hasVerdict = msgs.some((m) => m.message_type === 'simulation_verdict');
       const hasSimStart = msgs.some((m) => m.message_type === 'simulation_start');
       if (hasVerdict) set({ entityState: 'resting' });
@@ -94,13 +86,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   sendMessage: async (conversationId, message) => {
-    const { selectedTier, addMessage, setSending, setEntityState, replaceOptimistic, markError } = get();
+    const { addMessage, setSending, setEntityState, replaceOptimistic, markError } = get();
     if (!message.trim() || get().sending) return;
 
     setSending(true);
     setEntityState('active');
 
-    // Optimistic user message
     const tempId = `temp-${Date.now()}`;
     const userMsg: ChatMessage = {
       id: tempId,
@@ -108,7 +99,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       role: 'user',
       content: message,
       structured_data: null,
-      model_tier: selectedTier,
+      model_tier: 'default',
       simulation_id: null,
       created_at: new Date().toISOString(),
       _optimistic: true,
@@ -119,13 +110,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const res = await fetch(`/api/c/${conversationId}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, tier: selectedTier }),
+        body: JSON.stringify({ message }),
       });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
 
-        // Token gate - upgrade prompt
         if (res.status === 403 && errData.error === 'insufficient_tokens') {
           addMessage({
             id: `upgrade-${Date.now()}`,
@@ -139,7 +129,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
               tokensUsed: errData.tokensUsed,
               tokensTotal: errData.tokensTotal,
             },
-            model_tier: selectedTier,
+            model_tier: 'default',
             simulation_id: null,
             created_at: new Date().toISOString(),
           });
@@ -152,10 +142,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       const data = await res.json();
 
-      // Replace optimistic message with confirmed
       replaceOptimistic(tempId, { ...userMsg, _optimistic: false, id: `user-${Date.now()}` });
 
-      // Add assistant response
       const assistantMsg: ChatMessage = {
         id: `resp-${Date.now()}`,
         message_type: data.suggestSimulation ? 'decision_card' : 'text',
@@ -169,9 +157,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
               disclaimer: data.disclaimer,
             }
           : data.disclaimer
-          ? { disclaimer: data.disclaimer }
-          : null,
-        model_tier: data.tier,
+            ? { disclaimer: data.disclaimer }
+            : null,
+        model_tier: data.tier ?? 'default',
         simulation_id: null,
         created_at: new Date().toISOString(),
       };
@@ -184,7 +172,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         role: 'assistant',
         content: 'Something went wrong. Try again.',
         structured_data: null,
-        model_tier: 'ink',
+        model_tier: 'default',
         simulation_id: null,
         created_at: new Date().toISOString(),
         _error: true,

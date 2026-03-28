@@ -7,6 +7,7 @@ import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useAppStore } from '@/lib/store/app';
 import { useAuth } from '@/components/auth/AuthProvider';
 import Sidebar from '@/components/sidebar/Sidebar';
+import DashboardShell from '@/components/dashboard/DashboardShell';
 import { Menu } from 'lucide-react';
 
 /** Matches Tailwind `md:` — sidebar is overlay below this width */
@@ -84,16 +85,39 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
     onToggleSidebar: toggleSidebar,
     onFocusInput: () => document.querySelector<HTMLTextAreaElement>('[data-chat-input]')?.focus(),
     onExpandVerdict: () => window.dispatchEvent(new CustomEvent('octux:toggle-verdict-expand')),
-    onStartDeepSim: () => window.dispatchEvent(new CustomEvent('octux:auto-simulate', { detail: { tier: 'deep' } })),
-    onStartKrakenSim: () => window.dispatchEvent(new CustomEvent('octux:auto-simulate', { detail: { tier: 'kraken' } })),
+    onStartSpecialistSim: () =>
+      window.dispatchEvent(new CustomEvent('octux:auto-simulate', { detail: { simMode: 'specialist' } })),
+    onStartCompareSim: () =>
+      window.dispatchEvent(new CustomEvent('octux:auto-simulate', { detail: { simMode: 'compare' } })),
   });
 
   const showAuthButtons = !isLoading && !isAuthenticated;
 
-  const showDesktopSidebar = viewport === 'desktop';
-  const showMobileDrawer = viewport === 'mobile' && sidebarExpanded;
+  const useDashboardShell = isAuthenticated && !isLoading;
+
+  const showDesktopSidebar = viewport === 'desktop' && !useDashboardShell;
+  const showMobileDrawer = viewport === 'mobile' && sidebarExpanded && !useDashboardShell;
   /** Top strip only on small viewports; desktop uses sidebar + profile for auth (no header line). */
   const showMainHeader = viewport !== 'desktop';
+
+  if (useDashboardShell) {
+    return (
+      <div className="flex min-h-0 h-[100dvh] overflow-x-hidden">
+        <a href="#main-content" className="octx-skip-link">
+          Skip to content
+        </a>
+        <DashboardShell>
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto outline-none focus:outline-none supports-[padding:max(0px)]:pb-[max(0px,env(safe-area-inset-bottom))]"
+          >
+            {children}
+          </main>
+        </DashboardShell>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-0 h-[100dvh] overflow-x-hidden bg-surface-0">

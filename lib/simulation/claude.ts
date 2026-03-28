@@ -1,55 +1,42 @@
 import Anthropic from '@anthropic-ai/sdk';
+import {
+  getModel,
+  MODEL_TIERS,
+  type ModelTier,
+} from '@/lib/config/model-tiers';
+
+export type { ModelTier };
+export { getModel, MODEL_TIERS };
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// ── Model Configuration ─────────────────────────────────────
-// TEST PHASE: All Haiku. Production: Free/Pro/Max=Sonnet, Octopus=Opus
+/** Default when no `tier` or `model` is passed — specialist debate quality. */
+export const DEFAULT_MODEL = MODEL_TIERS.specialist;
 
-export const MODELS = {
-  test: 'claude-haiku-4-5-20251001',
-  specialists: {
-    free: 'claude-haiku-4-5-20251001',      // PROD: claude-sonnet-4-20250514
-    pro: 'claude-haiku-4-5-20251001',       // PROD: claude-sonnet-4-20250514
-    max: 'claude-haiku-4-5-20251001',       // PROD: claude-sonnet-4-20250514
-    octopus: 'claude-haiku-4-5-20251001',   // PROD: claude-opus-4-20250514
-  },
-  advisors: 'claude-haiku-4-5-20251001',    // Always Haiku, all tiers
-  evaluation: 'claude-haiku-4-5-20251001',  // Always Haiku (cheap eval calls)
-} as const;
-
-// Current active model — change this ONE line to switch all specialists
-export const DEFAULT_MODEL = MODELS.test;
-
-// Helper: get model for a specific purpose and tier
-export function getModel(purpose: 'specialist' | 'advisor' | 'evaluation', tier?: string): string {
-  if (purpose === 'advisor') return MODELS.advisors;
-  if (purpose === 'evaluation') return MODELS.evaluation;
-  if (purpose === 'specialist' && tier) {
-    return MODELS.specialists[tier as keyof typeof MODELS.specialists] || DEFAULT_MODEL;
-  }
-  return DEFAULT_MODEL;
-}
-
-// Display helper: shows PRODUCTION model names in UI (not the test model)
-export function getDisplayModel(tier?: string): string {
-  if (tier === 'octopus') return 'Opus';
-  return 'Sonnet';
-}
-
-// ── API Client ──────────────────────────────────────────────
-
-export async function callClaude(options: {
+export type CallClaudeOptions = {
   systemPrompt: string;
   userMessage: string;
   maxTokens?: number;
+  /** Explicit model id — overrides `tier` when set. */
   model?: string;
-}): Promise<string> {
-  const { systemPrompt, userMessage, maxTokens = 1024, model = DEFAULT_MODEL } = options;
+  /** Routing tier (Sonnet vs Haiku). Ignored when `model` is set. */
+  tier?: ModelTier;
+};
+
+export async function callClaude(options: CallClaudeOptions): Promise<string> {
+  const { systemPrompt, userMessage, maxTokens = 1024 } = options;
+  const model =
+    options.model ??
+    (options.tier ? getModel(options.tier) : getModel('specialist'));
+
+  console.log(
+    `[MODEL] ${options.tier ?? (options.model ? 'explicit' : 'default')} → ${model}`,
+  );
 
   try {
     const timeoutMs = 30000;
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`Claude API timeout after ${timeoutMs}ms`)), timeoutMs)
+      setTimeout(() => reject(new Error(`Claude API timeout after ${timeoutMs}ms`)), timeoutMs),
     );
 
     const response = await Promise.race([
@@ -136,31 +123,47 @@ export type ToolCallResult = {
   searchCount: number;
 };
 
-/**
- * Call Claude with web search tool enabled.
- * Handles multi-block responses: text + tool_use + web_search_tool_result.
- * Falls back to regular callClaude if search is disabled or fails.
- */
-export async function callClaudeWithTools(options: {
+export type CallClaudeWithToolsOptions = {
   systemPrompt: string;
   userMessage: string;
   agentId: string;
   maxTokens?: number;
   model?: string;
-}): Promise<ToolCallResult> {
+  tier?: ModelTier;
+};
+
+/**
+ * Call Claude with web search tool enabled.
+ * Handles multi-block responses: text + tool_use + web_search_tool_result.
+ * Falls back to regular callClaude if search is disabled or fails.
+ */
+export async function callClaudeWithTools(
+  options: CallClaudeWithToolsOptions,
+): Promise<ToolCallResult> {
   const searchConfig = AGENT_SEARCH_CONFIG[options.agentId];
   const searchEnabled = searchConfig?.enabled ?? false;
 
   if (!searchEnabled) {
-    const text = await callClaude(options);
+    const text = await callClaude({
+      systemPrompt: options.systemPrompt,
+      userMessage: options.userMessage,
+      maxTokens: options.maxTokens,
+      model: options.model,
+      tier: options.tier,
+    });
     return { text, searchCitations: [], searchCount: 0 };
   }
 
   try {
-    const model = options.model || DEFAULT_MODEL;
+    const model =
+      options.model ??
+      (options.tier ? getModel(options.tier) : getModel('specialist'));
+    console.log(
+      `[MODEL] ${options.tier ?? (options.model ? 'explicit' : 'default')} (tools) → ${model}`,
+    );
     const timeoutMs = 45000; // longer timeout for search
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`Claude API timeout after ${timeoutMs}ms`)), timeoutMs)
+      setTimeout(() => reject(new Error(`Claude API timeout after ${timeoutMs}ms`)), timeoutMs),
     );
 
     const response = await Promise.race([
@@ -216,7 +219,13 @@ export async function callClaudeWithTools(options: {
     return { text: fullText, searchCitations: citations, searchCount };
   } catch (err) {
     console.error(`SEARCH: callClaudeWithTools failed for ${options.agentId}, falling back:`, err);
-    const text = await callClaude(options);
+    const text = await callClaude({
+      systemPrompt: options.systemPrompt,
+      userMessage: options.userMessage,
+      maxTokens: options.maxTokens,
+      model: options.model,
+      tier: options.tier,
+    });
     return { text, searchCitations: [], searchCount: 0 };
   }
 }
@@ -225,7 +234,7 @@ export async function callClaudeWithTools(options: {
  * Deduplicate and format search citations for simulation output.
  */
 export function formatSearchCitations(
-  allCitations: SearchCitation[]
+  allCitations: SearchCitation[],
 ): { agent: string; url: string; title: string; domain: string }[] {
   const seen = new Set<string>();
   const unique: SearchCitation[] = [];
@@ -249,4 +258,10 @@ function extractDomain(url: string): string {
   } catch {
     return url.substring(0, 50);
   }
+}
+
+/** Display helper: shows PRODUCTION model names in UI (not the test model) */
+export function getDisplayModel(tier?: string): string {
+  if (tier === 'max') return 'Opus';
+  return 'Sonnet';
 }

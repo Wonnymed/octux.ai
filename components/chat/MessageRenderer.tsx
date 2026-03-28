@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 import type { ChatMessage } from '@/lib/store/chat';
+import type { SimulationChargeType } from '@/lib/billing/token-costs';
 import UserMessage from './UserMessage';
 import AssistantMessage from './AssistantMessage';
 import DecisionCard from './DecisionCard';
@@ -19,7 +20,7 @@ import RefinementCardPlaceholder from './placeholders/RefinementCardPlaceholder'
 interface MessageRendererProps {
   message: ChatMessage;
   conversationId: string;
-  onSimulate?: (question: string, tier: string) => void;
+  onSimulate?: (question: string, simMode?: SimulationChargeType) => void;
   onRefine?: (simulationId: string, modification: string) => void;
   isLast?: boolean;
 }

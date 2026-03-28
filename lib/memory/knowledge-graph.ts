@@ -95,6 +95,7 @@ export async function cognify(
   const relationTypes = OCTUX_RELATION_TYPES.join(', ');
 
   const response = await callClaude({
+    tier: 'extraction',
     systemPrompt: `You are a knowledge graph extractor for Octux AI. Given a business decision simulation, extract ENTITIES (people, companies, markets, locations, regulations, metrics, risks, etc.) and RELATIONSHIPS between them.
 
 ONTOLOGY — use ONLY these types:

@@ -165,6 +165,7 @@ export async function saveSessionSummary(
         });
 
     const summaryResponse = await callClaude({
+      tier: 'memory',
       systemPrompt: `You compress a simulation into a 2-4 sentence summary and 3 key insights.
 Return ONLY JSON: { "summary": "...", "key_insights": ["insight1", "insight2", "insight3"] }
 Be specific — include numbers, names, recommendations. Not generic.`,

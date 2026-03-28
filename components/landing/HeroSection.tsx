@@ -45,7 +45,7 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
       <div className="relative z-10 max-w-2xl mx-auto text-center">
         <div className="relative mb-10 flex justify-center">
           <div className="absolute inset-0 rounded-full bg-accent/10 blur-2xl scale-150 animate-pulse pointer-events-none" aria-hidden />
-          <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-accent/70 via-purple-500/50 to-amber-600/30 p-[2px] shadow-lg shadow-black/30">
+          <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-accent/40 via-surface-3/60 to-surface-2/50 p-[2px] shadow-lg shadow-black/20">
             <div className="w-full h-full rounded-full bg-[var(--surface-0)] flex items-center justify-center">
               <span className="text-3xl">&#x1F419;</span>
             </div>
@@ -55,7 +55,7 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
         <h1 className="text-4xl sm:text-5xl text-txt-primary mb-3 font-light tracking-[0.15em] lowercase">octux</h1>
 
         <p className="mx-auto max-w-reading text-lg sm:text-xl text-txt-secondary mb-10 font-light tracking-wide">
-          Never decide alone again
+          AI-powered business decision intelligence
         </p>
 
         <div className="max-w-lg mx-auto mb-6">
@@ -64,7 +64,7 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
               'relative rounded-radius-2xl border transition-colors duration-normal ease-out',
               'bg-canvas bg-surface-1 border-border-subtle shadow-premium',
               'shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-              'focus-within:border-accent/30 focus-within:shadow-lg focus-within:shadow-accent/5',
+              'focus-within:border-border-strong focus-within:shadow-lg focus-within:shadow-[0_0_0_2px_var(--accent-light)]',
               'hover:border-border-default',
             )}
           >
@@ -72,7 +72,7 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
-              placeholder="What decision are you facing?"
+              placeholder="What business decision are you facing?"
               className={cn(
                 'w-full bg-transparent text-sm sm:text-[15px] text-white/90 placeholder:text-txt-disabled',
                 'outline-none py-3.5 pl-5 pr-14 rounded-radius-2xl',
@@ -85,7 +85,7 @@ export default function HeroSection({ onSignIn }: HeroSectionProps) {
               className={cn(
                 'absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-radius-xl flex items-center justify-center transition-colors duration-normal ease-out',
                 input.trim()
-                  ? 'bg-accent text-white hover:bg-accent-hover'
+                  ? 'bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)]'
                   : 'bg-surface-2 text-txt-disabled',
               )}
             >

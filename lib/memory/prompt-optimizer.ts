@@ -318,6 +318,7 @@ async function critiquePrompt(
 
   try {
     const response = await callClaude({
+      tier: 'optimization',
       systemPrompt: `You critique an AI agent's system prompt based on its performance trajectory.
 
 Identify what the PROMPT is causing the agent to do POORLY. Focus on:
@@ -370,6 +371,7 @@ async function proposeImprovedPrompt(
 
   try {
     const response = await callClaude({
+      tier: 'optimization',
       systemPrompt: `You improve an AI agent's system prompt based on a critique.
 
 RULES:
@@ -447,12 +449,14 @@ ${proposal.extra_constraints.length > 0 ? 'CONSTRAINTS:\n' + proposal.extra_cons
 
   try {
     const reportResponse = await callClaude({
+      tier: 'optimization',
       systemPrompt,
       userMessage: `${debateContext}\n\nQUESTION: "${question}"\n\nProvide your analysis as a JSON object with: position, confidence (1-10), key_argument, evidence[], risks[].`,
       maxTokens: 800,
     });
 
     const evalResponse = await callClaude({
+      tier: 'optimization',
       systemPrompt: `Score this agent report 1-10 for: specificity, evidence quality, plausibility, relevance, consistency. Return ONLY a number.`,
       userMessage: `QUESTION: "${question}"\nAGENT: ${agentId}\nREPORT:\n${reportResponse.substring(0, 500)}\n\nScore (just the number):`,
       maxTokens: 10,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
@@ -8,13 +8,15 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import { useAppStore } from '@/lib/store/app';
 import HomeComposer from '@/components/chat/HomeComposer';
 import AuthModal from '@/components/auth/AuthModal';
-// Marketing sections (below the fold)
+import DashboardHome from '@/components/dashboard/DashboardHome';
+// Marketing sections (below the fold) — logged-out only
 import TrustStrip from '@/components/landing/TrustStrip';
 import HowItWorks from '@/components/landing/HowItWorks';
 import LiveExample from '@/components/landing/LiveExample';
 import WhyNotChatGPT from '@/components/landing/WhyNotChatGPT';
 import PricingPreview from '@/components/landing/PricingPreview';
 import SiteFooter from '@/components/landing/LandingFooter';
+import { pendingFirstMessageKey } from '@/lib/chat/firstMessageBootstrap';
 
 export default function HomePage() {
   const { isAuthenticated, isLoading, checkGuestLimit } = useAuth();
@@ -24,90 +26,98 @@ export default function HomePage() {
   const router = useRouter();
   const addConversation = useAppStore((s) => s.addConversation);
 
+  const handleSend = useCallback(
+    async (message: string) => {
+      if (!message.trim() || loading) return;
+
+      if (!isAuthenticated) {
+        try {
+          localStorage.setItem('octux_pending_question', message.substring(0, 200));
+        } catch {}
+        if (!checkGuestLimit()) return;
+        setShowAuth(true);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const res = await fetch('/api/c', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstMessage: message }),
+        });
+        const data = await res.json();
+        const id = data.id || data.conversation?.id;
+        if (!id) throw new Error('No conversation created');
+
+        addConversation({
+          id,
+          title: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
+          domain: 'general',
+          has_simulation: false,
+          latest_verdict: null,
+          latest_verdict_probability: null,
+          is_pinned: false,
+          message_count: 1,
+          simulation_count: 0,
+          updated_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+        });
+
+        try {
+          sessionStorage.setItem(pendingFirstMessageKey(id), message);
+        } catch {
+          /* private mode / quota */
+        }
+
+        router.push(`/c/${id}`);
+      } catch (err) {
+        console.error('Failed to create conversation:', err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loading, isAuthenticated, checkGuestLimit, addConversation, router],
+  );
+
   // Recover pending question after auth
   useEffect(() => {
     if (!isAuthenticated || isLoading) return;
     const pending = localStorage.getItem('octux_pending_question');
     if (pending) {
       localStorage.removeItem('octux_pending_question');
-      handleSend(pending);
+      void handleSend(pending);
     }
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isLoading, handleSend]);
 
   useEffect(() => {
+    if (isAuthenticated) return;
     const onScroll = () => {
       setShowScrollCue(window.scrollY < 24);
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  const handleSend = async (message: string, options?: { tier?: string; simulate?: boolean }) => {
-    if (!message.trim() || loading) return;
-
-    // Auth gate
-    if (!isAuthenticated) {
-      try { localStorage.setItem('octux_pending_question', message.substring(0, 200)); } catch {}
-      if (!checkGuestLimit()) return;
-      setShowAuth(true);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // 1. Create conversation
-      const res = await fetch('/api/c', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstMessage: message }),
-      });
-      const data = await res.json();
-      const id = data.id || data.conversation?.id;
-      if (!id) throw new Error('No conversation created');
-
-      // 2. Add to sidebar immediately (optimistic)
-      addConversation({
-        id,
-        title: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
-        domain: 'general',
-        has_simulation: false,
-        latest_verdict: null,
-        latest_verdict_probability: null,
-        is_pinned: false,
-        message_count: 1,
-        simulation_count: 0,
-        updated_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-      });
-
-      // 3. Send first message (fire and forget — conversation page will show response)
-      fetch(`/api/c/${id}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message,
-          action: options?.simulate ? 'simulate' : 'chat',
-          tier: options?.tier || 'ink',
-        }),
-      }).catch(() => {});
-
-      // 4. Navigate to conversation
-      router.push(`/c/${id}`);
-    } catch (err) {
-      console.error('Failed to create conversation:', err);
-      setLoading(false);
-    }
-  };
+  }, [isAuthenticated]);
 
   const handleAuthSuccess = () => {
     setShowAuth(false);
     router.refresh();
   };
 
+  // ─── Logged-in: dark simulation dashboard (shell only; canvas = placeholder) ───
+  if (isAuthenticated && !isLoading) {
+    return (
+      <DashboardHome
+        onSubmit={(msg) => handleSend(msg)}
+        loading={loading}
+      />
+    );
+  }
+
+  // ─── Loading / logged-out: marketing landing (light theme) ───
   return (
     <>
-      {/* ═══ MAIN CHAT VIEW ═══ */}
       <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-x-hidden px-4 pb-10 pt-16 sm:px-8 sm:pt-20">
         <div className="relative z-10 mx-auto w-full max-w-[min(100%,780px)] text-center">
           <motion.div
@@ -151,7 +161,6 @@ export default function HomePage() {
         </motion.div>
       </div>
 
-      {/* ═══ MARKETING (below the fold) ═══ */}
       <TrustStrip />
       <HowItWorks />
       <LiveExample onSignIn={() => setShowAuth(true)} />
@@ -159,7 +168,6 @@ export default function HomePage() {
       <PricingPreview onSignIn={() => setShowAuth(true)} />
       <SiteFooter onSignIn={() => setShowAuth(true)} />
 
-      {/* Auth modal */}
       <AuthModal
         isOpen={showAuth}
         onClose={() => setShowAuth(false)}

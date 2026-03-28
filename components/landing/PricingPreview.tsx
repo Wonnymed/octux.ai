@@ -8,8 +8,12 @@ const tiers = [
     name: 'Free',
     price: '$0',
     period: 'forever',
-    description: 'Your first decision, on us',
-    features: ['1 simulation token/month', '5 Ink chats/day', 'Full verdict with probability'],
+    description: 'Try the simulation engine',
+    features: [
+      '2 simulation tokens/month',
+      'Swarm mode (1000 agents)',
+      'Basic verdict + chat',
+    ],
     cta: 'Start free',
     popular: false,
     color: 'text-txt-secondary',
@@ -18,8 +22,12 @@ const tiers = [
     name: 'Pro',
     price: '$29',
     period: '/month',
-    description: 'For serious decisions',
-    features: ['8 tokens/month (1 Deep = 1 token)', 'Unlimited Ink chat', 'Citations + agent chat'],
+    description: 'For serious business decisions',
+    features: [
+      '30 simulation tokens/month',
+      'Specialist + all advanced modes',
+      'PDF export & memory across sims',
+    ],
     cta: 'Go Pro',
     popular: true,
     color: 'text-accent',
@@ -28,21 +36,15 @@ const tiers = [
     name: 'Max',
     price: '$99',
     period: '/month',
-    description: 'Full power',
-    features: ['25 tokens/month (1 Kraken = 8)', 'Web search + heatmap', 'PDF export + permanent memory'],
+    description: 'For power operators and teams',
+    features: [
+      '120 simulation tokens/month',
+      'Everything in Pro',
+      'Priority processing & roadmap API',
+    ],
     cta: 'Go Max',
     popular: false,
     color: 'text-tier-max',
-  },
-  {
-    name: 'Octopus',
-    price: '$249',
-    period: '/month',
-    description: 'For power users & teams',
-    features: ['70 tokens/month', 'API access + custom agents', 'All features unlocked'],
-    cta: 'Go Octopus',
-    popular: false,
-    color: 'text-entity-bioluminescent',
   },
 ];
 
@@ -54,18 +56,16 @@ export default function PricingPreview({ onSignIn }: PricingPreviewProps) {
   return (
     <section className="py-20 sm:py-28 px-6 bg-surface-1/30">
       <div className="max-w-landing mx-auto">
-        {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-section text-txt-primary mb-3">
             Simple pricing
           </h2>
           <p className="text-sm text-txt-tertiary">
-            Start free. Pay when you need depth.
+            Three tiers. Tokens for simulations. Chat included.
           </p>
         </div>
 
-        {/* Tier cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-octx-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-octx-4">
           {tiers.map((tier, i) => (
             <div
               key={i}
@@ -77,7 +77,7 @@ export default function PricingPreview({ onSignIn }: PricingPreviewProps) {
               )}
             >
               {tier.popular && (
-                <span className="text-[10px] font-bold text-accent uppercase tracking-widest mb-2">Most popular</span>
+                <span className="text-[10px] font-bold text-accent uppercase tracking-widest mb-2">Recommended</span>
               )}
               <h3 className={cn('text-base font-medium mb-1', tier.color)}>{tier.name}</h3>
               <div className="flex items-baseline gap-1 mb-1">

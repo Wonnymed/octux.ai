@@ -1,32 +1,21 @@
 /**
- * Decision Intelligence — 60 specialists (6 categories × 10 agents).
+ * Business Simulation Engine — 30 specialist agents (3 categories × 10 agents).
  * Per simulation: up to 10 agents selected from relevant categories (see library.suggestAgentsForDomain).
  */
 
-export type AgentDomain =
-  | 'investment'
-  | 'career'
-  | 'business'
-  | 'health'
-  | 'relationships'
-  | 'life';
+export type AgentDomain = 'investment' | 'career' | 'business';
 
+/** Okara-style muted category dots (light; dark uses CSS vars where applicable) */
 export const DOMAIN_COLORS: Record<AgentDomain, string> = {
-  investment: '#3B82F6',
-  career: '#10B981',
-  business: '#F59E0B',
-  health: '#EF4444',
-  relationships: '#B8860B',
-  life: '#E8784A',
+  career: '#6b8b7a',
+  business: '#7a8b9b',
+  investment: '#8b8068',
 };
 
 export const DOMAIN_LABELS: Record<AgentDomain, string> = {
   investment: 'Investment',
   career: 'Career',
   business: 'Business',
-  health: 'Health',
-  relationships: 'Relationships',
-  life: 'Life Decisions',
 };
 
 export type CatalogAgent = {
@@ -39,7 +28,7 @@ export type CatalogAgent = {
 };
 
 export const AGENT_CATALOG: CatalogAgent[] = [
-  // ═══ INVESTMENT & FINANCE (10) ═══
+  // ═══ INVESTMENT (10) ═══
   {
     id: 'numbers_first',
     name: 'Numbers First',
@@ -131,7 +120,7 @@ export const AGENT_CATALOG: CatalogAgent[] = [
     defaultFor: ['investment'],
   },
 
-  // ═══ CAREER & PROFESSIONAL (10) ═══
+  // ═══ CAREER (10) ═══
   {
     id: 'offer_decoder',
     name: 'Offer Decoder',
@@ -223,7 +212,7 @@ export const AGENT_CATALOG: CatalogAgent[] = [
     defaultFor: ['career'],
   },
 
-  // ═══ BUSINESS & ENTREPRENEURSHIP (10) ═══
+  // ═══ BUSINESS (10) ═══
   {
     id: 'timing_oracle',
     name: 'Timing Oracle',
@@ -313,282 +302,6 @@ export const AGENT_CATALOG: CatalogAgent[] = [
       'Close the gap between "deciding" and "doing." A decision without a week-by-week plan is just a wish.',
     domain: 'business',
     defaultFor: ['business'],
-  },
-
-  // ═══ HEALTH & WELLNESS (10) ═══
-  {
-    id: 'evidence_filter',
-    name: 'Evidence Filter',
-    role: 'Peer review over popularity',
-    description:
-      'Cut through health misinformation by demanding peer-reviewed evidence. Separate what is proven from what is popular — they are rarely the same thing.',
-    domain: 'health',
-    defaultFor: ['health'],
-  },
-  {
-    id: 'risk_benefit_calculator',
-    name: 'Risk-Benefit Calculator',
-    role: 'Quantify real trade-offs',
-    description:
-      'Quantify the REAL trade-offs of any medical or health decision. Every treatment has a cost — the question is whether the benefit justifies it.',
-    domain: 'health',
-    defaultFor: ['health'],
-  },
-  {
-    id: 'second_opinion_engine',
-    name: 'Second Opinion Engine',
-    role: 'Multiple clinical lenses',
-    description:
-      'Ensure the user never makes a major health decision based on a single perspective. Different specialists see different things — that is a feature, not a bug.',
-    domain: 'health',
-    defaultFor: ['health'],
-  },
-  {
-    id: 'mental_health_advocate',
-    name: 'Mental Health Advocate',
-    role: 'Psychological outcomes front and center',
-    description:
-      'Ensure psychological impact is weighed in EVERY decision, not just "health" ones. Stress, anxiety, and depression are not side effects — they are primary outcomes.',
-    domain: 'health',
-    defaultFor: ['health'],
-  },
-  {
-    id: 'long_game',
-    name: 'Long Game',
-    role: 'Twenty-year body consequences',
-    description:
-      'Evaluate every health decision through the lens of 20-year consequences. The body keeps score, and decisions that feel fine at 30 show up at 50.',
-    domain: 'health',
-    defaultFor: ['health'],
-  },
-  {
-    id: 'habit_architect',
-    name: 'Habit Architect',
-    role: 'Systems over willpower',
-    description:
-      'Apply behavioral science to make healthy choices automatic instead of effortful. Willpower is finite. Systems are not.',
-    domain: 'health',
-    defaultFor: ['health'],
-  },
-  {
-    id: 'energy_auditor',
-    name: 'Energy Auditor',
-    role: 'Sustainable vitality, not just absence of disease',
-    description:
-      'Optimize for sustainable energy, not just absence of disease. You can survive anything — but you can only THRIVE doing what does not chronically drain you.',
-    domain: 'health',
-    defaultFor: ['health'],
-  },
-  {
-    id: 'prevention_calculator',
-    name: 'Prevention Calculator',
-    role: 'ROI of screens and prevention',
-    description:
-      'Calculate the ROI of preventive health investments. A $200 screening that catches something early can save $200,000 and a decade of suffering.',
-    domain: 'health',
-    defaultFor: ['health'],
-  },
-  {
-    id: 'burnout_radar',
-    name: 'Burnout Radar',
-    role: 'Catch burnout before crisis',
-    description:
-      'Detect burnout before it becomes a crisis. Most people recognize burnout 6 months after everyone around them saw it. This agent sees it in real-time.',
-    domain: 'health',
-    defaultFor: ['health'],
-  },
-  {
-    id: 'recovery_strategist',
-    name: 'Recovery Strategist',
-    role: 'Plan B for health outcomes',
-    description:
-      'Ensure the user does not just make the decision but has a plan to recover if it goes wrong. Every health decision needs a Plan B, not just hope.',
-    domain: 'health',
-    defaultFor: ['health'],
-  },
-
-  // ═══ RELATIONSHIPS (10) ═══
-  {
-    id: 'attachment_decoder',
-    name: 'Attachment Decoder',
-    role: 'Why you both behave this way',
-    description:
-      'Help the user understand WHY they and their partner behave the way they do — not to excuse it, but to decide if growth is possible.',
-    domain: 'relationships',
-    defaultFor: ['relationships'],
-  },
-  {
-    id: 'reality_therapist',
-    name: 'Reality Therapist',
-    role: 'What is, not what could be',
-    description:
-      'Ground the user in REALITY — not the fantasy of what the relationship could be, but the evidence of what it IS.',
-    domain: 'relationships',
-    defaultFor: ['relationships'],
-  },
-  {
-    id: 'red_flag_scanner',
-    name: 'Red Flag Scanner',
-    role: 'Distance when you are inside the pattern',
-    description:
-      'Protect the user from patterns they cannot see because they are inside them. Distance creates clarity — this agent provides that distance.',
-    domain: 'relationships',
-    defaultFor: ['relationships'],
-  },
-  {
-    id: 'money_and_love',
-    name: 'Money & Love',
-    role: 'Financial truth in relationships',
-    description:
-      'Ensure the user considers the financial implications — not to be cold, but to be complete. Money is the #1 cause of relationship conflict for a reason.',
-    domain: 'relationships',
-    defaultFor: ['relationships'],
-  },
-  {
-    id: 'pattern_detector',
-    name: 'Pattern Detector',
-    role: 'Same mistake, new packaging',
-    description:
-      'Identify repeating patterns across relationships so they stop making the same mistake in different packaging.',
-    domain: 'relationships',
-    defaultFor: ['relationships'],
-  },
-  {
-    id: 'future_projector',
-    name: 'Future Projector',
-    role: 'Trajectory, not snapshot',
-    description:
-      'Help the user see the TRAJECTORY, not just the current snapshot. Where is this heading in 2, 5, 10 years based on current evidence?',
-    domain: 'relationships',
-    defaultFor: ['relationships'],
-  },
-  {
-    id: 'cultural_lens',
-    name: 'Cultural Lens',
-    role: 'Your wants vs culture\'s script',
-    description:
-      'Help the user distinguish between what THEY want and what their CULTURE expects. Family pressure and social norms are real forces — but they should not make your decision.',
-    domain: 'relationships',
-    defaultFor: ['relationships'],
-  },
-  {
-    id: 'gut_check',
-    name: 'Gut Check',
-    role: 'Best friend honesty',
-    description:
-      'Cut through the overthinking and say the thing everyone is thinking but too polite to say. Sometimes you need a best friend, not an analyst.',
-    domain: 'relationships',
-    defaultFor: ['relationships'],
-  },
-  {
-    id: 'independence_auditor',
-    name: 'Independence Auditor',
-    role: 'Choice vs fear and dependency',
-    description:
-      'Ensure the user makes their relationship decision from genuine choice, not from fear, dependency, or lack of alternatives. Staying out of fear is not loyalty.',
-    domain: 'relationships',
-    defaultFor: ['relationships'],
-  },
-  {
-    id: 'devils_advocate',
-    name: "Devil's Advocate",
-    role: 'Steel-man the opposite case',
-    description:
-      'Stress-test the current leaning. If they want to leave, argue for staying. If they want to stay, argue for leaving. If the decision survives, it is solid.',
-    domain: 'relationships',
-    defaultFor: ['relationships'],
-  },
-
-  // ═══ LIFE DECISIONS (10) ═══
-  {
-    id: 'values_compass',
-    name: 'Values Compass',
-    role: 'Values over fear and expectations',
-    description:
-      'Ensure the decision is VALUES-driven, not fear-driven or expectation-driven. Decisions aligned with values produce peace. Misaligned decisions produce chronic regret.',
-    domain: 'life',
-    defaultFor: ['life'],
-  },
-  {
-    id: 'network_effect',
-    name: 'Network Effect',
-    role: 'Ripple to people who depend on you',
-    description:
-      'Ensure the user considers the full impact — not just on themselves, but on everyone who depends on or cares about them.',
-    domain: 'life',
-    defaultFor: ['life'],
-  },
-  {
-    id: 'identity_shift',
-    name: 'Identity Shift',
-    role: 'Who you become, not only what you do',
-    description:
-      'Surface the identity-level implications of big decisions. Some choices are not about circumstances — they are about becoming a different person.',
-    domain: 'life',
-    defaultFor: ['life'],
-  },
-  {
-    id: 'fear_separator',
-    name: 'Fear Separator',
-    role: 'Real danger vs fear of change',
-    description:
-      'Help the user tell the difference between "this is genuinely dangerous" and "I am scared of change." Both feel identical from the inside.',
-    domain: 'life',
-    defaultFor: ['life'],
-  },
-  {
-    id: 'energy_audit',
-    name: 'Energy Audit',
-    role: 'Thrive on what energizes you',
-    description:
-      'Help the user optimize for sustainable energy, not just short-term outcomes. You can survive anything — but you can only THRIVE doing what energizes you.',
-    domain: 'life',
-    defaultFor: ['life'],
-  },
-  {
-    id: 'cost_of_inaction',
-    name: 'Cost of Inaction',
-    role: 'Price of the status quo',
-    description:
-      'Expose the hidden cost of the status quo. "Doing nothing" is never free — it has a price, and most people have not calculated it.',
-    domain: 'life',
-    defaultFor: ['life'],
-  },
-  {
-    id: 'worst_case_survival',
-    name: 'Worst Case Survival',
-    role: 'Make the worst case specific and survivable',
-    description:
-      'Eliminate the vague fear of "what if everything goes wrong" by making it SPECIFIC and then proving it is survivable.',
-    domain: 'life',
-    defaultFor: ['life'],
-  },
-  {
-    id: 'ten_year_test',
-    name: '10-Year Test',
-    role: 'Decade-scale divergence',
-    description:
-      'Help the user see the LONG-TERM consequences of each choice. Most life decisions feel equal in the short-term but diverge dramatically over a decade.',
-    domain: 'life',
-    defaultFor: ['life'],
-  },
-  {
-    id: 'reversibility_check',
-    name: 'Reversibility Check',
-    role: 'One-way vs two-way doors',
-    description:
-      'Match the decision-making process to the stakes. Life is too short to agonize over reversible decisions and too important to rush irreversible ones.',
-    domain: 'life',
-    defaultFor: ['life'],
-  },
-  {
-    id: 'simplicity_advocate',
-    name: 'Simplicity Advocate',
-    role: 'Simple answer beneath the noise',
-    description:
-      'Remind the user that sometimes the answer is simpler than they are making it. Analysis is valuable, but over-analysis is a form of avoidance.',
-    domain: 'life',
-    defaultFor: ['life'],
   },
 ];
 

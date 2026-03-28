@@ -113,6 +113,7 @@ async function consolidateMemories(userId: string): Promise<number> {
 
     try {
       const response = await callClaude({
+        tier: 'optimization',
         systemPrompt: `You find DUPLICATE facts that say the same thing in different words.
 
 DUPLICATES (merge these):

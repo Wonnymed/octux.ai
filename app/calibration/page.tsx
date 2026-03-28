@@ -95,7 +95,7 @@ export default function CalibrationPage() {
         <Section title="Outcome tracker">
           <OutcomeTracker outcomes={calData?.recentOutcomes || []} />
         </Section>
-        <Section title="Memory health">
+        <Section title="Memory overview">
           <MemoryHealth />
         </Section>
       </div>

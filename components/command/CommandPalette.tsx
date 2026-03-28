@@ -22,7 +22,7 @@ import {
   Bot,
   Loader2,
 } from 'lucide-react';
-import { categoryColors, type CategoryType, verdictColors, type VerdictType } from '@/lib/design/tokens';
+import { getCategoryColor, verdictColors, type VerdictType } from '@/lib/design/tokens';
 import type { Command } from '@/lib/commands/registry';
 
 interface CommandPaletteProps {
@@ -167,7 +167,7 @@ export default function CommandPalette({
                     <CommandItem key={cmd.id} value={cmd.id} onSelect={handleSelect}>
                       <span
                         className="inline-block h-2 w-2 rounded-full shrink-0"
-                        style={{ backgroundColor: categoryColors[cmd.category as CategoryType] }}
+                        style={{ backgroundColor: getCategoryColor(cmd.category) }}
                       />
                       <span>{cmd.label}</span>
                       {cmd.description && (
@@ -235,7 +235,7 @@ export default function CommandPalette({
                 <CommandItem key={cat.id} value={cat.id} onSelect={handleSelect}>
                   <span
                     className="inline-block h-2 w-2 rounded-full shrink-0"
-                    style={{ backgroundColor: categoryColors[cat.category as CategoryType] }}
+                    style={{ backgroundColor: getCategoryColor(cat.category) }}
                   />
                   <span className="capitalize">{cat.label}</span>
                 </CommandItem>
@@ -258,9 +258,7 @@ const DEFAULT_ACTIONS: Command[] = [
 ];
 
 const DEFAULT_CATEGORIES: Command[] = [
-  { id: 'cat:investment', type: 'category', label: 'Investment', category: 'investment' },
-  { id: 'cat:relationships', type: 'category', label: 'Relationships', category: 'relationships' },
-  { id: 'cat:career', type: 'category', label: 'Career', category: 'career' },
   { id: 'cat:business', type: 'category', label: 'Business', category: 'business' },
-  { id: 'cat:life', type: 'category', label: 'Life', category: 'life' },
+  { id: 'cat:career', type: 'category', label: 'Career', category: 'career' },
+  { id: 'cat:investment', type: 'category', label: 'Investment', category: 'investment' },
 ];

@@ -35,7 +35,7 @@ export async function generateSuggestions(input: SuggestionInput): Promise<Sugge
   if (
     input.context === 'post_verdict' &&
     input.verdict &&
-    (input.userTier === 'pro' || input.userTier === 'max' || input.userTier === 'octopus')
+    (input.userTier === 'pro' || input.userTier === 'max')
   ) {
     try {
       return await generateAISuggestions(input);

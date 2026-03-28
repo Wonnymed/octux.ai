@@ -29,7 +29,7 @@ function applyThemeToDOM(resolved: 'light' | 'dark') {
 
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) {
-    metaTheme.setAttribute('content', resolved === 'dark' ? '#0F0F13' : '#FAFAFA');
+    metaTheme.setAttribute('content', resolved === 'dark' ? '#0D0D0C' : '#FAF7F2');
   }
 }
 

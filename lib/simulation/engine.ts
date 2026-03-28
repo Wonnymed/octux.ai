@@ -1,4 +1,6 @@
-import { callClaude, callClaudeWithTools, formatSearchCitations, parseJSON, DEFAULT_MODEL, type SearchCitation, type ToolCallResult } from './claude';
+import { callClaude, callClaudeWithTools, formatSearchCitations, parseJSON, type SearchCitation, type ToolCallResult } from './claude';
+import { getModel, type ModelTier } from '@/lib/config/model-tiers';
+import type { SimulationChargeType } from '@/lib/billing/token-costs';
 import { AGENTS, getAgentById } from '../agents/prompts';
 import { getAgentsByIds, suggestAgentsForDomain, buildSelfAgent, libraryAgentToConfig, type LibraryAgent } from '../agents/library';
 import { generateAdvisorPersonas } from '../agents/advisors';
@@ -101,10 +103,11 @@ async function callAgentWithRetry(
   phase: string,
   retries = 2,
   useWebSearch = false,
+  agentTier: ModelTier = 'specialist',
 ): Promise<CallAgentResult | null> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      return await callAgent(agent, userMessage, maxTokens, audit, roundNum, phase, useWebSearch);
+      return await callAgent(agent, userMessage, maxTokens, audit, roundNum, phase, useWebSearch, agentTier);
     } catch (err) {
       const isRateLimit = err instanceof Error && (err.message.includes('429') || err.message.includes('rate_limit'));
       if (isRateLimit && attempt < retries) {
@@ -263,6 +266,7 @@ async function callAgent(
   roundNum?: number,
   phase?: string,
   useWebSearch = false,
+  agentTier: ModelTier = 'specialist',
 ): Promise<CallAgentResult> {
   const start = Date.now();
   let success = true;
@@ -278,6 +282,7 @@ async function callAgent(
         userMessage,
         agentId: agent.id,
         maxTokens,
+        tier: agentTier,
       });
       raw = toolResult.text;
       searchCitations = toolResult.searchCitations;
@@ -287,6 +292,7 @@ async function callAgent(
         systemPrompt: agent.systemPrompt,
         userMessage,
         maxTokens,
+        tier: agentTier,
       });
     }
   } catch (err) {
@@ -302,7 +308,7 @@ async function callAgent(
         round: roundNum,
         phase,
         agent_id: agent.id,
-        model: DEFAULT_MODEL,
+        model: getModel(agentTier),
         input_tokens: inputTokens,
         output_tokens: outputTokens,
         latency_ms: latency,
@@ -351,7 +357,10 @@ export async function* runSimulation(
     enableCrowdWisdom?: boolean;
     advisorGuidance?: string;
     advisorCount?: number;
+    /** Billing tier (free/pro/max). */
     tier?: string;
+    /** Simulation mode — swarm uses economy model for agent calls. */
+    simMode?: SimulationChargeType;
     userId?: string;
     threadId?: string;
     onHITLCheckpoint?: (checkpoint: any) => Promise<HITLResponse>;
@@ -363,6 +372,7 @@ export async function* runSimulation(
 ): AsyncGenerator<SimulationSSEEvent> {
   const kernel = createKernel();
   const simId = `sim_${Date.now()}`;
+  const agentDebateTier: ModelTier = options?.simMode === 'swarm' ? 'swarm' : 'specialist';
   const audit = createAudit(simId, question, engine);
   const state = createInitialState(simId, question, engine, options?.tier || 'free');
   const roundDiscoveries: RoundLearning[] = [];
@@ -511,10 +521,11 @@ export async function* runSimulation(
     const planRaw = await callClaude({
       systemPrompt: chair.systemPrompt,
       userMessage: planPrompt,
+      tier: 'orchestrator',
     });
     addRound(audit, {
       round: 1, phase: 'planning', agent_id: 'decision_chair',
-      model: DEFAULT_MODEL,
+      model: getModel('orchestrator'),
       input_tokens: Math.ceil((chair.systemPrompt.length + planPrompt.length) / 4),
       output_tokens: Math.ceil(planRaw.length / 4),
       latency_ms: Date.now() - planStart, success: true,
@@ -593,7 +604,7 @@ export async function* runSimulation(
         name: jokerName,
         role: jokerRole || 'Decision-maker perspective',
         icon: '🃏',
-        color: '#E8784A',
+        color: '#6B6560',
         goal: 'Represent the real decision-maker context in the debate',
         backstory: `This is the user participating in the simulation.\nContext: ${jokerBio}\nRisk tolerance: ${jokerRisk}\nPriorities: ${jokerPriorities || 'not specified'}\nKnown biases: ${jokerBiases || 'not specified'}`,
         constraints: [
@@ -755,24 +766,24 @@ Respond with valid JSON only:
     }
   }
 
-  // Split active agents into deep (first half) and quick (second half)
-  const deepCount = Math.ceil(allSpecialistIds.length / 2);
-  const deepAgentIds = new Set<AgentId>();
-  const deepAgentTasks: { agent: AgentConfig; task: string }[] = [];
+  // Split active agents into thorough (first half) and quick (second half) passes
+  const thoroughPassCount = Math.ceil(allSpecialistIds.length / 2);
+  const thoroughPassAgentIds = new Set<AgentId>();
+  const thoroughPassAgentTasks: { agent: AgentConfig; task: string }[] = [];
   for (const t of plan.tasks) {
     const agentId = t.assigned_agent as AgentId;
-    if (deepAgentIds.has(agentId) || agentId === 'decision_chair') continue;
+    if (thoroughPassAgentIds.has(agentId) || agentId === 'decision_chair') continue;
     if (!activeAgentIds.has(agentId)) continue;
     try {
       const agent = applyPromptOverride(resolveAgent(agentId));
-      deepAgentTasks.push({ agent, task: t.description });
-      deepAgentIds.add(agentId);
+      thoroughPassAgentTasks.push({ agent, task: t.description });
+      thoroughPassAgentIds.add(agentId);
     } catch { continue; }
-    if (deepAgentTasks.length >= deepCount) break;
+    if (thoroughPassAgentTasks.length >= thoroughPassCount) break;
   }
   const quickAgentTasks: { agent: AgentConfig; task: string }[] = [];
   for (const id of allSpecialistIds) {
-    if (deepAgentIds.has(id as AgentId)) continue;
+    if (thoroughPassAgentIds.has(id as AgentId)) continue;
     const agent = applyPromptOverride(resolveAgent(id));
     const planTask = plan.tasks.find((t) => t.assigned_agent === id);
     quickAgentTasks.push({ agent, task: planTask?.description || `Analyze this decision from your perspective as ${agent.role}` });
@@ -803,25 +814,25 @@ Respond with valid JSON only:
   yield { event: 'round_complete', data: { round: 1 } };
   saveToWorkingBuffer(simId, options?.userId || 'anon', 1, 'planning', `Chair planned ${plan.tasks?.length || 0} tasks across specialists`, 'decision_chair');
 
-  // ━━ ROUND 2 — FIELD SCAN BATCH 1 + DEEP ANALYSIS WAVE 1 ━━━━
+  // ━━ ROUND 2 — FIELD SCAN BATCH 1 + SPECIALIST WAVE 1 (THOROUGH PASS) ━━━━
 
   transitionPhase(state, 'opening');
   yield { event: 'phase_start', data: { phase: 'opening', status: 'active' } };
 
-  // Split 5 deep agents into 2 waves: [3, 2]
-  const deepWave1 = deepAgentTasks.slice(0, 3);
-  const deepWave2 = deepAgentTasks.slice(3, 5);
+  // Split thorough-pass specialists into 2 slices: [3, 2]
+  const thoroughWave1 = thoroughPassAgentTasks.slice(0, 3);
+  const thoroughWave2 = thoroughPassAgentTasks.slice(3, 5);
 
   // ━━ ROUND 2 — FIELD SCAN BATCH 1 (if crowd wisdom enabled) ━━
 
   if (fieldPersonas.length > 0) {
-    const wave1AgentIds = deepWave1.map(d => d.agent.id);
+    const wave1AgentIds = thoroughWave1.map(d => d.agent.id);
     const batch1Advisors = selectRelevantAdvisors(fieldPersonas, wave1AgentIds, queriedAdvisors);
 
     if (batch1Advisors.length > 0) {
       yield { event: 'round_start', data: { round: 2, title: 'Field Scan — Batch 1', description: `${batch1Advisors.length} local voices providing ground-level intelligence`, total_rounds: 10 } };
 
-      const focusArea = deepWave1.map(d => d.agent.role).join(', ');
+      const focusArea = thoroughWave1.map(d => d.agent.role).join(', ');
       const scan1 = await runFieldScan(question, batch1Advisors, focusArea, 2);
       fieldScans.push(scan1);
       batch1Advisors.forEach(a => queriedAdvisors.add(a.id));
@@ -831,24 +842,25 @@ Respond with valid JSON only:
       yield { event: 'round_complete', data: { round: 2 } };
     }
   } else {
-    // No crowd wisdom — round 2 is the first deep analysis round directly
+    // No crowd wisdom — round 2 flows straight into specialist wave 1
   }
 
-  // ━━ ROUND 3 — DEEP ANALYSIS WAVE 1 (WITH field intelligence) ━━
+  // ━━ ROUND 3 — SPECIALIST WAVE 1 (WITH field intelligence) ━━
 
-  yield { event: 'round_start', data: { round: 3, title: 'Deep Analysis — Wave 1', description: `First wave of specialists analyzing${fieldScans.length > 0 ? ' with field intelligence' : ''}`, total_rounds: 10 } };
+  yield { event: 'round_start', data: { round: 3, title: 'Specialist round — Wave 1', description: `First wave of specialists analyzing${fieldScans.length > 0 ? ' with field intelligence' : ''}`, total_rounds: 10 } };
 
   {
-    const batchItems = deepWave1.map(({ agent, task }) => {
+    const batchItems = thoroughWave1.map(({ agent, task }) => {
       const debateCtx = buildDebateContext(state, agent.id, undefined, undefined, fieldScans, memory, networkMemoryText, buildAgentContext(agent.id, preSim.agentKnowledgeMap, preSim.agentLessonsMap, preSim.agentRulesMap), undefined, domainConstraintsText, behavioralContextText, ragContextMap.get(agent.id));
       const userMsg = `Question: ${question}\n\nYour task: ${task}\n\n${debateCtx}\n\nAnalyze from your perspective as ${agent.role}. Be specific with data. Respond with valid JSON only.`;
       const promise = callAgent(
         agent, userMsg,
         kernel.config.maxTokensPerAgent,
         audit, 3, 'opening',
-        true, // web search enabled for deep analysis
+        true, // web search enabled for thorough specialist pass
+        agentDebateTier,
       ).catch((err) => {
-        console.error(`[${agent.id}] deep analysis failed:`, err);
+        console.error(`[${agent.id}] specialist pass failed:`, err);
         return null;
       });
       return { agent, debateCtx, promise };
@@ -860,7 +872,7 @@ Respond with valid JSON only:
       const { agent, debateCtx } = batchItems[i];
       if (result.status === 'fulfilled' && result.value) {
         let report = result.value;
-        // Collect search citations from deep analysis
+        // Collect search citations from specialist wave 1
         if (report._searchCitations) {
           allSearchCitations.push(...report._searchCitations);
           yield { event: 'agent_searched', data: {
@@ -877,7 +889,7 @@ Respond with valid JSON only:
           if (check.patched) report = check.patched;
         }
         if (!filtered) {
-          // ═══ SELF-REFLECTION (PraisonAI — Deep Analysis only) ═══
+          // ═══ SELF-REFLECTION (PraisonAI — specialist rounds only) ═══
           if (agentShouldReflect(report.agent_id)) {
             const reflection = await runReflectionLoop(
               report.agent_id, report.agent_name || report.agent_id,
@@ -904,18 +916,18 @@ Respond with valid JSON only:
   }
 
   yield { event: 'round_complete', data: { round: 3 } };
-  saveToWorkingBuffer(simId, options?.userId || 'anon', 3, 'deep_analysis', `Deep wave 1: ${allReports.length} reports`, null, getCurrentPositions(state));
+  saveToWorkingBuffer(simId, options?.userId || 'anon', 3, 'specialist_analysis', `Specialist wave 1: ${allReports.length} reports`, null, getCurrentPositions(state));
 
-  // ━━ ROUND 4 — FIELD SCAN BATCH 2 + DEEP ANALYSIS WAVE 2 ━━
+  // ━━ ROUND 4 — FIELD SCAN BATCH 2 + SPECIALIST WAVE 2 (THOROUGH PASS) ━━
 
   if (fieldPersonas.length > 0) {
-    const wave2AgentIds = deepWave2.map(d => d.agent.id);
+    const wave2AgentIds = thoroughWave2.map(d => d.agent.id);
     const batch2Advisors = selectRelevantAdvisors(fieldPersonas, wave2AgentIds, queriedAdvisors);
 
     if (batch2Advisors.length > 0) {
       yield { event: 'round_start', data: { round: 4, title: 'Field Scan — Batch 2', description: `${batch2Advisors.length} more local voices feeding specialists`, total_rounds: 10 } };
 
-      const focusArea = deepWave2.map(d => d.agent.role).join(', ');
+      const focusArea = thoroughWave2.map(d => d.agent.role).join(', ');
       const scan2 = await runFieldScan(question, batch2Advisors, focusArea, 4);
       fieldScans.push(scan2);
       batch2Advisors.forEach(a => queriedAdvisors.add(a.id));
@@ -926,7 +938,7 @@ Respond with valid JSON only:
     }
   }
 
-  // ═══ HITL CHECKPOINT — After Round 4 (deep analysis complete) ═══
+  // ═══ HITL CHECKPOINT — After Round 4 (thorough specialist passes complete) ═══
   let userCorrectionText = '';
 
   if (HITL_CONFIG.enabled && options?.onHITLCheckpoint && state.latest_reports.size >= HITL_CONFIG.minAgentReports) {
@@ -974,21 +986,22 @@ Respond with valid JSON only:
     }
   }
 
-  // ━━ ROUND 5 — DEEP ANALYSIS WAVE 2 (WITH accumulated field intelligence) ━━
+  // ━━ ROUND 5 — SPECIALIST WAVE 2 (WITH accumulated field intelligence) ━━
 
-  yield { event: 'round_start', data: { round: 5, title: 'Deep Analysis — Wave 2', description: `Second wave of specialists${fieldScans.length > 1 ? ' with accumulated field intelligence' : ''}`, total_rounds: 10 } };
+  yield { event: 'round_start', data: { round: 5, title: 'Specialist round — Wave 2', description: `Second wave of specialists${fieldScans.length > 1 ? ' with accumulated field intelligence' : ''}`, total_rounds: 10 } };
 
   {
-    const batchItems2 = deepWave2.map(({ agent, task }) => {
+    const batchItems2 = thoroughWave2.map(({ agent, task }) => {
       const debateCtx = buildDebateContext(state, agent.id, progressLedger, chairDirectives, fieldScans, memory, networkMemoryText, buildAgentContext(agent.id, preSim.agentKnowledgeMap, preSim.agentLessonsMap, preSim.agentRulesMap), userCorrectionText, domainConstraintsText, behavioralContextText, ragContextMap.get(agent.id));
       const userMsg = `Question: ${question}\n\nYour task: ${task}\n\n${debateCtx}\n\nAnalyze from your perspective as ${agent.role}. Be specific with data. Respond with valid JSON only.`;
       const promise = callAgent(
         agent, userMsg,
         kernel.config.maxTokensPerAgent,
         audit, 5, 'opening',
-        true, // web search enabled for deep analysis
+        true, // web search enabled for thorough specialist pass
+        agentDebateTier,
       ).catch((err) => {
-        console.error(`[${agent.id}] deep analysis failed:`, err);
+        console.error(`[${agent.id}] specialist pass failed:`, err);
         return null;
       });
       return { agent, debateCtx, promise };
@@ -1000,7 +1013,7 @@ Respond with valid JSON only:
       const { agent, debateCtx } = batchItems2[i];
       if (result.status === 'fulfilled' && result.value) {
         let report = result.value;
-        // Collect search citations from deep analysis wave 2
+        // Collect search citations from specialist wave 2
         if (report._searchCitations) {
           allSearchCitations.push(...report._searchCitations);
           yield { event: 'agent_searched', data: {
@@ -1017,7 +1030,7 @@ Respond with valid JSON only:
           if (check.patched) report = check.patched;
         }
         if (!filtered) {
-          // ═══ SELF-REFLECTION (PraisonAI — Deep Analysis only) ═══
+          // ═══ SELF-REFLECTION (PraisonAI — specialist rounds only) ═══
           if (agentShouldReflect(report.agent_id)) {
             const reflection = await runReflectionLoop(
               report.agent_id, report.agent_name || report.agent_id,
@@ -1044,7 +1057,7 @@ Respond with valid JSON only:
   }
 
   yield { event: 'round_complete', data: { round: 5 } };
-  saveToWorkingBuffer(simId, options?.userId || 'anon', 5, 'deep_analysis', `Deep wave 2: ${allReports.length} total reports`, null, getCurrentPositions(state));
+  saveToWorkingBuffer(simId, options?.userId || 'anon', 5, 'specialist_analysis', `Specialist wave 2: ${allReports.length} total reports`, null, getCurrentPositions(state));
 
   // MiroFish PERSIST: discoveries from rounds 1-5 available to rounds 6+
   const discoveryContext = formatRoundDiscoveries(roundDiscoveries, 6);
@@ -1052,11 +1065,11 @@ Respond with valid JSON only:
     ? networkMemoryText + '\n' + discoveryContext
     : networkMemoryText;
 
-  const deepConsensus = calculateConsensus(allReports);
-  state.consensus_history.push({ phase: 'opening', ...deepConsensus });
-  yield { event: 'consensus_update', data: deepConsensus };
+  const openingConsensus = calculateConsensus(allReports);
+  state.consensus_history.push({ phase: 'opening', ...openingConsensus });
+  yield { event: 'consensus_update', data: openingConsensus };
 
-  // MagenticOne #9: Ledger update after deep analysis (rounds 2-5)
+  // MagenticOne #9: Ledger update after thorough specialist rounds (rounds 2-5)
   {
     const phaseReports = allReports.slice();
     progressLedger = assessProgress(state, progressLedger, phaseReports);
@@ -1071,12 +1084,12 @@ Respond with valid JSON only:
     }
   }
 
-  // CrewAI #7: Check if any deep analysis agents need data from others
+  // CrewAI #7: Check if any thorough-pass specialists need data from others
   {
     try {
       const delegationResponses = await processDelegations(allReports, state, question);
       if (delegationResponses.length > 0) {
-        console.log('[delegation] After deep analysis:', delegationResponses.map(d =>
+        console.log('[delegation] After specialist thorough passes:', delegationResponses.map(d =>
           `${d.request.requesting_agent} → ${d.request.target_agent}: ${d.request.question.substring(0, 50)}`
         ).join(', '));
         for (const delegation of delegationResponses) {
@@ -1085,7 +1098,7 @@ Respond with valid JSON only:
         state.delegations.push(...delegationResponses);
       }
     } catch (err) {
-      console.error('[delegation] Deep analysis delegation failed (non-fatal):', err);
+      console.error('[delegation] Specialist-round delegation failed (non-fatal):', err);
     }
   }
 
@@ -1104,6 +1117,9 @@ Respond with valid JSON only:
       agent,
       `Question: ${question}\n\n${debateCtx}\n\nAs ${agent.role}, add your perspective. Focus on what others MISSED or got wrong. React to their specific arguments. Respond with valid JSON only.`,
       512, audit, 6, 'quick_takes',
+      2,
+      false,
+      agentDebateTier,
     );
   });
   const quickResults1 = await Promise.allSettled(quickBatch1Promises);
@@ -1117,6 +1133,9 @@ Respond with valid JSON only:
       agent,
       `Question: ${question}\n\n${debateCtx}\n\nAs ${agent.role}, add your perspective. Focus on what others MISSED or got wrong. React to their specific arguments. Respond with valid JSON only.`,
       512, audit, 6, 'quick_takes',
+      2,
+      false,
+      agentDebateTier,
     );
   });
   const quickResults2 = await Promise.allSettled(quickBatch2Promises);
@@ -1245,6 +1264,8 @@ Respond with valid JSON only:
             `Question: ${question}\n\n${devilCtx}\n\nAll agents currently agree on "${majorityPosition}". The Decision Chair is forcing a devil's advocate round. As ${targetAgent.role}, present the STRONGEST possible argument AGAINST "${majorityPosition}". Reference specific claims from other agents and explain why they're wrong or incomplete. What could go catastrophically wrong? Respond with valid JSON only.`,
             kernel.config.maxTokensPerAgent,
             audit, roundNum, 'adversarial',
+            false,
+            agentDebateTier,
           );
           allReports.push(devilReport);
           addAgentReport(state, devilReport);
@@ -1282,6 +1303,8 @@ Respond with valid JSON only:
         `Question: ${question}\n\n${challengerCtx}\n\nYou are CHALLENGING ${defenderAgent.name}'s position. They said: "${defenderReport?.key_argument || 'their position'}"\n\nAttack their weakest point with specific counter-evidence. Reference what other agents said to support your challenge. Be direct. Respond with valid JSON only.`,
         kernel.config.maxTokensPerAgent,
         audit, roundNum, 'adversarial',
+        false,
+        agentDebateTier,
       );
       allReports.push(challengeReport);
       addAgentReport(state, challengeReport);
@@ -1297,6 +1320,8 @@ Respond with valid JSON only:
         `Question: ${question}\n\n${defenderCtx}\n\n${challengerAgent.name} CHALLENGED your position: "${challengerReport?.key_argument || 'disagreement'}"\n\nDefend your position with stronger evidence, or update your position if the challenge is valid. Be honest \u2014 if you changed your mind, say what convinced you. Respond with valid JSON only.`,
         kernel.config.maxTokensPerAgent,
         audit, roundNum, 'adversarial',
+        false,
+        agentDebateTier,
       );
       allReports.push(defenseReport);
       addAgentReport(state, defenseReport);
@@ -1348,6 +1373,9 @@ Respond with valid JSON only:
       agent,
       `Question: ${question}\n\n${convergenceCtx}\n\nThe debate is concluding. Declare your FINAL position. If you changed your mind from your earlier analysis, explain what argument convinced you. Reference specific agents or evidence that influenced your final stance. Respond with valid JSON only.`,
       256, audit, 9, 'convergence',
+      2,
+      false,
+      agentDebateTier,
     );
   });
   const convResults1 = await Promise.allSettled(convBatch1Promises);
@@ -1360,6 +1388,9 @@ Respond with valid JSON only:
       agent,
       `Question: ${question}\n\n${convergenceCtx}\n\nThe debate is concluding. Declare your FINAL position. If you changed your mind from your earlier analysis, explain what argument convinced you. Reference specific agents or evidence that influenced your final stance. Respond with valid JSON only.`,
       256, audit, 9, 'convergence',
+      2,
+      false,
+      agentDebateTier,
     );
   });
   const convResults2 = await Promise.allSettled(convBatch2Promises);
@@ -1484,10 +1515,11 @@ DEBATE PROGRESS:
       systemPrompt: chair.systemPrompt,
       userMessage: verdictPrompt,
       maxTokens: 2048,
+      tier: 'orchestrator',
     });
     addRound(audit, {
       round: 10, phase: 'verdict', agent_id: 'decision_chair',
-      model: DEFAULT_MODEL,
+      model: getModel('orchestrator'),
       input_tokens: Math.ceil((chair.systemPrompt.length + verdictPrompt.length) / 4),
       output_tokens: Math.ceil(verdictRaw.length / 4),
       latency_ms: Date.now() - verdictStart, success: true,
@@ -1645,6 +1677,7 @@ DEBATE PROGRESS:
       systemPrompt: chair.systemPrompt,
       userMessage: `Based on the analysis of "${question}", suggest 4 follow-up questions the user should explore next. Make them specific and actionable. Return a JSON array of strings only: ["question 1", "question 2", "question 3", "question 4"]`,
       maxTokens: 512,
+      tier: 'orchestrator',
     });
     console.log(`[decision_chair] followups: ${followupRaw.length} chars`);
     followUps = parseJSON<string[]>(followupRaw);

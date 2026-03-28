@@ -9,9 +9,9 @@ export default function TrustStrip() {
         <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 mb-8">
           <Stat value="1,247" label="decisions analyzed" />
           <StatDivider />
-          <Stat value="50" label="specialist agents" />
+          <Stat value="30" label="specialist agents" />
           <StatDivider />
-          <Stat value="6" label="decision categories" />
+          <Stat value="3" label="business categories" />
           <StatDivider />
           <Stat value="10" label="debate rounds per sim" />
         </div>

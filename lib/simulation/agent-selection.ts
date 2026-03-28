@@ -46,6 +46,7 @@ export async function selectRelevantAgents(
 
   try {
     const response = await callClaude({
+      tier: 'extraction',
       systemPrompt: `You are the planning module for a decision simulation system.
 Given a question, select the ${minAgents}-${maxAgents} MOST RELEVANT specialist agents.
 
@@ -130,6 +131,6 @@ function fallbackSelection(): AgentSelection {
  */
 export function calculateAgentBudget(selectedCount: number): { maxTokens: number; label: string } {
   const maxTokens = Math.round(10000 / Math.max(selectedCount, 3));
-  const label = selectedCount <= 4 ? 'Deep Analysis' : selectedCount <= 6 ? 'Focused Analysis' : 'Standard';
+  const label = selectedCount <= 4 ? 'Focused specialist pass' : selectedCount <= 6 ? 'Focused Analysis' : 'Standard';
   return { maxTokens: Math.min(maxTokens, 3000), label };
 }

@@ -24,7 +24,7 @@ export default function Footer() {
               style={{
                 fontSize: 16,
                 fontWeight: 700,
-                color: "#C75B2A",
+                color: "#1A1815",
               }}
             >
               OX

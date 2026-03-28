@@ -24,7 +24,7 @@ const ENGINES: EngineCard[] = [
     id: "simulate",
     label: "Simulate",
     icon: Zap,
-    color: "#C75B2A",
+    color: "#1A1815",
     description: "Pressure-test any decision with adversarial debate",
   },
   {

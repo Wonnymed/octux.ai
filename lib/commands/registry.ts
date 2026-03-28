@@ -28,7 +28,7 @@ export const ACTIONS: Command[] = [
     id: 'action:new-simulation',
     type: 'action',
     label: 'New simulation',
-    description: 'Jump straight to Deep simulation',
+    description: 'Start a new multi-agent simulation',
     shortcut: 'S',
     icon: 'simulate',
   },
@@ -57,10 +57,10 @@ export const ACTIONS: Command[] = [
     icon: 'settings',
   },
   {
-    id: 'action:switch-tier',
+    id: 'action:switch-sim-mode',
     type: 'action',
-    label: 'Switch tier',
-    description: 'Change between Ink, Deep, and Kraken',
+    label: 'Simulation mode',
+    description: 'Change swarm vs specialist and other simulation modes in the composer',
     shortcut: 'T',
     icon: 'tier',
   },
@@ -69,11 +69,9 @@ export const ACTIONS: Command[] = [
 // ═══ CATEGORIES ═══
 
 export const CATEGORIES: Command[] = [
-  { id: 'cat:investment', type: 'category', label: 'Investment', description: 'Financial decisions', icon: '\u{1F4B0}', category: 'investment' },
-  { id: 'cat:relationships', type: 'category', label: 'Relationships', description: 'People decisions', icon: '\u2764\uFE0F', category: 'relationships' },
-  { id: 'cat:career', type: 'category', label: 'Career', description: 'Professional decisions', icon: '\u{1F4BC}', category: 'career' },
-  { id: 'cat:business', type: 'category', label: 'Business', description: 'Entrepreneurial decisions', icon: '\u{1F3EA}', category: 'business' },
-  { id: 'cat:life', type: 'category', label: 'Life', description: 'Personal decisions', icon: '\u{1F30D}', category: 'life' },
+  { id: 'cat:business', type: 'category', label: 'Business', description: 'Startups, GTM, and operations', icon: '\u{1F3EA}', category: 'business' },
+  { id: 'cat:career', type: 'category', label: 'Career', description: 'Roles, comp, and hiring', icon: '\u{1F4BC}', category: 'career' },
+  { id: 'cat:investment', type: 'category', label: 'Investment', description: 'Capital and markets', icon: '\u{1F4B0}', category: 'investment' },
 ];
 
 // ═══ SEARCH HELPERS ═══
@@ -155,7 +153,7 @@ export function agentToCommand(agent: {
     type: 'agent',
     label: agent.name,
     description: agent.role || agent.description || '',
-    category: agent.category_id || agent.category || 'life',
+    category: agent.category_id || agent.category || 'business',
     metadata: { agentId: agent.id },
   };
 }

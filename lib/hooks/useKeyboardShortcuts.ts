@@ -10,8 +10,8 @@ interface ShortcutHandlers {
   onFocusInput?: () => void;
   onCopyVerdict?: () => void;
   onExpandVerdict?: () => void;
-  onStartDeepSim?: () => void;
-  onStartKrakenSim?: () => void;
+  onStartSpecialistSim?: () => void;
+  onStartCompareSim?: () => void;
 }
 
 export function useKeyboardShortcuts(handlers: ShortcutHandlers = {}) {
@@ -60,17 +60,11 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers = {}) {
       case 'filter-investment':
         window.dispatchEvent(new CustomEvent('octux:category-filter', { detail: { category: 'investment' } }));
         break;
-      case 'filter-relationships':
-        window.dispatchEvent(new CustomEvent('octux:category-filter', { detail: { category: 'relationships' } }));
-        break;
       case 'filter-career':
         window.dispatchEvent(new CustomEvent('octux:category-filter', { detail: { category: 'career' } }));
         break;
       case 'filter-business':
         window.dispatchEvent(new CustomEvent('octux:category-filter', { detail: { category: 'business' } }));
-        break;
-      case 'filter-life':
-        window.dispatchEvent(new CustomEvent('octux:category-filter', { detail: { category: 'life' } }));
         break;
 
       // Conversation
@@ -85,11 +79,11 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers = {}) {
         break;
 
       // Simulation
-      case 'start-deep-sim':
-        handlersRef.current.onStartDeepSim?.();
+      case 'start-specialist-sim':
+        handlersRef.current.onStartSpecialistSim?.();
         break;
-      case 'start-kraken-sim':
-        handlersRef.current.onStartKrakenSim?.();
+      case 'start-compare-sim':
+        handlersRef.current.onStartCompareSim?.();
         break;
 
       // UI

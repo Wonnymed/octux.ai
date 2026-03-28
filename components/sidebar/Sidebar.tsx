@@ -23,7 +23,7 @@ import { cn } from '@/lib/design/cn';
 import { useAppStore, type ConversationSummary } from '@/lib/store/app';
 import { useBillingStore } from '@/lib/store/billing';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { TIERS, type TierType } from '@/lib/billing/tiers';
+import { TIERS, normalizeTierType, type TierType } from '@/lib/billing/tiers';
 import { OCTUX_TOOLS, type OctuxTool } from '@/lib/tools/config';
 import {
   Tooltip,
@@ -119,7 +119,7 @@ function SidebarCollapsed() {
                 type="button"
                 onClick={toggleSidebar}
                 className={cn(
-                  'flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent/70 to-amber-600/40 shadow-sm transition-transform hover:scale-[1.02]',
+                  'flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-surface-3 to-surface-2 shadow-sm transition-transform hover:scale-[1.02]',
                   BRAND_LOGO_BOX,
                 )}
                 aria-label="Open sidebar"
@@ -257,7 +257,7 @@ function SidebarExpanded() {
           <div className="flex min-w-0 items-center gap-3">
             <div
               className={cn(
-                'flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent/70 to-amber-600/40 shadow-sm',
+                'flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-surface-3 to-surface-2 shadow-sm',
                 BRAND_LOGO_BOX,
               )}
             >
@@ -337,21 +337,8 @@ function SidebarExpanded() {
         </LayoutGroup>
 
         <div className="shrink-0 space-y-2 border-t border-border-subtle/60 p-2.5 pt-2">
-          {tier === 'free' ? (
-            <button
-              type="button"
-              onClick={() => router.push('/pricing')}
-              className="flex h-8 w-full items-center gap-2 rounded-lg px-2 text-left text-txt-secondary transition-colors hover:bg-surface-2 hover:text-txt-primary"
-            >
-              <Zap size={NAV_ICON} className="shrink-0 text-txt-tertiary" strokeWidth={ICON_STROKE} />
-              <span className="min-w-0 flex-1 truncate text-[13px] font-normal">
-                Upgrade · {pro.priceLabel}
-                {pro.period}
-              </span>
-              <ChevronRight size={14} className="shrink-0 text-txt-disabled" strokeWidth={ICON_STROKE} />
-            </button>
-          ) : (
-            <div className="flex items-center gap-2 px-2 py-1">
+          <div className="space-y-1.5 px-2">
+            <div className="flex items-center gap-2">
               <Zap size={14} className="shrink-0 text-txt-disabled" strokeWidth={ICON_STROKE} />
               <div className="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-3">
                 <div
@@ -368,10 +355,25 @@ function SidebarExpanded() {
                   }}
                 />
               </div>
-              <span className="shrink-0 tabular-nums text-[11px] text-txt-tertiary">
-                {tokensRemaining}/{tokensTotal}
-              </span>
             </div>
+            <p className="text-[11px] leading-snug text-txt-secondary">
+              <span className="tabular-nums font-semibold text-txt-primary">{tokensRemaining}</span> tokens
+              remaining
+            </p>
+          </div>
+          {tier === 'free' && (
+            <button
+              type="button"
+              onClick={() => router.push('/pricing')}
+              className="flex h-8 w-full items-center gap-2 rounded-lg px-2 text-left text-txt-secondary transition-colors hover:bg-surface-2 hover:text-txt-primary"
+            >
+              <Zap size={NAV_ICON} className="shrink-0 text-txt-tertiary" strokeWidth={ICON_STROKE} />
+              <span className="min-w-0 flex-1 truncate text-[13px] font-normal">
+                Upgrade · {pro.priceLabel}
+                {pro.period}
+              </span>
+              <ChevronRight size={14} className="shrink-0 text-txt-disabled" strokeWidth={ICON_STROKE} />
+            </button>
           )}
           <div className="rounded-xl border border-border-default bg-surface-0 p-2.5 shadow-[0_1px_3px_rgba(15,23,42,0.06)] dark:border-border-subtle dark:bg-surface-1 dark:shadow-none">
             <ProfileMenu variant="expanded" tier={tier} />
@@ -437,7 +439,7 @@ function SidebarSectionHeading({ children }: { children: React.ReactNode }) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 const FLYOUT_CONTENT_CLASS =
-  'z-[100] w-60 rounded-xl border border-border-default bg-surface-raised p-2 shadow-lg';
+  'z-[100] w-60 rounded-[12px] border border-border-default bg-[var(--bg-tertiary)] p-2 shadow-lg';
 
 function ToolsFlyoutMenu({
   pathname,
@@ -471,14 +473,11 @@ function ToolsFlyoutMenu({
             }}
             className={cn(
               'flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-surface-2/80',
-              active ? 'bg-accent-subtle' : '',
+              active ? 'bg-surface-2' : '',
             )}
           >
-            <div
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
-              style={{ backgroundColor: `${tool.color}18` }}
-            >
-              <Icon size={14} style={{ color: tool.color }} strokeWidth={ICON_STROKE} />
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-hover)]">
+              <Icon size={14} className="text-txt-secondary" strokeWidth={ICON_STROKE} />
             </div>
             <span className="text-[13px] text-txt-secondary">{tool.name}</span>
           </button>
@@ -698,13 +697,13 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
       type="button"
       className="flex w-full items-center gap-3 rounded-lg px-1 py-0.5 text-left transition-colors hover:bg-surface-2/60"
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/20">
-        <span className="text-[12px] font-semibold text-accent">{initial}</span>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--bg-active)]">
+        <span className="text-[12px] font-semibold text-txt-primary">{initial}</span>
       </div>
       <div className="min-w-0 flex-1 text-left">
         <p className="truncate text-[13px] font-semibold text-txt-primary">{displayName}</p>
         {!isAuthenticated && (
-          <p className="text-[11px] text-accent">Sign in</p>
+          <p className="text-[11px] text-txt-secondary">Sign in</p>
         )}
         {isAuthenticated && user?.email && (
           <p className="truncate text-[11px] text-txt-tertiary">{user.email}</p>
@@ -718,12 +717,12 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
     <button
       type="button"
       className={cn(
-        'flex shrink-0 items-center justify-center rounded-full bg-accent/20 transition-colors hover:bg-accent/28',
+        'flex shrink-0 items-center justify-center rounded-full bg-[var(--bg-active)] transition-colors hover:bg-[var(--bg-hover)]',
         BRAND_LOGO_BOX,
       )}
       aria-label="Profile"
     >
-      <span className="text-[13px] font-semibold leading-none text-accent">{initial}</span>
+      <span className="text-[13px] font-semibold leading-none text-txt-primary">{initial}</span>
     </button>
   );
 
@@ -900,8 +899,7 @@ function ConversationRow({ convo, isActive }: { convo: ConversationSummary; isAc
 }
 
 function TierPill({ tier }: { tier: TierType }) {
-  const label =
-    tier === 'free' ? 'Free' : tier === 'pro' ? 'Pro' : tier === 'max' ? 'Max' : 'Octopus';
+  const label = TIERS[normalizeTierType(tier)].name;
   return (
     <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider text-txt-disabled">{label}</span>
   );

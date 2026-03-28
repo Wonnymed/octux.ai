@@ -1,22 +1,26 @@
 import { NextResponse } from 'next/server';
-import { checkSimulationUsage, checkFeatureAccess } from '@/lib/billing/usage';
+import { checkSimulationStart, checkFeatureAccess } from '@/lib/billing/usage';
+import type { SimulationChargeType } from '@/lib/billing/token-costs';
 import type { TierLimits } from '@/lib/billing/tiers';
 
 export async function gateSimulation(
   userId: string,
-  simType: 'deep' | 'kraken',
+  simMode: SimulationChargeType,
 ): Promise<NextResponse | null> {
-  const result = await checkSimulationUsage(userId, simType);
+  const result = await checkSimulationStart(userId, simMode);
 
   if (result.allowed) return null;
 
-  return NextResponse.json({
-    error: 'upgrade_required',
-    message: result.reason,
-    tokensUsed: result.tokensUsed,
-    tokensTotal: result.tokensTotal,
-    upgradeRequired: result.upgradeRequired,
-  }, { status: 403 });
+  return NextResponse.json(
+    {
+      error: 'forbidden',
+      message: result.reason,
+      tokensUsed: result.tokensUsed,
+      tokensTotal: result.tokensTotal,
+      upgradeRequired: result.upgradeRequired,
+    },
+    { status: 403 },
+  );
 }
 
 export async function gateFeature(
@@ -27,9 +31,12 @@ export async function gateFeature(
 
   if (result.allowed) return null;
 
-  return NextResponse.json({
-    error: 'upgrade_required',
-    message: result.reason,
-    upgradeRequired: result.upgradeRequired,
-  }, { status: 403 });
+  return NextResponse.json(
+    {
+      error: 'upgrade_required',
+      message: result.reason,
+      upgradeRequired: result.upgradeRequired,
+    },
+    { status: 403 },
+  );
 }

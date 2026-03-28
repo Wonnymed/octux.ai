@@ -1,10 +1,17 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { TIERS, TOKEN_COSTS, type TierType } from './tiers';
+import { TIERS, type TierType, normalizeTierType } from './tiers';
+import {
+  getTokenCost,
+  type SimulationChargeType,
+} from './token-costs';
 
 let _supabase: SupabaseClient | null = null;
 function getSupabase() {
   if (!_supabase) {
-    _supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+    _supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    );
   }
   return _supabase;
 }
@@ -17,56 +24,117 @@ export interface UsageCheckResult {
   upgradeRequired?: TierType;
 }
 
-export async function checkSimulationUsage(
+function isModeAllowedForTier(tier: TierType, mode: SimulationChargeType): boolean {
+  const L = TIERS[tier].limits;
+  switch (mode) {
+    case 'swarm':
+      return true;
+    case 'specialist':
+      return L.specialist_enabled;
+    case 'compare':
+      return L.compare_enabled;
+    case 'stress_test':
+      return L.stress_test_enabled;
+    case 'premortem':
+      return L.premortem_enabled;
+    default:
+      return false;
+  }
+}
+
+export async function ensureUserSubscription(userId: string): Promise<void> {
+  if (!userId || userId.startsWith('anon_')) return;
+
+  const { data: existing } = await getSupabase()
+    .from('user_subscriptions')
+    .select('user_id')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (existing) return;
+
+  const { error } = await getSupabase().from('user_subscriptions').insert({
+    user_id: userId,
+    tier: 'free',
+    status: 'active',
+    tokens_used: 0,
+    tokens_total: TIERS.free.limits.tokensPerMonth,
+  });
+
+  if (error) console.error('[billing] ensureUserSubscription insert failed:', error);
+}
+
+export async function checkSimulationStart(
   userId: string,
-  simType: 'deep' | 'kraken',
+  simMode: SimulationChargeType,
 ): Promise<UsageCheckResult> {
+  await ensureUserSubscription(userId);
+
   const { data: sub } = await getSupabase()
     .from('user_subscriptions')
     .select('tier, tokens_used, tokens_total')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
   if (!sub) {
-    return { allowed: false, reason: 'No subscription found', upgradeRequired: 'pro' };
-  }
-
-  const tier = (sub.tier as TierType) || 'free';
-  const tokensUsed = sub.tokens_used || 0;
-  const tokensTotal = sub.tokens_total || TIERS[tier].limits.tokensPerMonth;
-  const cost = TOKEN_COSTS[simType];
-  const remaining = tokensTotal - tokensUsed;
-
-  if (remaining < cost) {
-    const nextTier = tier === 'free' ? 'pro' : tier === 'pro' ? 'max' : 'octopus';
     return {
       allowed: false,
-      reason: `Not enough tokens (${remaining} remaining, ${cost} needed)`,
+      reason: 'No subscription record found.',
+      upgradeRequired: 'pro',
+    };
+  }
+
+  const tier = normalizeTierType(sub.tier as string);
+  const cost = getTokenCost(simMode);
+  const tokensUsed = sub.tokens_used || 0;
+  const tokensTotal = sub.tokens_total || TIERS[tier].limits.tokensPerMonth;
+  const remaining = tokensTotal - tokensUsed;
+
+  if (!isModeAllowedForTier(tier, simMode)) {
+    return {
+      allowed: false,
+      reason:
+        'This simulation mode requires Pro. Upgrade for specialist, compare, stress test, and pre-mortem.',
       tokensUsed,
       tokensTotal,
-      upgradeRequired: nextTier as TierType,
+      upgradeRequired: 'pro',
+    };
+  }
+
+  if (remaining < cost) {
+    const next = getNextUpgradeForTokens(tier);
+    return {
+      allowed: false,
+      reason: `Not enough tokens (${remaining} remaining, ${cost} needed). Upgrade to Pro for 30/month.`,
+      tokensUsed,
+      tokensTotal,
+      upgradeRequired: next,
     };
   }
 
   return { allowed: true, tokensUsed, tokensTotal };
 }
 
-export async function consumeTokens(
-  userId: string,
-  simType: 'deep' | 'kraken',
-): Promise<void> {
-  const cost = TOKEN_COSTS[simType];
+function getNextUpgradeForTokens(tier: TierType): TierType {
+  if (tier === 'free') return 'pro';
+  if (tier === 'pro') return 'max';
+  return 'max';
+}
+
+export async function consumeTokens(userId: string, amount: number): Promise<void> {
+  if (!userId || userId.startsWith('anon_') || amount <= 0) return;
+
   const { data: sub } = await getSupabase()
     .from('user_subscriptions')
     .select('tokens_used')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
   if (!sub) return;
 
   const { error } = await getSupabase()
     .from('user_subscriptions')
-    .update({ tokens_used: (sub.tokens_used || 0) + cost })
+    .update({ tokens_used: (sub.tokens_used || 0) + amount })
     .eq('user_id', userId);
 
   if (error) console.error('Token consumption failed:', error);
@@ -84,20 +152,20 @@ export async function getTokenBalance(userId: string): Promise<{
     .from('user_subscriptions')
     .select('tier, tokens_used, tokens_total, current_period_end, stripe_customer_id')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
   if (!sub) {
     return {
       tokensUsed: 0,
-      tokensTotal: 1,
-      tokensRemaining: 1,
+      tokensTotal: TIERS.free.limits.tokensPerMonth,
+      tokensRemaining: TIERS.free.limits.tokensPerMonth,
       tier: 'free',
       currentPeriodEnd: null,
       stripeCustomerId: null,
     };
   }
 
-  const tier = (sub.tier as TierType) || 'free';
+  const tier = normalizeTierType(sub.tier as string);
   const tokensUsed = sub.tokens_used || 0;
   const tokensTotal = sub.tokens_total || TIERS[tier].limits.tokensPerMonth;
 
@@ -128,24 +196,24 @@ export async function resetMonthlyTokens(userId: string, tier: TierType): Promis
 
 export async function checkFeatureAccess(
   userId: string,
-  feature: keyof typeof TIERS.free.limits,
+  feature: keyof (typeof TIERS)['free']['limits'],
 ): Promise<UsageCheckResult> {
   const { data: sub } = await getSupabase()
     .from('user_subscriptions')
     .select('tier')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
-  const tier = (sub?.tier as TierType) || 'free';
+  const tier = normalizeTierType((sub?.tier as string) || 'free');
   const config = TIERS[tier];
   const value = config.limits[feature];
 
   if (typeof value === 'boolean' && !value) {
-    const nextTier = tier === 'free' ? 'pro' : tier === 'pro' ? 'max' : 'octopus';
+    const nextTier = tier === 'free' ? 'pro' : tier === 'pro' ? 'max' : 'max';
     return {
       allowed: false,
-      reason: `${feature} requires ${nextTier} or higher`,
-      upgradeRequired: nextTier as TierType,
+      reason: `${String(feature)} requires ${nextTier} or higher`,
+      upgradeRequired: nextTier,
     };
   }
 
@@ -157,6 +225,6 @@ export async function getSubscription(userId: string) {
     .from('user_subscriptions')
     .select('*')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
   return data;
 }

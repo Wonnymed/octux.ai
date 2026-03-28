@@ -63,7 +63,7 @@ export default function SimulationBlock({ question, streamUrl, onComplete, onSta
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-txt-primary">
-              {state.phase === 'complete' ? 'Simulation Complete' : 'Deep Simulation'}
+              {state.phase === 'complete' ? 'Simulation Complete' : 'Simulation'}
             </p>
             <p className="text-micro text-txt-tertiary truncate">{question}</p>
           </div>

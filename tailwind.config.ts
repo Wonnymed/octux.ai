@@ -77,7 +77,7 @@ const config: Config = {
           void: 'var(--entity-void)',
         },
         confidence: { high: 'var(--confidence-high)', medium: 'var(--confidence-medium)', low: 'var(--confidence-low)', contested: 'var(--confidence-contested)' },
-        tier: { free: 'var(--tier-free)', pro: 'var(--tier-pro)', max: 'var(--tier-max)', kraken: 'var(--tier-kraken)' },
+        tier: { free: 'var(--tier-free)', pro: 'var(--tier-pro)', max: 'var(--tier-max)' },
         'focus-ring': 'var(--focus-ring-color)',
         state: {
           success: 'var(--state-success)',

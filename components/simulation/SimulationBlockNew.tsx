@@ -1,6 +1,6 @@
 'use client';
 
-/** Phase 1 — Deep Simulation shell: Decision OS tokens, streaming copy, semantic surfaces. */
+/** Simulation progress shell — phases, agents, consensus. */
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -169,7 +169,7 @@ function SimulationHeader({
             'text-card-title',
             isActive ? 'text-accent' : 'text-txt-secondary',
           )}>
-            Deep Simulation
+            Simulation
           </span>
           {isActive && (
             <motion.span

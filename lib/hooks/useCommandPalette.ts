@@ -103,8 +103,8 @@ export function useCommandPalette(): UseCommandPaletteReturn {
           case 'action:settings':
             window.dispatchEvent(new CustomEvent('octux:open-settings'));
             break;
-          case 'action:switch-tier':
-            window.dispatchEvent(new CustomEvent('octux:switch-tier'));
+          case 'action:switch-sim-mode':
+            document.querySelector<HTMLElement>('[data-chat-input]')?.focus();
             break;
         }
         break;

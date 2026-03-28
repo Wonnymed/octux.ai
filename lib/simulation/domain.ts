@@ -177,6 +177,7 @@ export async function detectDomain(question: string): Promise<DomainClassificati
   // ── SLOW PATH: LLM classification for ambiguous questions ──
   try {
     const response = await callClaude({
+      tier: 'extraction',
       systemPrompt: `Classify this question into exactly ONE domain.
 Domains: business, investment, career, health, legal, education, real_estate, personal, technology, general.
 Return ONLY JSON: {"domain":"...","subdomain":"specific area","confidence":0.0-1.0}`,

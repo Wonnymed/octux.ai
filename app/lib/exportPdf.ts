@@ -23,7 +23,7 @@ const AGENT_COLORS: Record<string, string> = {
   operator: "#FCD34D", operations: "#FCD34D", execution: "#FCD34D",
   market: "#6EE7B7", demand: "#6EE7B7",
   risk: "#FCA5A5", regulatory: "#FCA5A5", regime: "#FCA5A5",
-  innovator: "#F09A72", innovation: "#F09A72", intervention: "#F09A72",
+  innovator: "#8A8578", innovation: "#8A8578", intervention: "#8A8578",
   devil: "#FDBA74", adversary: "#FDBA74", competitive: "#FDBA74",
   global: "#5EEAD4",
   human: "#F9A8D4", customer: "#F9A8D4",

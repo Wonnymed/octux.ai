@@ -10,7 +10,7 @@ export function getModelLabel(modelId: string): string {
 
 // ── Tier Types ──────────────────────────────────────────────
 
-export type TierName = 'free' | 'pro' | 'max' | 'octopus';
+export type TierName = 'free' | 'pro' | 'max';
 
 export type TierConfig = {
   name: string;
@@ -61,8 +61,8 @@ export const TIERS: Record<TierName, TierConfig> = {
     displayName: 'Pro',
     price: 29,
     limits: {
-      simsPerMonth: 16,
-      simsPerWeek: 4,
+      simsPerMonth: 30,
+      simsPerWeek: 8,
       maxSimsBeforeAuth: 0,
     },
     features: {
@@ -81,28 +81,8 @@ export const TIERS: Record<TierName, TierConfig> = {
     displayName: 'Max',
     price: 99,
     limits: {
-      simsPerMonth: 40,
-      simsPerWeek: 10,
-      maxSimsBeforeAuth: 0,
-    },
-    features: {
-      specialists: 10,
-      fieldIntelligence: true,
-      maxAdvisors: 50,
-      advisorOptions: [20, 50],
-      selfRefine: true,
-      hitl: true,
-      counterFactual: true,
-      blindSpotDetector: true,
-    },
-  },
-  octopus: {
-    name: 'octopus',
-    displayName: 'Octopus',
-    price: 249,
-    limits: {
       simsPerMonth: 120,
-      simsPerWeek: 40,
+      simsPerWeek: 30,
       maxSimsBeforeAuth: 0,
     },
     features: {
@@ -123,7 +103,7 @@ export const TIERS: Record<TierName, TierConfig> = {
 export const ADVISOR_OPTIONS = [
   { count: 20, label: '+ 20 Field Researchers', tier: 'pro' as TierName },
   { count: 50, label: '+ 50 Field Researchers', tier: 'max' as TierName },
-  { count: 100, label: '+ 100 Field Researchers', tier: 'octopus' as TierName },
+  { count: 100, label: '+ 100 Field Researchers', tier: 'max' as TierName },
 ] as const;
 
 // ── Helpers ─────────────────────────────────────────────────
@@ -174,16 +154,16 @@ export function getUsageDisplay(
   };
 }
 
-export function getTierComparison(): { feature: string; free: string; pro: string; max: string; octopus: string }[] {
+export function getTierComparison(): { feature: string; free: string; pro: string; max: string }[] {
   return [
-    { feature: 'Price', free: 'Free', pro: '$29/mo', max: '$99/mo', octopus: '$249/mo' },
-    { feature: 'Simulations', free: '2/month', pro: '16/month', max: '40/month', octopus: '120/month' },
-    { feature: 'Specialist Agents', free: '10', pro: '10', max: '10', octopus: '10' },
-    { feature: 'Field Researchers', free: '\u2014', pro: 'Up to 20', max: 'Up to 50', octopus: 'Up to 100' },
-    { feature: 'Self-Refine', free: '\u2713', pro: '\u2713', max: '\u2713', octopus: '\u2713' },
-    { feature: 'Counter-Factual', free: '\u2713', pro: '\u2713', max: '\u2713', octopus: '\u2713' },
-    { feature: 'Blind Spot Detector', free: '\u2713', pro: '\u2713', max: '\u2713', octopus: '\u2713' },
-    { feature: 'Human Intervention', free: '\u2014', pro: '\u2014', max: '\u2713', octopus: '\u2713' },
-    { feature: 'Marketing claim', free: '10 specialists', pro: '30 analysts', max: '60 analysts', octopus: '110 analysts' },
+    { feature: 'Price', free: 'Free', pro: '$29/mo', max: '$99/mo' },
+    { feature: 'Tokens / month', free: '2', pro: '30', max: '120' },
+    { feature: 'Specialist Agents', free: 'Swarm only', pro: '10 + crowd', max: '10 + crowd' },
+    { feature: 'Field Researchers', free: '\u2014', pro: 'Up to 20', max: 'Up to 50' },
+    { feature: 'Advanced modes', free: '\u2014', pro: 'Compare, stress, pre-mortem', max: 'Same + priority' },
+    { feature: 'Self-Refine', free: '\u2713', pro: '\u2713', max: '\u2713' },
+    { feature: 'Counter-Factual', free: '\u2713', pro: '\u2713', max: '\u2713' },
+    { feature: 'Blind Spot Detector', free: '\u2713', pro: '\u2713', max: '\u2713' },
+    { feature: 'Human Intervention', free: '\u2014', pro: '\u2014', max: '\u2713' },
   ];
 }

@@ -6,9 +6,12 @@ export interface OctuxTool {
   name: string;
   href: string;
   icon: LucideIcon;
+  /** Legacy tint — UI uses neutral tokens; keep for non-sidebar consumers */
   color: string;
   description: string;
 }
+
+const NEUTRAL_TOOL = '#8a8578';
 
 export const OCTUX_TOOLS: OctuxTool[] = [
   {
@@ -16,7 +19,7 @@ export const OCTUX_TOOLS: OctuxTool[] = [
     name: 'Decision Journal',
     href: '/tools/journal',
     icon: BookOpen,
-    color: '#C75B2A',
+    color: NEUTRAL_TOOL,
     description:
       'Track every decision you make. See patterns over time. Learn from outcomes.',
   },
@@ -25,7 +28,7 @@ export const OCTUX_TOOLS: OctuxTool[] = [
     name: 'Compare Scenarios',
     href: '/tools/compare',
     icon: GitCompare,
-    color: '#10b981',
+    color: NEUTRAL_TOOL,
     description:
       'Side-by-side comparison of two or more options with structured pros and cons.',
   },
@@ -34,7 +37,7 @@ export const OCTUX_TOOLS: OctuxTool[] = [
     name: 'Risk Matrix',
     href: '/tools/risk-matrix',
     icon: Shield,
-    color: '#f59e0b',
+    color: NEUTRAL_TOOL,
     description:
       'Map risks by probability and impact. Visualize what matters most.',
   },
@@ -43,7 +46,7 @@ export const OCTUX_TOOLS: OctuxTool[] = [
     name: 'Decision Templates',
     href: '/tools/templates',
     icon: FileText,
-    color: '#8B6F4E',
+    color: NEUTRAL_TOOL,
     description:
       'Pre-built frameworks for common decisions. Fill in the blanks.',
   },

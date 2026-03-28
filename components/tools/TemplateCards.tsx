@@ -7,32 +7,17 @@ const DOMAINS = [
   {
     id: 'investment',
     label: 'Investment',
-    color: '#8B6F4E',
-    blurb: 'Capital allocation, diversification, entry/exit.',
+    blurb: 'Capital allocation, diversification, entry and exit.',
   },
   {
     id: 'career',
     label: 'Career',
-    color: '#f59e0b',
-    blurb: 'Role changes, compensation, trajectory.',
+    blurb: 'Role changes, compensation, hiring, and trajectory.',
   },
   {
     id: 'business',
     label: 'Business',
-    color: '#10b981',
-    blurb: 'Launch, pivot, partnerships, GTM.',
-  },
-  {
-    id: 'relationships',
-    label: 'Relationships',
-    color: '#B8860B',
-    blurb: 'Commitment, boundaries, major conversations.',
-  },
-  {
-    id: 'life',
-    label: 'Life',
-    color: '#06b6d4',
-    blurb: 'Health, geography, family tradeoffs.',
+    blurb: 'Launch, pivot, partnerships, and go-to-market.',
   },
 ] as const;
 
@@ -55,13 +40,8 @@ export default function TemplateCards() {
                 : 'border-border-subtle bg-surface-0 hover:border-border-default hover:bg-surface-2',
             )}
           >
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center mb-3"
-              style={{ backgroundColor: `${d.color}20` }}
-            >
-              <span className="text-sm font-semibold" style={{ color: d.color }}>
-                {d.label[0]}
-              </span>
+            <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--bg-hover)]">
+              <span className="text-sm font-semibold text-txt-secondary">{d.label[0]}</span>
             </div>
             <h3 className="text-sm font-medium text-txt-primary mb-1">{d.label}</h3>
             <p className="text-xs text-white/40 leading-relaxed">{d.blurb}</p>

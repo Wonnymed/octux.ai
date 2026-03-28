@@ -81,10 +81,7 @@ export default function VerdictCard({
                 <span className="text-lg font-light text-txt-primary tabular-nums">
                   {prob}%
                 </span>
-                <span
-                  className="text-sm font-semibold px-1.5 py-0.5 rounded"
-                  style={{ color: '#C75B2A', backgroundColor: 'rgba(124,58,237,0.1)' }}
-                >
+                <span className="rounded bg-accent-light px-1.5 py-0.5 text-sm font-semibold text-txt-primary">
                   {grade}
                 </span>
               </div>
@@ -295,7 +292,7 @@ function ExpandedAnalysis({
               ))}
             </div>
           ) : (
-            <p className="text-xs text-txt-disabled">No citations available. Citations are generated during Deep and Kraken simulations.</p>
+            <p className="text-xs text-txt-disabled">No citations available. Citations appear on Pro+ specialist simulations.</p>
           )}
         </TabsContent>
 

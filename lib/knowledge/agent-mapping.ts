@@ -3,16 +3,15 @@
  *
  * Investment agents → crypto-opsec, banking, V51-V55 (finance)
  * Business agents → V24-V50 (strategy, ops, marketing)
- * Relationship agents → V64 (consumer psychology), V79 (founder psychology)
- * etc.
+ * Career agents → negotiation, comp frameworks
  *
  * This ensures agents search RELEVANT knowledge, not the entire base.
  */
 
 export type AgentKnowledgeSources = {
-  categories: string[];    // knowledge_chunks.category values to search
-  vSeries: string[];       // V-series to search
-  maxChunks: number;       // max chunks to inject
+  categories: string[]; // knowledge_chunks.category values to search
+  vSeries: string[]; // V-series to search
+  maxChunks: number; // max chunks to inject
 };
 
 // Default mapping — can be overridden per agent in DB
@@ -66,38 +65,6 @@ export const AGENT_KNOWLEDGE_MAP: Record<string, AgentKnowledgeSources> = {
   honest_mirror: {
     categories: ['game-theory'],
     vSeries: ['V64', 'V79', 'V80'],
-    maxChunks: 3,
-  },
-
-  // ═══ RELATIONSHIP AGENTS ═══
-  pattern_detector: {
-    categories: [],
-    vSeries: ['V64', 'V79'],
-    maxChunks: 3,
-  },
-  gut_check: {
-    categories: [],
-    vSeries: ['V64', 'V83'],
-    maxChunks: 2,
-  },
-  attachment_decoder: {
-    categories: [],
-    vSeries: ['V64', 'V79'],
-    maxChunks: 3,
-  },
-  red_flag_scanner: {
-    categories: ['deception-intel'],
-    vSeries: ['V24', 'V64'],
-    maxChunks: 4,
-  },
-  money_and_love: {
-    categories: ['banking'],
-    vSeries: ['V29', 'V32', 'V52'],
-    maxChunks: 4,
-  },
-  cultural_lens: {
-    categories: [],
-    vSeries: ['V71', 'V82'],
     maxChunks: 3,
   },
 
@@ -168,76 +135,6 @@ export const AGENT_KNOWLEDGE_MAP: Record<string, AgentKnowledgeSources> = {
     categories: ['negotiation-warfare'],
     vSeries: ['V80', 'V83'],
     maxChunks: 5,
-  },
-
-  // ═══ LIFE AGENTS ═══
-  values_compass: {
-    categories: [],
-    vSeries: ['V64', 'V79'],
-    maxChunks: 3,
-  },
-  fear_separator: {
-    categories: [],
-    vSeries: ['V64', 'V79'],
-    maxChunks: 3,
-  },
-
-  // ═══ HEALTH AGENTS ═══
-  evidence_filter: {
-    categories: ['evaluation-lab'],
-    vSeries: ['V42', 'V65'],
-    maxChunks: 5,
-  },
-  risk_benefit_calculator: {
-    categories: ['risk-intel'],
-    vSeries: ['V24', 'V59'],
-    maxChunks: 4,
-  },
-  second_opinion_engine: {
-    categories: [],
-    vSeries: ['V64', 'V79'],
-    maxChunks: 3,
-  },
-  mental_health_advocate: {
-    categories: [],
-    vSeries: ['V64', 'V79', 'V83'],
-    maxChunks: 4,
-  },
-  long_game: {
-    categories: [],
-    vSeries: ['V42', 'V45'],
-    maxChunks: 3,
-  },
-  habit_architect: {
-    categories: [],
-    vSeries: ['V64', 'V80'],
-    maxChunks: 3,
-  },
-  energy_auditor: {
-    categories: [],
-    vSeries: ['V64', 'V79'],
-    maxChunks: 3,
-  },
-  prevention_calculator: {
-    categories: ['economics'],
-    vSeries: ['V29', 'V47'],
-    maxChunks: 4,
-  },
-  burnout_radar: {
-    categories: ['risk-intel'],
-    vSeries: ['V24', 'V64'],
-    maxChunks: 4,
-  },
-  recovery_strategist: {
-    categories: ['scenario-packs'],
-    vSeries: ['V24', 'V59'],
-    maxChunks: 4,
-  },
-
-  devils_advocate: {
-    categories: ['game-theory'],
-    vSeries: ['V64', 'V46'],
-    maxChunks: 3,
   },
 };
 

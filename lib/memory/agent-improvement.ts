@@ -85,6 +85,7 @@ Risks identified: ${((r.report.risks as string[]) || []).slice(0, 3).join('; ') 
 
   try {
     const response = await callClaude({
+      tier: 'evaluation',
       systemPrompt: `You evaluate AI agent performance in a decision simulation.
 For each agent, assess:
 - SCORE (1-10): How valuable was their contribution?

@@ -44,8 +44,8 @@ export default function AgentPerformanceTable({ agents }: { agents: Agent[] }) {
                 <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                   <span style={{
                     padding: '2px 8px', borderRadius: '4px', fontSize: '12px',
-                    background: isOptimized ? '#C75B2A18' : 'var(--surface-2)',
-                    color: isOptimized ? '#C75B2A' : 'var(--text-tertiary)',
+                    background: isOptimized ? '#1A181518' : 'var(--surface-2)',
+                    color: isOptimized ? '#1A1815' : 'var(--text-tertiary)',
                   }}>
                     v{agent.currentVersion}
                   </span>

@@ -12,6 +12,8 @@ import { cn } from '@/lib/design/cn';
 import EntityVisual from '@/components/chat/EntityVisual';
 import ChatInput from '@/components/chat/ChatInput';
 import { MessageRenderer, ThinkingIndicator } from '@/components/chat';
+import { pendingFirstMessageKey } from '@/lib/chat/firstMessageBootstrap';
+import type { SimulationChargeType } from '@/lib/billing/token-costs';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -22,6 +24,7 @@ export default function ConversationPage() {
   const sending = useChatStore((s) => s.sending);
   const entityState = useChatStore((s) => s.entityState);
   const loadConversation = useChatStore((s) => s.loadConversation);
+  const sendMessage = useChatStore((s) => s.sendMessage);
   const clear = useChatStore((s) => s.clear);
 
   const simReset = useSimulationStore((s) => s.reset);
@@ -32,27 +35,55 @@ export default function ConversationPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // ─── LOAD CONVERSATION ON MOUNT ───
+  // ─── LOAD CONVERSATION ON MOUNT + bootstrap first message from home ───
   useEffect(() => {
     setActiveConversationId(conversationId);
+    let cancelled = false;
 
-    const load = async () => {
+    const run = async () => {
       await loadConversation(conversationId);
+      if (cancelled) return;
 
-      // Race condition: first message may not be saved yet
-      const msgs = useChatStore.getState().messages;
-      if (msgs.length === 0) {
-        setTimeout(() => loadConversation(conversationId), 1000);
+      const key = pendingFirstMessageKey(conversationId);
+      let pending: string | null = null;
+      try {
+        pending = sessionStorage.getItem(key);
+      } catch {
+        /* ignore */
+      }
+
+      if (pending?.trim()) {
+        const trimmed = pending.trim();
+        try {
+          sessionStorage.removeItem(key);
+        } catch {
+          /* ignore */
+        }
+        const { messages: afterLoad } = useChatStore.getState();
+        if (afterLoad.length === 0) {
+          await sendMessage(conversationId, trimmed);
+        }
+        return;
+      }
+
+      // Legacy: empty thread after navigation (e.g. slow DB) — one soft refetch
+      if (useChatStore.getState().messages.length === 0) {
+        setTimeout(() => {
+          if (cancelled) return;
+          void loadConversation(conversationId);
+        }, 1000);
       }
     };
-    load();
+
+    void run();
 
     return () => {
+      cancelled = true;
       clear();
       simReset();
       setActiveConversationId(null);
     };
-  }, [conversationId, loadConversation, clear, simReset, setActiveConversationId]);
+  }, [conversationId, loadConversation, sendMessage, clear, simReset, setActiveConversationId]);
 
   // ─── AUTO-SCROLL ───
   useEffect(() => {
@@ -64,8 +95,8 @@ export default function ConversationPage() {
 
   // ─── HANDLE SIMULATION ───
   const handleSimulate = useCallback(
-    (question: string, tier: string) => {
-      triggerSimulation(question, tier);
+    (question: string, simMode?: SimulationChargeType) => {
+      triggerSimulation(question, simMode);
     },
     [triggerSimulation],
   );
@@ -77,7 +108,7 @@ export default function ConversationPage() {
         const res = await fetch(`/api/c/${conversationId}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'refine', simulationId, modification, tier: 'deep' }),
+          body: JSON.stringify({ action: 'refine', simulationId, modification }),
         });
 
         if (!res.ok) throw new Error('Refinement failed');
@@ -89,7 +120,7 @@ export default function ConversationPage() {
           role: 'assistant',
           content: null,
           structured_data: data,
-          model_tier: 'deep',
+          model_tier: 'default',
           simulation_id: simulationId,
           created_at: new Date().toISOString(),
         });
@@ -108,7 +139,7 @@ export default function ConversationPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
-      className="flex min-h-0 flex-1 flex-col bg-surface-0"
+      className="flex min-h-0 flex-1 flex-col bg-[#0a0a0f]"
     >
       {/* ─── MESSAGES AREA ─── */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
@@ -126,8 +157,8 @@ export default function ConversationPage() {
 
           {!hasMessages && !sending && (
             <div className="text-center py-8">
-              <p className="text-sm text-txt-tertiary mb-1">Ask anything about a decision you&apos;re facing</p>
-              <p className="text-micro text-txt-disabled">10 AI specialists will debate your question</p>
+              <p className="text-sm text-white/50 mb-1">Ask anything about a decision you&apos;re facing</p>
+              <p className="text-micro text-white/30">10 AI specialists will debate your question</p>
             </div>
           )}
 

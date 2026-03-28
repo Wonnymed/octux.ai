@@ -1,5 +1,5 @@
 /**
- * Phase 1 — Deep Simulation copy (single source): status line, inline labels, actions.
+ * Simulation UI copy (single source): status line, inline labels, actions.
  */
 
 export const SIMULATION_STATUS_LABELS: Record<string, string> = {

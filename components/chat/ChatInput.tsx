@@ -1,27 +1,38 @@
 'use client';
 
 import { useRef, useEffect, useCallback, useState, type KeyboardEvent } from 'react';
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { SPRING } from '@/lib/motion/constants';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUp, Lock, Zap } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import { useChatStore } from '@/lib/store/chat';
 import { useBillingStore } from '@/lib/store/billing';
-import { TIER_CONFIGS, type ModelTier } from '@/lib/chat/tiers';
-import { TOKEN_COSTS } from '@/lib/billing/tiers';
+import { getTokenCost, type SimulationChargeType } from '@/lib/billing/token-costs';
+import type { TierType } from '@/lib/billing/tiers';
 import { SUGGESTION_CHIP_CONFIG } from '@/lib/design/suggestionChips';
 import {
-  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@/components/ui/shadcn/tooltip';
 
+const SIM_MODES: { id: SimulationChargeType; label: string }[] = [
+  { id: 'swarm', label: 'Swarm' },
+  { id: 'specialist', label: 'Specialist' },
+  { id: 'compare', label: 'Compare' },
+  { id: 'stress_test', label: 'Stress test' },
+  { id: 'premortem', label: 'Pre-mortem' },
+];
+
+function modeLockedByTier(tier: TierType, mode: SimulationChargeType): boolean {
+  if (tier !== 'free') return false;
+  return mode !== 'swarm';
+}
+
 interface ChatInputProps {
-  /** Legacy prop — called on send if provided (used by pages that manage their own state) */
-  onSend?: (message: string, options?: { tier?: string; simulate?: boolean }) => void;
-  /** Zustand-connected: auto-sends via useChatStore.sendMessage */
+  onSend?: (message: string, options?: { simMode?: SimulationChargeType; simulate?: boolean }) => void;
   conversationId?: string;
-  /** Show suggestion chips (for empty / new conversations) */
   showSuggestions?: boolean;
-  /** @deprecated use showSuggestions */
   isNewConversation?: boolean;
   placeholder?: string;
   loading?: boolean;
@@ -29,7 +40,6 @@ interface ChatInputProps {
   className?: string;
 }
 
-/** Claude-like composer: max growth before scroll */
 const MAX_TEXTAREA_HEIGHT = 200;
 
 export default function ChatInput({
@@ -44,13 +54,14 @@ export default function ChatInput({
 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const selectedTier = useChatStore((s) => s.selectedTier);
-  const setSelectedTier = useChatStore((s) => s.setSelectedTier);
+  const selectedSimMode = useChatStore((s) => s.selectedSimMode);
+  const setSelectedSimMode = useChatStore((s) => s.setSelectedSimMode);
   const storeSending = useChatStore((s) => s.sending);
   const storeSendMessage = useChatStore((s) => s.sendMessage);
 
   const tokensRemaining = useBillingStore((s) => s.tokensRemaining);
-  const canAfford = useBillingStore((s) => s.canAfford);
+  const subscriptionTier = useBillingStore((s) => s.tier);
+  const canAffordMode = useBillingStore((s) => s.canAffordMode);
 
   const [value, setValue] = useState('');
   const [hasContent, setHasContent] = useState(false);
@@ -65,14 +76,16 @@ export default function ChatInput({
     el.style.overflowY = el.scrollHeight > MAX_TEXTAREA_HEIGHT ? 'auto' : 'hidden';
   }, []);
 
-  useEffect(() => { autoResize(); }, [value, autoResize]);
+  useEffect(() => {
+    autoResize();
+  }, [value, autoResize]);
 
   const handleSend = useCallback(() => {
     const message = value.trim();
     if (!message || sending || disabled) return;
 
     if (onSend) {
-      onSend(message, { tier: selectedTier });
+      onSend(message, { simMode: selectedSimMode });
     } else if (conversationId) {
       storeSendMessage(conversationId, message);
     }
@@ -82,7 +95,7 @@ export default function ChatInput({
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
-  }, [value, sending, disabled, selectedTier, onSend, conversationId, storeSendMessage]);
+  }, [value, sending, disabled, selectedSimMode, onSend, conversationId, storeSendMessage]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -98,37 +111,44 @@ export default function ChatInput({
     (text: string) => {
       if (sending) return;
       if (onSend) {
-        onSend(text, { tier: selectedTier });
+        onSend(text, { simMode: selectedSimMode });
       } else {
         setValue(text);
         setHasContent(true);
         textareaRef.current?.focus();
       }
     },
-    [selectedTier, onSend, sending],
+    [selectedSimMode, onSend, sending],
   );
 
-  const handleTierClick = useCallback(
-    (tier: ModelTier) => {
-      if (tier === 'ink') {
-        setSelectedTier(tier);
-        return;
-      }
-      const simType = tier === 'kraken' ? 'kraken' : 'deep';
-      if (!canAfford(simType)) {
+  const handleModeClick = useCallback(
+    (mode: SimulationChargeType) => {
+      if (modeLockedByTier(subscriptionTier, mode)) {
         window.dispatchEvent(
           new CustomEvent('octux:show-upgrade', {
             detail: {
-              suggestedTier: tier === 'kraken' ? 'max' : 'pro',
-              reason: `Need ${TOKEN_COSTS[simType]} token${TOKEN_COSTS[simType] > 1 ? 's' : ''} for ${TIER_CONFIGS[tier].label}`,
+              suggestedTier: 'pro',
+              reason: 'Upgrade to Pro for specialist, compare, stress test, and pre-mortem modes.',
             },
           }),
         );
         return;
       }
-      setSelectedTier(tier);
+      const cost = getTokenCost(mode);
+      if (cost > 0 && !canAffordMode(mode)) {
+        window.dispatchEvent(
+          new CustomEvent('octux:show-upgrade', {
+            detail: {
+              suggestedTier: subscriptionTier === 'free' ? 'pro' : 'max',
+              reason: `Not enough tokens. This mode needs ${cost} tokens (${tokensRemaining} remaining).`,
+            },
+          }),
+        );
+        return;
+      }
+      setSelectedSimMode(mode);
     },
-    [canAfford, setSelectedTier],
+    [subscriptionTier, canAffordMode, tokensRemaining, setSelectedSimMode],
   );
 
   useEffect(() => {
@@ -189,14 +209,12 @@ export default function ChatInput({
           transition={{ duration: 0.3, delay: 0.1 }}
           className="space-y-2"
         >
-          {/* Large input — primary focus */}
           <div
             className={cn(
               'relative rounded-2xl border transition-all duration-[150ms]',
-              'border-border-subtle bg-surface-1',
+              'border-border-default bg-[var(--bg-input)]',
               'shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-              'focus-within:border-accent/40 focus-within:ring-2 focus-within:ring-accent/10',
-              'focus-within:shadow-[0_0_0_4px_var(--accent-ring,rgba(124,58,237,0.12))]',
+              'focus-within:border-border-strong focus-within:ring-2 focus-within:ring-[color:rgba(255,255,255,0.06)]',
               'hover:border-border-default',
               sending && 'pointer-events-none opacity-70',
             )}
@@ -216,7 +234,7 @@ export default function ChatInput({
               rows={1}
               className={cn(
                 'w-full min-h-[52px] max-h-[200px] resize-none bg-transparent',
-                'px-5 py-4 pr-14 text-[15px] leading-[1.5] text-txt-primary placeholder:text-txt-tertiary',
+                'px-5 py-4 pr-14 text-[15px] leading-[1.5] text-txt-primary placeholder:text-[color:var(--text-muted)]',
                 'outline-none',
                 'disabled:cursor-not-allowed disabled:opacity-50',
               )}
@@ -231,8 +249,8 @@ export default function ChatInput({
                 !hasContent || disabled
                   ? 'pointer-events-none bg-surface-2 text-txt-disabled opacity-30'
                   : sending
-                    ? 'cursor-not-allowed bg-accent text-txt-on-accent opacity-70'
-                    : 'bg-accent text-txt-on-accent hover:scale-105 hover:bg-accent-hover active:scale-95',
+                    ? 'cursor-not-allowed bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] opacity-70'
+                    : 'bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:scale-105 hover:bg-[var(--btn-primary-hover)] active:scale-95',
               )}
             >
               {sending ? (
@@ -248,91 +266,58 @@ export default function ChatInput({
             </button>
           </div>
 
-          {/* Tier row — separate from input */}
           <TooltipProvider delayDuration={300}>
-            <LayoutGroup>
-              <div className="relative flex flex-wrap items-center justify-center gap-1">
-                {(['ink', 'deep', 'kraken'] as const).map((tier) => {
-                  const config = TIER_CONFIGS[tier];
-                  const isActive = selectedTier === tier;
-                  const cost = tier === 'ink' ? 0 : TOKEN_COSTS[tier === 'kraken' ? 'kraken' : 'deep'];
-                  const locked = cost > 0 && !canAfford(tier === 'kraken' ? 'kraken' : 'deep');
+            <div className="relative flex flex-wrap items-center justify-center gap-1">
+              {SIM_MODES.map((m) => {
+                const isActive = selectedSimMode === m.id;
+                const tierLocked = modeLockedByTier(subscriptionTier, m.id);
+                const cost = getTokenCost(m.id);
+                const tokenLocked = cost > 0 && !canAffordMode(m.id);
+                const locked = tierLocked || tokenLocked;
 
-                  return (
-                    <Tooltip key={tier}>
-                      <TooltipTrigger asChild>
-                        <button
-                          type="button"
-                          onClick={() => handleTierClick(tier)}
-                          disabled={sending}
-                          className={cn(
-                            'relative flex items-center gap-1 rounded-full px-3 py-1 text-xs transition-colors duration-[150ms]',
-                            locked
-                              ? 'cursor-not-allowed text-txt-tertiary'
-                              : isActive
-                                ? 'text-txt-primary'
-                                : 'text-txt-secondary hover:text-txt-primary',
-                          )}
-                        >
-                          {isActive && (
-                            <motion.div
-                              layoutId="chat-tier-indicator"
-                              className="absolute inset-0 rounded-full bg-accent-muted"
-                              transition={SPRING.smooth}
-                            />
-                          )}
-                          <span className="relative z-10 flex items-center gap-1 font-medium">
-                            {config.label}
-                            {cost > 0 && (
-                              <span
-                                className={cn(
-                                  'text-[10px] tabular-nums',
-                                  locked
-                                    ? 'text-txt-tertiary'
-                                    : isActive
-                                      ? 'text-txt-tertiary'
-                                      : 'text-txt-secondary',
-                                )}
-                              >
-                                {cost}t
-                              </span>
-                            )}
-                            {locked && <Lock size={9} className="shrink-0 text-txt-tertiary" />}
-                          </span>
-                        </button>
-                      </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs max-w-48">
-                      <p className="font-medium">{config.label}</p>
-                      <p className="text-txt-tertiary">{config.description}</p>
-                      {locked && (
-                        <p className="text-verdict-delay mt-1">
-                          Need {cost} token{cost > 1 ? 's' : ''} · {tokensRemaining} remaining
+                return (
+                  <Tooltip key={m.id}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => handleModeClick(m.id)}
+                        disabled={sending}
+                        className={cn(
+                          'relative flex items-center gap-1 rounded-2xl border-0 px-3 py-1 text-[12px] font-medium transition-colors duration-[150ms]',
+                          locked
+                            ? 'cursor-not-allowed text-txt-tertiary'
+                            : isActive
+                              ? 'bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)]'
+                              : 'bg-transparent text-txt-secondary hover:text-txt-primary',
+                        )}
+                      >
+                        <span className="flex items-center gap-1">
+                          {m.label}
+                          {locked && <Lock size={9} className="shrink-0 text-txt-tertiary" />}
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs max-w-56">
+                      <p className="font-medium">{m.label}</p>
+                      {tierLocked ? (
+                        <p className="text-txt-tertiary mt-1">Upgrade to Pro to unlock this mode.</p>
+                      ) : (
+                        <p className="text-txt-tertiary mt-1">
+                          Uses simulation tokens from your balance (see sidebar).
                         </p>
                       )}
                     </TooltipContent>
                   </Tooltip>
-                  );
-                })}
-              </div>
-            </LayoutGroup>
+                );
+              })}
+            </div>
           </TooltipProvider>
         </motion.div>
 
-        <div className="flex items-center justify-between mt-1.5 px-1">
-          <span className="text-micro text-txt-tertiary">
+        <div className="flex items-center justify-between mt-1.5 px-1 gap-2">
+          <span className="text-micro text-[color:var(--text-muted)]">
             Enter to send · Shift+Enter for new line
           </span>
-          {selectedTier !== 'ink' && (
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-micro flex items-center gap-1 text-txt-tertiary"
-            >
-              <Zap size={9} className="text-accent" />
-              {TOKEN_COSTS[selectedTier === 'kraken' ? 'kraken' : 'deep']} token
-              {TOKEN_COSTS[selectedTier === 'kraken' ? 'kraken' : 'deep'] > 1 ? 's' : ''} per sim
-            </motion.span>
-          )}
         </div>
       </div>
     </div>

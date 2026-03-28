@@ -7,7 +7,7 @@
 
 import { supabase } from '../memory/supabase';
 import { callClaude } from '../simulation/claude';
-import { getModelForTier, type ModelTier, TIER_CONFIGS } from './tiers';
+import type { ModelTier } from './tiers';
 
 export type RefinementRequest = {
   simulationId: string;
@@ -62,9 +62,8 @@ export async function refineSimulation(req: RefinementRequest): Promise<Refineme
   const origAction = verdict?.next_action || 'unknown';
 
   try {
-    const model = getModelForTier(req.tier);
-
     const response = await callClaude({
+      tier: 'orchestrator',
       systemPrompt: `You are an expert decision analyst performing a QUICK REFINEMENT of a previous simulation.
 
 The user wants to change ONE variable and understand the impact WITHOUT re-running the full 10-agent debate.
@@ -97,7 +96,7 @@ ${agentSummary}
 USER'S MODIFICATION: "${req.modification}"
 
 Analyze the impact of this change on the verdict. JSON:`,
-      maxTokens: TIER_CONFIGS[req.tier].maxTokens,
+      maxTokens: 2048,
       model,
     });
 

@@ -4,7 +4,7 @@ import { cn } from '@/lib/design/cn';
 
 type VerdictType = 'proceed' | 'delay' | 'abandon';
 type ConfidenceType = 'high' | 'medium' | 'low' | 'contested';
-type TierType = 'free' | 'pro' | 'max' | 'kraken';
+type PlanTierType = 'free' | 'pro' | 'max';
 
 interface OctBadgeProps extends BadgeProps {
   icon?: ReactNode;
@@ -12,9 +12,9 @@ interface OctBadgeProps extends BadgeProps {
   dotColor?: string;
   verdict?: VerdictType;
   confidence?: ConfidenceType;
-  tier?: TierType;
+  tier?: PlanTierType | string;
   grade?: string;
-  category?: 'investment' | 'relationships' | 'career' | 'business' | 'life';
+  category?: 'investment' | 'career' | 'business';
 }
 
 const confidenceMap: Record<ConfidenceType, string> = {
@@ -24,11 +24,16 @@ const confidenceMap: Record<ConfidenceType, string> = {
   contested: 'bg-confidence-contested/15 text-confidence-contested',
 };
 
-const tierMap: Record<TierType, string> = {
+const tierMap: Record<string, string> = {
   free: 'bg-surface-2 text-txt-tertiary',
   pro: 'bg-accent-muted text-accent',
   max: 'bg-tier-max/15 text-tier-max',
-  kraken: 'bg-tier-kraken/15 text-tier-kraken',
+  default: 'bg-surface-2 text-txt-tertiary',
+  swarm: 'bg-surface-2 text-txt-tertiary',
+  specialist: 'bg-accent-muted/20 text-accent',
+  compare: 'bg-accent-muted/20 text-accent',
+  stress_test: 'bg-surface-2 text-txt-secondary',
+  premortem: 'bg-surface-2 text-txt-secondary',
 };
 
 const gradeMap: Record<string, string> = {
@@ -38,10 +43,8 @@ const gradeMap: Record<string, string> = {
 
 const categoryMap: Record<string, string> = {
   investment: 'bg-category-investment/15 text-category-investment',
-  relationships: 'bg-category-relationships/15 text-category-relationships',
   career: 'bg-category-career/15 text-category-career',
   business: 'bg-category-business/15 text-category-business',
-  life: 'bg-category-life/15 text-category-life',
 };
 
 export default function OctBadge({
@@ -56,12 +59,12 @@ export default function OctBadge({
   } else if (confidence) {
     extraClass = confidenceMap[confidence] || '';
   } else if (tier) {
-    extraClass = tierMap[tier] || '';
+    extraClass = tierMap[tier] || 'bg-surface-2 text-txt-tertiary';
   } else if (grade) {
     const letter = grade.charAt(0).toUpperCase();
     extraClass = gradeMap[letter] || 'bg-surface-2 text-txt-secondary';
   } else if (category) {
-    extraClass = categoryMap[category] || '';
+    extraClass = categoryMap[category] || categoryMap.business;
   }
 
   return (

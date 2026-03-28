@@ -6,8 +6,8 @@ import { cn } from '@/lib/design/cn';
 import { Plus, ArrowUp, Paperclip, Camera, FolderPlus, Globe, Bot, Lock } from 'lucide-react';
 import { useChatStore } from '@/lib/store/chat';
 import { useBillingStore } from '@/lib/store/billing';
-import { TIER_CONFIGS, type ModelTier } from '@/lib/chat/tiers';
-import { TOKEN_COSTS } from '@/lib/billing/tiers';
+import { getTokenCost, type SimulationChargeType } from '@/lib/billing/token-costs';
+import type { TierType } from '@/lib/billing/tiers';
 import {
   Tooltip,
   TooltipContent,
@@ -23,40 +23,46 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/shadcn/dropdown-menu';
 
-type AgentCategory = 'investment' | 'career' | 'business' | 'health' | 'relationships' | 'life';
+type AgentCategory = 'investment' | 'career' | 'business';
 type AgentCategoryMode = AgentCategory | 'auto';
 
-const AGENT_CATEGORIES: AgentCategory[] = [
-  'life',
-  'relationships',
-  'career',
-  'business',
-  'health',
-  'investment',
-];
+const AGENT_CATEGORIES: AgentCategory[] = ['business', 'career', 'investment'];
+
+const AGENT_CATEGORY_LABELS: Record<AgentCategory, string> = {
+  business: 'Business',
+  career: 'Career',
+  investment: 'Investment',
+};
 
 function inferAgentCategory(question: string): AgentCategory {
   const q = question.toLowerCase();
-  if (/(invest|stock|equity|valuation|portfolio|asset|fund|crypto|retorno|acao|ações|renda)/.test(q)) {
+  if (/(invest|stock|equity|valuation|portfolio|asset|fund|crypto|retorno|acao|ações|renda|index fund|nvidia)/.test(q)) {
     return 'investment';
   }
-  if (/(career|job|salary|promotion|resume|curriculum|interview|vaga|trabalho|carreira)/.test(q)) {
+  if (/(career|job|salary|promotion|resume|curriculum|interview|vaga|trabalho|carreira|cto|outsource|hire)/.test(q)) {
     return 'career';
   }
-  if (/(business|startup|saas|pricing|go.to.market|growth|sales|marketing|empresa|negocio)/.test(q)) {
+  if (/(business|startup|saas|pricing|go.to.market|growth|sales|marketing|empresa|negocio|import|china|restaurant|gangnam|café|cafe|latam|latin america)/.test(q)) {
     return 'business';
   }
-  if (/(health|doctor|sleep|diet|exercise|workout|stress|ansiedade|saude|saúde)/.test(q)) {
-    return 'health';
-  }
-  if (/(relationship|marriage|dating|partner|breakup|family|friend|relacionamento|casamento)/.test(q)) {
-    return 'relationships';
-  }
-  return 'life';
+  return 'business';
+}
+
+const SIM_MODES: { id: SimulationChargeType; label: string }[] = [
+  { id: 'swarm', label: 'Swarm' },
+  { id: 'specialist', label: 'Specialist' },
+  { id: 'compare', label: 'Compare' },
+  { id: 'stress_test', label: 'Stress' },
+  { id: 'premortem', label: 'Pre-mortem' },
+];
+
+function modeLockedByTier(tier: TierType, mode: SimulationChargeType): boolean {
+  if (tier !== 'free') return false;
+  return mode !== 'swarm';
 }
 
 interface HomeComposerProps {
-  onSend: (message: string, options?: { tier?: string; simulate?: boolean }) => void;
+  onSend: (message: string, options?: { simMode?: SimulationChargeType; simulate?: boolean }) => void;
   loading?: boolean;
 }
 
@@ -69,10 +75,11 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
   const [message, setMessage] = useState('');
   const [webSearch, setWebSearch] = useState(true);
   const [agentCategoryMode, setAgentCategoryMode] = useState<AgentCategoryMode>('auto');
-  const selectedTier = useChatStore((s) => s.selectedTier);
-  const setSelectedTier = useChatStore((s) => s.setSelectedTier);
+  const selectedSimMode = useChatStore((s) => s.selectedSimMode);
+  const setSelectedSimMode = useChatStore((s) => s.setSelectedSimMode);
   const tokensRemaining = useBillingStore((s) => s.tokensRemaining);
-  const canAfford = useBillingStore((s) => s.canAfford);
+  const subscriptionTier = useBillingStore((s) => s.tier);
+  const canAffordMode = useBillingStore((s) => s.canAffordMode);
 
   const canSend = useMemo(() => message.trim().length > 0 && !loading, [message, loading]);
 
@@ -95,7 +102,7 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
       localStorage.setItem('octux_agent_category', resolvedCategory);
       localStorage.setItem('octux_agent_category_mode', agentCategoryMode);
     } catch {}
-    onSend(message.trim(), { tier: selectedTier });
+    onSend(message.trim(), { simMode: selectedSimMode });
     setMessage('');
     requestAnimationFrame(() => {
       if (textareaRef.current) {
@@ -105,24 +112,31 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
     });
   }
 
-  function handleTierClick(tier: ModelTier) {
-    if (tier === 'ink') {
-      setSelectedTier(tier);
-      return;
-    }
-    const simType = tier === 'kraken' ? 'kraken' : 'deep';
-    if (!canAfford(simType)) {
+  function handleModeClick(mode: SimulationChargeType) {
+    if (modeLockedByTier(subscriptionTier, mode)) {
       window.dispatchEvent(
         new CustomEvent('octux:show-upgrade', {
           detail: {
-            suggestedTier: tier === 'kraken' ? 'max' : 'pro',
-            reason: `Need ${TOKEN_COSTS[simType]} token${TOKEN_COSTS[simType] > 1 ? 's' : ''} for ${TIER_CONFIGS[tier].label}`,
+            suggestedTier: 'pro',
+            reason: 'Upgrade to Pro for specialist, compare, stress test, and pre-mortem modes.',
           },
         }),
       );
       return;
     }
-    setSelectedTier(tier);
+    const cost = getTokenCost(mode);
+    if (cost > 0 && !canAffordMode(mode)) {
+      window.dispatchEvent(
+        new CustomEvent('octux:show-upgrade', {
+          detail: {
+            suggestedTier: subscriptionTier === 'free' ? 'pro' : 'max',
+            reason: `Not enough tokens. This mode needs ${cost} tokens (${tokensRemaining} remaining).`,
+          },
+        }),
+      );
+      return;
+    }
+    setSelectedSimMode(mode);
   }
 
   function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
@@ -204,7 +218,7 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
                   e.preventDefault();
                   const resolvedCategory = message.trim()
                     ? (agentCategoryMode === 'auto' ? inferAgentCategory(message) : agentCategoryMode)
-                    : 'life';
+                    : 'business';
                   router.push(`/agents?category=${encodeURIComponent(resolvedCategory)}`);
                 }}
               >
@@ -232,7 +246,7 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
                   }}
                 >
                   <Bot size={16} />
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  {AGENT_CATEGORY_LABELS[cat]}
                   {agentCategoryMode === cat && <span className="ml-auto text-xs text-accent">Selected</span>}
                 </DropdownMenuItem>
               ))}
@@ -241,41 +255,38 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
 
           <div className="flex items-center gap-2">
             <TooltipProvider delayDuration={220}>
-              <div className="flex items-center rounded-xl border border-border-subtle bg-surface-1 p-0.5">
-                {(['ink', 'deep', 'kraken'] as const).map((tier) => {
-                  const config = TIER_CONFIGS[tier];
-                  const cost = tier === 'ink' ? 0 : TOKEN_COSTS[tier === 'kraken' ? 'kraken' : 'deep'];
-                  const locked = cost > 0 && !canAfford(tier === 'kraken' ? 'kraken' : 'deep');
+              <div className="flex items-center rounded-2xl border-0 bg-transparent p-0.5">
+                {SIM_MODES.map((m) => {
+                  const cost = getTokenCost(m.id);
+                  const tierLocked = modeLockedByTier(subscriptionTier, m.id);
+                  const tokenLocked = cost > 0 && !canAffordMode(m.id);
+                  const locked = tierLocked || tokenLocked;
                   return (
-                    <Tooltip key={tier}>
+                    <Tooltip key={m.id}>
                       <TooltipTrigger asChild>
                         <button
                           type="button"
-                          onClick={() => handleTierClick(tier)}
+                          onClick={() => handleModeClick(m.id)}
                           className={cn(
-                            'inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors',
-                            selectedTier === tier
-                              ? 'bg-accent text-txt-on-accent'
+                            'inline-flex items-center gap-1 rounded-2xl border-0 px-3 py-1 text-[12px] font-medium transition-colors',
+                            selectedSimMode === m.id
+                              ? 'bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)]'
                               : locked
                                 ? 'text-txt-tertiary'
                                 : 'text-txt-secondary hover:text-txt-primary',
                           )}
                         >
-                          {config.label}
+                          {m.label}
                           {locked && <Lock size={9} className="opacity-80" />}
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="max-w-56 text-xs">
-                        <p className="font-medium">{config.label}</p>
-                        <p className="text-txt-tertiary">{config.description}</p>
-                        {cost > 0 && (
+                        <p className="font-medium">{m.label}</p>
+                        {tierLocked ? (
+                          <p className="mt-1 text-txt-tertiary">Upgrade to Pro to unlock.</p>
+                        ) : (
                           <p className="mt-1 text-txt-tertiary">
-                            Cost: {cost} token{cost > 1 ? 's' : ''}
-                          </p>
-                        )}
-                        {locked && (
-                          <p className="mt-1 text-verdict-delay">
-                            Need {cost} token{cost > 1 ? 's' : ''} · {tokensRemaining} available
+                            Uses simulation tokens from your balance (see sidebar).
                           </p>
                         )}
                       </TooltipContent>
@@ -290,7 +301,9 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
               disabled={!canSend}
               className={cn(
                 'flex h-9 w-9 items-center justify-center rounded-xl transition-colors',
-                canSend ? 'bg-accent text-txt-on-accent hover:bg-accent-hover' : 'bg-surface-2 text-txt-disabled',
+                canSend
+                  ? 'bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:opacity-90'
+                  : 'bg-surface-2 text-txt-disabled',
               )}
               aria-label="Send message"
             >
@@ -298,16 +311,6 @@ export default function HomeComposer({ onSend, loading = false }: HomeComposerPr
             </button>
           </div>
         </div>
-      </div>
-      <div className="mt-3 flex items-center justify-center gap-3 text-xs text-txt-tertiary">
-        <span className="rounded-radius-pill border border-border-subtle bg-surface-1 px-2.5 py-1">
-          Tokens available: <span className="font-semibold text-txt-primary">{tokensRemaining}</span>
-        </span>
-        {selectedTier !== 'ink' && (
-          <span className="rounded-radius-pill border border-border-subtle bg-surface-1 px-2.5 py-1">
-            Cost now: {TOKEN_COSTS[selectedTier === 'kraken' ? 'kraken' : 'deep']} tokens
-          </span>
-        )}
       </div>
     </div>
   );

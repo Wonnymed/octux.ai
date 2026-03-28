@@ -41,7 +41,7 @@ const ROWS = [
 
 const WEAK = "rgba(255,255,255,0.50)";
 const DIM_LABEL = "rgba(255,255,255,0.70)";
-const PURPLE = "#E8784A";
+const PURPLE = "#6B6560";
 const OCTUX_BG = "rgba(124,58,237,0.08)";
 const BORDER_ROW = "rgba(255,255,255,0.08)";
 const BORDER_HEADER = "rgba(255,255,255,0.10)";

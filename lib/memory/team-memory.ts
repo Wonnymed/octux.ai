@@ -67,6 +67,7 @@ export async function extractTeamInsights(
 
   try {
     const response = await callClaude({
+      tier: 'extraction',
       systemPrompt: `You analyze DEBATE DYNAMICS across multiple simulations to find TEAM-LEVEL patterns.
 
 Insight types:

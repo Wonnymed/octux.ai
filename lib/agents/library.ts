@@ -78,20 +78,17 @@ export async function searchAgents(query: string, limit: number = 20): Promise<L
 
 // ═══ AUTO-SUGGEST — Domain → recommended agents ═══
 
-/** Per simulation: 10 agents total — mix follows AGENT-CATALOG-60 selection examples */
+/** Per simulation: 10 agents total — business-focused specialist mix */
 const DOMAIN_AGENT_MAP: Record<string, { category: string; count: number }[]> = {
-  investment:    [{ category: 'investment', count: 10 }],
-  career:        [{ category: 'career', count: 5 }, { category: 'business', count: 5 }],
-  business:      [{ category: 'business', count: 4 }, { category: 'life', count: 3 }, { category: 'career', count: 3 }],
-  health:        [{ category: 'health', count: 7 }, { category: 'life', count: 3 }],
-  relationships: [{ category: 'relationships', count: 10 }],
-  legal:         [{ category: 'business', count: 5 }, { category: 'life', count: 3 }, { category: 'career', count: 2 }],
-  technology:    [{ category: 'business', count: 5 }, { category: 'investment', count: 3 }, { category: 'career', count: 2 }],
-  education:     [{ category: 'career', count: 6 }, { category: 'life', count: 4 }],
-  real_estate:   [{ category: 'investment', count: 6 }, { category: 'business', count: 4 }],
-  /** personal / cross-domain life questions — IVF vs savings style mix */
-  personal:      [{ category: 'investment', count: 4 }, { category: 'health', count: 3 }, { category: 'relationships', count: 3 }],
-  general:       [{ category: 'life', count: 4 }, { category: 'business', count: 2 }, { category: 'investment', count: 2 }, { category: 'career', count: 2 }],
+  investment: [{ category: 'investment', count: 10 }],
+  career: [{ category: 'career', count: 5 }, { category: 'business', count: 5 }],
+  business: [{ category: 'business', count: 4 }, { category: 'investment', count: 3 }, { category: 'career', count: 3 }],
+  legal: [{ category: 'business', count: 5 }, { category: 'investment', count: 3 }, { category: 'career', count: 2 }],
+  technology: [{ category: 'business', count: 5 }, { category: 'investment', count: 3 }, { category: 'career', count: 2 }],
+  education: [{ category: 'career', count: 6 }, { category: 'business', count: 4 }],
+  real_estate: [{ category: 'investment', count: 6 }, { category: 'business', count: 4 }],
+  personal: [{ category: 'business', count: 4 }, { category: 'investment', count: 3 }, { category: 'career', count: 3 }],
+  general: [{ category: 'business', count: 4 }, { category: 'investment', count: 3 }, { category: 'career', count: 3 }],
 };
 
 export async function suggestAgentsForDomain(domain: string): Promise<LibraryAgent[]> {
@@ -126,7 +123,7 @@ export async function getUserCustomAgents(userId: string): Promise<LibraryAgent[
     constraints: a.constraints || [],
     sop: '',
     icon: a.icon || '\u{1F3AD}',
-    color: a.color || '#C75B2A',
+    color: a.color || '#1A1815',
     tags: ['custom'],
     origin: 'user',
     difficulty: 'standard',
@@ -212,7 +209,7 @@ Be honest about your emotions and biases. The specialists will challenge you wit
         'Be honest about your biases — the specialists will balance you',
       ],
       icon: '\u{1FA9E}',
-      color: '#C75B2A',
+      color: '#1A1815',
       is_self_agent: true,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id,agent_id' });
@@ -228,7 +225,7 @@ Be honest about your emotions and biases. The specialists will challenge you wit
     constraints: ['Express genuine emotions', 'Challenge specialists', 'Be honest about biases'],
     sop: '',
     icon: '\u{1FA9E}',
-    color: '#C75B2A',
+    color: '#1A1815',
     tags: ['self', 'personal', 'user'],
     origin: 'self',
     difficulty: 'standard',

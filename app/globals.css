@@ -161,6 +161,7 @@
   --text-primary: #1a1815;
   --text-secondary: #6b6560;
   --text-tertiary: #9b9590;
+  --text-muted: var(--text-tertiary);
   --text-disabled: #b8b3ad;
   --text-on-accent: var(--btn-primary-text);
   --text-inverse: #faf7f2;
@@ -233,7 +234,6 @@
   --tier-free: #8a8578;
   --tier-pro: #1a1815;
   --tier-max: #6b6560;
-  --tier-kraken: #6b8b7a;
 
   --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.04);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
@@ -337,7 +337,8 @@
   --bg-tertiary: #1e1e1c;
   --bg-hover: rgba(255, 255, 255, 0.05);
   --bg-active: rgba(255, 255, 255, 0.08);
-  --bg-input: #1e1e1c;
+  /* Chat input: slightly elevated neutral (Okara dark) */
+  --bg-input: #2a2a2a;
   --bg-card: #1a1a18;
   --bg-card-hover: #222220;
 
@@ -384,6 +385,7 @@
   --text-primary: #f0ebe1;
   --text-secondary: #8a8578;
   --text-tertiary: #5c5850;
+  --text-muted: var(--text-tertiary);
   --text-disabled: #4a4845;
   --text-on-accent: var(--btn-primary-text);
   --text-inverse: #0d0d0c;
@@ -438,7 +440,6 @@
   --tier-free: rgba(240, 235, 225, 0.35);
   --tier-pro: #f0ebe1;
   --tier-max: #d8d2c6;
-  --tier-kraken: #8bb0a0;
 
   --cat-life: #b0a48e;
   --cat-relationships: #c4a888;
@@ -734,7 +735,6 @@
 .oct-badge-free { background-color: var(--surface-3); color: var(--text-tertiary); }
 .oct-badge-pro { background-color: var(--accent-muted); color: var(--accent); }
 .oct-badge-max { background-color: var(--verdict-delay-muted); color: var(--verdict-delay); }
-.oct-badge-kraken { background-color: var(--entity-dormant); color: var(--entity-bioluminescent); }
 .oct-skeleton { background-color: var(--surface-3); border-radius: 8px; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 .oct-divider { height: 1px; width: 100%; background-color: var(--border-subtle); }

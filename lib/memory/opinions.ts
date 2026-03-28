@@ -46,6 +46,7 @@ export async function extractOpinionsAndObservations(
     : 'No existing opinions.';
 
   const response = await callClaude({
+    tier: 'extraction',
     systemPrompt: `You extract OPINIONS and OBSERVATIONS from a completed decision simulation.
 
 OPINIONS = Beliefs the system should form or update. These are SUBJECTIVE assessments:

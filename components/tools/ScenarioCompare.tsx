@@ -20,7 +20,7 @@ export default function ScenarioCompare() {
         label="Option B"
         value={b}
         onChange={setB}
-        accent="border-amber-600/20 bg-amber-600/[0.03]"
+        accent="border-border-default bg-surface-1/80"
       />
     </div>
   );

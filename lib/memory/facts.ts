@@ -50,6 +50,7 @@ export async function extractFacts(
     .join('\n');
 
   const response = await callClaude({
+    tier: 'extraction',
     systemPrompt: `You are a fact extraction system for Octux AI. After each simulation, you extract BUSINESS FACTS about the user that would be useful in future simulations.
 
 WHAT TO EXTRACT:
@@ -223,6 +224,7 @@ export async function parseQuestionForFacts(
     : 'No existing facts.';
 
   const response = await callClaude({
+    tier: 'extraction',
     systemPrompt: `You are a fact pre-processor for Octux AI. Before a simulation runs, you scan the user's question for EXPLICIT facts about them or their situation.
 
 EXTRACT ONLY facts that are DIRECTLY STATED in the question:

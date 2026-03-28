@@ -119,6 +119,7 @@ Verdict: ${rec} (${prob}%)`
 
   try {
     const response = await callClaude({
+      tier: 'extraction',
       systemPrompt: `You analyze an AI agent's performance trajectory across multiple simulations to extract BEHAVIORAL RULES — consistent patterns of HOW the agent should approach analysis.
 
 RULE TYPES:

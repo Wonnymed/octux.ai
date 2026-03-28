@@ -33,8 +33,10 @@ export default function MessageBubble({
           )}>
             <MessageContent content={content} />
           </div>
-          {tier && tier !== 'ink' && (
-            <OctBadge tier={tier as any} size="xs">{tier}</OctBadge>
+          {tier && tier !== 'default' && (
+            <OctBadge tier={tier} size="xs">
+              {tier.replace(/_/g, ' ')}
+            </OctBadge>
           )}
         </div>
       </div>
@@ -58,7 +60,7 @@ export default function MessageBubble({
         {agentName ? (
           <OctAvatar
             type="agent"
-            category={(agentCategory as any) || 'life'}
+            category={(agentCategory as any) || 'business'}
             agentIndex={agentIndex || 0}
             name={agentName}
             size="sm"

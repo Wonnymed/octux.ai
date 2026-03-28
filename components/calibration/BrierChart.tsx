@@ -58,9 +58,9 @@ export default function BrierChart({ outcomes, overallBrier }: { outcomes: Outco
           <Line
             type="monotone"
             dataKey="brier"
-            stroke="#C75B2A"
+            stroke="#1A1815"
             strokeWidth={2}
-            dot={{ fill: '#C75B2A', r: 3 }}
+            dot={{ fill: '#1A1815', r: 3 }}
             activeDot={{ r: 5 }}
           />
         </LineChart>

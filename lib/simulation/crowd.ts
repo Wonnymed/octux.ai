@@ -161,6 +161,7 @@ async function runSingleAdvisor(
 ): Promise<CrowdVote | null> {
   try {
     const response = await callClaude({
+      tier: 'crowd',
       systemPrompt: `You are a crowd advisor giving a QUICK opinion on a business decision.
 Your background: ${advisor.persona}
 Your risk tolerance: ${advisor.risk_tolerance}

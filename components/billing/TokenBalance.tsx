@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/design/cn';
-import { TOKEN_COSTS } from '@/lib/billing/tiers';
+import { TOKEN_COSTS } from '@/lib/billing/token-costs';
 
 interface TokenBalanceProps {
   tokensUsed: number;
@@ -70,9 +70,8 @@ export default function TokenBalance({
       <div className="flex items-center justify-between text-xs text-txt-tertiary">
         <span>{tokensUsed} used of {tokensTotal}</span>
         <span>
-          {remaining >= TOKEN_COSTS.kraken
-            ? `${Math.floor(remaining / TOKEN_COSTS.kraken)} Kraken possible`
-            : `${remaining} Deep possible`}
+          e.g. up to {Math.floor(remaining / TOKEN_COSTS.swarm)} swarm runs (
+          {TOKEN_COSTS.swarm} token each)
         </span>
       </div>
 

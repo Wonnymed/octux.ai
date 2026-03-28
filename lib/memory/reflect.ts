@@ -125,6 +125,7 @@ async function formOpinion(
 
   try {
     const response = await callClaude({
+      tier: 'reflection',
       systemPrompt: `You are the Reflect engine for a decision system. You analyze accumulated experiences and form/update BELIEFS (opinions).
 
 RULES:
@@ -315,6 +316,7 @@ async function deriveObservations(
 
   try {
     const response = await callClaude({
+      tier: 'reflection',
       systemPrompt: `You analyze decision experiences to find PATTERNS — recurring themes that would help future decisions.
 
 Good patterns are:
@@ -445,6 +447,7 @@ async function memoryOfMisses(
 
   try {
     const response = await callClaude({
+      tier: 'reflection',
       systemPrompt: `You analyze prediction MISSES — cases where the decision system got it wrong.
 For each miss, identify:
 1. WHAT went wrong (over-estimated a factor? under-estimated a risk?)

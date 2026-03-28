@@ -33,7 +33,7 @@ export default function InlineCitation({ citation }: InlineCitationProps) {
             background: hovered
               ? "rgba(124,58,237,0.20)"
               : "rgba(124,58,237,0.10)",
-            color: "#C75B2A",
+            color: "#1A1815",
             fontSize: 10,
             fontWeight: 600,
             cursor: "pointer",
@@ -79,7 +79,7 @@ export default function InlineCitation({ citation }: InlineCitationProps) {
                 height: 24,
                 borderRadius: "50%",
                 background: "rgba(124,58,237,0.12)",
-                color: "#C75B2A",
+                color: "#1A1815",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

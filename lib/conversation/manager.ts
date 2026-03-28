@@ -122,7 +122,7 @@ export async function addMessage(
       role: message.role,
       content: message.content || null,
       structured_data: message.structured_data || null,
-      model_tier: message.model_tier || 'ink',
+      model_tier: message.model_tier || 'default',
       simulation_id: message.simulation_id || null,
     })
     .select('id')

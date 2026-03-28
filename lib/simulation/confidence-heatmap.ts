@@ -60,6 +60,7 @@ export async function extractVerdictClaims(
 
   try {
     const response = await callClaude({
+      tier: 'extraction',
       systemPrompt: `You decompose a decision verdict into individual CLAIMS and grade each one.
 
 For each claim in the verdict:

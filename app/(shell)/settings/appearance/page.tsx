@@ -28,7 +28,7 @@ export default function SettingsAppearancePage() {
                 className={cn(
                   'flex flex-col items-start rounded-xl border p-4 text-left transition-colors duration-normal ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0',
                   active
-                    ? 'border-accent bg-accent-subtle'
+                    ? 'border-txt-primary bg-accent-light'
                     : 'border-border-subtle bg-surface-1 hover:border-border-default hover:bg-surface-2/80',
                 )}
               >

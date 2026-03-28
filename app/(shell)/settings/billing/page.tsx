@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { CreditCard } from 'lucide-react';
 import { SettingSection, Divider, SettingSkeleton } from '../_components';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { TIERS, type TierType } from '@/lib/billing/tiers';
+import { getTierConfig, type TierType } from '@/lib/billing/tiers';
 import { cn } from '@/lib/design/cn';
 
 type Balance = {
@@ -79,7 +79,7 @@ export default function SettingsBillingPage() {
   }
 
   const tier = balance.tier;
-  const tierConfig = TIERS[tier];
+  const tierConfig = getTierConfig(tier);
   const pct =
     balance.tokensTotal > 0
       ? Math.min(100, Math.round((balance.tokensUsed / balance.tokensTotal) * 100))

@@ -29,7 +29,7 @@ function getInitials(name: string): string {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
-export default function OctAvatar({ type = 'agent', size = 'md', category = 'life', agentIndex = 0, agentIcon, name, imageUrl, state = 'dormant', className }: OctAvatarProps) {
+export default function OctAvatar({ type = 'agent', size = 'md', category = 'business', agentIndex = 0, agentIcon, name, imageUrl, state = 'dormant', className }: OctAvatarProps) {
   const s = sizeStyles[size];
 
   if (type === 'agent') {

@@ -71,6 +71,7 @@ export async function updateTaskLedger(
     .join('\n');
 
   const response = await callClaude({
+    tier: 'extraction',
     systemPrompt: `You maintain a Task Ledger for an adversarial debate. Analyze new agent reports and update the ledger.
 
 Rules:
@@ -219,6 +220,7 @@ export async function replanDebate(
   _state: SimulationState,
 ): Promise<string[]> {
   const response = await callClaude({
+    tier: 'orchestrator',
     systemPrompt: `You are the Decision Chair. The adversarial debate has STALLED — agents are repeating themselves without adding new evidence or changing positions.
 
 Look at the open questions, unverified assumptions, and unresolved disagreements. Suggest 2-3 specific NEW angles that break the deadlock. Each directive should force agents to explore something they haven't considered.

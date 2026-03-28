@@ -9,7 +9,17 @@ export async function GET() {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const balance = await getTokenBalance(user.id);
-    return NextResponse.json(balance);
+    return NextResponse.json({
+      tier: balance.tier,
+      total: balance.tokensTotal,
+      used: balance.tokensUsed,
+      remaining: balance.tokensRemaining,
+      tokensTotal: balance.tokensTotal,
+      tokensUsed: balance.tokensUsed,
+      tokensRemaining: balance.tokensRemaining,
+      currentPeriodEnd: balance.currentPeriodEnd,
+      stripeCustomerId: balance.stripeCustomerId,
+    });
   } catch (error) {
     console.error('Balance fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch balance' }, { status: 500 });

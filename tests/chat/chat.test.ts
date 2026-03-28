@@ -24,11 +24,11 @@ describe('Chat: Decision Chat', () => {
     setNextLLMResponse('Gangnam rent for F&B ranges ₩3-8M/month.');
 
     const { chatWithMemory } = await import('@/lib/chat/chat');
-    const result = await chatWithMemory(TEST_USER_ID, 'How much is rent in Gangnam?', [], 'ink');
+    const result = await chatWithMemory(TEST_USER_ID, 'How much is rent in Gangnam?', [], 'default');
 
     expect(result.response).toBeTruthy();
     expect(result.response.length).toBeGreaterThan(10);
-    expect(result.tier).toBe('ink');
+    expect(result.tier).toBe('default');
   });
 
   // TEST 26: Chat includes disclaimer for investment questions
@@ -46,7 +46,7 @@ describe('Chat: Decision Chat', () => {
     setNextLLMResponse('Bitcoin is highly volatile. Consider DCA.');
 
     const { chatWithMemory } = await import('@/lib/chat/chat');
-    const result = await chatWithMemory(TEST_USER_ID, 'Should I invest in Bitcoin?', [], 'ink');
+    const result = await chatWithMemory(TEST_USER_ID, 'Should I invest in Bitcoin?', [], 'default');
 
     expect(result.disclaimer).toBeDefined();
     expect(result.disclaimer).toContain('not financial advice');

@@ -1,7 +1,7 @@
 import {
   Briefcase,
-  Globe,
-  Heart,
+  Code2,
+  Factory,
   Store,
   TrendingUp,
   type LucideIcon,
@@ -14,10 +14,12 @@ export interface SuggestionChipConfig {
 }
 
 /** Shared hero + chat suggestion chips — category color + icon */
+const CHIP_ICON = '#8a8578';
+
 export const SUGGESTION_CHIP_CONFIG: SuggestionChipConfig[] = [
-  { text: 'Should I invest $10K in NVIDIA?', color: '#8B6F4E', Icon: TrendingUp },
-  { text: 'Time to break up or work on it?', color: '#B8860B', Icon: Heart },
-  { text: 'Quit my 9-5 for a startup?', color: '#f59e0b', Icon: Briefcase },
-  { text: 'Open a restaurant in Gangnam?', color: '#10b981', Icon: Store },
-  { text: 'Move abroad or stay close to family?', color: '#06b6d4', Icon: Globe },
+  { text: 'Should I import smartphones from China?', color: CHIP_ICON, Icon: Factory },
+  { text: 'Open a restaurant in Gangnam, Seoul', color: CHIP_ICON, Icon: Store },
+  { text: 'Invest $10K in NVIDIA or index funds?', color: CHIP_ICON, Icon: TrendingUp },
+  { text: 'Launch a SaaS in Latin America', color: CHIP_ICON, Icon: Code2 },
+  { text: 'Hire a CTO or outsource development?', color: CHIP_ICON, Icon: Briefcase },
 ];
