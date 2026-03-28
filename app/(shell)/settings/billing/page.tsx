@@ -67,7 +67,7 @@ export default function SettingsBillingPage() {
   }
 
   if (!isAuthenticated) {
-    return <p className="text-sm text-txt-tertiary">Sign in to view billing.</p>;
+    return <p className="text-sm text-gray-600 dark:text-white/40">Sign in to view billing.</p>;
   }
 
   if (loading) {
@@ -75,7 +75,7 @@ export default function SettingsBillingPage() {
   }
 
   if (!balance) {
-    return <p className="text-sm text-txt-tertiary">Unable to load billing.</p>;
+    return <p className="text-sm text-gray-600 dark:text-white/40">Unable to load billing.</p>;
   }
 
   const tier = balance.tier;
@@ -94,23 +94,29 @@ export default function SettingsBillingPage() {
   const paid = tier !== 'free' && !!balance.stripeCustomerId;
 
   return (
-    <div className="mx-auto max-w-container-narrow space-y-10 pb-8">
+    <div className="mx-auto max-w-container-narrow flex-1 space-y-10 pb-8">
       <SettingSection title="Current plan" description="Your active subscription.">
-        <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-1 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-white/[0.08] dark:bg-white/[0.03] sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent" aria-hidden>
+            <span
+              className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#e8593c]/10 text-[#e8593c] dark:bg-accent/10 dark:text-accent"
+              aria-hidden
+            >
               <Zap size={22} strokeWidth={1.75} />
             </span>
             <div>
-              <p className={cn('text-lg font-semibold', tierConfig.color)}>{tierConfig.name}</p>
-              <p className="text-sm text-txt-tertiary">
-                {tierConfig.priceLabel} <span className="text-txt-disabled">/ {tierConfig.period}</span>
+              <p className={cn('text-lg font-semibold', tierConfig.color)}>
+                {tierConfig.name}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-white/40">
+                {tierConfig.priceLabel}{' '}
+                <span className="text-gray-400 dark:text-white/25">/ {tierConfig.period}</span>
               </p>
             </div>
           </div>
           <Link
             href="/pricing"
-            className="inline-flex shrink-0 items-center justify-center rounded-lg border border-white/15 bg-transparent px-4 py-2 text-sm font-medium text-txt-primary transition-colors hover:bg-white/[0.06]"
+            className="inline-flex shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/[0.06]"
           >
             Adjust plan
           </Link>
@@ -120,21 +126,21 @@ export default function SettingsBillingPage() {
       <Divider />
 
       <SettingSection title="Token usage" description="Simulation tokens used this billing period.">
-        <div className="rounded-xl border border-border-subtle bg-surface-1 p-5">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-white/[0.06] dark:bg-white/[0.02]">
           <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-            <span className="text-sm text-txt-secondary">
-              <span className="font-medium text-txt-primary">{balance.tokensUsed}</span>
+            <span className="text-sm text-gray-700 dark:text-white/60">
+              <span className="font-medium text-gray-900 dark:text-white">{balance.tokensUsed}</span>
               {' of '}
-              <span className="font-medium text-txt-primary">{balance.tokensTotal}</span>
+              <span className="font-medium text-gray-900 dark:text-white">{balance.tokensTotal}</span>
               {' tokens used'}
             </span>
             {renewal && (
-              <span className="text-xs text-txt-disabled">Renews {renewal}</span>
+              <span className="text-xs text-gray-400 dark:text-white/30">Renews {renewal}</span>
             )}
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-surface-2">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-white/[0.06]">
             <div
-              className="h-full rounded-full bg-accent transition-[width] duration-300"
+              className="h-full rounded-full bg-[#e8593c] transition-[width] duration-300 dark:bg-accent"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -145,19 +151,19 @@ export default function SettingsBillingPage() {
         <>
           <Divider />
           <SettingSection title="Payment method" description="Update card and invoices in Stripe.">
-            <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-1 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-white/[0.06] dark:bg-white/[0.03] sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
-                <CreditCard size={22} className="text-txt-tertiary" strokeWidth={1.5} />
+                <CreditCard size={22} className="text-gray-400 dark:text-white/35" strokeWidth={1.5} />
                 <div>
-                  <p className="text-sm font-medium text-txt-primary">Managed by Stripe</p>
-                  <p className="text-xs text-txt-disabled">Secure billing portal</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Managed by Stripe</p>
+                  <p className="text-xs text-gray-500 dark:text-white/30">Secure billing portal</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={openPortal}
                 disabled={portalLoading}
-                className="inline-flex shrink-0 items-center justify-center rounded-lg border border-border-subtle bg-surface-2 px-4 py-2 text-sm font-medium text-txt-primary hover:bg-surface-2/80 disabled:opacity-50"
+                className="inline-flex shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.05] dark:text-white/80 dark:hover:bg-white/[0.08]"
               >
                 {portalLoading ? 'Opening…' : 'Manage billing'}
               </button>

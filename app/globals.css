@@ -781,10 +781,33 @@
 [data-octux-settings] .field-input {
   padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  outline: none;
+  transition: border-color 150ms ease;
+  background: rgb(243 244 246);
+  border: 1px solid rgb(229 231 235);
+  color: rgb(17 24 39);
+}
+
+[data-octux-settings] .field-input::placeholder {
+  color: rgb(156 163 175);
 }
 
 [data-octux-settings] .field-input:focus {
+  border-color: rgba(232, 89, 60, 0.5);
+  box-shadow: none;
+}
+
+.dark [data-octux-settings] .field-input {
+  background: var(--surface-2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.dark [data-octux-settings] .field-input::placeholder {
+  color: var(--text-disabled);
+}
+
+.dark [data-octux-settings] .field-input:focus {
   border-color: rgba(232, 89, 60, 0.5);
   box-shadow: none;
 }
@@ -1042,6 +1065,31 @@ section,
     background-color var(--duration-medium) var(--ease-in-out),
     color var(--duration-medium) var(--ease-in-out),
     border-color var(--duration-medium) var(--ease-in-out);
+}
+
+/* App chrome: consistent hover / focus micro-transitions (kept subtle; reduced-motion overrides below) */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+button:not(:disabled):active,
+[role="button"]:not([aria-disabled="true"]):active {
+  transform: scale(0.98);
+}
+
+input:not([type="hidden"]):not([type="range"]),
+textarea,
+select {
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {

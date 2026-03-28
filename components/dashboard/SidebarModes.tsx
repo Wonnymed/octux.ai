@@ -2,9 +2,10 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { Zap, ArrowLeftRight, ShieldAlert, Skull } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/design/cn';
-import { DARK_THEME } from '@/lib/dashboard/theme';
+import { TRANSITIONS } from '@/lib/design/transitions';
 import type { DashboardMode } from '@/lib/store/dashboard-ui';
 
 export const DASHBOARD_SIDEBAR_MODES: {
@@ -63,10 +64,7 @@ export default function SidebarModes({
 
   return (
     <div className="px-3">
-      <p
-        className="mb-2 px-1 text-[9px] font-medium uppercase tracking-[0.2em]"
-        style={{ color: DARK_THEME.text_tertiary }}
-      >
+      <p className="mb-2 px-1 text-[10px] font-medium uppercase tracking-[2px] text-white/30">
         Simulation modes
       </p>
       <ul className="flex flex-col gap-0.5">
@@ -79,29 +77,35 @@ export default function SidebarModes({
                 type="button"
                 onClick={() => handleModeClick(m.id)}
                 className={cn(
-                  'group flex w-full items-start gap-3 rounded-lg border-l-2 px-3 py-2.5 text-left transition-all duration-150',
-                  active ? 'bg-white/[0.03]' : 'border-transparent hover:bg-white/[0.04]',
+                  'group relative flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors duration-150',
+                  active ? 'bg-white/[0.03]' : 'hover:bg-white/[0.04]',
                 )}
-                style={
-                  active
-                    ? { borderLeftColor: m.accent }
-                    : { borderLeftColor: 'transparent' }
-                }
               >
+                {active ? (
+                  <motion.span
+                    layoutId="dashboard-mode-indicator"
+                    className="absolute bottom-2 left-0 top-2 w-0.5 rounded-r"
+                    style={{ backgroundColor: m.accent }}
+                    transition={TRANSITIONS.spring}
+                    aria-hidden
+                  />
+                ) : null}
                 <Icon
                   size={18}
                   strokeWidth={1.5}
                   className={cn(
                     'mt-0.5 shrink-0 transition-colors',
-                    active ? '' : 'text-white/[0.35] group-hover:text-white/60',
+                    active ? '' : 'text-white/40 group-hover:text-white/50',
                   )}
                   style={active ? { color: m.accent } : undefined}
                 />
                 <div className="min-w-0 flex-1">
                   <div
                     className={cn(
-                      'text-[13px] font-medium transition-colors',
-                      active ? 'text-white/80' : 'text-white/50 group-hover:text-white/60',
+                      'text-[13px] transition-colors',
+                      active
+                        ? 'font-semibold text-white'
+                        : 'font-medium text-white/70 group-hover:text-white/80',
                     )}
                   >
                     {m.name}
@@ -109,7 +113,7 @@ export default function SidebarModes({
                   <div
                     className={cn(
                       'mt-0.5 text-[11px] leading-snug transition-colors',
-                      active ? 'text-white/35' : 'text-white/25 group-hover:text-white/35',
+                      active ? 'text-white/35' : 'text-white/25 group-hover:text-white/30',
                     )}
                   >
                     {m.description}

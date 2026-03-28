@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
 import { MoreHorizontal, Pin, Pencil, Trash2 } from 'lucide-react';
+import { TRANSITIONS } from '@/lib/design/transitions';
 import { useAppStore } from '@/lib/store/app';
 import type { ConversationSummary } from '@/lib/store/app';
 import { DARK_THEME } from '@/lib/dashboard/theme';
@@ -189,31 +191,30 @@ export default function SidebarHistory({ variant = 'full' }: { variant?: 'full' 
     if (rows.length === 0) return null;
     return (
       <>
-        <p
-          className="mb-2 mt-1 px-1 text-[9px] font-medium uppercase tracking-[0.2em]"
-          style={{ color: DARK_THEME.text_tertiary }}
-        >
+        <p className="mb-2 mt-1 px-1 text-[10px] font-medium uppercase tracking-[2px] text-white/30">
           {label}
         </p>
         <ul className="mb-3 flex flex-col gap-1">
-          {rows.map((c) => (
-            <HistoryRow
-              key={c.id}
-              c={c}
-              isPinned={pinnedIds.includes(c.id)}
-              modeBadge={sidebarBadgeFor(c)}
-              isActive={currentConversationId === c.id}
-              menuOpen={openMenuId === c.id}
-              onMenuOpenChange={(open) => setOpenMenuId(open ? c.id : null)}
-              onPinsUpdated={refreshPinned}
-              updateConversation={updateConversation}
-              onRequestDelete={() => {
-                setOpenMenuId(null);
-                setDeleteTarget(c);
-              }}
-              onNavigate={() => router.push(`/c/${c.id}`)}
-            />
-          ))}
+          <AnimatePresence initial={false}>
+            {rows.map((c) => (
+              <HistoryRow
+                key={c.id}
+                c={c}
+                isPinned={pinnedIds.includes(c.id)}
+                modeBadge={sidebarBadgeFor(c)}
+                isActive={currentConversationId === c.id}
+                menuOpen={openMenuId === c.id}
+                onMenuOpenChange={(open) => setOpenMenuId(open ? c.id : null)}
+                onPinsUpdated={refreshPinned}
+                updateConversation={updateConversation}
+                onRequestDelete={() => {
+                  setOpenMenuId(null);
+                  setDeleteTarget(c);
+                }}
+                onNavigate={() => router.push(`/c/${c.id}`)}
+              />
+            ))}
+          </AnimatePresence>
         </ul>
       </>
     );
@@ -222,9 +223,7 @@ export default function SidebarHistory({ variant = 'full' }: { variant?: 'full' 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-2">
       {sorted.length === 0 ? (
-        <p className="px-2 text-[11px]" style={{ color: DARK_THEME.text_tertiary }}>
-          No simulations yet
-        </p>
+        <p className="px-2 text-[12px] text-white/20">No simulations yet</p>
       ) : (
         <>
           {pinnedRows.length > 0 && renderSection('PINNED', pinnedRows)}
@@ -317,7 +316,16 @@ function HistoryRow({
   }, [c.title]);
 
   return (
-    <li ref={rowRef} className="group relative" data-history-menu-root={c.id}>
+    <motion.li
+      ref={rowRef}
+      layout="position"
+      initial={{ opacity: 0, x: -6 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -16 }}
+      transition={TRANSITIONS.component}
+      className="group relative"
+      data-history-menu-root={c.id}
+    >
       <div
         className="relative flex items-center gap-1 rounded-lg py-1 pl-2 pr-8 transition-colors hover:bg-white/[0.04]"
         style={{
@@ -363,7 +371,7 @@ function HistoryRow({
               onClick={(e) => e.stopPropagation()}
             />
           ) : (
-            <span className="min-w-0 flex-1 truncate text-[12px] text-white/80">{c.title}</span>
+            <span className="min-w-0 flex-1 truncate text-[12px] text-white/55">{c.title}</span>
           )}
           <span
             className="shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide"
@@ -399,8 +407,13 @@ function HistoryRow({
           </button>
         )}
 
+        <AnimatePresence>
         {menuOpen && !renaming && (
-          <div
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={TRANSITIONS.micro}
             className="absolute right-0 top-[calc(100%-2px)] z-[70] min-w-[180px] rounded-lg p-1 shadow-lg"
             style={{
               backgroundColor: MENU_SURFACE,
@@ -472,9 +485,10 @@ function HistoryRow({
               <Trash2 size={14} className="shrink-0 opacity-80" />
               Delete
             </button>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
-    </li>
+    </motion.li>
   );
 }

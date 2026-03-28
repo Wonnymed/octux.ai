@@ -68,7 +68,7 @@ export default function SettingsProfilePage() {
 
   if (!isAuthenticated) {
     return (
-      <p className="text-sm text-txt-tertiary">Sign in to edit your profile.</p>
+      <p className="text-sm text-gray-600 dark:text-white/40">Sign in to edit your profile.</p>
     );
   }
 
@@ -77,7 +77,7 @@ export default function SettingsProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-container-narrow space-y-10 pb-8">
+    <div className="mx-auto max-w-container-narrow flex-1 space-y-10 pb-8">
       <SettingSection title="Profile" description="Your personal information.">
         <div className="grid gap-6 sm:grid-cols-2">
           <SettingField label="Full name">

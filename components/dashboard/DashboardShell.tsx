@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
+import { TRANSITIONS } from '@/lib/design/transitions';
 import { DARK_THEME } from '@/lib/dashboard/theme';
 import DashboardSidebar from '@/components/dashboard/Sidebar';
 
@@ -116,7 +118,9 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         className="flex min-h-0 h-[100dvh] w-full overflow-hidden"
         style={{ backgroundColor: DARK_THEME.bg_primary, color: DARK_THEME.text_primary }}
       >
-        <div className="min-h-0 min-w-0 flex-1 overflow-hidden">{children}</div>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
+          {children}
+        </div>
       </div>
     );
   }
@@ -144,7 +148,9 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           </header>
         )}
 
-        <div className="min-h-0 min-w-0 flex-1 overflow-hidden">{children}</div>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
+          {children}
+        </div>
 
         {mobileDrawerOpen && (
           <>
@@ -179,30 +185,28 @@ export default function DashboardShell({ children }: { children: React.ReactNode
       className="flex min-h-0 h-[100dvh] w-full overflow-hidden"
       style={{ backgroundColor: DARK_THEME.bg_primary, color: DARK_THEME.text_primary }}
     >
-      <div
-        className={cn(
-          'shrink-0 overflow-hidden border-r',
-          desktopExpanded
-            ? 'transition-[width] duration-[250ms] ease-out'
-            : 'transition-[width] duration-200 ease-in',
-        )}
-        style={{
+      <motion.div
+        className="shrink-0 overflow-hidden border-r"
+        style={{ borderColor: DARK_THEME.border_default }}
+        initial={false}
+        animate={{
           width: railWidth,
           minWidth: railWidth,
           maxWidth: railWidth,
-          borderColor: DARK_THEME.border_default,
-          transitionProperty: 'width, min-width, max-width',
         }}
+        transition={TRANSITIONS.layout}
       >
         <DashboardSidebar
           layout={desktopExpanded ? 'expanded' : 'collapsed'}
           onCollapse={collapseDesktop}
           onExpand={expandDesktop}
         />
-      </div>
+      </motion.div>
 
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -59,22 +59,22 @@ export default function SettingsAccountPage() {
   }
 
   if (!isAuthenticated) {
-    return <p className="text-sm text-txt-tertiary">Sign in to manage your account.</p>;
+    return <p className="text-sm text-gray-600 dark:text-white/40">Sign in to manage your account.</p>;
   }
 
   return (
-    <div className="mx-auto max-w-container-narrow space-y-10 pb-8">
+    <div className="mx-auto max-w-container-narrow flex-1 space-y-10 pb-8">
       <SettingSection title="User ID" description="Your unique identifier. Useful for support.">
         <div className="flex flex-wrap items-center gap-2">
-          <code className="field-input flex-1 min-w-0 overflow-x-auto font-mono text-xs text-txt-secondary">
+          <code className="field-input flex-1 min-w-0 overflow-x-auto font-mono text-xs text-gray-700 dark:text-white/70">
             {userId}
           </code>
           <button
             type="button"
             onClick={copyId}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-2 px-3 py-2 text-sm text-txt-primary hover:bg-surface-2/80"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-white/[0.05] dark:text-white/80 dark:hover:bg-white/[0.08]"
           >
-            {copied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
+            {copied ? <Check size={16} className="text-emerald-600 dark:text-emerald-500" /> : <Copy size={16} />}
             {copied ? 'Copied' : 'Copy'}
           </button>
         </div>
@@ -86,7 +86,7 @@ export default function SettingsAccountPage() {
         <button
           type="button"
           onClick={onSignOut}
-          className="rounded-lg border border-border-subtle bg-surface-2 px-4 py-2 text-sm font-medium text-txt-primary hover:bg-surface-2/80"
+          className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-white/[0.05] dark:text-white/80 dark:hover:bg-white/[0.08]"
         >
           Sign out
         </button>
@@ -105,7 +105,7 @@ export default function SettingsAccountPage() {
             setAcctPhrase('');
             setAcctErr(null);
           }}
-          className="rounded-lg border border-[rgba(248,113,113,0.3)] bg-transparent px-4 py-2 text-sm font-medium text-[#f87171] hover:bg-[rgba(248,113,113,0.08)]"
+          className="rounded-lg border border-red-300 bg-transparent px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10"
         >
           Delete account
         </button>
@@ -121,20 +121,18 @@ export default function SettingsAccountPage() {
             if (e.target === e.currentTarget) setAcctOpen(false);
           }}
         >
-          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-border-subtle bg-surface-raised p-6 shadow-xl">
-            <h3 id="del-acct-title" className="text-base font-medium text-txt-primary">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-gray-200 bg-white p-6 shadow-xl dark:border-white/[0.08] dark:bg-[#14141a]">
+            <h3 id="del-acct-title" className="text-base font-medium text-gray-900 dark:text-white">
               Delete your account?
             </h3>
-            <p className="mt-2 text-sm text-txt-tertiary">
-              This will permanently remove:
-            </p>
-            <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-txt-secondary">
+            <p className="mt-2 text-sm text-gray-500 dark:text-white/40">This will permanently remove:</p>
+            <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-gray-600 dark:text-white/50">
               <li>Your profile and preferences</li>
               <li>All simulations, messages, and verdicts</li>
               <li>Conversation history tied to your account</li>
               <li>Billing subscription data</li>
             </ul>
-            <label className="mb-2 mt-4 block text-xs font-medium text-txt-secondary">
+            <label className="mb-2 mt-4 block text-xs font-medium text-gray-700 dark:text-white/60">
               Type DELETE MY ACCOUNT to confirm
             </label>
             <input
@@ -144,12 +142,12 @@ export default function SettingsAccountPage() {
               autoComplete="off"
               placeholder="DELETE MY ACCOUNT"
             />
-            {acctErr && <p className="mb-3 text-sm text-red-400/90">{acctErr}</p>}
+            {acctErr && <p className="mb-3 text-sm text-red-600 dark:text-red-400/90">{acctErr}</p>}
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setAcctOpen(false)}
-                className="rounded-lg px-3 py-2 text-sm text-txt-secondary hover:bg-surface-2"
+                className="rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-white/50 dark:hover:bg-white/[0.06]"
               >
                 Cancel
               </button>

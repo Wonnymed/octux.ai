@@ -8,6 +8,7 @@ import { Settings, Globe, Gem, LogOut, Sun, Moon, Monitor } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useBillingStore } from '@/lib/store/billing';
 import { useThemeStore, type ThemeMode } from '@/lib/store/theme';
+import { TRANSITIONS } from '@/lib/design/transitions';
 import type { TierType } from '@/lib/billing/tiers';
 
 function initialsFromUser(user: { email?: string | null; user_metadata?: { full_name?: string } } | null) {
@@ -21,12 +22,6 @@ function planLabel(t: TierType) {
   if (t === 'free') return 'Free';
   if (t === 'pro') return 'Pro';
   return 'Max';
-}
-
-function planPillClass(t: TierType): { bg: string; fg: string } {
-  if (t === 'free') return { bg: 'rgba(255,255,255,0.08)', fg: 'rgba(255,255,255,0.55)' };
-  if (t === 'pro') return { bg: 'rgba(232,89,60,0.2)', fg: '#e8a090' };
-  return { bg: 'rgba(234,179,8,0.18)', fg: '#facc15' };
 }
 
 const MENU_SURFACE = 'rgba(15,15,20,0.97)';
@@ -76,7 +71,6 @@ export default function UserProfilePopover({ variant = 'full' }: { variant?: 'fu
 
   const name = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Account';
   const email = user?.email || '';
-  const pill = planPillClass(tier);
 
   const isRail = variant === 'rail';
 
@@ -123,23 +117,11 @@ export default function UserProfilePopover({ variant = 'full' }: { variant?: 'fu
               {initialsFromUser(user)}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-medium text-white/90">{name}</p>
-              {email ? (
-                <p className="truncate text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                  {email}
-                </p>
-              ) : null}
-              <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                <span
-                  className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-                  style={{ backgroundColor: pill.bg, color: pill.fg }}
-                >
-                  {planLabel(tier)}
-                </span>
-                <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                  {tokensRemaining} tokens left
-                </span>
-              </div>
+              <p className="truncate text-[13px] font-medium text-white/80">{name}</p>
+              {email ? <p className="truncate text-[11px] text-white/30">{email}</p> : null}
+              <p className="mt-0.5 text-[11px] text-white/25">
+                {planLabel(tier)} · {tokensRemaining} tokens left
+              </p>
             </div>
           </>
         )}
@@ -150,8 +132,8 @@ export default function UserProfilePopover({ variant = 'full' }: { variant?: 'fu
           <motion.div
             initial={isRail ? { opacity: 0, x: -8 } : { opacity: 0, y: 8 }}
             animate={isRail ? { opacity: 1, x: 0 } : { opacity: 1, y: 0 }}
-            exit={isRail ? { opacity: 0, x: -8 } : { opacity: 0, y: 8 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            exit={isRail ? { opacity: 0, x: -4 } : { opacity: 0, y: 4 }}
+            transition={TRANSITIONS.component}
             className={
               isRail
                 ? 'absolute bottom-0 left-[calc(100%+8px)] z-[90] w-[min(288px,calc(100vw-80px))] overflow-hidden rounded-[10px] p-1 shadow-[0_8px_30px_rgba(0,0,0,0.35)]'

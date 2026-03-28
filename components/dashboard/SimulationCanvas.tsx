@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useDashboardUiStore } from '@/lib/store/dashboard-ui';
 import { useSimulationStore } from '@/lib/store/simulation';
 import { useDeepDiveStore } from '@/lib/store/deep-dive';
@@ -9,6 +10,7 @@ import { createSimulationRenderer } from '@/lib/canvas/simulation-renderer';
 import { getClickedSpecialistAgentId } from '@/lib/canvas/specialist-hit-test';
 import { DARK_THEME } from '@/lib/dashboard/theme';
 import { cn } from '@/lib/design/cn';
+import { TRANSITIONS } from '@/lib/design/transitions';
 import type { CanvasSimStatus } from '@/lib/canvas/types';
 import VerdictPanel from '@/components/dashboard/VerdictPanel';
 import DeepDivePanel from '@/components/dashboard/DeepDivePanel';
@@ -38,6 +40,7 @@ export default function SimulationCanvas() {
   const activeChargeType = useSimulationStore((s) => s.activeChargeType);
 
   const deepDiveOpen = useDeepDiveStore((s) => s.isOpen);
+  const activeMode = useDashboardUiStore((s) => s.activeMode);
 
   const getSnapshot = useCallback(() => {
     const dash = useDashboardUiStore.getState();
@@ -122,7 +125,7 @@ export default function SimulationCanvas() {
     <div
       ref={containerRef}
       className={cn(
-        'relative min-h-0 flex-1 overflow-hidden transition-[padding] duration-300 ease-out',
+        'relative min-h-0 flex-1 overflow-hidden transition-[padding] duration-200 ease-out',
         deepDiveOpen && 'pr-[min(380px,40vw)]',
       )}
     >
@@ -139,9 +142,17 @@ export default function SimulationCanvas() {
       <VerdictPanel visible={showFullVerdict} />
       <DeepDivePanel />
 
-      {showOverlays && (
-        <>
-          <div className="pointer-events-none absolute left-3 top-3 z-10 flex flex-wrap items-center gap-2">
+      <AnimatePresence initial={false}>
+        {showOverlays && (
+          <motion.div
+            key={activeMode}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={TRANSITIONS.component}
+            className="pointer-events-none absolute inset-0 z-10"
+          >
+          <div className="pointer-events-none absolute left-3 top-3 flex flex-wrap items-center gap-2">
             <span
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide',
@@ -242,7 +253,7 @@ export default function SimulationCanvas() {
               )}
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
                 <div
-                  className="h-full rounded-full transition-all duration-500"
+                  className="h-full rounded-full transition-all duration-200 ease-out"
                   style={{
                     width: `${Math.min(100, Math.max(0, snap.verdict.probability ?? 0))}%`,
                     backgroundColor: DARK_THEME.accent,
@@ -284,8 +295,9 @@ export default function SimulationCanvas() {
               );
             })}
           </div>
-        </>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

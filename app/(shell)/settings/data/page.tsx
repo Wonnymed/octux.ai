@@ -60,11 +60,11 @@ export default function SettingsDataPage() {
   }
 
   if (!isAuthenticated) {
-    return <p className="text-sm text-txt-tertiary">Sign in to export or delete data.</p>;
+    return <p className="text-sm text-gray-600 dark:text-white/40">Sign in to export or delete data.</p>;
   }
 
   return (
-    <div className="mx-auto max-w-container-narrow space-y-10 pb-8">
+    <div className="mx-auto max-w-container-narrow flex-1 space-y-10 pb-8">
       <SettingSection
         title="Export your data"
         description="Download all your conversations, simulations, and verdicts as JSON."
@@ -73,7 +73,7 @@ export default function SettingsDataPage() {
           type="button"
           onClick={exportData}
           disabled={exporting}
-          className="rounded-lg border border-border-subtle bg-surface-2 px-4 py-2 text-sm font-medium text-txt-primary hover:bg-surface-2/80 disabled:opacity-50"
+          className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.05] dark:text-white/70 dark:hover:bg-white/[0.08]"
         >
           {exporting ? 'Preparing…' : 'Export all data'}
         </button>
@@ -92,7 +92,7 @@ export default function SettingsDataPage() {
             setDelPhrase('');
             setDelErr(null);
           }}
-          className="rounded-lg border border-[rgba(248,113,113,0.3)] bg-transparent px-4 py-2 text-sm font-medium text-[#f87171] hover:bg-[rgba(248,113,113,0.08)]"
+          className="rounded-lg border border-red-300 bg-transparent px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10"
         >
           Delete all simulations
         </button>
@@ -108,19 +108,22 @@ export default function SettingsDataPage() {
             if (e.target === e.currentTarget) setDelOpen(false);
           }}
         >
-          <div className="w-full max-w-md rounded-xl border border-border-subtle bg-surface-raised p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-xl dark:border-white/[0.08] dark:bg-[#14141a]">
             <div className="mb-4 flex gap-3">
               <AlertTriangle className="h-5 w-5 shrink-0 text-amber-500" />
               <div>
-                <h3 id="del-conv-title" className="text-base font-medium text-txt-primary">
+                <h3 id="del-conv-title" className="text-base font-medium text-gray-900 dark:text-white">
                   Delete all simulations?
                 </h3>
-                <p className="mt-1 text-sm text-txt-tertiary">
-                  This removes every simulation and related messages from Octux. Exported files are not affected until you delete your account.
+                <p className="mt-1 text-sm text-gray-500 dark:text-white/40">
+                  This removes every simulation and related messages from Octux. Exported files are not affected
+                  until you delete your account.
                 </p>
               </div>
             </div>
-            <label className="mb-2 block text-xs font-medium text-txt-secondary">Type DELETE to confirm</label>
+            <label className="mb-2 block text-xs font-medium text-gray-700 dark:text-white/60">
+              Type DELETE to confirm
+            </label>
             <input
               className="field-input mb-4 w-full text-sm"
               value={delPhrase}
@@ -128,12 +131,12 @@ export default function SettingsDataPage() {
               autoComplete="off"
               placeholder="DELETE"
             />
-            {delErr && <p className="mb-3 text-sm text-red-400/90">{delErr}</p>}
+            {delErr && <p className="mb-3 text-sm text-red-600 dark:text-red-400/90">{delErr}</p>}
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setDelOpen(false)}
-                className="rounded-lg px-3 py-2 text-sm text-txt-secondary hover:bg-surface-2"
+                className="rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-white/50 dark:hover:bg-white/[0.06]"
               >
                 Cancel
               </button>

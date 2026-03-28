@@ -122,7 +122,7 @@ export default function DashboardSidebar({
                   strokeWidth={1.5}
                   className={cn(
                     'transition-colors',
-                    active ? '' : 'text-white/[0.35] group-hover:text-white/60',
+                    active ? '' : 'text-white/40 group-hover:text-white/50',
                   )}
                   style={active ? { color: m.accent } : undefined}
                 />
@@ -185,8 +185,7 @@ export default function DashboardSidebar({
         <button
           type="button"
           onClick={newSimulation}
-          className="w-full rounded-[10px] border py-2.5 text-[13px] font-medium transition-colors hover:bg-white/[0.04]"
-          style={{ borderColor: DARK_THEME.border_default, color: DARK_THEME.text_primary }}
+          className="w-full rounded-[10px] border border-white/[0.1] py-2.5 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/[0.04]"
         >
           + New simulation
         </button>
@@ -210,10 +209,8 @@ export default function DashboardSidebar({
               border: '1px solid transparent',
             }}
           >
-            <p className="text-[12px] font-semibold text-white/90">Upgrade to Pro — $29/mo</p>
-            <p className="mt-0.5 text-[10px]" style={{ color: DARK_THEME.text_secondary }}>
-              Unlimited specialist sims
-            </p>
+            <p className="text-[13px] font-semibold text-white/80">Upgrade to Pro — $29/mo</p>
+            <p className="mt-0.5 text-[11px] text-white/35">Unlimited specialist sims</p>
           </Link>
         </div>
       )}

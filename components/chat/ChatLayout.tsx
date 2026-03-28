@@ -10,6 +10,7 @@ import Sidebar from '@/components/sidebar/Sidebar';
 import DashboardShell from '@/components/dashboard/DashboardShell';
 import LandingNav from '@/components/landing/LandingNav';
 import GuestMobileDrawer from '@/components/landing/GuestMobileDrawer';
+import { PageTransition } from '@/components/transitions/PageTransition';
 import { Menu } from 'lucide-react';
 
 /** Matches Tailwind `md:` — sidebar is overlay below this width */
@@ -133,7 +134,7 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
             tabIndex={-1}
             className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto outline-none focus:outline-none supports-[padding:max(0px)]:pb-[max(0px,env(safe-area-inset-bottom))]"
           >
-            {children}
+            <PageTransition>{children}</PageTransition>
           </main>
         </DashboardShell>
       </div>
@@ -195,7 +196,7 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
           </header>
         )}
 
-        {children}
+        <PageTransition>{children}</PageTransition>
       </main>
 
       {/* Mobile: full-screen overlay + drawer from the left */}
