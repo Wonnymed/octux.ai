@@ -1,10 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { cn } from '@/lib/design/cn';
 import { OctButton } from '@/components/octux';
 import { openAuthModal } from '@/lib/auth/openAuthModal';
 
-export default function LiveExample() {
+export default function LiveExample({ forLoggedInUser = false }: { forLoggedInUser?: boolean }) {
   const verdict = {
     question: 'Should I open a coffee shop in Gangnam, Seoul?',
     recommendation: 'PROCEED',
@@ -96,9 +97,18 @@ export default function LiveExample() {
 
           {/* CTA */}
           <div className="px-6 py-4 border-t border-border-subtle text-center bg-accent-subtle/30">
-            <OctButton variant="default" size="md" onClick={() => openAuthModal({ tab: 'signup' })}>
-              Try your own decision &rarr;
-            </OctButton>
+            {forLoggedInUser ? (
+              <Link
+                href="/"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-radius-md bg-accent px-6 text-sm font-semibold text-txt-on-accent transition-colors hover:bg-accent-hover"
+              >
+                Start a simulation &rarr;
+              </Link>
+            ) : (
+              <OctButton variant="default" size="md" onClick={() => openAuthModal({ tab: 'signup' })}>
+                Try your own decision &rarr;
+              </OctButton>
+            )}
           </div>
         </div>
       </div>

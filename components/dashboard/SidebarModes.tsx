@@ -6,7 +6,8 @@ import { motion } from 'framer-motion';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/design/cn';
 import { TRANSITIONS } from '@/lib/design/transitions';
-import type { DashboardMode } from '@/lib/store/dashboard-ui';
+import { useDashboardUiStore, type DashboardMode } from '@/lib/store/dashboard-ui';
+import { useSimulationStore } from '@/lib/store/simulation';
 
 export const DASHBOARD_SIDEBAR_MODES: {
   id: DashboardMode;
@@ -56,6 +57,10 @@ export default function SidebarModes({
   const pathname = usePathname();
 
   function handleModeClick(mode: DashboardMode) {
+    if (mode === activeMode && pathname === '/') {
+      useDashboardUiStore.getState().resetSession();
+      useSimulationStore.getState().reset();
+    }
     onSelect(mode);
     if (pathname !== '/') {
       router.push('/');

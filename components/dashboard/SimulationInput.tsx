@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useCallback } from 'react';
+import { X } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import { DARK_THEME } from '@/lib/dashboard/theme';
 import { getTokenCost } from '@/lib/billing/token-costs';
@@ -10,6 +11,7 @@ import {
   type DashboardMode,
 } from '@/lib/store/dashboard-ui';
 import { useBillingStore } from '@/lib/store/billing';
+import { useSimulationStore } from '@/lib/store/simulation';
 import type { TierType } from '@/lib/billing/tiers';
 
 const CHIPS: Record<DashboardMode, string[]> = {
@@ -82,6 +84,7 @@ export default function SimulationInput({
   const inputB = useDashboardUiStore((s) => s.inputB);
   const setInputA = useDashboardUiStore((s) => s.setInputA);
   const setInputB = useDashboardUiStore((s) => s.setInputB);
+  const resetSession = useDashboardUiStore((s) => s.resetSession);
 
   const tokensRemaining = useBillingStore((s) => s.tokensRemaining);
   const canAffordMode = useBillingStore((s) => s.canAffordMode);
@@ -112,6 +115,16 @@ export default function SimulationInput({
     setSpecialistBlockedHint(false);
     setActiveTier('specialist');
   }, [freeUser, setActiveTier]);
+
+  const hasInput =
+    Boolean(inputA.trim()) || (activeMode === 'compare' && Boolean(inputB.trim()));
+
+  const handleClear = useCallback(() => {
+    if (loading) return;
+    setSpecialistBlockedHint(false);
+    resetSession();
+    useSimulationStore.getState().reset();
+  }, [loading, resetSession]);
 
   const messageForSubmit = useMemo(() => {
     if (activeMode === 'compare') {
@@ -163,21 +176,44 @@ export default function SimulationInput({
           />
         </div>
       ) : (
-        <div className="mx-auto w-full max-w-[720px]">
+        <div className="relative mx-auto w-full max-w-[720px]">
           <textarea
             data-chat-input
             value={inputA}
             onChange={(e) => setInputA(e.target.value)}
             placeholder={PLACEHOLDER[activeMode]}
             rows={2}
-            className="w-full resize-none rounded-xl border px-4 py-3 text-[13px] leading-relaxed text-white/90 outline-none transition-colors placeholder:text-white/25 focus:border-white/20"
+            className="w-full resize-none rounded-xl border py-3 pl-4 pr-10 text-[13px] leading-relaxed text-white/90 outline-none transition-colors placeholder:text-white/25 focus:border-white/20"
             style={{
               backgroundColor: DARK_THEME.bg_surface,
               borderColor: DARK_THEME.border_default,
             }}
           />
+          {hasInput && !loading ? (
+            <button
+              type="button"
+              aria-label="Clear input"
+              onClick={handleClear}
+              className="absolute right-2 top-2 rounded-md p-1 text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white/65"
+            >
+              <X size={16} strokeWidth={2} />
+            </button>
+          ) : null}
         </div>
       )}
+
+      {activeMode === 'compare' && hasInput && !loading ? (
+        <div className="mx-auto flex w-full max-w-[720px] justify-end">
+          <button
+            type="button"
+            onClick={handleClear}
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-white/40 transition-colors hover:text-white/65"
+          >
+            <X size={12} strokeWidth={2} aria-hidden />
+            Clear
+          </button>
+        </div>
+      ) : null}
 
       <div className="mx-auto flex w-full max-w-[720px] flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">

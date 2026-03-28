@@ -3,11 +3,10 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { PanelLeftClose, Plus, Gem } from 'lucide-react';
+import { PanelLeftClose, Home, Gem } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import { useBillingStore } from '@/lib/store/billing';
 import { useDashboardUiStore, type DashboardMode } from '@/lib/store/dashboard-ui';
-import { useSimulationStore } from '@/lib/store/simulation';
 import { DARK_THEME } from '@/lib/dashboard/theme';
 import SidebarModes, { DASHBOARD_SIDEBAR_MODES } from '@/components/dashboard/SidebarModes';
 import SidebarHistory from '@/components/dashboard/SidebarHistory';
@@ -31,7 +30,6 @@ export default function DashboardSidebar({
 
   const activeMode = useDashboardUiStore((s) => s.activeMode);
   const setActiveMode = useDashboardUiStore((s) => s.setActiveMode);
-  const resetSession = useDashboardUiStore((s) => s.resetSession);
   const setActiveTier = useDashboardUiStore((s) => s.setActiveTier);
 
   useEffect(() => {
@@ -43,13 +41,6 @@ export default function DashboardSidebar({
       setActiveTier('swarm');
     }
   }, [tier, setActiveTier]);
-
-  const newSimulation = () => {
-    resetSession();
-    useSimulationStore.getState().reset();
-    setActiveMode('simulate');
-    router.push('/');
-  };
 
   const selectMode = (mode: DashboardMode) => {
     setActiveMode(mode);
@@ -86,15 +77,14 @@ export default function DashboardSidebar({
         </div>
 
         <div className="mt-3 flex w-full flex-col items-center px-2">
-          <button
-            type="button"
-            title="New simulation"
-            aria-label="New simulation"
-            onClick={newSimulation}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 text-white/80 transition-colors hover:bg-white/[0.06]"
+          <Link
+            href="/home"
+            title="Home"
+            aria-label="Home"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white/80"
           >
-            <Plus size={18} strokeWidth={1.75} />
-          </button>
+            <Home size={18} strokeWidth={1.75} />
+          </Link>
         </div>
 
         <div className="mt-1 flex w-full flex-col items-stretch px-0">
@@ -182,13 +172,13 @@ export default function DashboardSidebar({
       </div>
 
       <div className="px-3 pt-3">
-        <button
-          type="button"
-          onClick={newSimulation}
-          className="w-full rounded-[10px] border border-white/[0.1] py-2.5 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/[0.04]"
+        <Link
+          href="/home"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.08] px-3 py-2.5 text-[13px] font-medium text-white/60 transition-all hover:bg-white/[0.04] hover:text-white/70"
         >
-          + New simulation
-        </button>
+          <Home size={16} strokeWidth={1.5} />
+          Home
+        </Link>
       </div>
 
       <div className="mt-4 min-h-0 flex flex-1 flex-col">

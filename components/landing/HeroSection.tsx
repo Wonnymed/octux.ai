@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Link from 'next/link';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
@@ -15,11 +16,18 @@ const TRY_CHIPS = [
 interface HeroSectionProps {
   /** When false, submit runs a simulation. When true, all actions open sign-up and optional question is stored for the dashboard. */
   requireAuth?: boolean;
+  /** Logged-in marketing (/home): headline + CTA to dashboard only — no hero input. */
+  forLoggedInUser?: boolean;
   onSubmit?: (message: string) => void;
   loading?: boolean;
 }
 
-export default function HeroSection({ requireAuth = false, onSubmit, loading = false }: HeroSectionProps) {
+export default function HeroSection({
+  requireAuth = false,
+  forLoggedInUser = false,
+  onSubmit,
+  loading = false,
+}: HeroSectionProps) {
   const [input, setInput] = useState('');
   const sectionRef = useRef<HTMLElement>(null);
   const heroInView = useInView(sectionRef, { once: true, margin: '-40px' });
@@ -81,67 +89,84 @@ export default function HeroSection({ requireAuth = false, onSubmit, loading = f
           <span className="text-txt-primary font-medium">Verdict in ~60 seconds.</span>
         </p>
 
-        <div className="mx-auto mt-10 w-full max-w-lg">
-          <label htmlFor="hero-decision" className="sr-only">
-            What business decision are you facing?
-          </label>
-          <div
-            className={cn(
-              'rounded-2xl border border-border-subtle bg-surface-raised shadow-[0_2px_20px_rgba(15,23,42,0.06)]',
-              'focus-within:border-accent/35 focus-within:ring-2 focus-within:ring-accent/15',
-            )}
-          >
-            <textarea
-              id="hero-decision"
-              rows={3}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  run();
-                }
-              }}
-              placeholder="What business decision are you facing?"
-              disabled={loading}
-              className="w-full resize-none rounded-t-2xl bg-transparent px-5 py-4 text-[15px] leading-relaxed text-txt-primary outline-none placeholder:text-txt-tertiary/90 disabled:opacity-60"
-            />
-            <div className="flex flex-col gap-2 border-t border-border-subtle/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-end">
-              <button
-                type="button"
-                onClick={run}
-                disabled={loading || (!requireAuth && !input.trim())}
+        {forLoggedInUser ? (
+          <div className="mx-auto mt-10">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-txt-on-accent transition-colors hover:bg-accent-hover"
+            >
+              Start a simulation
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </div>
+        ) : null}
+
+        {!forLoggedInUser ? (
+          <>
+            <div className="mx-auto mt-10 w-full max-w-lg">
+              <label htmlFor="hero-decision" className="sr-only">
+                What business decision are you facing?
+              </label>
+              <div
                 className={cn(
-                  'inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors sm:w-auto',
-                  (requireAuth || input.trim()) && !loading
-                    ? 'bg-accent text-txt-on-accent hover:bg-accent-hover'
-                    : 'cursor-not-allowed bg-surface-2 text-txt-disabled',
+                  'rounded-2xl border border-border-subtle bg-surface-raised shadow-[0_2px_20px_rgba(15,23,42,0.06)]',
+                  'focus-within:border-accent/35 focus-within:ring-2 focus-within:ring-accent/15',
                 )}
               >
-                {loading ? 'Starting…' : 'Run free simulation'}
-                {!loading && <ArrowRight className="h-4 w-4" aria-hidden />}
-              </button>
+                <textarea
+                  id="hero-decision"
+                  rows={3}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      run();
+                    }
+                  }}
+                  placeholder="What business decision are you facing?"
+                  disabled={loading}
+                  className="w-full resize-none rounded-t-2xl bg-transparent px-5 py-4 text-[15px] leading-relaxed text-txt-primary outline-none placeholder:text-txt-tertiary/90 disabled:opacity-60"
+                />
+                <div className="flex flex-col gap-2 border-t border-border-subtle/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={run}
+                    disabled={loading || (!requireAuth && !input.trim())}
+                    className={cn(
+                      'inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors sm:w-auto',
+                      (requireAuth || input.trim()) && !loading
+                        ? 'bg-accent text-txt-on-accent hover:bg-accent-hover'
+                        : 'cursor-not-allowed bg-surface-2 text-txt-disabled',
+                    )}
+                  >
+                    {loading ? 'Starting…' : 'Run free simulation'}
+                    {!loading && <ArrowRight className="h-4 w-4" aria-hidden />}
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <p className="mt-6 text-xs text-txt-tertiary">
-          Try:{' '}
-          {TRY_CHIPS.map((chip, i) => (
-            <span key={chip}>
-              {i > 0 && ' · '}
-              <button
-                type="button"
-                className="text-txt-secondary underline decoration-border-subtle underline-offset-2 transition-colors hover:text-accent"
-                onClick={() => runChip(chip)}
-              >
-                {chip}
-              </button>
-            </span>
-          ))}
-        </p>
+            <p className="mt-6 text-xs text-txt-tertiary">
+              Try:{' '}
+              {TRY_CHIPS.map((chip, i) => (
+                <span key={chip}>
+                  {i > 0 && ' · '}
+                  <button
+                    type="button"
+                    className="text-txt-secondary underline decoration-border-subtle underline-offset-2 transition-colors hover:text-accent"
+                    onClick={() => runChip(chip)}
+                  >
+                    {chip}
+                  </button>
+                </span>
+              ))}
+            </p>
+          </>
+        ) : null}
       </div>
 
+      {!forLoggedInUser ? (
       <motion.div
         aria-hidden
         className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-txt-tertiary"
@@ -154,6 +179,7 @@ export default function HeroSection({ requireAuth = false, onSubmit, loading = f
           </svg>
         </div>
       </motion.div>
+      ) : null}
     </motion.section>
   );
 }

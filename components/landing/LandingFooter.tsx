@@ -11,3 +11,14 @@ export default function LandingFooter() {
     />
   );
 }
+
+/** Logged-in /home: CTA goes to dashboard; footer links navigate normally (no auth wall). */
+export function LandingFooterLoggedIn() {
+  return (
+    <GlobalFooter
+      ctaLabel="Start a simulation"
+      ctaHref="/"
+      oneLiner="Business simulation engine — 10 specialists debating your decisions in seconds."
+    />
+  );
+}
