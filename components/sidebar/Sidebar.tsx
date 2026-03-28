@@ -14,6 +14,7 @@ import {
   ChevronRight,
   LogIn,
   LogOut,
+  FolderKanban,
 } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import { useAppStore, type ConversationSummary } from '@/lib/store/app';
@@ -33,10 +34,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/shadcn/dropdown-menu';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/shadcn/hover-card';
 import { Skeleton } from '@/components/ui/shadcn/skeleton';
 import ConversationContextMenu from './ConversationContextMenu';
 import InlineRename from './InlineRename';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggle';
+import { useProjects } from '@/app/lib/useProjects';
 
 const ICON_STROKE = 1.5;
 /** Expanded rail — Okara-scale width (matches --sidebar-width-expanded) */
@@ -48,6 +51,9 @@ const TOP_BAR_H = 'h-12';
 const TOP_BAR_PAD = 'px-3 sm:px-4';
 /** Claude-style nav: compact icons */
 const NAV_ICON = 18;
+/** Match conversation title styling in the history list */
+const NAV_LABEL_CLASS =
+  'flex-1 text-left text-[13px] font-medium leading-[1.4] tracking-[-0.01em] text-txt-primary';
 
 /** Okara flyout order: Compare → Risk Matrix → Templates → Journal */
 const TOOLS_FLYOUT_ORDER = ['compare', 'risk-matrix', 'templates', 'journal'] as const;
@@ -84,6 +90,7 @@ function SidebarCollapsed() {
 
   const toolsActive = pathname.startsWith('/tools');
   const agentLabActive = pathname === '/agents';
+  const projectsNavActive = pathname === '/projects' || pathname.startsWith('/projects/');
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -123,6 +130,7 @@ function SidebarCollapsed() {
         </CollapsedIconButton>
 
         <ToolsFlyoutMenu pathname={pathname} variant="collapsed" toolsActive={toolsActive} />
+        <ProjectsFlyoutMenu variant="collapsed" projectsActive={projectsNavActive} />
 
         <div className="min-h-2 flex-1" />
 
@@ -160,7 +168,7 @@ function CollapsedIconButton({
             'mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors duration-150',
             active
               ? 'bg-accent-subtle text-txt-primary'
-              : 'text-txt-tertiary hover:bg-surface-2 hover:text-txt-secondary',
+              : 'text-txt-primary/70 hover:bg-surface-2 hover:text-txt-primary',
           )}
         >
           {children}
@@ -212,6 +220,7 @@ function SidebarExpanded() {
   const newChatActive = pathname === '/';
   const agentLabActive = pathname === '/agents';
   const toolsNavActive = pathname.startsWith('/tools');
+  const projectsNavActive = pathname === '/projects' || pathname?.startsWith('/projects/');
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -251,6 +260,7 @@ function SidebarExpanded() {
             onClick={() => router.push('/agents')}
           />
           <ToolsFlyoutMenu pathname={pathname} variant="expanded" toolsActive={toolsNavActive} />
+          <ProjectsFlyoutMenu variant="expanded" projectsActive={projectsNavActive} />
         </div>
 
         <div className="mx-3 my-2 h-px bg-border-subtle/80" />
@@ -364,16 +374,20 @@ function NavItemButton({
       className={cn(
         'flex h-8 w-full items-center gap-2 rounded-lg px-2 text-left transition-colors duration-150',
         active
-          ? 'bg-surface-2 text-txt-primary'
-          : 'text-txt-secondary hover:bg-surface-2/80 hover:text-txt-primary',
+          ? 'bg-surface-2'
+          : 'hover:bg-[#f0efea]/80 dark:hover:bg-surface-2/80',
       )}
     >
       <Icon
         size={NAV_ICON}
         strokeWidth={ICON_STROKE}
-        className={cn('shrink-0 opacity-80', active ? 'text-txt-primary opacity-100' : 'text-txt-tertiary', iconClassName)}
+        className={cn(
+          'shrink-0 text-txt-primary',
+          active ? 'opacity-100' : 'opacity-80',
+          iconClassName,
+        )}
       />
-      <span className="flex-1 text-[13px] font-normal leading-snug">{label}</span>
+      <span className={NAV_LABEL_CLASS}>{label}</span>
     </button>
   );
 }
@@ -387,8 +401,11 @@ function SidebarSectionHeading({ children }: { children: React.ReactNode }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Tools flyout — Dropdown to the right (Okara pattern)
+// Tools / Projects flyouts — HoverCard opens on hover (Claude-style)
 // ═══════════════════════════════════════════════════════════════════════════
+
+const FLYOUT_CONTENT_CLASS =
+  'z-[100] w-60 rounded-xl border border-border-default bg-surface-raised p-2 shadow-lg';
 
 function ToolsFlyoutMenu({
   pathname,
@@ -403,137 +420,221 @@ function ToolsFlyoutMenu({
   const tools = getToolsForFlyout();
   const [open, setOpen] = useState(false);
 
+  const panel = (
+    <>
+      <div className="mb-1 flex items-center gap-2 px-2 py-1.5">
+        <Settings2 size={14} className="text-txt-secondary" strokeWidth={ICON_STROKE} />
+        <span className="text-[12px] font-medium text-txt-tertiary">Tools</span>
+      </div>
+      {tools.map((tool) => {
+        const Icon = tool.icon;
+        const active = pathname === tool.href || pathname?.startsWith(`${tool.href}/`);
+        return (
+          <button
+            key={tool.href}
+            type="button"
+            onClick={() => {
+              router.push(tool.href);
+              setOpen(false);
+            }}
+            className={cn(
+              'flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-surface-2/80',
+              active ? 'bg-accent-subtle' : '',
+            )}
+          >
+            <div
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+              style={{ backgroundColor: `${tool.color}18` }}
+            >
+              <Icon size={14} style={{ color: tool.color }} strokeWidth={ICON_STROKE} />
+            </div>
+            <span className="text-[13px] text-txt-secondary">{tool.name}</span>
+          </button>
+        );
+      })}
+    </>
+  );
+
   if (variant === 'expanded') {
     return (
-      <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
+      <HoverCard open={open} onOpenChange={setOpen} openDelay={0} closeDelay={120}>
+        <HoverCardTrigger asChild>
           <button
             type="button"
             className={cn(
               'flex h-8 w-full items-center gap-2 rounded-lg px-2 text-left transition-colors duration-150',
               toolsActive || open
-                ? 'bg-surface-2 text-txt-primary'
-                : 'text-txt-secondary hover:bg-surface-2/80 hover:text-txt-primary',
+                ? 'bg-surface-2'
+                : 'hover:bg-[#f0efea]/80 dark:hover:bg-surface-2/80',
             )}
           >
             <Settings2
               size={NAV_ICON}
               strokeWidth={ICON_STROKE}
               className={cn(
-                'shrink-0 opacity-80',
-                toolsActive || open ? 'text-txt-primary opacity-100' : 'text-txt-tertiary',
+                'shrink-0 text-txt-primary',
+                toolsActive || open ? 'opacity-100' : 'opacity-80',
               )}
             />
-            <span className="flex-1 text-[13px] font-normal leading-snug">Tools</span>
+            <span className={NAV_LABEL_CLASS}>Tools</span>
             <ChevronRight
               size={14}
               strokeWidth={ICON_STROKE}
               className={cn('shrink-0 text-txt-disabled transition-transform duration-150', open && 'rotate-90')}
             />
           </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          side="right"
-          align="start"
-          sideOffset={8}
-          className="z-[100] w-60 rounded-xl border border-border-default bg-surface-raised p-2 shadow-lg"
-        >
-          <div className="mb-1 flex items-center gap-2 px-2 py-1.5">
-            <Settings2 size={14} className="text-txt-secondary" strokeWidth={ICON_STROKE} />
-            <span className="text-[12px] font-medium text-txt-tertiary">Tools</span>
-          </div>
-          {tools.map((tool) => {
-            const Icon = tool.icon;
-            const active = pathname === tool.href || pathname?.startsWith(`${tool.href}/`);
-            return (
-              <DropdownMenuItem
-                key={tool.href}
-                onSelect={() => {
-                  router.push(tool.href);
-                  setOpen(false);
-                }}
-                className={cn(
-                  'cursor-pointer rounded-lg p-0 focus:bg-transparent',
-                  active ? 'bg-accent-subtle' : '',
-                )}
-              >
-                <span className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-surface-2/80">
-                  <div
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: `${tool.color}18` }}
-                  >
-                    <Icon size={14} style={{ color: tool.color }} strokeWidth={ICON_STROKE} />
-                  </div>
-                  <span className="text-[13px] text-txt-secondary">{tool.name}</span>
-                </span>
-              </DropdownMenuItem>
-            );
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </HoverCardTrigger>
+        <HoverCardContent side="right" align="start" sideOffset={8} className={FLYOUT_CONTENT_CLASS}>
+          {panel}
+        </HoverCardContent>
+      </HoverCard>
     );
   }
 
   return (
-    <Tooltip>
-      <DropdownMenu open={open} onOpenChange={setOpen}>
-        <TooltipTrigger asChild>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className={cn(
-                'mb-1 flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-150',
-                toolsActive || open
-                  ? 'bg-accent-subtle text-txt-primary'
-                  : 'text-txt-tertiary hover:bg-surface-2 hover:text-txt-tertiary',
-              )}
-              aria-label="Tools"
-            >
-              <Settings2 size={NAV_ICON} strokeWidth={ICON_STROKE} />
-            </button>
-          </DropdownMenuTrigger>
-        </TooltipTrigger>
-        <DropdownMenuContent
-          side="right"
-          align="start"
-          sideOffset={8}
-          className="z-[100] w-60 rounded-xl border border-border-default bg-surface-raised p-2 shadow-lg"
+    <HoverCard open={open} onOpenChange={setOpen} openDelay={0} closeDelay={120}>
+      <HoverCardTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            'mb-1 flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-150',
+            toolsActive || open
+              ? 'bg-accent-subtle text-txt-primary'
+              : 'text-txt-primary/75 hover:bg-surface-2 hover:text-txt-primary',
+          )}
+          aria-label="Tools"
+          title="Tools"
         >
-          <div className="mb-1 flex items-center gap-2 px-2 py-1.5">
-            <Settings2 size={14} className="text-txt-secondary" strokeWidth={ICON_STROKE} />
-            <span className="text-[12px] font-medium text-txt-tertiary">Tools</span>
-          </div>
-          {tools.map((tool) => {
-            const Icon = tool.icon;
-            const active = pathname === tool.href || pathname?.startsWith(`${tool.href}/`);
-            return (
-              <DropdownMenuItem
-                key={tool.href}
-                onSelect={() => {
-                  router.push(tool.href);
-                  setOpen(false);
-                }}
-                className={cn(
-                  'cursor-pointer rounded-lg p-0 focus:bg-transparent',
-                  active ? 'bg-accent-subtle' : '',
-                )}
-              >
-                <span className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-surface-2/80">
-                  <div
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: `${tool.color}18` }}
-                  >
-                    <Icon size={14} style={{ color: tool.color }} strokeWidth={ICON_STROKE} />
-                  </div>
-                  <span className="text-[13px] text-txt-secondary">{tool.name}</span>
-                </span>
-              </DropdownMenuItem>
-            );
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <TooltipContent side="right">Tools</TooltipContent>
-    </Tooltip>
+          <Settings2 size={NAV_ICON} strokeWidth={ICON_STROKE} />
+        </button>
+      </HoverCardTrigger>
+      <HoverCardContent side="right" align="start" sideOffset={8} className={FLYOUT_CONTENT_CLASS}>
+        {panel}
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
+function ProjectsFlyoutMenu({
+  variant,
+  projectsActive,
+}: {
+  variant: 'expanded' | 'collapsed';
+  projectsActive: boolean;
+}) {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const { projects, loading, selectProject } = useProjects(isAuthenticated);
+  const [open, setOpen] = useState(false);
+
+  const recent = projects.slice(0, 8);
+
+  const panel = (
+    <>
+      <div className="mb-1 flex items-center gap-2 px-2 py-1.5">
+        <FolderKanban size={14} className="text-txt-secondary" strokeWidth={ICON_STROKE} />
+        <span className="text-[12px] font-medium text-txt-tertiary">Projects</span>
+      </div>
+      {!isAuthenticated ? (
+        <p className="px-2.5 py-2 text-[12px] leading-snug text-txt-secondary">Sign in to use projects.</p>
+      ) : loading ? (
+        <p className="px-2.5 py-2 text-[12px] text-txt-tertiary">Loading…</p>
+      ) : recent.length === 0 ? (
+        <p className="px-2.5 py-2 text-[12px] leading-snug text-txt-secondary">No projects yet.</p>
+      ) : (
+        recent.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            onClick={() => {
+              selectProject(p.id);
+              setOpen(false);
+              router.push('/');
+            }}
+            className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-surface-2/80"
+          >
+            <span
+              className="h-2 w-2 shrink-0 rounded-full"
+              style={{ backgroundColor: p.color || '#D4AF37' }}
+              aria-hidden
+            />
+            <span className="min-w-0 flex-1 truncate text-[13px] text-txt-secondary">{p.name}</span>
+          </button>
+        ))
+      )}
+      <button
+        type="button"
+        onClick={() => {
+          setOpen(false);
+          router.push('/projects');
+        }}
+        className="mt-1 w-full rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-accent transition-colors hover:bg-surface-2/80"
+      >
+        View all projects
+      </button>
+    </>
+  );
+
+  if (variant === 'expanded') {
+    return (
+      <HoverCard open={open} onOpenChange={setOpen} openDelay={0} closeDelay={120}>
+        <HoverCardTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              'flex h-8 w-full items-center gap-2 rounded-lg px-2 text-left transition-colors duration-150',
+              projectsActive || open
+                ? 'bg-surface-2'
+                : 'hover:bg-[#f0efea]/80 dark:hover:bg-surface-2/80',
+            )}
+          >
+            <FolderKanban
+              size={NAV_ICON}
+              strokeWidth={ICON_STROKE}
+              className={cn(
+                'shrink-0 text-txt-primary',
+                projectsActive || open ? 'opacity-100' : 'opacity-80',
+              )}
+            />
+            <span className={NAV_LABEL_CLASS}>Projects</span>
+            <ChevronRight
+              size={14}
+              strokeWidth={ICON_STROKE}
+              className={cn(
+                'shrink-0 text-txt-disabled transition-transform duration-150',
+                open && 'rotate-90',
+              )}
+            />
+          </button>
+        </HoverCardTrigger>
+        <HoverCardContent side="right" align="start" sideOffset={8} className={FLYOUT_CONTENT_CLASS}>
+          {panel}
+        </HoverCardContent>
+      </HoverCard>
+    );
+  }
+
+  return (
+    <HoverCard open={open} onOpenChange={setOpen} openDelay={0} closeDelay={120}>
+      <HoverCardTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            'mb-1 flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-150',
+            projectsActive || open
+              ? 'bg-accent-subtle text-txt-primary'
+              : 'text-txt-primary/75 hover:bg-surface-2 hover:text-txt-primary',
+          )}
+          aria-label="Projects"
+          title="Projects"
+        >
+          <FolderKanban size={NAV_ICON} strokeWidth={ICON_STROKE} />
+        </button>
+      </HoverCardTrigger>
+      <HoverCardContent side="right" align="start" sideOffset={8} className={FLYOUT_CONTENT_CLASS}>
+        {panel}
+      </HoverCardContent>
+    </HoverCard>
   );
 }
 
