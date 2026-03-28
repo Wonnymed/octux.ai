@@ -3,7 +3,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useBillingStore } from '@/lib/store/billing';
 import { useDashboardUiStore } from '@/lib/store/dashboard-ui';
-import { TRANSITIONS } from '@/lib/design/transitions';
 import SimulationInput from '@/components/dashboard/SimulationInput';
 import SimulationCanvas from '@/components/dashboard/SimulationCanvas';
 
@@ -25,7 +24,7 @@ export default function DashboardHome({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={TRANSITIONS.component}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
           className="flex min-h-0 shrink-0 flex-col"
         >
           <SimulationInput loading={loading} billingTier={tier} onRun={onRunDashboard} />

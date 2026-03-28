@@ -106,8 +106,11 @@ export async function POST(
     const includeSelf: boolean | undefined = body.includeSelf;
     const joker: Record<string, unknown> | null | undefined = body.joker;
     const agentOverrides: Record<string, unknown> | undefined = body.agentOverrides;
-    const panelTier =
+    let panelTier: "swarm" | "specialist" | undefined =
       body.panelTier === "swarm" || body.panelTier === "specialist" ? body.panelTier : undefined;
+    if (simMode === "stress_test" || simMode === "premortem") {
+      panelTier = "specialist";
+    }
 
     await addMessage(conversationId, userId, {
       message_type: 'simulation_start',

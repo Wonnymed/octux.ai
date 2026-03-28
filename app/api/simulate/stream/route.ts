@@ -85,8 +85,11 @@ export async function POST(req: NextRequest) {
   }
 
   const balance = await getTokenBalance(userId);
-  const panelTierFromBody =
+  let panelTierFromBody: "swarm" | "specialist" | undefined =
     body.panelTier === "swarm" || body.panelTier === "specialist" ? body.panelTier : undefined;
+  if (simMode === "stress_test" || simMode === "premortem") {
+    panelTierFromBody = "specialist";
+  }
 
   const { tier: engineTier, enableCrowdWisdom, advisorCount } = resolveEngineParams(
     balance.tier,

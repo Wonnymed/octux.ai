@@ -210,6 +210,11 @@ export function useSimulationStream(
         const simMode = simModeArg ?? useChatStore.getState().selectedSimMode;
         lastSimModeRef.current = simMode;
 
+        const panelTierForRequest =
+          simMode === 'stress_test' || simMode === 'premortem'
+            ? 'specialist'
+            : opts?.panelTier;
+
         const res = await fetch(`/api/c/${conversationId}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -217,7 +222,7 @@ export function useSimulationStream(
             action: 'simulate',
             question,
             simMode,
-            panelTier: opts?.panelTier,
+            panelTier: panelTierForRequest,
             joker: jokerPayload,
             agentOverrides: agentOverridesPayload,
           }),

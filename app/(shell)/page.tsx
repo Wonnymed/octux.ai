@@ -146,7 +146,9 @@ export default function HomePage() {
     const { activeMode, activeTier, inputA, inputB } = useDashboardUiStore.getState();
     if (activeMode === 'compare' && (!inputA.trim() || !inputB.trim())) return;
 
-    const chargeType = dashboardModeToChargeType(activeMode, activeTier);
+    const effectiveTier =
+      activeMode === 'stress' || activeMode === 'premortem' ? 'specialist' : activeTier;
+    const chargeType = dashboardModeToChargeType(activeMode, effectiveTier);
     if (!useBillingStore.getState().canAffordMode(chargeType)) return;
 
     const framed = frameQuestionForMode(activeMode, inputA, inputB);
@@ -186,7 +188,7 @@ export default function HomePage() {
       try {
         sessionStorage.setItem(
           pendingSimulationKey(id),
-          JSON.stringify({ question: framed, simMode: chargeType, panelTier: activeTier }),
+          JSON.stringify({ question: framed, simMode: chargeType, panelTier: effectiveTier }),
         );
       } catch {
         /* private mode */

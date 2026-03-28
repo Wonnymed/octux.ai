@@ -65,7 +65,12 @@ const initial: Omit<
 export const useDashboardUiStore = create<SimulationDashboardState>((set) => ({
   ...initial,
 
-  setActiveMode: (activeMode) => set({ activeMode }),
+  setActiveMode: (activeMode) =>
+    set((s) =>
+      activeMode === 'stress' || activeMode === 'premortem'
+        ? { activeMode, activeTier: 'specialist', previewTier: 'specialist' }
+        : { activeMode, previewTier: s.previewTier },
+    ),
   setActiveTier: (activeTier) => set({ activeTier }),
   setPreviewTier: (previewTier) => set({ previewTier }),
   setInputA: (inputA) => set({ inputA }),
