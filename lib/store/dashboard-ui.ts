@@ -30,6 +30,7 @@ export interface SimulationDashboardState {
 
   setActiveMode: (mode: DashboardMode) => void;
   setActiveTier: (tier: DashboardTier) => void;
+  setPreviewTier: (previewTier: DashboardTier) => void;
   setInputA: (v: string) => void;
   setInputB: (v: string) => void;
   setSimulationProgress: (current: number, total: number) => void;

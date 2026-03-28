@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Globe, Gem, LogOut, Sun, Moon, Monitor } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/shadcn/tooltip';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useBillingStore } from '@/lib/store/billing';
 import { useThemeStore, type ThemeMode } from '@/lib/store/theme';
@@ -74,58 +75,62 @@ export default function UserProfilePopover({ variant = 'full' }: { variant?: 'fu
 
   const isRail = variant === 'rail';
 
+  const railTrigger = (
+    <button
+      type="button"
+      onClick={() => setOpen((v) => !v)}
+      className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-[11px] font-semibold leading-none text-white transition-colors hover:opacity-95"
+      style={{ backgroundColor: '#e8593c' }}
+      aria-expanded={open}
+      aria-label={name}
+    >
+      {initialsFromUser(user)}
+    </button>
+  );
+
   return (
     <div
       ref={rootRef}
       className={
         isRail
-          ? 'relative flex shrink-0 justify-center py-1'
+          ? 'relative flex shrink-0 justify-center py-0.5'
           : 'relative shrink-0 border-t'
       }
       style={isRail ? undefined : { borderColor: 'rgba(255,255,255,0.06)' }}
     >
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        title={name}
-        className={
-          isRail
-            ? 'flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-[12px] font-medium transition-colors hover:bg-white/[0.06]'
-            : 'flex w-full cursor-pointer items-center gap-2.5 px-[14px] py-3 text-left transition-colors hover:bg-white/[0.03]'
-        }
-        style={
-          isRail
-            ? {
-                backgroundColor: 'rgba(232,89,60,0.15)',
-                color: '#e8593c',
-              }
-            : undefined
-        }
-        aria-expanded={open}
-      >
-        {isRail ? (
-          initialsFromUser(user)
-        ) : (
-          <>
-            <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[14px] font-medium"
-              style={{
-                backgroundColor: 'rgba(232,89,60,0.15)',
-                color: '#e8593c',
-              }}
-            >
-              {initialsFromUser(user)}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-medium text-white/80">{name}</p>
-              {email ? <p className="truncate text-[11px] text-white/30">{email}</p> : null}
-              <p className="mt-0.5 text-[11px] text-white/25">
-                {planLabel(tier)} · {tokensRemaining} tokens left
-              </p>
-            </div>
-          </>
-        )}
-      </button>
+      {isRail ? (
+        <Tooltip>
+          <TooltipTrigger asChild>{railTrigger}</TooltipTrigger>
+          <TooltipContent side="right" sideOffset={8} className="border border-white/[0.08] bg-[#1a1a1f] px-2 py-1 text-[12px] text-white/80 shadow-md">
+            {name}
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          title={name}
+          className="flex w-full cursor-pointer items-center gap-2.5 px-[14px] py-3 text-left transition-colors hover:bg-white/[0.03]"
+          aria-expanded={open}
+        >
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[14px] font-medium"
+            style={{
+              backgroundColor: 'rgba(232,89,60,0.15)',
+              color: '#e8593c',
+            }}
+          >
+            {initialsFromUser(user)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[13px] font-medium text-white/80">{name}</p>
+            {email ? <p className="truncate text-[11px] text-white/30">{email}</p> : null}
+            <p className="mt-0.5 text-[11px] text-white/25">
+              {planLabel(tier)} · {tokensRemaining} tokens left
+            </p>
+          </div>
+        </button>
+      )}
 
       <AnimatePresence>
         {open && (

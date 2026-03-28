@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
-import { TRANSITIONS } from '@/lib/design/transitions';
 import { DARK_THEME } from '@/lib/dashboard/theme';
 import DashboardSidebar from '@/components/dashboard/Sidebar';
 
@@ -178,7 +177,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     );
   }
 
-  const railWidth = desktopExpanded ? 250 : 56;
+  const railWidth = desktopExpanded ? 250 : 48;
 
   return (
     <div
@@ -194,7 +193,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           minWidth: railWidth,
           maxWidth: railWidth,
         }}
-        transition={TRANSITIONS.layout}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
       >
         <DashboardSidebar
           layout={desktopExpanded ? 'expanded' : 'collapsed'}

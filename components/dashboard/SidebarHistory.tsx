@@ -141,13 +141,13 @@ export default function SidebarHistory({ variant = 'full' }: { variant?: 'full' 
 
   if (variant === 'rail') {
     return (
-      <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-1 py-1">
+      <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-0 py-0.5">
         {railItems.length === 0 ? (
           <span className="text-[9px]" style={{ color: DARK_THEME.text_tertiary }}>
             —
           </span>
         ) : (
-          <ul className="flex flex-col items-center gap-2">
+          <ul className="flex flex-col items-center gap-1">
             {railItems.map((c) => {
               const result = c.has_simulation ? resultFromVerdict(c.latest_verdict) : 'proceed';
               const pinned = pinnedIds.includes(c.id);
