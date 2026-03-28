@@ -85,9 +85,13 @@ export async function POST(req: NextRequest) {
   }
 
   const balance = await getTokenBalance(userId);
+  const panelTierFromBody =
+    body.panelTier === "swarm" || body.panelTier === "specialist" ? body.panelTier : undefined;
+
   const { tier: engineTier, enableCrowdWisdom, advisorCount } = resolveEngineParams(
     balance.tier,
     simMode,
+    panelTierFromBody,
   );
 
   // `question` is usually client-framed (see lib/simulation/mode-framing.ts) before POST.
@@ -111,6 +115,7 @@ export async function POST(req: NextRequest) {
     includeSelf?: boolean;
     joker?: Record<string, unknown> | null;
     agentOverrides?: Record<string, unknown>;
+    panelTier?: "swarm" | "specialist";
   };
 
   console.log(
@@ -182,6 +187,7 @@ export async function POST(req: NextRequest) {
           includeSelf: includeSelf || undefined,
           joker: joker || undefined,
           agentOverrides: agentOverrides || undefined,
+          panelTier: panelTierFromBody,
         });
 
         let finalVerdict: any = null;

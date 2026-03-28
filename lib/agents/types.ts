@@ -16,7 +16,10 @@ export type AgentId =
   | 'capital_allocator'
   | 'scenario_planner'
   | 'intervention_optimizer'
-  | 'customer_reality';
+  | 'customer_reality'
+  | 'joker'
+  /** Dynamic Chief-designed specialists */
+  | `chief_${string}`;
 
 export type AgentConfig = {
   id: AgentId;

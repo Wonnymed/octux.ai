@@ -45,6 +45,20 @@ export interface CrowdVoiceStreamEntry {
   statement: string;
 }
 
+export type ChiefAssemblyState =
+  | { phase: 'designing'; mode?: string; tier?: string }
+  | {
+      phase: 'panel';
+      specialists: { id: string; name: string; role: string; team?: string }[];
+      operator: { name: string; highlight: boolean } | null;
+    }
+  | {
+      phase: 'crowd';
+      segments: { segment: string; count: number }[];
+      segments_a?: { segment: string; count: number }[];
+      segments_b?: { segment: string; count: number }[];
+    };
+
 type SimStatus =
   | 'idle'
   | 'connecting'
@@ -88,6 +102,9 @@ interface SimulationState {
   /** Set when a simulation starts; drives canvas layout vs dashboard toggles. */
   activeChargeType: SimulationChargeType | null;
 
+  /** Opus Chief assembly animation (pre-debate). */
+  chiefAssembly: ChiefAssemblyState | null;
+
   startedAt: number | null;
   elapsed: number;
   setElapsed: (elapsed: number) => void;
@@ -96,6 +113,8 @@ interface SimulationState {
   _timerRef: ReturnType<typeof setInterval> | null;
 
   startSimulation: (streamBody: Record<string, unknown>) => void;
+
+  clearChiefAssembly: () => void;
 
   stopSimulation: () => void;
 
@@ -197,12 +216,16 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
 
   activeChargeType: null,
 
+  chiefAssembly: null,
+
   startedAt: null,
   elapsed: 0,
   setElapsed: (elapsed) => set({ elapsed }),
 
   _abortController: null,
   _timerRef: null,
+
+  clearChiefAssembly: () => set({ chiefAssembly: null }),
 
   startSimulation: (streamBody) => {
     get().stopSimulation();
@@ -221,6 +244,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
       simulationId: null,
       error: null,
       activeChargeType,
+      chiefAssembly: null,
       startedAt: Date.now(),
       elapsed: 0,
     });
@@ -272,10 +296,53 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
             get();
 
           switch (data.event) {
+            case 'chief_designing': {
+              const d = (data.data || {}) as { mode?: string; tier?: string };
+              set({
+                chiefAssembly: { phase: 'designing', mode: d.mode, tier: d.tier },
+              });
+              break;
+            }
+
+            case 'chief_panel': {
+              const d = data.data as {
+                specialists: { id: string; name: string; role: string; team?: string }[];
+                operator: { name: string; highlight: boolean } | null;
+              };
+              set({
+                chiefAssembly: {
+                  phase: 'panel',
+                  specialists: d.specialists || [],
+                  operator: d.operator ?? null,
+                },
+              });
+              break;
+            }
+
+            case 'chief_crowd': {
+              const d = data.data as {
+                segments: { segment: string; count: number }[];
+                segments_a?: { segment: string; count: number }[];
+                segments_b?: { segment: string; count: number }[];
+              };
+              set({
+                chiefAssembly: {
+                  phase: 'crowd',
+                  segments: d.segments || [],
+                  segments_a: d.segments_a,
+                  segments_b: d.segments_b,
+                },
+              });
+              break;
+            }
+
             case 'phase_update':
             case 'phase_start': {
               const phase = (data.data as { phase?: string } | null)?.phase;
               if (phase) {
+                if (phase === 'opening') {
+                  set({ chiefAssembly: null });
+                }
                 const phaseMap: Record<string, string> = {
                   planning: 'Research Plan',
                   opening: 'Opening Analysis',
@@ -458,6 +525,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
       simulationId: null,
       error: null,
       activeChargeType: null,
+      chiefAssembly: null,
       startedAt: null,
       elapsed: 0,
     });

@@ -39,6 +39,7 @@ export default function SimulationCanvas() {
   useSimulationStore((s) => s.crowdVoices.length);
 
   const activeChargeType = useSimulationStore((s) => s.activeChargeType);
+  const chiefAssembly = useSimulationStore((s) => s.chiefAssembly);
 
   const deepDiveOpen = useDeepDiveStore((s) => s.isOpen);
   const activeMode = useDashboardUiStore((s) => s.activeMode);
@@ -131,6 +132,9 @@ export default function SimulationCanvas() {
     snap.tier === 'specialist' &&
     billingTier === 'free';
 
+  const showChiefOverlay =
+    chiefAssembly != null && (simStatus === 'connecting' || simStatus === 'planning');
+
   return (
     <div
       ref={containerRef}
@@ -148,6 +152,79 @@ export default function SimulationCanvas() {
         aria-hidden={!canClickSpecialists}
         onClick={canClickSpecialists ? onCanvasClick : undefined}
       />
+
+      {showChiefOverlay ? (
+        <div
+          className="pointer-events-none absolute inset-x-0 top-[4.5rem] z-[15] flex justify-center px-4"
+          aria-live="polite"
+        >
+          <div
+            className={cn('max-w-lg border px-4 py-3 shadow-lg backdrop-blur-md', glass)}
+            style={glassStyle}
+          >
+            {chiefAssembly.phase === 'designing' ? (
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: DARK_THEME.accent }}>
+                  Chief orchestrator
+                </p>
+                <p className="mt-1 text-[13px] leading-snug" style={{ color: DARK_THEME.text_primary }}>
+                  Assembling your simulation…
+                </p>
+                <p className="mt-1 text-[11px]" style={{ color: DARK_THEME.text_tertiary }}>
+                  Designing specialists and parameters for your question ({chiefAssembly.mode} · {chiefAssembly.tier}).
+                </p>
+              </div>
+            ) : null}
+            {chiefAssembly.phase === 'panel' ? (
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: DARK_THEME.accent }}>
+                  Your panel
+                </p>
+                <ul className="mt-2 max-h-[28vh] space-y-1 overflow-y-auto text-left text-[12px]">
+                  {chiefAssembly.specialists.map((s) => (
+                    <li key={s.id} style={{ color: DARK_THEME.text_secondary }}>
+                      <span className="font-medium text-white/85">{s.name}</span>
+                      {s.team ? (
+                        <span className="text-white/40"> · Team {s.team}</span>
+                      ) : null}
+                      <span className="text-white/45"> — {s.role}</span>
+                    </li>
+                  ))}
+                </ul>
+                {chiefAssembly.operator ? (
+                  <p className="mt-2 border-t border-white/[0.08] pt-2 text-[12px]" style={{ color: DARK_THEME.accent }}>
+                    ★ {chiefAssembly.operator.name} — you in the simulation
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+            {chiefAssembly.phase === 'crowd' ? (
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: DARK_THEME.accent }}>
+                  Mapping your market
+                </p>
+                <ul className="mt-2 max-h-[28vh] space-y-1.5 overflow-y-auto text-left text-[12px]">
+                  {chiefAssembly.segments.map((seg, i) => {
+                    const total = chiefAssembly.segments.reduce((a, x) => a + x.count, 0) || 1;
+                    const pct = Math.min(100, Math.round((seg.count / total) * 100));
+                    return (
+                      <li key={`${seg.segment}-${i}`}>
+                        <div className="mb-0.5 flex justify-between gap-2" style={{ color: DARK_THEME.text_secondary }}>
+                          <span className="truncate">{seg.segment}</span>
+                          <span className="shrink-0 tabular-nums text-white/50">{seg.count}</span>
+                        </div>
+                        <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.06]">
+                          <div className="h-full rounded-full bg-[#e8593c]/70" style={{ width: `${pct}%` }} />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <VerdictPanel visible={showFullVerdict} />
       <DeepDivePanel />

@@ -103,10 +103,16 @@ export function useSimulationStream(
   question: string,
 ): { state: SimulationStreamState; respondToHITL: (response: { approved: boolean; corrections?: Record<string, string> }) => void };
 // Overload 2: current object-arg signature
+export type TriggerSimulationOptions = { panelTier?: 'swarm' | 'specialist' };
+
 export function useSimulationStream(
   options: UseSimulationStreamOptions,
 ): {
-  triggerSimulation: (question: string, simMode?: SimulationChargeType) => Promise<void>;
+  triggerSimulation: (
+    question: string,
+    simMode?: SimulationChargeType,
+    opts?: TriggerSimulationOptions,
+  ) => Promise<void>;
   cancel: () => void;
   isSimulating: boolean;
   status: string;
@@ -167,7 +173,11 @@ export function useSimulationStream(
 
   // ─── TRIGGER SIMULATION ───
   const triggerSimulation = useCallback(
-    async (question: string, simModeArg?: SimulationChargeType) => {
+    async (
+      question: string,
+      simModeArg?: SimulationChargeType,
+      opts?: TriggerSimulationOptions,
+    ) => {
       completedRef.current = false;
 
       try {
@@ -207,6 +217,7 @@ export function useSimulationStream(
             action: 'simulate',
             question,
             simMode,
+            panelTier: opts?.panelTier,
             joker: jokerPayload,
             agentOverrides: agentOverridesPayload,
           }),

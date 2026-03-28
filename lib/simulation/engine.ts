@@ -5,7 +5,7 @@ import { AGENTS, getAgentById } from '../agents/prompts';
 import { getAgentsByIds, suggestAgentsForDomain, buildSelfAgent, libraryAgentToConfig, type LibraryAgent } from '../agents/library';
 import { generateAdvisorPersonas } from '../agents/advisors';
 import { selectRelevantAdvisors, runFieldScan, formatFieldIntelligence, type FieldScan } from './field-intelligence';
-import { createKernel, type SukgoKernel } from './kernel';
+import { createKernel, type OctuxKernel } from './kernel';
 import { createAudit, addRound, finalizeAudit, type SimulationAudit, type AuditRound } from './audit';
 import { createInitialState, transitionPhase, addAgentReport, selectDebatePairs, recordHandoff, type SimulationState } from './state';
 import { buildCitations, type EnrichedCitation } from './citations';
@@ -53,6 +53,15 @@ import {
 import { getOrCreateProfile, formatBehavioralContext, applyBehavioralModifiers, type BehavioralProfile } from '../memory/behavioral';
 import type { AdvisorPersona } from '../agents/advisors';
 import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
+import { designSimulation } from './design';
+import type { ChiefTier, SimulationDesign } from './types';
+import {
+  mapChargeTypeToChiefMode,
+  sanitizeChiefId,
+  specialistPlanToAgentConfig,
+  operatorPlanToAgentConfig,
+  buildChiefPanelPlan,
+} from './flows';
 
 export type SimulationSSEEvent =
   | { event: 'phase_start'; data: { phase: string; status: string } }
@@ -95,6 +104,22 @@ export type SimulationSSEEvent =
   | { event: 'hitl_resumed'; data: { action: string; hasCorrection: boolean } }
   | { event: 'domain_detected'; data: { domain: string; subdomain: string; disclaimer_required: boolean } }
   | { event: 'behavioral_profile_loaded'; data: { risk_tolerance: number; speed_preference: number; evidence_threshold: number; optimism_bias: number; detail_preference: number; inference_confidence: number } }
+  | { event: 'chief_designing'; data: { mode: string; tier: string } }
+  | {
+      event: 'chief_panel';
+      data: {
+        specialists: { id: string; name: string; role: string; team?: string }[];
+        operator: { name: string; highlight: boolean } | null;
+      };
+    }
+  | {
+      event: 'chief_crowd';
+      data: {
+        segments: { segment: string; count: number }[];
+        segments_a?: { segment: string; count: number }[];
+        segments_b?: { segment: string; count: number }[];
+      };
+    }
   | { event: 'complete'; data: { simulation_id: string } };
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -118,7 +143,15 @@ function resolveGodViewVoiceTarget(options?: {
     return Math.min(100, Math.max(50, Math.floor(n)));
   }
   if (mode === 'compare') {
+    if (raw >= 500) {
+      return Math.min(1000, Math.max(800, raw));
+    }
     return Math.min(100, Math.max(40, raw > 0 ? raw : 50));
+  }
+  if (mode === 'stress_test' || mode === 'premortem') {
+    if (raw >= 500) {
+      return Math.min(1000, Math.max(800, raw));
+    }
   }
   return 0;
 }
@@ -410,6 +443,8 @@ export async function* runSimulation(
     includeSelf?: boolean;
     joker?: Record<string, unknown>;
     agentOverrides?: Record<string, unknown>;
+    /** Dashboard swarm vs specialist preview — drives Chief tier (incl. Compare A/B depth). */
+    panelTier?: 'swarm' | 'specialist';
   },
 ): AsyncGenerator<SimulationSSEEvent> {
   const kernel = createKernel();
@@ -566,6 +601,56 @@ export async function* runSimulation(
 
   const operatorContextText = preSim.operatorContextText || '';
 
+  let chiefDesign: SimulationDesign | null = null;
+  const chiefMode = mapChargeTypeToChiefMode(options?.simMode);
+  const chiefTier: ChiefTier =
+    options?.panelTier ?? (options?.simMode === 'swarm' ? 'swarm' : 'specialist');
+  try {
+    yield { event: 'chief_designing', data: { mode: chiefMode, tier: chiefTier } };
+    chiefDesign = await designSimulation(
+      question,
+      chiefMode,
+      chiefTier,
+      preSim.operatorProfile ?? null,
+    );
+    if (chiefDesign.kind === 'swarm') {
+      const segs = chiefDesign.segments.map((s) => ({ segment: s.segment, count: s.count }));
+      const sa = chiefDesign.segments_a?.map((s) => ({ segment: s.segment, count: s.count }));
+      const sb = chiefDesign.segments_b?.map((s) => ({ segment: s.segment, count: s.count }));
+      yield {
+        event: 'chief_crowd',
+        data: { segments: segs, segments_a: sa, segments_b: sb },
+      };
+    } else {
+      yield {
+        event: 'chief_panel',
+        data: {
+          specialists: chiefDesign.specialists.map((s) => ({
+            id: s.id,
+            name: s.name,
+            role: s.role,
+            team: s.team,
+          })),
+          operator: chiefDesign.operator
+            ? { name: chiefDesign.operator.name, highlight: true }
+            : null,
+        },
+      };
+    }
+  } catch (chiefErr) {
+    console.error('[engine] Chief orchestration failed:', chiefErr);
+  }
+
+  let effectiveAdvisorGuidance = options?.advisorGuidance || '';
+  if (chiefDesign?.kind === 'swarm' && chiefDesign.segments.length > 0) {
+    effectiveAdvisorGuidance += `\n\nCHIEF CROWD SEGMENTS:\n${chiefDesign.segments
+      .map((s) => `• ${s.segment} (${s.count}): ${s.behavior}`)
+      .join('\n')}`;
+  }
+
+  const chiefPanelActive =
+    chiefDesign?.kind === 'specialist' && chiefDesign.specialists.length > 0;
+
   const chair = getAgentById('decision_chair');
   const allReports: AgentReport[] = [];
 
@@ -583,37 +668,42 @@ export async function* runSimulation(
   yield { event: 'round_start', data: { round: 1, title: 'Planning', description: 'Decision Chair decomposes your question into research tasks', total_rounds: 10 } };
 
   let plan: SimulationPlan;
-  try {
-    const planStart = Date.now();
-    const planPrompt = `QUESTION: ${question}\n\nENGINE: ${engine}\n\nDecompose this decision into 5-8 specific sub-tasks. For each task, assign the most relevant agent from this list:\n${agentListForChair()}\n\nReturn valid JSON only:\n{ "tasks": [{ "description": "...", "assigned_agent": "agent_id" }], "estimated_rounds": 10 }`;
-    const planRaw = await callClaude({
-      systemPrompt: chair.systemPrompt,
-      userMessage: planPrompt,
-      tier: 'orchestrator',
-    });
-    addRound(audit, {
-      round: 1, phase: 'planning', agent_id: 'decision_chair',
-      model: getModel('orchestrator'),
-      input_tokens: Math.ceil((chair.systemPrompt.length + planPrompt.length) / 4),
-      output_tokens: Math.ceil(planRaw.length / 4),
-      latency_ms: Date.now() - planStart, success: true,
-      timestamp: new Date().toISOString(),
-    });
-    console.log(`[decision_chair] plan: ${planRaw.length} chars`);
-    plan = parseJSON<SimulationPlan>(planRaw);
-    if (!plan.tasks || plan.tasks.length === 0) {
-      throw new Error('Empty plan');
+  if (chiefPanelActive && chiefDesign?.kind === 'specialist') {
+    plan = buildChiefPanelPlan(chiefDesign);
+    console.log(`[chief] plan: ${plan.tasks.length} tasks from Opus-designed panel`);
+  } else {
+    try {
+      const planStart = Date.now();
+      const planPrompt = `QUESTION: ${question}\n\nENGINE: ${engine}\n\nDecompose this decision into 5-8 specific sub-tasks. For each task, assign the most relevant agent from this list:\n${agentListForChair()}\n\nReturn valid JSON only:\n{ "tasks": [{ "description": "...", "assigned_agent": "agent_id" }], "estimated_rounds": 10 }`;
+      const planRaw = await callClaude({
+        systemPrompt: chair.systemPrompt,
+        userMessage: planPrompt,
+        tier: 'orchestrator',
+      });
+      addRound(audit, {
+        round: 1, phase: 'planning', agent_id: 'decision_chair',
+        model: getModel('orchestrator'),
+        input_tokens: Math.ceil((chair.systemPrompt.length + planPrompt.length) / 4),
+        output_tokens: Math.ceil(planRaw.length / 4),
+        latency_ms: Date.now() - planStart, success: true,
+        timestamp: new Date().toISOString(),
+      });
+      console.log(`[decision_chair] plan: ${planRaw.length} chars`);
+      plan = parseJSON<SimulationPlan>(planRaw);
+      if (!plan.tasks || plan.tasks.length === 0) {
+        throw new Error('Empty plan');
+      }
+    } catch (error) {
+      console.error('Planning failed, using default plan:', error);
+      const specialists = specialistAgents();
+      plan = {
+        tasks: specialists.slice(0, 6).map((a) => ({
+          description: `Analyze "${question}" from the perspective of ${a.role}`,
+          assigned_agent: a.id,
+        })),
+        estimated_rounds: 10,
+      };
     }
-  } catch (error) {
-    console.error('Planning failed, using default plan:', error);
-    const specialists = specialistAgents();
-    plan = {
-      tasks: specialists.slice(0, 6).map((a) => ({
-        description: `Analyze "${question}" from the perspective of ${a.role}`,
-        assigned_agent: a.id,
-      })),
-      estimated_rounds: 10,
-    };
   }
 
   // ═══ DYNAMIC AGENT LIBRARY (P41) — load from DB or fallback to hardcoded ═══
@@ -627,7 +717,21 @@ export async function* runSimulation(
 
   // Try to load dynamic agents from DB if user specified agentIds or domain-based suggestion
   let usedDynamicAgents = false;
-  if (options?.agentIds && options.agentIds.length > 0) {
+  let chiefInjected = false;
+  if (chiefPanelActive && chiefDesign?.kind === 'specialist') {
+    for (const s of chiefDesign.specialists) {
+      const cfg = specialistPlanToAgentConfig(s, chiefMode);
+      dynamicAgentMap.set(cfg.id, cfg);
+    }
+    if (chiefDesign.operator) {
+      const opCfg = operatorPlanToAgentConfig(chiefDesign.operator);
+      dynamicAgentMap.set(opCfg.id, opCfg);
+    }
+    chiefInjected = true;
+    console.log(
+      `[chief] panel: ${chiefDesign.specialists.length} specialists + ${chiefDesign.operator ? 'operator' : 'no operator'}`,
+    );
+  } else if (options?.agentIds && options.agentIds.length > 0) {
     try {
       const dbAgents = await getAgentsByIds(options.agentIds);
       if (dbAgents.length > 0) {
@@ -656,8 +760,8 @@ export async function* runSimulation(
     }
   }
 
-  // Add self-agent if requested
-  if (options?.joker && options?.userId) {
+  // Add self-agent if requested (skip if Chief already injected an Operator agent)
+  if (!chiefPanelActive && options?.joker && options?.userId) {
     try {
       const jokerName = typeof options.joker.name === 'string' ? options.joker.name : 'The Joker';
       const jokerRole = typeof options.joker.role === 'string' ? options.joker.role : 'Decision-maker perspective';
@@ -709,7 +813,7 @@ Respond with valid JSON only:
     } catch (err) {
       console.error('AGENTS(P41): failed to add joker agent:', err);
     }
-  } else if (options?.includeSelf && options?.userId) {
+  } else if (!chiefPanelActive && options?.includeSelf && options?.userId) {
     try {
       const behavioral = await getOrCreateProfile(options.userId);
       const selfAgent = await buildSelfAgent(options.userId, memory.coreMemory, behavioral);
@@ -780,7 +884,21 @@ Respond with valid JSON only:
   let agentSelection: AgentSelection | null = null;
   let activeAgentIds: Set<string>;
 
-  if (options?.agentIds && options.agentIds.length > 0) {
+  if (chiefInjected && chiefDesign?.kind === 'specialist') {
+    const ids: AgentId[] = chiefDesign.specialists.map(
+      (s) => `chief_${sanitizeChiefId(s.id)}` as AgentId,
+    );
+    if (chiefDesign.operator) ids.push('chief_operator');
+    activeAgentIds = new Set(ids);
+    yield {
+      event: 'agents_selected',
+      data: {
+        active: ids.map((id) => ({ id, reason: 'chief-designed', priority: 'critical' as const })),
+        skipped: [],
+        tokensPerAgent: calculateAgentBudget(ids.length).maxTokens,
+      },
+    };
+  } else if (options?.agentIds && options.agentIds.length > 0) {
     // User explicitly chose agents — use those + any self-agent
     activeAgentIds = new Set(options.agentIds);
     if (options?.includeSelf && options?.userId) {
@@ -871,7 +989,11 @@ Respond with valid JSON only:
     const advisorCount = options?.advisorCount || 20;
     console.log(`[field_intel] generating ${advisorCount} personas during planning...`);
     try {
-      fieldPersonas = await generateAdvisorPersonas(question, options?.advisorGuidance, advisorCount);
+      fieldPersonas = await generateAdvisorPersonas(
+        question,
+        effectiveAdvisorGuidance || undefined,
+        advisorCount,
+      );
       yield { event: 'crowd_personas', data: fieldPersonas };
       console.log(`[field_intel] ${fieldPersonas.length} field advisors ready`);
     } catch (err) {

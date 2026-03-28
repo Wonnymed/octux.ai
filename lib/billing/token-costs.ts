@@ -1,10 +1,10 @@
 export const TOKEN_COSTS = {
   chat: 0,
   swarm: 1,
-  specialist: 5,
-  compare: 6,
-  stress_test: 3,
-  premortem: 3,
+  specialist: 1,
+  compare: 3,
+  stress_test: 1,
+  premortem: 1,
 } as const;
 
 export type SimulationType = keyof typeof TOKEN_COSTS;

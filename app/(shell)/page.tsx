@@ -186,7 +186,7 @@ export default function HomePage() {
       try {
         sessionStorage.setItem(
           pendingSimulationKey(id),
-          JSON.stringify({ question: framed, simMode: chargeType }),
+          JSON.stringify({ question: framed, simMode: chargeType, panelTier: activeTier }),
         );
       } catch {
         /* private mode */

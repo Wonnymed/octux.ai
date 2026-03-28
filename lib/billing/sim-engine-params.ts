@@ -1,6 +1,8 @@
 import type { TierType } from '@/lib/billing/tiers';
 import type { SimulationChargeType } from '@/lib/billing/token-costs';
 
+export type PanelTierHint = 'swarm' | 'specialist';
+
 /**
  * Maps subscription tier + billed simulation mode to engine options.
  * Does not modify lib/simulation/engine — only supplies tier / crowd flags.
@@ -8,6 +10,7 @@ import type { SimulationChargeType } from '@/lib/billing/token-costs';
 export function resolveEngineParams(
   subscriptionTier: TierType,
   simMode: SimulationChargeType,
+  panelTier?: PanelTierHint,
 ): { tier: string; enableCrowdWisdom: boolean; advisorCount: number } {
   const engineTier = subscriptionTier === 'max' ? 'max' : simMode === 'swarm' ? 'free' : 'pro';
 
@@ -17,9 +20,15 @@ export function resolveEngineParams(
     case 'specialist':
       return { tier: engineTier, enableCrowdWisdom: true, advisorCount: 100 };
     case 'compare':
-      return { tier: engineTier, enableCrowdWisdom: true, advisorCount: 50 };
+      if (panelTier === 'swarm') {
+        return { tier: engineTier, enableCrowdWisdom: true, advisorCount: 1000 };
+      }
+      return { tier: engineTier, enableCrowdWisdom: true, advisorCount: 100 };
     case 'stress_test':
     case 'premortem':
+      if (panelTier === 'swarm') {
+        return { tier: engineTier, enableCrowdWisdom: true, advisorCount: 1000 };
+      }
       return { tier: engineTier, enableCrowdWisdom: false, advisorCount: 0 };
   }
 }

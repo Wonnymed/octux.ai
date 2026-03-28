@@ -106,6 +106,8 @@ export async function POST(
     const includeSelf: boolean | undefined = body.includeSelf;
     const joker: Record<string, unknown> | null | undefined = body.joker;
     const agentOverrides: Record<string, unknown> | undefined = body.agentOverrides;
+    const panelTier =
+      body.panelTier === "swarm" || body.panelTier === "specialist" ? body.panelTier : undefined;
 
     await addMessage(conversationId, userId, {
       message_type: 'simulation_start',
@@ -132,6 +134,7 @@ export async function POST(
       agentOverrides: agentOverrides ?? {},
       agentIds,
       includeSelf,
+      panelTier,
     };
 
     return NextResponse.json({

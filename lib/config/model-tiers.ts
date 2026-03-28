@@ -1,4 +1,7 @@
 export const MODEL_TIERS = {
+  /** Chief Simulation Orchestrator — panel / crowd design */
+  chief: 'claude-opus-4-20250514',
+
   // PREMIUM — 10 specialist debate rounds (user sees this quality)
   specialist: 'claude-sonnet-4-20250514',
 

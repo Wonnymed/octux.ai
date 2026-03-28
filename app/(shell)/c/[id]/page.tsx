@@ -62,10 +62,13 @@ export default function ConversationPage() {
           const parsed = JSON.parse(pendingSimRaw) as {
             question?: string;
             simMode?: SimulationChargeType;
+            panelTier?: 'swarm' | 'specialist';
           };
           const q = parsed.question?.trim();
           if (q) {
-            await triggerSimulation(q, parsed.simMode);
+            await triggerSimulation(q, parsed.simMode, {
+              panelTier: parsed.panelTier,
+            });
           }
         } catch {
           /* bad payload */
