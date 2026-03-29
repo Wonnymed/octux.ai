@@ -23,7 +23,7 @@ export default function AssistantMessage({ content, tier, disclaimer, isCode }: 
     <div className="mb-4 flex w-full flex-col items-start">
       <div className="flex items-start gap-3 max-w-[min(85%,42rem)] w-full">
         <div
-          className="w-7 h-7 rounded-full bg-gradient-to-br from-accent/60 to-amber-600/40 flex items-center justify-center shrink-0 mt-0.5 border border-border-default shadow-sm shadow-black/20"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#c9a96e]/25 bg-[#c9a96e]/15 shadow-sm shadow-black/20 mt-0.5"
           aria-hidden
         >
           <span className="text-[10px] leading-none">🐙</span>

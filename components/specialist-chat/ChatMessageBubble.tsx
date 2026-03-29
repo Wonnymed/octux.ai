@@ -12,8 +12,8 @@ export default function ChatMessageBubble({
   if (msg.role === 'user') {
     return (
       <div className="text-right">
-        <div className="inline-block max-w-[85%] rounded-xl rounded-tr-sm bg-white/[0.06] px-3 py-2">
-          <span className="text-[13px] text-white/70">{msg.text}</span>
+        <div className="inline-block max-w-[85%] rounded-xl rounded-tr-sm border border-[#c9a96e]/15 bg-[#c9a96e]/[0.08] px-3 py-2">
+          <span className="text-[13px] text-[#f5f5f0]">{msg.text}</span>
         </div>
       </div>
     );
@@ -22,8 +22,8 @@ export default function ChatMessageBubble({
   return (
     <div>
       <div className="mb-1 text-[10px] text-white/20">{specialistName}</div>
-      <div className="max-w-[90%] rounded-xl rounded-tl-sm bg-white/[0.03] px-3 py-2">
-        <span className="text-[13px] leading-relaxed text-white/60">{msg.text}</span>
+      <div className="max-w-[90%] rounded-xl rounded-tl-sm border border-[#3a3a36] bg-[#1a1a18] px-3 py-2">
+        <span className="text-[13px] leading-relaxed text-[#c0c0b8]">{msg.text}</span>
         {msg.sources && msg.sources.length > 0 ? (
           <div className="mt-2 border-t border-white/[0.04] pt-2">
             {msg.sources.map((s, j) => (

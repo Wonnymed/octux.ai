@@ -133,8 +133,8 @@ export default function SpecialistChatDrawer() {
       <div className="border-b border-white/[0.06] p-4">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className="truncate text-[14px] font-medium text-white">{persona.name}</div>
-            <div className="truncate text-[11px] text-white/30">{persona.role}</div>
+            <div className="truncate text-[14px] font-medium text-[#c9a96e]">{persona.name}</div>
+            <div className="truncate text-[11px] text-[#8a8a82]">{persona.role}</div>
           </div>
           <button
             type="button"
@@ -146,15 +146,7 @@ export default function SpecialistChatDrawer() {
           </button>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <span
-            className={`rounded-full px-2 py-0.5 text-[10px] ${
-              persona.bias === 'bullish'
-                ? 'bg-green-500/10 text-green-400/60'
-                : persona.bias === 'bearish'
-                  ? 'bg-red-500/10 text-red-400/60'
-                  : 'bg-amber-500/10 text-amber-400/60'
-            }`}
-          >
+          <span className="rounded-full border border-[#3a3a36] px-2 py-0.5 text-[11px] text-[#8a8a82]">
             {persona.bias}
           </span>
           <span className="text-[10px] text-white/15">{persona.personality}</span>
@@ -217,7 +209,7 @@ export default function SpecialistChatDrawer() {
             type="button"
             disabled={!input.trim() || loading}
             onClick={() => void send(input)}
-            className="rounded-lg bg-white/[0.06] px-3 py-2 text-[12px] text-white/40 hover:bg-white/[0.1] disabled:opacity-30"
+            className="rounded-lg bg-[#c9a96e]/90 px-3 py-2 text-[12px] font-medium text-[#0a0a0f] hover:bg-[#b8994f] disabled:opacity-30"
           >
             Send
           </button>

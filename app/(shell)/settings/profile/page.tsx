@@ -88,7 +88,7 @@ export default function SettingsProfilePage() {
               autoComplete="name"
             />
           </SettingField>
-          <SettingField label="Display name" hint="How Sukgo addresses you">
+          <SettingField label="Display name" hint="How Octux addresses you">
             <input
               className="field-input w-full text-sm"
               value={displayName}
@@ -111,7 +111,7 @@ export default function SettingsProfilePage() {
 
       <SettingSection
         title="Decision context"
-        description="Tell Sukgo about your situation so simulations are more personalized."
+        description="Tell Octux about your situation so simulations are more personalized."
       >
         <textarea
           className="field-input min-h-[104px] w-full resize-y text-sm leading-relaxed"
@@ -138,7 +138,7 @@ export default function SettingsProfilePage() {
           type="button"
           onClick={onSave}
           disabled={saving}
-          className="rounded-[8px] bg-[#e8593c] px-4 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-95 disabled:opacity-50"
+          className="rounded-[8px] bg-[#c9a96e] px-4 py-2 text-sm font-medium text-[#0a0a0f] shadow-sm transition-opacity hover:bg-[#b8994f] disabled:opacity-50"
         >
           {saving ? 'Saving…' : 'Save changes'}
         </button>

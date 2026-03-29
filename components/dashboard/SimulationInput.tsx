@@ -13,13 +13,6 @@ import { useBillingStore } from '@/lib/store/billing';
 import { useSimulationStore } from '@/lib/store/simulation';
 import type { TierType } from '@/lib/billing/tiers';
 
-const CTA_STYLES: Record<DashboardMode, { bg: string; hover: string }> = {
-  simulate: { bg: '#e8593c', hover: '#d04e33' },
-  compare: { bg: '#3B8BD4', hover: '#2d7bc4' },
-  stress: { bg: '#EF9F27', hover: '#d98d1f' },
-  premortem: { bg: '#c43333', hover: '#a82b2b' },
-};
-
 const SIMULATE_CHIPS = [
   'Open a café in Seoul',
   'Launch SaaS in Brazil',
@@ -170,8 +163,6 @@ export default function SimulationInput({
   const disabled =
     loading || !messageForSubmit || !affordable || freeBlocksSpecialist;
 
-  const { bg, hover } = CTA_STYLES[activeMode];
-
   const tierHintSimulate =
     previewTier === 'swarm'
       ? '1,000 market voices validate your idea'
@@ -285,7 +276,7 @@ export default function SimulationInput({
             {STRESS_THREAT_CATS.map((cat) => (
               <span
                 key={cat}
-                className="rounded-full border border-amber-500/15 bg-amber-500/[0.03] px-2.5 py-1 text-[11px] text-amber-400/40"
+                className="rounded-full border border-[#3a3a36] bg-transparent px-2.5 py-1 text-[11px] text-[#8a8a82]"
               >
                 {cat}
               </span>
@@ -301,14 +292,14 @@ export default function SimulationInput({
                   <div
                     className={cn(
                       'h-2 w-2 shrink-0 rounded-full',
-                      i === arr.length - 1 ? 'bg-red-400/50' : 'bg-white/15',
+                      i === arr.length - 1 ? 'bg-[#c9a96e]' : 'bg-[#5a5a55]',
                     )}
                   />
                   <div className="mt-1 text-center text-[10px] text-white/20">{step.month}</div>
                   <div className="text-center text-[10px] italic text-white/12">{step.label}</div>
                 </div>
                 {i < arr.length - 1 ? (
-                  <div className="mx-0.5 h-px w-6 shrink-0 bg-white/[0.06] sm:mx-1 sm:w-10" />
+                  <div className="mx-0.5 h-px w-6 shrink-0 bg-[#3a3a36] sm:mx-1 sm:w-10" />
                 ) : null}
               </div>
             ))}
@@ -319,15 +310,15 @@ export default function SimulationInput({
           <>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="flex w-fit items-center gap-1 rounded-lg bg-white/[0.04] p-0.5">
+                <div className="flex w-fit flex-wrap items-center gap-1">
                   <button
                     type="button"
                     onClick={onPickSwarm}
                     className={cn(
-                      'rounded-md px-3 py-1.5 text-[12px] font-medium transition-all',
+                      'rounded-full border px-4 py-1.5 text-[13px] transition-all',
                       previewTier === 'swarm'
-                        ? 'bg-white/[0.08] text-white/80'
-                        : 'text-white/35 hover:text-white/50',
+                        ? 'border-[#c9a96e]/40 bg-[#c9a96e]/[0.08] text-[#c9a96e]'
+                        : 'border-[#3a3a36] text-[#8a8a82] hover:text-[#c0c0b8]',
                     )}
                   >
                     {activeMode === 'simulate' ? 'Swarm · 1000' : 'Market test · 500 vs 500'}
@@ -336,25 +327,27 @@ export default function SimulationInput({
                     type="button"
                     onClick={onPickSpecialist}
                     className={cn(
-                      'inline-flex items-center rounded-md px-3 py-1.5 text-[12px] font-medium transition-all',
+                      'inline-flex items-center rounded-full border px-4 py-1.5 text-[13px] transition-all',
                       previewTier === 'specialist'
-                        ? 'bg-white/[0.08] text-white/80'
-                        : 'text-white/35 hover:text-white/50',
+                        ? 'border-[#c9a96e]/40 bg-[#c9a96e]/[0.08] text-[#c9a96e]'
+                        : 'border-[#3a3a36] text-[#8a8a82] hover:text-[#c0c0b8]',
                     )}
                   >
                     {activeMode === 'simulate' ? 'Specialist · 10 + crowd' : 'Expert debate · 5 vs 5'}
                     {freeUser ? (
-                      <span className="ml-1 text-[9px] font-semibold text-[#e8593c]">PRO</span>
+                      <span className="ml-1 rounded border border-[#c9a96e]/30 px-1.5 py-0.5 text-[10px] font-semibold text-[#c9a96e]">
+                        PRO
+                      </span>
                     ) : null}
                   </button>
                 </div>
                 {specialistBlockedHint ? (
-                  <p className="mt-1 max-w-[min(420px,100%)] text-[11px] leading-snug text-[#e8593c]">
+                  <p className="mt-1 max-w-[min(420px,100%)] text-[11px] leading-snug text-[#c9a96e]/90">
                     Upgrade to Pro for specialist mode.
                   </p>
                 ) : null}
               </div>
-              <span className="shrink-0 text-[11px] text-white/35">{tokensRemaining} tokens left</span>
+              <span className="shrink-0 text-[11px] text-[#c9a96e]">{tokensRemaining} tokens left</span>
             </div>
             <p className="text-[11px] leading-relaxed text-white/35">
               {activeMode === 'simulate' ? tierHintSimulate : tierHintCompare}
@@ -395,7 +388,7 @@ export default function SimulationInput({
                 ? 'Opus Chief + 9 Sonnet attackers + web search · Vulnerability audit output'
                 : 'Opus Chief + 9 Sonnet narrators + web search · Failure autopsy output'}
             </p>
-            <span className="shrink-0 text-[11px] text-white/35">{tokensRemaining} tokens left</span>
+            <span className="shrink-0 text-[11px] text-[#c9a96e]">{tokensRemaining} tokens left</span>
           </div>
         )}
 
@@ -405,15 +398,10 @@ export default function SimulationInput({
             disabled={disabled}
             onClick={() => void onRun()}
             className={cn(
-              'inline-flex min-h-[44px] items-center justify-center rounded-xl px-5 text-[13px] font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40',
+              'inline-flex min-h-[44px] items-center justify-center rounded-xl px-6 py-3 text-[13px] font-medium text-[#0a0a0f] transition-all duration-200',
+              'bg-[#c9a96e] hover:bg-[#b8994f] hover:shadow-[0_0_20px_rgba(201,169,110,0.15)]',
+              'disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-none',
             )}
-            style={{ backgroundColor: bg }}
-            onMouseEnter={(e) => {
-              if (!disabled) (e.currentTarget as HTMLButtonElement).style.backgroundColor = hover;
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = bg;
-            }}
           >
             {RUN_LABEL[activeMode]}{' '}
             <span className="ml-1.5 text-[12px] font-medium opacity-90">
@@ -424,7 +412,7 @@ export default function SimulationInput({
             <span className="text-[11px] text-white/40">Not enough tokens for this run.</span>
           ) : null}
           {freeBlocksSpecialist ? (
-            <span className="text-[11px] text-[#e8593c]/90">Upgrade to Pro to run with Specialist.</span>
+            <span className="text-[11px] text-[#c9a96e]/90">Upgrade to Pro to run with Specialist.</span>
           ) : null}
         </div>
 
@@ -435,7 +423,7 @@ export default function SimulationInput({
                   key={text}
                   type="button"
                   onClick={() => setInputA(text)}
-                  className="rounded-full border border-white/[0.12] px-3 py-1.5 text-[12px] text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white/75"
+                  className="rounded-full border border-[#3a3a36] px-3 py-1.5 text-[12px] text-[#8a8a82] transition-all duration-200 hover:border-[#c9a96e]/30 hover:text-[#c9a96e]/70"
                 >
                   {text}
                 </button>
@@ -450,11 +438,11 @@ export default function SimulationInput({
                     setInputA(a);
                     setInputB(b);
                   }}
-                  className="rounded-full border border-white/[0.12] px-3 py-1.5 text-[12px] transition-colors hover:bg-white/[0.06]"
+                  className="rounded-full border border-[#3a3a36] px-3 py-1.5 text-[12px] transition-all duration-200 hover:border-[#c9a96e]/30"
                 >
-                  <span className="text-blue-400/70">{a}</span>
-                  <span className="mx-1 text-white/15">vs</span>
-                  <span className="text-rose-400/70">{b}</span>
+                  <span className="text-[#8a8a82]">{a}</span>
+                  <span className="mx-1.5 text-[#5a5a55]">vs</span>
+                  <span className="text-[#8a8a82]">{b}</span>
                 </button>
               ))
             : null}
@@ -464,7 +452,7 @@ export default function SimulationInput({
                   key={text}
                   type="button"
                   onClick={() => setInputA(text)}
-                  className="rounded-full border border-amber-500/20 px-3 py-1.5 text-[12px] text-amber-200/50 transition-colors hover:bg-amber-500/[0.06]"
+                  className="rounded-full border border-[#3a3a36] px-3 py-1.5 text-[12px] text-[#8a8a82] transition-all duration-200 hover:border-[#c9a96e]/30 hover:text-[#c9a96e]/70"
                 >
                   {text}
                 </button>
@@ -476,7 +464,7 @@ export default function SimulationInput({
                   key={text}
                   type="button"
                   onClick={() => setInputA(text)}
-                  className="rounded-full border border-red-500/15 px-3 py-1.5 text-[12px] text-red-200/45 transition-colors hover:bg-red-500/[0.06]"
+                  className="rounded-full border border-[#3a3a36] px-3 py-1.5 text-[12px] text-[#8a8a82] transition-all duration-200 hover:border-[#c9a96e]/30 hover:text-[#c9a96e]/70"
                 >
                   {text}
                 </button>

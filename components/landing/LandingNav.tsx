@@ -33,7 +33,7 @@ export default function LandingNav() {
             onClick={() =>
               window.dispatchEvent(new CustomEvent('sukgo:show-auth', { detail: { mode: 'signup' } }))
             }
-            className="rounded-lg bg-[#e8593c] px-4 py-2 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#d64d32] sm:px-5"
+            className="rounded-xl bg-[#c9a96e] px-4 py-2 text-[13px] font-semibold text-[#0a0a0f] shadow-[0_0_24px_rgba(201,169,110,0.12)] transition-colors hover:bg-[#b8994f] sm:px-5"
           >
             Get started
           </button>

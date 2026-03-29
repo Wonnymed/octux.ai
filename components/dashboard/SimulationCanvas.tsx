@@ -51,14 +51,14 @@ export default function SimulationCanvas() {
                     postVerdict &&
                       'cursor-pointer hover:scale-105 hover:ring-2 hover:ring-white/20',
                     !postVerdict && 'cursor-not-allowed opacity-50',
-                    chatOpen && activeId === a.agent_id && 'scale-105 ring-2 ring-purple-400/35',
+                    chatOpen && activeId === a.agent_id && 'scale-105 ring-2 ring-[#c9a96e]/35',
                     chatOpen && activeId !== a.agent_id && postVerdict && 'opacity-40',
                   )}
                 >
                   {a.agent_name}
                   {hasThread ? (
                     <span
-                      className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-purple-400/30 bg-purple-500/30 text-[7px]"
+                      className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#c9a96e]/40 bg-[#c9a96e]/30 text-[7px]"
                       aria-hidden
                     >
                       💬

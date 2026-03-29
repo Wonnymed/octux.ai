@@ -95,7 +95,7 @@ export default function HeroSection({
           <div className="mx-auto mt-10">
             <Link
               href="/"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-txt-on-accent transition-colors hover:bg-accent-hover"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#c9a96e] px-6 py-3 text-sm font-semibold text-[#0a0a0f] shadow-[0_0_30px_rgba(201,169,110,0.12)] transition-colors hover:bg-[#b8994f]"
             >
               Start a simulation
               <ArrowRight className="h-4 w-4" aria-hidden />
@@ -138,7 +138,7 @@ export default function HeroSection({
                     className={cn(
                       'inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors sm:w-auto',
                       (requireAuth || input.trim()) && !loading
-                        ? 'bg-accent text-txt-on-accent hover:bg-accent-hover'
+                        ? 'bg-[#c9a96e] text-[#0a0a0f] shadow-[0_0_30px_rgba(201,169,110,0.12)] hover:bg-[#b8994f]'
                         : 'cursor-not-allowed bg-surface-2 text-txt-disabled',
                     )}
                   >

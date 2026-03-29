@@ -99,7 +99,7 @@ export default function SettingsBillingPage() {
         <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-white/[0.08] dark:bg-white/[0.03] sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
             <span
-              className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#e8593c]/10 text-[#e8593c] dark:bg-accent/10 dark:text-accent"
+              className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#c9a96e]/10 text-[#c9a96e] dark:bg-accent/10 dark:text-accent"
               aria-hidden
             >
               <Zap size={22} strokeWidth={1.75} />
@@ -140,7 +140,7 @@ export default function SettingsBillingPage() {
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-white/[0.06]">
             <div
-              className="h-full rounded-full bg-[#e8593c] transition-[width] duration-300 dark:bg-accent"
+              className="h-full rounded-full bg-[#c9a96e] transition-[width] duration-300 dark:bg-accent"
               style={{ width: `${pct}%` }}
             />
           </div>

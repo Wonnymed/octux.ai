@@ -100,7 +100,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 {active ? (
                   <motion.span
                     layoutId="settings-nav-indicator"
-                    className="absolute bottom-2 left-0 top-2 w-0.5 rounded-r bg-[#e8593c]"
+                    className="absolute bottom-2 left-0 top-2 w-0.5 rounded-r bg-[#c9a96e]"
                     transition={TRANSITIONS.spring}
                     aria-hidden
                   />

@@ -5,17 +5,20 @@
  * Light landing → dark band for contrast; not the live SimulationCanvas.
  */
 export default function SimulationPreviewBand() {
+  const gold = '#c9a96e';
+  const white = '#f5f5f0';
+  const dim = '#5a5a55';
   const nodes = [
-    { a: -90, r: 38, c: '#4ade80', g: 'rgba(74,222,128,0.12)' },
-    { a: -54, r: 34, c: '#fbbf24', g: 'rgba(251,191,36,0.12)' },
-    { a: -18, r: 36, c: '#4ade80', g: 'rgba(74,222,128,0.1)' },
-    { a: 18, r: 32, c: '#f87171', g: 'rgba(248,113,113,0.12)' },
-    { a: 54, r: 35, c: '#4ade80', g: 'rgba(74,222,128,0.1)' },
-    { a: 90, r: 33, c: '#fbbf24', g: 'rgba(251,191,36,0.11)' },
-    { a: 126, r: 31, c: '#4ade80', g: 'rgba(74,222,128,0.09)' },
-    { a: 162, r: 36, c: '#fbbf24', g: 'rgba(251,191,36,0.1)' },
-    { a: 198, r: 34, c: '#4ade80', g: 'rgba(74,222,128,0.1)' },
-    { a: 234, r: 32, c: '#4ade80', g: 'rgba(74,222,128,0.09)' },
+    { a: -90, r: 38, c: white, g: 'rgba(245,245,240,0.1)' },
+    { a: -54, r: 34, c: gold, g: 'rgba(201,169,110,0.14)' },
+    { a: -18, r: 36, c: dim, g: 'rgba(90,90,85,0.12)' },
+    { a: 18, r: 32, c: white, g: 'rgba(245,245,240,0.08)' },
+    { a: 54, r: 35, c: gold, g: 'rgba(201,169,110,0.12)' },
+    { a: 90, r: 33, c: dim, g: 'rgba(90,90,85,0.1)' },
+    { a: 126, r: 31, c: white, g: 'rgba(245,245,240,0.07)' },
+    { a: 162, r: 36, c: gold, g: 'rgba(201,169,110,0.11)' },
+    { a: 198, r: 34, c: dim, g: 'rgba(90,90,85,0.09)' },
+    { a: 234, r: 32, c: white, g: 'rgba(245,245,240,0.08)' },
   ];
 
   const rad = (deg: number) => (deg * Math.PI) / 180;

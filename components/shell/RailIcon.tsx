@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/shadcn/tooltip';
 
-const TERRA = '#e8593c';
+const ACCENT_GOLD = '#c9a96e';
 
 const TOOLTIP_DARK =
   'border border-white/[0.08] bg-[#1a1a1f] px-2.5 py-1.5 text-[12px] text-white/80 shadow-lg';
@@ -30,7 +30,7 @@ export interface RailIconProps {
 }
 
 /**
- * Centered 36×36 rail target, 22px icon, active terracotta bar hugging the icon column.
+ * Centered 36×36 rail target, 22px icon, active gold bar hugging the icon column.
  */
 export default function RailIcon({
   icon: Icon,
@@ -61,7 +61,7 @@ export default function RailIcon({
       {active ? (
         <span
           className="pointer-events-none absolute left-[5px] top-1/2 z-0 h-5 w-[3px] -translate-y-1/2 rounded-r-[2px]"
-          style={{ backgroundColor: TERRA }}
+          style={{ backgroundColor: ACCENT_GOLD }}
           aria-hidden
         />
       ) : null}

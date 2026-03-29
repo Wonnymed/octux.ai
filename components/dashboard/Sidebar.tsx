@@ -180,7 +180,7 @@ export default function DashboardSidebar({
           className={cn(
             'flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[13px] font-medium transition-all',
             pathname === '/home'
-              ? 'border-[#e8593c]/40 bg-[rgba(232,89,60,0.06)] text-white/85'
+              ? 'border-[#c9a96e]/40 bg-[rgba(201,169,110,0.08)] text-[#f5f5f0]'
               : 'border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white/70',
           )}
         >
@@ -192,7 +192,7 @@ export default function DashboardSidebar({
           className={cn(
             'flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[13px] font-medium transition-all',
             operatorActive
-              ? 'border-[#e8593c]/40 bg-[rgba(232,89,60,0.06)] text-white/85'
+              ? 'border-[#c9a96e]/40 bg-[rgba(201,169,110,0.08)] text-[#f5f5f0]'
               : 'border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white/70',
           )}
         >
@@ -212,12 +212,7 @@ export default function DashboardSidebar({
         <div className="shrink-0 px-3 pb-3">
           <Link
             href="/pricing"
-            className="block rounded-[10px] border p-3 transition-colors hover:bg-white/[0.04]"
-            style={{
-              borderColor: DARK_THEME.accent + '55',
-              background: `linear-gradient(${DARK_THEME.bg_sidebar}, ${DARK_THEME.bg_sidebar}) padding-box, linear-gradient(135deg, ${DARK_THEME.accent}55, ${DARK_THEME.info}44) border-box`,
-              border: '1px solid transparent',
-            }}
+            className="block rounded-xl border border-[#c9a96e]/20 bg-[#c9a96e]/[0.03] p-3 transition-colors hover:bg-[#c9a96e]/[0.05]"
           >
             <p className="text-[13px] font-semibold text-white/80">Upgrade to Pro — $29/mo</p>
             <p className="mt-0.5 text-[11px] text-white/35">Unlimited specialist sims</p>

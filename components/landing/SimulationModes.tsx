@@ -22,7 +22,7 @@ const MODES: {
     Icon: Zap,
     line1: '10 experts analyze',
     line2: 'your decision',
-    iconWrap: 'bg-orange-500/15 text-orange-600 dark:text-orange-400',
+    iconWrap: 'bg-[#c9a96e]/12 text-[#7a6432] dark:bg-[#c9a96e]/10 dark:text-[#c9a96e]',
   },
   {
     name: 'Compare',
@@ -30,7 +30,7 @@ const MODES: {
     Icon: ArrowLeftRight,
     line1: 'A vs B — which',
     line2: 'path wins?',
-    iconWrap: 'bg-sky-500/15 text-sky-600 dark:text-sky-400',
+    iconWrap: 'bg-[#c9a96e]/12 text-[#7a6432] dark:bg-[#c9a96e]/10 dark:text-[#c9a96e]',
   },
   {
     name: 'Stress test',
@@ -38,7 +38,7 @@ const MODES: {
     Icon: AlertTriangle,
     line1: 'Find every way',
     line2: 'this plan can fail',
-    iconWrap: 'bg-red-500/15 text-red-600 dark:text-red-400',
+    iconWrap: 'bg-[#c9a96e]/12 text-[#7a6432] dark:bg-[#c9a96e]/10 dark:text-[#c9a96e]',
   },
   {
     name: 'Pre-mortem',
@@ -46,7 +46,7 @@ const MODES: {
     Icon: Skull,
     line1: 'It failed in 1 year.',
     line2: 'Why?',
-    iconWrap: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
+    iconWrap: 'bg-[#c9a96e]/12 text-[#7a6432] dark:bg-[#c9a96e]/10 dark:text-[#c9a96e]',
   },
 ] as const;
 

@@ -46,7 +46,7 @@ export default function GuestMobileDrawer({ onClose }: { onClose: () => void }) 
               onClose();
               window.dispatchEvent(new CustomEvent('sukgo:show-auth', { detail: { mode: 'signup' } }));
             }}
-            className="rounded-lg bg-[#e8593c] py-3 text-center text-[14px] font-semibold text-white hover:bg-[#d64d32]"
+            className="rounded-xl bg-[#c9a96e] py-3 text-center text-[14px] font-semibold text-[#0a0a0f] shadow-[0_0_24px_rgba(201,169,110,0.1)] hover:bg-[#b8994f]"
           >
             Get started
           </button>

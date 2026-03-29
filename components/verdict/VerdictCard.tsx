@@ -414,9 +414,10 @@ function CitationRow({ citation, index }: { citation: Citation; index: number })
 
 function RiskRow({ risk, index }: { risk: RiskEntry; index: number }) {
   const severityStyles: Record<string, string> = {
-    high: 'bg-verdict-abandon/15 text-verdict-abandon border-verdict-abandon/20',
-    medium: 'bg-verdict-delay/15 text-verdict-delay border-verdict-delay/20',
-    low: 'bg-surface-2 text-txt-tertiary border-border-subtle',
+    critical: 'border-[#c9a96e]/40 bg-[#c9a96e]/10 text-[#c9a96e]',
+    high: 'border-[#5a5a55] bg-[#252522] text-[#c0c0b8]',
+    medium: 'border-[#3a3a36] bg-[#1a1a18] text-[#8a8a82]',
+    low: 'border-[#252522] bg-transparent text-[#5a5a55]',
   };
 
   return (

@@ -5,14 +5,14 @@ export const DARK_THEME = {
   bg_surface: 'rgba(255,255,255,0.03)',
   bg_glass: 'rgba(10,10,15,0.85)',
 
-  accent: '#e8593c',
-  accent_soft: 'rgba(232,89,60,0.08)',
-  accent_border: 'rgba(232,89,60,0.15)',
+  accent: '#c9a96e',
+  accent_soft: 'rgba(201,169,110,0.08)',
+  accent_border: 'rgba(201,169,110,0.25)',
 
   success: '#4ade80',
-  warning: '#fbbf24',
-  danger: '#f87171',
-  info: '#60a5fa',
+  warning: '#c9a96e',
+  danger: '#b85450',
+  info: '#c0c0b8',
 
   text_primary: 'rgba(255,255,255,0.7)',
   text_secondary: 'rgba(255,255,255,0.4)',

@@ -53,7 +53,7 @@ const ICON_STROKE = 1.5;
 const EXPANDED_W = 288;
 /** Collapsed icon rail — centered targets, 22px icons */
 const COLLAPSED_W = 56;
-const RAIL_TERRA = '#e8593c';
+const RAIL_GOLD = '#c9a96e';
 const SHELL_RAIL_TOOLTIP =
   'border border-white/[0.08] bg-[#1a1a1f] px-2.5 py-1.5 text-[12px] text-white/80 shadow-lg';
 /** Sidebar header — compact gap to first nav item (Okara-style, ≤12px below header) */
@@ -440,7 +440,7 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-medium leading-none transition-opacity hover:opacity-95"
       style={{
         backgroundColor: 'rgba(232, 89, 60, 0.15)',
-        color: RAIL_TERRA,
+        color: RAIL_GOLD,
       }}
       aria-label={displayName}
     >
@@ -523,7 +523,7 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
               <DropdownMenuItem
                 className={cn(
                   PROFILE_MENU_ITEM,
-                  'text-rose-500 focus:bg-rose-500/[0.06] data-[highlighted]:bg-rose-500/[0.06] [&_svg]:text-rose-500',
+                  'text-[#b85450] focus:bg-[#b85450]/[0.08] data-[highlighted]:bg-[#b85450]/[0.08] [&_svg]:text-[#b85450]',
                 )}
                 onSelect={async () => {
                   await signOut();

@@ -9,6 +9,8 @@ import { TRANSITIONS } from '@/lib/design/transitions';
 import { useDashboardUiStore, type DashboardMode } from '@/lib/store/dashboard-ui';
 import { useSimulationStore } from '@/lib/store/simulation';
 
+const MODE_GOLD = '#c9a96e';
+
 export const DASHBOARD_SIDEBAR_MODES: {
   id: DashboardMode;
   name: string;
@@ -16,34 +18,10 @@ export const DASHBOARD_SIDEBAR_MODES: {
   Icon: LucideIcon;
   accent: string;
 }[] = [
-  {
-    id: 'simulate',
-    name: 'Simulate',
-    description: 'Run the full analysis',
-    Icon: Zap,
-    accent: '#e8593c',
-  },
-  {
-    id: 'compare',
-    name: 'Compare',
-    description: 'A vs B — which wins?',
-    Icon: ArrowLeftRight,
-    accent: '#60a5fa',
-  },
-  {
-    id: 'stress',
-    name: 'Stress test',
-    description: 'Find the breaking point',
-    Icon: ShieldAlert,
-    accent: '#f87171',
-  },
-  {
-    id: 'premortem',
-    name: 'Pre-mortem',
-    description: 'The failure autopsy',
-    Icon: Skull,
-    accent: '#fbbf24',
-  },
+  { id: 'simulate', name: 'Simulate', description: 'Run the full analysis', Icon: Zap, accent: MODE_GOLD },
+  { id: 'compare', name: 'Compare', description: 'A vs B — which wins?', Icon: ArrowLeftRight, accent: MODE_GOLD },
+  { id: 'stress', name: 'Stress test', description: 'Find the breaking point', Icon: ShieldAlert, accent: MODE_GOLD },
+  { id: 'premortem', name: 'Pre-mortem', description: 'The failure autopsy', Icon: Skull, accent: MODE_GOLD },
 ];
 
 export default function SidebarModes({
@@ -83,7 +61,7 @@ export default function SidebarModes({
                 onClick={() => handleModeClick(m.id)}
                 className={cn(
                   'group relative flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors duration-150',
-                  active ? 'bg-white/[0.03]' : 'hover:bg-white/[0.04]',
+                  active ? 'bg-white/[0.03]' : 'hover:bg-[#c9a96e]/[0.04]',
                 )}
               >
                 {active ? (
@@ -100,17 +78,16 @@ export default function SidebarModes({
                   strokeWidth={1.5}
                   className={cn(
                     'mt-0.5 shrink-0 transition-colors',
-                    active ? '' : 'text-white/40 group-hover:text-white/50',
+                    active ? 'text-[#c9a96e]' : 'text-[#8a8a82] group-hover:text-[#c0c0b8]',
                   )}
-                  style={active ? { color: m.accent } : undefined}
                 />
                 <div className="min-w-0 flex-1">
                   <div
                     className={cn(
                       'text-[13px] transition-colors',
                       active
-                        ? 'font-semibold text-white'
-                        : 'font-medium text-white/70 group-hover:text-white/80',
+                        ? 'font-semibold text-[#c9a96e]'
+                        : 'font-medium text-[#8a8a82] group-hover:text-[#c0c0b8]',
                     )}
                   >
                     {m.name}
@@ -118,7 +95,7 @@ export default function SidebarModes({
                   <div
                     className={cn(
                       'mt-0.5 text-[11px] leading-snug transition-colors',
-                      active ? 'text-white/35' : 'text-white/25 group-hover:text-white/30',
+                      active ? 'text-[#8a8a82]' : 'text-[#5a5a55] group-hover:text-[#8a8a82]',
                     )}
                   >
                     {m.description}

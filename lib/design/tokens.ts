@@ -22,9 +22,9 @@ export const stagger = {
 } as const;
 
 export const verdictColors = {
-  proceed: { solid: '#10B981', muted: 'rgba(16, 185, 129, 0.15)' },
-  delay: { solid: '#F59E0B', muted: 'rgba(245, 158, 11, 0.15)' },
-  abandon: { solid: '#EF4444', muted: 'rgba(239, 68, 68, 0.15)' },
+  proceed: { solid: '#5a9e6f', muted: 'rgba(90, 158, 111, 0.14)' },
+  delay: { solid: '#c9a96e', muted: 'rgba(201, 169, 110, 0.14)' },
+  abandon: { solid: '#b85450', muted: 'rgba(184, 84, 80, 0.14)' },
 } as const;
 export type VerdictType = keyof typeof verdictColors;
 
@@ -35,11 +35,11 @@ export const verdictLabels: Record<VerdictType, string> = {
 };
 
 export const gradeColors: Record<string, string> = {
-  'A+': '#10B981', 'A': '#10B981', 'A-': '#10B981',
-  'B+': '#3B82F6', 'B': '#3B82F6', 'B-': '#3B82F6',
-  'C+': '#F59E0B', 'C': '#F59E0B', 'C-': '#F59E0B',
-  'D+': '#F97316', 'D': '#F97316', 'D-': '#F97316',
-  'F': '#EF4444',
+  'A+': '#c9a96e', 'A': '#c9a96e', 'A-': '#c9a96e',
+  'B+': '#c0c0b8', 'B': '#c0c0b8', 'B-': '#c0c0b8',
+  'C+': '#8a8a82', 'C': '#8a8a82', 'C-': '#8a8a82',
+  'D+': '#5a5a55', 'D': '#5a5a55', 'D-': '#5a5a55',
+  'F': '#b85450',
 };
 
 export const categoryColors = {

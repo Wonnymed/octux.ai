@@ -41,15 +41,7 @@ export default function SpecialistSwitcher({
                   {p.role.length > 42 ? '…' : ''}
                 </span>
               </div>
-              <span
-                className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] ${
-                  p.bias === 'bullish'
-                    ? 'text-green-400/50'
-                    : p.bias === 'bearish'
-                      ? 'text-red-400/50'
-                      : 'text-amber-400/50'
-                }`}
-              >
+              <span className="shrink-0 rounded-full border border-[#3a3a36] px-1.5 py-0.5 text-[10px] text-[#8a8a82]">
                 {p.bias}
               </span>
             </button>
