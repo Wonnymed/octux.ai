@@ -6,11 +6,11 @@ import { Trophy } from 'lucide-react';
 import { useSimulationStore } from '@/lib/store/simulation';
 import { getAgentMonoGradient } from '@/lib/design/tokens';
 
-/** Post-verdict groups — bright / gold / dim (no green–red). */
+/** Post-verdict groups — R16 proceed / delay / abandon. */
 const STANCE_GROUP: Record<'proceed' | 'delay' | 'abandon', { solid: string; bar: string }> = {
-  proceed: { solid: '#f5f5f0', bar: 'rgba(245, 245, 240, 0.35)' },
-  delay: { solid: '#c9a96e', bar: 'rgba(201, 169, 110, 0.45)' },
-  abandon: { solid: '#8a8a82', bar: 'rgba(138, 138, 130, 0.35)' },
+  proceed: { solid: '#4ade80', bar: 'rgba(74, 222, 128, 0.45)' },
+  delay: { solid: '#fbbf24', bar: 'rgba(251, 191, 36, 0.45)' },
+  abandon: { solid: '#f87171', bar: 'rgba(248, 113, 113, 0.45)' },
 };
 
 // ═══ POSITION GROUPS ═══

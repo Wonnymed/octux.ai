@@ -9,7 +9,7 @@ import PricingPreview from '@/components/landing/PricingPreview';
 import LandingFooter from '@/components/landing/LandingFooter';
 
 /**
- * Product landing: dark canvas, gold accent, embedded hero simulation input.
+ * Product landing: dark canvas, white vivid + mode colors, embedded hero simulation input.
  * Shown at `/` for logged-out users only.
  */
 export default function LandingPage({ loading = false }: { loading?: boolean }) {

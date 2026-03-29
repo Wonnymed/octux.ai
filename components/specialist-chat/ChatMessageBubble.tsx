@@ -12,7 +12,7 @@ export default function ChatMessageBubble({
   if (msg.role === 'user') {
     return (
       <div className="text-right">
-        <div className="inline-block max-w-[85%] rounded-xl rounded-tr-sm border border-[#c9a96e]/15 bg-[#c9a96e]/[0.08] px-3 py-2">
+        <div className="inline-block max-w-[85%] rounded-xl rounded-tr-sm border border-white/15 bg-white/[0.08] px-3 py-2">
           <span className="text-[13px] text-[#f5f5f0]">{msg.text}</span>
         </div>
       </div>

@@ -26,9 +26,9 @@ export const stagger = {
 } as const;
 
 export const verdictColors = {
-  proceed: { solid: '#5a9e6f', muted: 'rgba(90, 158, 111, 0.14)' },
-  delay: { solid: '#c9a96e', muted: 'rgba(201, 169, 110, 0.14)' },
-  abandon: { solid: '#b85450', muted: 'rgba(184, 84, 80, 0.14)' },
+  proceed: { solid: '#4ade80', muted: 'rgba(74, 222, 128, 0.14)' },
+  delay: { solid: '#fbbf24', muted: 'rgba(251, 191, 36, 0.14)' },
+  abandon: { solid: '#f87171', muted: 'rgba(248, 113, 113, 0.14)' },
 } as const;
 export type VerdictType = keyof typeof verdictColors;
 
@@ -39,14 +39,22 @@ export const verdictLabels: Record<VerdictType, string> = {
 };
 
 export const gradeColors: Record<string, string> = {
-  'A+': '#c9a96e', 'A': '#c9a96e', 'A-': '#c9a96e',
-  'B+': '#c0c0b8', 'B': '#c0c0b8', 'B-': '#c0c0b8',
-  'C+': '#8a8a82', 'C': '#8a8a82', 'C-': '#8a8a82',
-  'D+': '#5a5a55', 'D': '#5a5a55', 'D-': '#5a5a55',
-  'F': '#b85450',
+  'A+': '#a78bfa',
+  'A': '#a78bfa',
+  'A-': '#a78bfa',
+  'B+': '#c0c0b8',
+  'B': '#c0c0b8',
+  'B-': '#c0c0b8',
+  'C+': '#8a8a82',
+  'C': '#8a8a82',
+  'C-': '#8a8a82',
+  'D+': '#5a5a55',
+  'D': '#5a5a55',
+  'D-': '#5a5a55',
+  'F': '#f87171',
 };
 
-/** Neutral + gold only — category is ignored for hue (R8 addendum). */
+/** Neutral palette — category is ignored for hue. */
 export const categoryColors = {
   investment: '#8a8a82',
   relationships: '#8a8a82',
@@ -71,27 +79,27 @@ export function getAgentColor(category: CategoryType, index: number): string {
 }
 
 /**
- * Command palette / category dots — neutral gray or gold tint by slot (no rainbow).
- * Optional `slot` alternates gold vs neutral for visual rhythm.
+ * Command palette / category dots — neutral gray or blue tint by slot.
+ * Optional `slot` alternates accent vs neutral for visual rhythm.
  */
 export function getCategoryColor(category: string, slot = 0): string {
   void category;
-  return slot % 2 === 0 ? '#8a8a82' : '#c9a96e';
+  return slot % 2 === 0 ? '#8a8a82' : '#60a5fa';
 }
 
 export const entityStates = {
-  dormant: { scale: 1, opacity: 0.6, glow: 'rgba(201, 169, 110, 0.08)', breatheDuration: 4 },
-  active: { scale: 1.05, opacity: 0.8, glow: 'rgba(201, 169, 110, 0.18)', breatheDuration: 2 },
-  engaged: { scale: 1.5, opacity: 1, glow: 'rgba(201, 169, 110, 0.28)', breatheDuration: 1.5 },
-  maximum: { scale: 2, opacity: 1, glow: 'rgba(201, 169, 110, 0.4)', breatheDuration: 0.8 },
+  dormant: { scale: 1, opacity: 0.6, glow: 'rgba(255, 255, 255, 0.06)', breatheDuration: 4 },
+  active: { scale: 1.05, opacity: 0.8, glow: 'rgba(96, 165, 250, 0.2)', breatheDuration: 2 },
+  engaged: { scale: 1.5, opacity: 1, glow: 'rgba(167, 139, 250, 0.35)', breatheDuration: 1.5 },
+  maximum: { scale: 2, opacity: 1, glow: 'rgba(167, 139, 250, 0.45)', breatheDuration: 0.8 },
 } as const;
 export type EntityState = keyof typeof entityStates;
 
 export const tierConfig = {
   free: { label: 'Free', color: 'rgba(255,255,255,0.40)', badgeClass: 'oct-badge-free' },
-  pro: { label: 'Pro', color: '#c9a96e', badgeClass: 'oct-badge-pro' },
-  max: { label: 'Max', color: '#dfc999', badgeClass: 'oct-badge-max' },
-  kraken: { label: 'Kraken', color: '#a88b4a', badgeClass: 'oct-badge-kraken' },
+  pro: { label: 'Pro', color: '#a78bfa', badgeClass: 'oct-badge-pro' },
+  max: { label: 'Max', color: '#34d399', badgeClass: 'oct-badge-max' },
+  kraken: { label: 'Kraken', color: '#60a5fa', badgeClass: 'oct-badge-kraken' },
 } as const;
 
 export const layout = {

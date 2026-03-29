@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Zap, ArrowLeftRight, AlertTriangle, Skull } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
+import { MODE_ACCENTS } from '@/lib/design/r16-colors';
 import { openAuthModal } from '@/lib/auth/openAuthModal';
 import type { DashboardMode } from '@/lib/store/dashboard-ui';
 import { useDashboardUiStore } from '@/lib/store/dashboard-ui';
@@ -14,7 +15,6 @@ const MODES: {
   Icon: typeof Zap;
   line1: string;
   line2: string;
-  iconWrap: string;
 }[] = [
   {
     name: 'Simulate',
@@ -22,7 +22,6 @@ const MODES: {
     Icon: Zap,
     line1: '10 experts analyze',
     line2: 'your decision',
-    iconWrap: 'bg-[#c9a96e]/12 text-[#7a6432] dark:bg-[#c9a96e]/10 dark:text-[#c9a96e]',
   },
   {
     name: 'Compare',
@@ -30,7 +29,6 @@ const MODES: {
     Icon: ArrowLeftRight,
     line1: 'A vs B — which',
     line2: 'path wins?',
-    iconWrap: 'bg-[#c9a96e]/12 text-[#7a6432] dark:bg-[#c9a96e]/10 dark:text-[#c9a96e]',
   },
   {
     name: 'Stress test',
@@ -38,7 +36,6 @@ const MODES: {
     Icon: AlertTriangle,
     line1: 'Find every way',
     line2: 'this plan can fail',
-    iconWrap: 'bg-[#c9a96e]/12 text-[#7a6432] dark:bg-[#c9a96e]/10 dark:text-[#c9a96e]',
   },
   {
     name: 'Pre-mortem',
@@ -46,7 +43,6 @@ const MODES: {
     Icon: Skull,
     line1: 'It failed in 1 year.',
     line2: 'Why?',
-    iconWrap: 'bg-[#c9a96e]/12 text-[#7a6432] dark:bg-[#c9a96e]/10 dark:text-[#c9a96e]',
   },
 ] as const;
 
@@ -72,6 +68,7 @@ export default function SimulationModes({ forLoggedInUser = false }: { forLogged
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {MODES.map((m) => {
             const Icon = m.Icon;
+            const accent = MODE_ACCENTS[m.modeId];
             if (forLoggedInUser) {
               return (
                 <button
@@ -83,7 +80,14 @@ export default function SimulationModes({ forLoggedInUser = false }: { forLogged
                     'transition-shadow duration-300 hover:shadow-[0_8px_32px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
                   )}
                 >
-                  <div className={cn('mb-4 flex h-11 w-11 items-center justify-center rounded-xl', m.iconWrap)}>
+                  <div
+                    className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border"
+                    style={{
+                      backgroundColor: accent.bg,
+                      borderColor: accent.border,
+                      color: accent.color,
+                    }}
+                  >
                     <Icon className="h-5 w-5" strokeWidth={2} aria-hidden />
                   </div>
                   <h3 className="text-base font-semibold text-txt-primary">{m.name}</h3>
@@ -106,7 +110,14 @@ export default function SimulationModes({ forLoggedInUser = false }: { forLogged
                   'transition-shadow duration-300 hover:shadow-[0_8px_32px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
                 )}
               >
-                <div className={cn('mb-4 flex h-11 w-11 items-center justify-center rounded-xl', m.iconWrap)}>
+                <div
+                  className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border"
+                  style={{
+                    backgroundColor: accent.bg,
+                    borderColor: accent.border,
+                    color: accent.color,
+                  }}
+                >
                   <Icon className="h-5 w-5" strokeWidth={2} aria-hidden />
                 </div>
                 <h3 className="text-base font-semibold text-txt-primary">{m.name}</h3>

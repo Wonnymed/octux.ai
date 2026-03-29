@@ -29,14 +29,14 @@ export default function SimulationCanvas() {
 
   return (
     <>
-      <div className="flex h-full min-h-[120px] flex-col bg-[#111110] p-3">
+      <div className="flex h-full min-h-[120px] flex-col bg-[#111118] p-3">
         {list.length === 0 ? (
           <CanvasEmptyState mode={canvasPreviewMode} waiting={waitingForAgents} />
         ) : (
           <>
-            <p className="mb-2 text-[10px] uppercase tracking-wider text-white/25">Specialists</p>
+            <p className="mb-2 text-[10px] uppercase tracking-wider text-white/50">Specialists</p>
             {postVerdict ? (
-              <p className="mb-2 text-[11px] text-white/20">
+              <p className="mb-2 text-[11px] text-white/50">
                 Click a specialist to open 1:1 follow-up chat (same memory as the full simulation).
               </p>
             ) : null}
@@ -55,14 +55,14 @@ export default function SimulationCanvas() {
                     postVerdict &&
                       'cursor-pointer hover:scale-105 hover:ring-2 hover:ring-white/20',
                     !postVerdict && 'cursor-not-allowed opacity-50',
-                    chatOpen && activeId === a.agent_id && 'scale-105 ring-2 ring-[#c9a96e]/35',
+                    chatOpen && activeId === a.agent_id && 'scale-105 ring-2 ring-[#60a5fa]/45',
                     chatOpen && activeId !== a.agent_id && postVerdict && 'opacity-40',
                   )}
                 >
                   {a.agent_name}
                   {hasThread ? (
                     <span
-                      className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#c9a96e]/40 bg-[#c9a96e]/30 text-[7px]"
+                      className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#a78bfa]/40 bg-[#a78bfa]/30 text-[7px]"
                       aria-hidden
                     >
                       💬

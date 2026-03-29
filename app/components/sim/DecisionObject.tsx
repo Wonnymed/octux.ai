@@ -10,7 +10,7 @@ import { verdictColors } from "@/lib/design/tokens";
 
 const RECOMMENDATION_LABELS: Record<string, { label: string; color: string }> = {
   proceed: { label: "PROCEED", color: verdictColors.proceed.solid },
-  proceed_with_conditions: { label: "PROCEED WITH CONDITIONS", color: "#c9a96e" },
+  proceed_with_conditions: { label: "PROCEED WITH CONDITIONS", color: "#fbbf24" },
   delay: { label: "DELAY", color: verdictColors.delay.solid },
   abandon: { label: "ABANDON", color: verdictColors.abandon.solid },
 };
@@ -39,7 +39,7 @@ const DecisionObjectCard = forwardRef<HTMLDivElement, DecisionObjectProps>(funct
       transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
       style={{
         border: "1px solid var(--border-default)",
-        borderTop: "3px solid #c9a96e",
+        borderTop: "3px solid #fbbf24",
         borderRadius: "var(--radius-lg)",
         padding: 28,
         background: "var(--surface-raised)",
@@ -88,7 +88,7 @@ const DecisionObjectCard = forwardRef<HTMLDivElement, DecisionObjectProps>(funct
               cy={40}
               r={34}
               fill="none"
-              stroke="#c9a96e"
+              stroke="#fbbf24"
               strokeWidth={6}
               strokeLinecap="round"
               strokeDasharray={`${(verdict.probability / 100) * 213.6} 213.6`}

@@ -5,20 +5,22 @@
  * Light landing → dark band for contrast; not the live SimulationCanvas.
  */
 export default function SimulationPreviewBand() {
-  const gold = '#c9a96e';
-  const white = '#f5f5f0';
-  const dim = '#5a5a55';
+  const opus = '#a78bfa';
+  const sonnet = '#60a5fa';
+  const haiku = '#34d399';
+  const white = '#ffffff';
+  const dim = '#64748b';
   const nodes = [
-    { a: -90, r: 38, c: white, g: 'rgba(245,245,240,0.1)' },
-    { a: -54, r: 34, c: gold, g: 'rgba(201,169,110,0.14)' },
-    { a: -18, r: 36, c: dim, g: 'rgba(90,90,85,0.12)' },
-    { a: 18, r: 32, c: white, g: 'rgba(245,245,240,0.08)' },
-    { a: 54, r: 35, c: gold, g: 'rgba(201,169,110,0.12)' },
-    { a: 90, r: 33, c: dim, g: 'rgba(90,90,85,0.1)' },
-    { a: 126, r: 31, c: white, g: 'rgba(245,245,240,0.07)' },
-    { a: 162, r: 36, c: gold, g: 'rgba(201,169,110,0.11)' },
-    { a: 198, r: 34, c: dim, g: 'rgba(90,90,85,0.09)' },
-    { a: 234, r: 32, c: white, g: 'rgba(245,245,240,0.08)' },
+    { a: -90, r: 38, c: opus, g: 'rgba(167,139,250,0.2)' },
+    { a: -54, r: 34, c: sonnet, g: 'rgba(96,165,250,0.18)' },
+    { a: -18, r: 36, c: haiku, g: 'rgba(52,211,153,0.16)' },
+    { a: 18, r: 32, c: white, g: 'rgba(255,255,255,0.1)' },
+    { a: 54, r: 35, c: sonnet, g: 'rgba(96,165,250,0.16)' },
+    { a: 90, r: 33, c: dim, g: 'rgba(100,116,139,0.14)' },
+    { a: 126, r: 31, c: haiku, g: 'rgba(52,211,153,0.14)' },
+    { a: 162, r: 36, c: opus, g: 'rgba(167,139,250,0.18)' },
+    { a: 198, r: 34, c: sonnet, g: 'rgba(96,165,250,0.14)' },
+    { a: 234, r: 32, c: white, g: 'rgba(255,255,255,0.08)' },
   ];
 
   const rad = (deg: number) => (deg * Math.PI) / 180;

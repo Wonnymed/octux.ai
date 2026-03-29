@@ -133,7 +133,7 @@ export default function SpecialistChatDrawer() {
       <div className="border-b border-white/[0.06] p-4">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className="truncate text-[14px] font-medium text-[#c9a96e]">{persona.name}</div>
+            <div className="truncate text-[14px] font-medium text-[#a78bfa]">{persona.name}</div>
             <div className="truncate text-[11px] text-[#8a8a82]">{persona.role}</div>
           </div>
           <button
@@ -209,7 +209,7 @@ export default function SpecialistChatDrawer() {
             type="button"
             disabled={!input.trim() || loading}
             onClick={() => void send(input)}
-            className="rounded-lg bg-[#c9a96e]/90 px-3 py-2 text-[12px] font-medium text-[#0a0a0f] hover:bg-[#b8994f] disabled:opacity-30"
+            className="rounded-lg bg-white px-3 py-2 text-[12px] font-medium text-[#0a0a0f] hover:bg-[#e5e5e5] disabled:opacity-30"
           >
             Send
           </button>

@@ -53,7 +53,7 @@ const ICON_STROKE = 1.5;
 const EXPANDED_W = 288;
 /** Collapsed icon rail — centered targets, 22px icons */
 const COLLAPSED_W = 56;
-const RAIL_GOLD = '#c9a96e';
+const RAIL_ACTIVE = '#ffffff';
 const SHELL_RAIL_TOOLTIP =
   'border border-white/[0.08] bg-[#1a1a1f] px-2.5 py-1.5 text-[12px] text-white/80 shadow-lg';
 /** Sidebar header — compact gap to first nav item (Okara-style, ≤12px below header) */
@@ -437,7 +437,7 @@ function ProfileMenu({ variant, tier }: { variant: 'expanded' | 'collapsed'; tie
       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-medium leading-none transition-opacity hover:opacity-95"
       style={{
         backgroundColor: 'rgba(232, 89, 60, 0.15)',
-        color: RAIL_GOLD,
+        color: RAIL_ACTIVE,
       }}
       aria-label={displayName}
     >

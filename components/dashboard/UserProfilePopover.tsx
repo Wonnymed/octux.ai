@@ -79,7 +79,7 @@ export default function UserProfilePopover({ variant = 'full' }: { variant?: 'fu
     <button
       type="button"
       onClick={() => setOpen((v) => !v)}
-      className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#c9a96e]/20 bg-[#c9a96e]/15 text-[12px] font-medium leading-none text-[#c9a96e] transition-colors hover:opacity-95"
+      className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#a78bfa]/30 bg-[#a78bfa]/15 text-[12px] font-medium leading-none text-[#a78bfa] transition-colors hover:opacity-95"
       aria-expanded={open}
       aria-label={name}
     >
@@ -112,14 +112,14 @@ export default function UserProfilePopover({ variant = 'full' }: { variant?: 'fu
           className="flex w-full cursor-pointer items-center gap-2.5 px-[14px] py-3 text-left transition-colors hover:bg-white/[0.03]"
           aria-expanded={open}
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#c9a96e]/20 bg-[#c9a96e]/15 text-[14px] font-medium text-[#c9a96e]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#a78bfa]/30 bg-[#a78bfa]/15 text-[14px] font-medium text-[#a78bfa]">
             {initialsFromUser(user)}
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-medium text-white/80">{name}</p>
             {email ? <p className="truncate text-[11px] text-white/30">{email}</p> : null}
             <p className="mt-0.5 text-[11px] text-white/25">
-              {planLabel(tier)} · <span className="text-[#c9a96e]">{tokensRemaining} tokens left</span>
+              {planLabel(tier)} · <span className="text-white">{tokensRemaining} tokens left</span>
             </p>
           </div>
         </button>
@@ -238,7 +238,7 @@ export default function UserProfilePopover({ variant = 'full' }: { variant?: 'fu
             <button
               type="button"
               onClick={() => void handleLogout()}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13px] text-white/45 transition-colors hover:bg-[#c9a96e]/10 hover:text-[#c9a96e]/90"
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13px] text-white/60 transition-colors hover:bg-white/10 hover:text-white"
             >
               <LogOut size={16} className="shrink-0 opacity-80" strokeWidth={1.75} />
               Log out

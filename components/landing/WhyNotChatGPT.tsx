@@ -46,11 +46,11 @@ export default function WhyNotChatGPT() {
 
           <div className="flex w-full max-w-md flex-1 flex-col items-center lg:max-w-none">
             <article
-              className="w-full rounded-2xl border-2 border-[#c9a96e]/55 bg-[rgba(201,169,110,0.03)] p-6 text-left shadow-[0_4px_32px_rgba(201,169,110,0.12)] sm:p-7"
+              className="w-full rounded-2xl border-2 border-[#60a5fa]/50 bg-[rgba(96,165,250,0.08)] p-6 text-left shadow-[0_4px_32px_rgba(96,165,250,0.18)] sm:p-7"
               aria-label="Simulation engine category"
             >
-              <p className="text-sm font-semibold text-[#c9a96e]">🔬 Simulation engine</p>
-              <p className="mt-4 text-sm leading-relaxed text-txt-primary">
+              <p className="text-sm font-semibold text-[#a78bfa]">🔬 Simulation engine</p>
+              <p className="mt-4 text-sm leading-relaxed text-white/90">
                 Structured verdict, confidence scores, risk map — you KNOW before you invest.
               </p>
             </article>

@@ -143,7 +143,7 @@ function AgentCardInner({ agent, index }: AgentCardProps) {
             isComplete && 'border-border-subtle bg-surface-1/50',
             !isStreaming && !isComplete && 'border-border-subtle/50 bg-surface-1/30',
             canFollowUp && 'hover:border-white/15',
-            isActiveChat && 'ring-2 ring-[#c9a96e]/30',
+            isActiveChat && 'ring-2 ring-[#60a5fa]/45',
             specialistChatOpen && canFollowUp && !isActiveChat && 'opacity-50',
           )}
         >

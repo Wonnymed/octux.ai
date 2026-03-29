@@ -23,7 +23,7 @@ function getPositionStyle(position: string) {
       return {
         border: "rgba(201, 169, 110, 0.25)",
         bg: "rgba(201, 169, 110, 0.08)",
-        color: "#c9a96e",
+        color: "#60a5fa",
         label: "DELAY",
       };
     case "abandon":
@@ -256,7 +256,7 @@ export default function AgentCard({ agent, index, expanded, onToggle, history = 
                 <p
                   style={{
                     fontSize: 12,
-                    color: "#c9a96e",
+                    color: "#60a5fa",
                     fontStyle: "italic",
                   }}
                 >

@@ -1,20 +1,25 @@
 /**
- * R8 addendum — shared canvas colors for mode renderers (simulate / compare / stress / pre-mortem).
- * Import this when building canvas visuals; keeps simulation UI and canvas in sync.
+ * Canvas + agent colors — R16: vivid tiers (Opus / Sonnet / Haiku) + verdict palette.
  */
+import { R16 } from '@/lib/design/r16-colors';
+
 export const CANVAS = {
-  gold: '#c9a96e',
-  goldRgb: '201, 169, 110',
-  bright: '#f5f5f0',
-  dim: '#5a5a55',
-  darkLine: '#3a3a36',
-  surface: '#1a1a18',
-  bg: '#111110',
-  track: '#252522',
-  glow: 'rgba(201, 169, 110, 0.12)',
-  glowStrong: 'rgba(201, 169, 110, 0.15)',
-  positive: '#5a9e6f',
-  negative: '#b85450',
+  /** @deprecated use tier colors */
+  gold: R16.agent.sonnet,
+  goldRgb: '96, 165, 250',
+  bright: '#ffffff',
+  dim: 'rgba(255,255,255,0.4)',
+  darkLine: 'rgba(255,255,255,0.08)',
+  surface: '#111118',
+  bg: '#0a0a0f',
+  track: '#1a1a24',
+  glow: R16.agent.sonnetGlow,
+  glowStrong: 'rgba(96, 165, 250, 0.22)',
+  positive: R16.verdict.proceed,
+  negative: R16.verdict.abandon,
+  opus: R16.agent.opus,
+  sonnet: R16.agent.sonnet,
+  haiku: R16.agent.haiku,
 } as const;
 
 export type AgentNodeStyle = {
@@ -26,60 +31,59 @@ export type AgentNodeStyle = {
 
 export const AGENT_PALETTE = {
   operator: {
-    border: 'rgba(201, 169, 110, 0.5)',
-    bg: 'rgba(201, 169, 110, 0.1)',
-    text: '#c9a96e',
-    dot: '#c9a96e',
+    border: 'rgba(255,255,255,0.35)',
+    bg: 'rgba(255,255,255,0.08)',
+    text: R16.agent.operator,
+    dot: R16.agent.operator,
   } satisfies AgentNodeStyle,
 
   chief: {
-    border: 'rgba(201, 169, 110, 0.4)',
-    bg: 'rgba(201, 169, 110, 0.08)',
-    text: '#c9a96e',
-    dot: '#c9a96e',
+    border: 'rgba(167,139,250,0.55)',
+    bg: R16.agent.opusBg,
+    text: R16.agent.opus,
+    dot: R16.agent.opus,
   } satisfies AgentNodeStyle,
 
   specialist(index: number): AgentNodeStyle {
-    const brightness = Math.max(0.35, 0.9 - index * 0.07);
-    const alpha = Math.max(0.12, 0.45 - index * 0.04);
+    void index;
     return {
-      border: `rgba(245, 245, 240, ${alpha * 0.45})`,
-      bg: `rgba(245, 245, 240, ${alpha * 0.09})`,
-      text: `rgba(245, 245, 240, ${brightness})`,
-      dot: `rgba(245, 245, 240, ${alpha})`,
+      border: 'rgba(96,165,250,0.45)',
+      bg: R16.agent.sonnetBg,
+      text: R16.agent.sonnet,
+      dot: R16.agent.sonnet,
     };
   },
 
   teamA(index: number): AgentNodeStyle {
     const alpha = Math.max(0.25, 0.75 - index * 0.1);
     return {
-      border: `rgba(245, 245, 240, ${alpha * 0.28})`,
-      bg: 'rgba(245, 245, 240, 0.04)',
-      text: `rgba(245, 245, 240, ${alpha})`,
-      dot: `rgba(245, 245, 240, ${alpha})`,
+      border: `rgba(96,165,250,${alpha * 0.35})`,
+      bg: 'rgba(96,165,250,0.06)',
+      text: `rgba(96,165,250,${alpha})`,
+      dot: `rgba(96,165,250,${alpha})`,
     };
   },
 
   teamB(index: number): AgentNodeStyle {
     const alpha = Math.max(0.25, 0.75 - index * 0.1);
     return {
-      border: `rgba(201, 169, 110, ${alpha * 0.42})`,
-      bg: `rgba(201, 169, 110, ${alpha * 0.07})`,
-      text: `rgba(201, 169, 110, ${alpha})`,
-      dot: `rgba(201, 169, 110, ${alpha})`,
+      border: `rgba(52,211,153,${alpha * 0.35})`,
+      bg: 'rgba(52,211,153,0.06)',
+      text: `rgba(52,211,153,${alpha})`,
+      dot: `rgba(52,211,153,${alpha})`,
     };
   },
 } as const;
 
-/** Avatar / node fill gradient — chief gold, operator gold, specialists bright→dim white. */
+/** Tier-based fills for canvas nodes */
 export function getAgentMonoGradient(agentId: string, index: number): readonly [string, string] {
   if (agentId === 'decision_chair') {
-    return ['rgba(201,169,110,0.38)', 'rgba(201,169,110,0.12)'];
+    return ['rgba(167,139,250,0.45)', 'rgba(167,139,250,0.12)'];
   }
   if (agentId.startsWith('self_')) {
-    return ['rgba(201,169,110,0.52)', 'rgba(201,169,110,0.18)'];
+    return ['rgba(255,255,255,0.35)', 'rgba(255,255,255,0.1)'];
   }
-  const t = Math.max(0.1, 0.38 - (index % 9) * 0.03);
-  const t2 = Math.max(0.05, t * 0.5);
-  return [`rgba(245,245,240,${t})`, `rgba(245,245,240,${t2})`];
+  const t = Math.max(0.15, 0.42 - (index % 9) * 0.03);
+  const t2 = Math.max(0.06, t * 0.45);
+  return [`rgba(96,165,250,${t})`, `rgba(96,165,250,${t2})`];
 }

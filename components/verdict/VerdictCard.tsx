@@ -414,7 +414,7 @@ function CitationRow({ citation, index }: { citation: Citation; index: number })
 
 function RiskRow({ risk, index }: { risk: RiskEntry; index: number }) {
   const severityStyles: Record<string, string> = {
-    critical: 'border-[#c9a96e]/40 bg-[#c9a96e]/10 text-[#c9a96e]',
+    critical: 'border-[#fbbf24]/40 bg-[#fbbf24]/10 text-[#fbbf24]',
     high: 'border-[#5a5a55] bg-[#252522] text-[#c0c0b8]',
     medium: 'border-[#3a3a36] bg-[#1a1a18] text-[#8a8a82]',
     low: 'border-[#252522] bg-transparent text-[#5a5a55]',

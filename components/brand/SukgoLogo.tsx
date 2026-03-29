@@ -18,10 +18,10 @@ const sizes = {
   xl: { icon: 48, font: 32, gap: 16 },
 };
 
-const GOLD = '#c9a96e';
+const MARK = '#ffffff';
 const PrismIcon = ({ size, variant }: { size: number; variant: 'dark' | 'light' }) => {
   const bg = variant === 'dark' ? '#0a0a0f' : '#fafafa';
-  const fg = variant === 'dark' ? GOLD : '#09090b';
+  const fg = variant === 'dark' ? MARK : '#09090b';
 
   return (
     <svg width={size} height={size} viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
@@ -55,7 +55,7 @@ export default function SukgoLogo({
   className = '',
 }: SukgoLogoProps) {
   const s = sizes[size];
-  const textColor = variant === 'dark' ? '#f5f5f0' : '#09090b';
+  const textColor = variant === 'dark' ? '#ffffff' : '#09090b';
 
   return (
     <div

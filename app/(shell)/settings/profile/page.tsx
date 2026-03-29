@@ -157,14 +157,14 @@ export default function SettingsProfilePage() {
 
       {!isAuthenticated ? (
         <div
-          className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] px-4 py-3 text-[13px] text-gray-800 dark:border-[#c9a96e]/25 dark:bg-[#c9a96e]/[0.06] dark:text-[#c0c0b8]"
+          className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] px-4 py-3 text-[13px] text-gray-800 dark:border-white/15 dark:bg-white/[0.06] dark:text-white/80"
           role="status"
         >
           Sign in to sync your name and decision context to your account. Until then, your operator
           details are saved only on this device.
           <button
             type="button"
-            className="ml-2 font-medium text-[#b45309] underline-offset-2 hover:underline dark:text-[#c9a96e]"
+            className="ml-2 font-medium text-[#b45309] underline-offset-2 hover:underline dark:text-white"
             onClick={() =>
               window.dispatchEvent(new CustomEvent('sukgo:show-auth', { detail: { mode: 'login' } }))
             }
@@ -194,7 +194,7 @@ export default function SettingsProfilePage() {
                 onClick={() => setOperatorType(opt.id)}
                 className={`rounded-xl border px-4 py-3 text-left text-[13px] transition-all ${
                   operatorType === opt.id
-                    ? 'border-[#c9a96e]/40 bg-[#c9a96e]/[0.08] text-[#c9a96e]'
+                    ? 'border-white/30 bg-white/[0.08] text-white'
                     : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 dark:border-[#3a3a36] dark:bg-[#1a1a18] dark:text-[#8a8a82] dark:hover:border-[#5a5a55]'
                 }`}
               >
@@ -294,7 +294,7 @@ export default function SettingsProfilePage() {
           type="button"
           onClick={onSave}
           disabled={saving || (isAuthenticated && loading)}
-          className="rounded-[8px] bg-[#c9a96e] px-5 py-2.5 text-sm font-medium text-[#0a0a0f] shadow-sm transition-opacity hover:bg-[#b8994f] disabled:opacity-50"
+          className="rounded-[8px] bg-white px-5 py-2.5 text-sm font-medium text-[#0a0a0f] shadow-sm transition-opacity hover:bg-[#e5e5e5] disabled:opacity-50"
         >
           {saving ? 'Saving…' : 'Save profile'}
         </button>

@@ -172,7 +172,7 @@ export default function SidebarHistory({ variant = 'full' }: { variant?: 'full' 
                     {pinned ? (
                       <Pin
                         size={9}
-                        className="absolute -right-0.5 -top-0.5 text-[#c9a96e]/95"
+                        className="absolute -right-0.5 -top-0.5 text-[#fbbf24]/95"
                         strokeWidth={2.5}
                         aria-hidden
                       />
@@ -347,7 +347,7 @@ function HistoryRow({
             aria-hidden
           />
           {isPinned && (
-            <Pin size={11} className="shrink-0 text-[#c9a96e]/90" strokeWidth={2} aria-label="Pinned" />
+            <Pin size={11} className="shrink-0 text-white/90" strokeWidth={2} aria-label="Pinned" />
           )}
           {renaming ? (
             <input

@@ -34,21 +34,21 @@ export function CanvasEmptyState({ mode, waiting }: CanvasEmptyStateProps) {
   return (
     <div className="relative flex min-h-[280px] flex-1 flex-col select-none">
       <div
-        className={`relative flex min-h-[260px] flex-1 flex-col ${waiting ? 'opacity-40' : ''}`}
+        className={`relative flex min-h-[260px] flex-1 flex-col ${waiting ? 'opacity-[0.85]' : ''}`}
       >
         <Preview />
       </div>
 
       {waiting ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4">
-          <p className="rounded-lg border border-white/[0.06] bg-[#111110]/90 px-3 py-2 text-center text-[12px] text-[#8a8a82] shadow-sm backdrop-blur-sm">
+          <p className="rounded-lg border border-white/[0.08] bg-[#111118]/90 px-3 py-2 text-center text-[12px] text-white/70 shadow-sm backdrop-blur-sm">
             Agents will appear as they finish…
           </p>
         </div>
       ) : null}
 
       <div className="pointer-events-none absolute bottom-3 left-1/2 z-[3] w-[90%] max-w-md -translate-x-1/2 text-center">
-        <p className="text-[11px] text-[#5a5a55]">
+        <p className="text-[11px] text-white/50">
           {waiting ? 'Live simulation in progress' : 'Enter a question above to begin'}
         </p>
       </div>

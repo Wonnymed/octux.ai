@@ -245,9 +245,9 @@ export default function SimulationInput({
                   setModeNavFocus('mode');
                   setActiveMode(m.mode);
                 }}
-                className="flex items-start gap-3 rounded-xl border border-[#3a3a36] bg-[#1a1a18] p-4 text-left transition-all hover:border-[#c9a96e]/20 hover:bg-[#c9a96e]/[0.02]"
+                className="flex items-start gap-3 rounded-xl border border-[#3a3a36] bg-[#1a1a18] p-4 text-left transition-all hover:border-white/20 hover:bg-white/[0.02]"
               >
-                <span className="mt-0.5 text-[18px] text-[#c9a96e]/40" aria-hidden>
+                <span className="mt-0.5 text-[18px] text-white/40" aria-hidden>
                   {m.icon}
                 </span>
                 <div>
@@ -280,7 +280,7 @@ export default function SimulationInput({
                         </div>
                       </div>
                       {sim.latest_verdict ? (
-                        <span className="shrink-0 text-[12px] text-[#c9a96e]">{sim.latest_verdict}</span>
+                        <span className="shrink-0 text-[12px] text-white">{sim.latest_verdict}</span>
                       ) : null}
                     </button>
                   </li>
@@ -290,7 +290,7 @@ export default function SimulationInput({
           ) : null}
 
           <div className="flex items-center gap-2 text-[12px] text-[#8a8a82]">
-            <span className="text-[#c9a96e]" aria-hidden>
+            <span className="text-white" aria-hidden>
               ◇
             </span>
             <span>{tokensRemaining} tokens remaining</span>
@@ -410,7 +410,7 @@ export default function SimulationInput({
                   <div
                     className={cn(
                       'h-2 w-2 shrink-0 rounded-full',
-                      i === arr.length - 1 ? 'bg-[#c9a96e]' : 'bg-[#5a5a55]',
+                      i === arr.length - 1 ? 'bg-white' : 'bg-[#5a5a55]',
                     )}
                   />
                   <div className="mt-1 text-center text-[10px] text-white/20">{step.month}</div>
@@ -435,7 +435,7 @@ export default function SimulationInput({
                     className={cn(
                       'rounded-full border px-4 py-1.5 text-[13px] transition-all',
                       previewTier === 'swarm'
-                        ? 'border-[#c9a96e]/40 bg-[#c9a96e]/[0.08] text-[#c9a96e]'
+                        ? 'border-white/40 bg-white/[0.08] text-white'
                         : 'border-[#3a3a36] text-[#8a8a82] hover:text-[#c0c0b8]',
                     )}
                   >
@@ -447,25 +447,25 @@ export default function SimulationInput({
                     className={cn(
                       'inline-flex items-center rounded-full border px-4 py-1.5 text-[13px] transition-all',
                       previewTier === 'specialist'
-                        ? 'border-[#c9a96e]/40 bg-[#c9a96e]/[0.08] text-[#c9a96e]'
+                        ? 'border-white/40 bg-white/[0.08] text-white'
                         : 'border-[#3a3a36] text-[#8a8a82] hover:text-[#c0c0b8]',
                     )}
                   >
                     {activeMode === 'simulate' ? 'Specialist · 10 + crowd' : 'Expert debate · 5 vs 5'}
                     {freeUser ? (
-                      <span className="ml-1 rounded border border-[#c9a96e]/30 px-1.5 py-0.5 text-[10px] font-semibold text-[#c9a96e]">
+                      <span className="ml-1 rounded border border-white/30 px-1.5 py-0.5 text-[10px] font-semibold text-white">
                         PRO
                       </span>
                     ) : null}
                   </button>
                 </div>
                 {specialistBlockedHint ? (
-                  <p className="mt-1 max-w-[min(420px,100%)] text-[11px] leading-snug text-[#c9a96e]/90">
+                  <p className="mt-1 max-w-[min(420px,100%)] text-[11px] leading-snug text-white/90">
                     Upgrade to Pro for specialist mode.
                   </p>
                 ) : null}
               </div>
-              <span className="shrink-0 text-[11px] text-[#c9a96e]">{tokensRemaining} tokens left</span>
+              <span className="shrink-0 text-[11px] text-white">{tokensRemaining} tokens left</span>
             </div>
             <p className="text-[11px] leading-relaxed text-white/35">
               {activeMode === 'simulate' ? tierHintSimulate : tierHintCompare}
@@ -506,7 +506,7 @@ export default function SimulationInput({
                 ? 'Opus Chief + 9 Sonnet attackers + web search · Vulnerability audit output'
                 : 'Opus Chief + 9 Sonnet narrators + web search · Failure autopsy output'}
             </p>
-            <span className="shrink-0 text-[11px] text-[#c9a96e]">{tokensRemaining} tokens left</span>
+            <span className="shrink-0 text-[11px] text-white">{tokensRemaining} tokens left</span>
           </div>
         )}
 
@@ -517,7 +517,7 @@ export default function SimulationInput({
             onClick={() => void onRun()}
             className={cn(
               'inline-flex min-h-[44px] items-center justify-center rounded-xl px-6 py-3 text-[13px] font-medium text-[#0a0a0f] transition-all duration-200',
-              'bg-[#c9a96e] hover:bg-[#b8994f] hover:shadow-[0_0_20px_rgba(201,169,110,0.15)]',
+              'bg-white hover:bg-[#e5e5e5] hover:shadow-[0_0_20px_rgba(255,255,255,0.15)]',
               'disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-none',
             )}
           >
@@ -530,7 +530,7 @@ export default function SimulationInput({
             <span className="text-[11px] text-white/40">Not enough tokens for this run.</span>
           ) : null}
           {freeBlocksSpecialist ? (
-            <span className="text-[11px] text-[#c9a96e]/90">
+            <span className="text-[11px] text-white/90">
               {activeMode === 'stress' || activeMode === 'premortem'
                 ? 'Upgrade to Pro to unlock this mode.'
                 : 'Upgrade to Pro to run with Specialist.'}
@@ -545,7 +545,7 @@ export default function SimulationInput({
                   key={text}
                   type="button"
                   onClick={() => setInputA(text)}
-                  className="rounded-full border border-[#3a3a36] px-3 py-1.5 text-[12px] text-[#8a8a82] transition-all duration-200 hover:border-[#c9a96e]/30 hover:text-[#c9a96e]/70"
+                  className="rounded-full border border-[#3a3a36] px-3 py-1.5 text-[12px] text-[#8a8a82] transition-all duration-200 hover:border-white/30 hover:text-white/70"
                 >
                   {text}
                 </button>
@@ -560,7 +560,7 @@ export default function SimulationInput({
                     setInputA(a);
                     setInputB(b);
                   }}
-                  className="rounded-full border border-[#3a3a36] px-3 py-1.5 text-[12px] transition-all duration-200 hover:border-[#c9a96e]/30"
+                  className="rounded-full border border-[#3a3a36] px-3 py-1.5 text-[12px] transition-all duration-200 hover:border-white/30"
                 >
                   <span className="text-[#8a8a82]">{a}</span>
                   <span className="mx-1.5 text-[#5a5a55]">vs</span>
@@ -574,7 +574,7 @@ export default function SimulationInput({
                   key={text}
                   type="button"
                   onClick={() => setInputA(text)}
-                  className="rounded-full border border-[#3a3a36] px-3 py-1.5 text-[12px] text-[#8a8a82] transition-all duration-200 hover:border-[#c9a96e]/30 hover:text-[#c9a96e]/70"
+                  className="rounded-full border border-[#3a3a36] px-3 py-1.5 text-[12px] text-[#8a8a82] transition-all duration-200 hover:border-white/30 hover:text-white/70"
                 >
                   {text}
                 </button>
@@ -586,7 +586,7 @@ export default function SimulationInput({
                   key={text}
                   type="button"
                   onClick={() => setInputA(text)}
-                  className="rounded-full border border-[#3a3a36] px-3 py-1.5 text-[12px] text-[#8a8a82] transition-all duration-200 hover:border-[#c9a96e]/30 hover:text-[#c9a96e]/70"
+                  className="rounded-full border border-[#3a3a36] px-3 py-1.5 text-[12px] text-[#8a8a82] transition-all duration-200 hover:border-white/30 hover:text-white/70"
                 >
                   {text}
                 </button>

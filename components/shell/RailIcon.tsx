@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/shadcn/tooltip';
 
-const ACCENT_GOLD = '#c9a96e';
+const ACCENT_ACTIVE = '#ffffff';
 
 const TOOLTIP_DARK =
   'border border-white/[0.08] bg-[#1a1a1f] px-2.5 py-1.5 text-[12px] text-white/80 shadow-lg';
@@ -27,10 +27,12 @@ export interface RailIconProps {
   tooltipClassName?: string;
   /** Default 22 (nav); use 20 for compact actions (e.g. upgrade gem). */
   iconSize?: number;
+  /** When active, icon tint (e.g. mode accent). Active bar stays white. */
+  iconActiveColor?: string;
 }
 
 /**
- * Centered 36×36 rail target, 22px icon, active gold bar hugging the icon column.
+ * Centered 36×36 rail target, 22px icon, active white bar hugging the icon column.
  */
 export default function RailIcon({
   icon: Icon,
@@ -41,6 +43,7 @@ export default function RailIcon({
   tone = 'dark',
   tooltipClassName = TOOLTIP_DARK,
   iconSize = 22,
+  iconActiveColor,
 }: RailIconProps) {
   const inactive =
     tone === 'dark'
@@ -61,11 +64,20 @@ export default function RailIcon({
       {active ? (
         <span
           className="pointer-events-none absolute left-[5px] top-1/2 z-0 h-5 w-[3px] -translate-y-1/2 rounded-r-[2px]"
-          style={{ backgroundColor: ACCENT_GOLD }}
+          style={{ backgroundColor: ACCENT_ACTIVE }}
           aria-hidden
         />
       ) : null}
-      <Icon size={iconSize} strokeWidth={1.8} className="relative z-[1] shrink-0" />
+      <Icon
+        size={iconSize}
+        strokeWidth={1.8}
+        className="relative z-[1] shrink-0"
+        style={
+          active && iconActiveColor
+            ? { color: iconActiveColor }
+            : undefined
+        }
+      />
     </>
   );
 

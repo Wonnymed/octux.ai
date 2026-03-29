@@ -23,7 +23,7 @@ const TYPE_CARDS: {
 ];
 
 const inputClass =
-  'w-full rounded-xl border border-[#3a3a36] bg-[#1a1a18] px-4 py-3 text-[14px] text-[#f5f5f0] outline-none transition-colors placeholder:text-white/25 focus:border-[#c9a96e]/40';
+  'w-full rounded-xl border border-white/10 bg-[#111118] px-4 py-3 text-[14px] text-white outline-none transition-colors placeholder:text-white/40 focus:border-white/30';
 
 export default function OperatorOnboarding() {
   const { user } = useAuth();
@@ -116,7 +116,7 @@ export default function OperatorOnboarding() {
               key={s}
               className={cn(
                 'h-2 w-8 rounded-full transition-colors',
-                step >= s ? 'bg-[#c9a96e]' : 'bg-[#3a3a36]',
+                step >= s ? 'bg-white' : 'bg-white/20',
               )}
               aria-hidden
             />
@@ -127,7 +127,7 @@ export default function OperatorOnboarding() {
           <>
             <h1 className="text-[20px] font-medium text-[#f5f5f0]">Let&apos;s personalize your simulations</h1>
             <p className="mt-1 text-[13px] text-[#8a8a82]">Step 1 of 3</p>
-            <p className="mt-4 rounded-lg border border-[#c9a96e]/20 bg-[#c9a96e]/[0.06] px-3 py-2 text-[12px] text-[#c9a96e]/90">
+            <p className="mt-4 rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-[12px] text-white/90">
               🎁 Complete all 3 steps to earn 1 free simulation token
             </p>
             <div className="mt-6 space-y-4">
@@ -156,7 +156,7 @@ export default function OperatorOnboarding() {
             <button
               type="button"
               onClick={goNextFrom1}
-              className="mt-8 w-full rounded-xl bg-[#c9a96e] py-3 text-[14px] font-semibold text-[#0a0a0f] transition-colors hover:bg-[#b8994f]"
+              className="mt-8 w-full rounded-xl bg-white py-3 text-[14px] font-semibold text-[#0a0a0f] transition-colors hover:bg-[#e5e5e5]"
             >
               Continue
             </button>
@@ -181,8 +181,8 @@ export default function OperatorOnboarding() {
                     className={cn(
                       'rounded-xl border p-4 text-left transition-all',
                       selected
-                        ? 'border-[#c9a96e]/40 bg-[#c9a96e]/[0.06] text-[#c9a96e]'
-                        : 'border-[#3a3a36] bg-[#1a1a18] text-[#f5f5f0] hover:border-[#c9a96e]/20',
+                        ? 'border-white/40 bg-white/[0.08] text-white'
+                        : 'border-white/10 bg-[#111118] text-white/90 hover:border-white/20',
                     )}
                   >
                     <span className="text-[20px]" aria-hidden>
@@ -217,7 +217,7 @@ export default function OperatorOnboarding() {
               <button
                 type="button"
                 onClick={goNextFrom2}
-                className="flex-1 rounded-xl bg-[#c9a96e] py-3 text-[14px] font-semibold text-[#0a0a0f] hover:bg-[#b8994f]"
+                className="flex-1 rounded-xl bg-white py-3 text-[14px] font-semibold text-[#0a0a0f] hover:bg-[#e5e5e5]"
               >
                 Continue
               </button>
@@ -254,7 +254,7 @@ export default function OperatorOnboarding() {
                 type="button"
                 onClick={() => void complete()}
                 disabled={submitting}
-                className="flex-1 rounded-xl bg-[#c9a96e] py-3 text-[14px] font-semibold text-[#0a0a0f] hover:bg-[#b8994f] disabled:opacity-50"
+                className="flex-1 rounded-xl bg-white py-3 text-[14px] font-semibold text-[#0a0a0f] hover:bg-[#e5e5e5] disabled:opacity-50"
               >
                 {submitting ? 'Saving…' : 'Complete setup 🎁'}
               </button>
