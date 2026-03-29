@@ -37,7 +37,7 @@ export default function DashboardSidebar({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const operatorActive = pathname === '/operator';
+  const profileActive = pathname === '/settings/profile' || pathname.startsWith('/settings/profile/');
   const tier = useBillingStore((s) => s.tier);
   const fetchBalance = useBillingStore((s) => s.fetchBalance);
   const isFreeTier = normalizeTierType(tier) === 'free';
@@ -73,7 +73,7 @@ export default function DashboardSidebar({
   } as const;
 
   if (layout === 'collapsed') {
-    const homeActive = pathname === '/home';
+    const homeActive = pathname === '/';
 
     return (
       <TooltipProvider delayDuration={200}>
@@ -98,13 +98,13 @@ export default function DashboardSidebar({
           </Tooltip>
 
           <div className="flex flex-col items-center gap-1">
-            <RailIcon tone="dark" icon={Home} label="Home" active={homeActive} href="/home" />
+            <RailIcon tone="dark" icon={Home} label="Home" active={homeActive} href="/" />
             <RailIcon
               tone="dark"
               icon={UserCircle}
               label="My Operator"
-              active={operatorActive}
-              href="/operator"
+              active={profileActive}
+              href="/settings/profile"
             />
           </div>
 
@@ -176,10 +176,10 @@ export default function DashboardSidebar({
 
       <div className="space-y-2 px-3 pt-3">
         <Link
-          href="/home"
+          href="/"
           className={cn(
             'flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[13px] font-medium transition-all',
-            pathname === '/home'
+            pathname === '/'
               ? 'border-[#c9a96e]/40 bg-[rgba(201,169,110,0.08)] text-[#f5f5f0]'
               : 'border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white/70',
           )}
@@ -188,10 +188,10 @@ export default function DashboardSidebar({
           Home
         </Link>
         <Link
-          href="/operator"
+          href="/settings/profile"
           className={cn(
             'flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[13px] font-medium transition-all',
-            operatorActive
+            profileActive
               ? 'border-[#c9a96e]/40 bg-[rgba(201,169,110,0.08)] text-[#f5f5f0]'
               : 'border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white/70',
           )}

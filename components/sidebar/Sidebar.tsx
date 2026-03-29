@@ -92,7 +92,7 @@ function SidebarCollapsed() {
   const tier = useBillingStore((s) => s.tier);
 
   const agentLabActive = pathname === '/agents';
-  const operatorActive = pathname === '/operator';
+  const profileActive = pathname === '/settings/profile' || pathname.startsWith('/settings/profile/');
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -135,8 +135,8 @@ function SidebarCollapsed() {
             tooltipClassName={SHELL_RAIL_TOOLTIP}
             icon={UserRound}
             label="My Operator"
-            active={operatorActive}
-            onClick={() => router.push('/operator')}
+            active={profileActive}
+            onClick={() => router.push('/settings/profile')}
           />
         </div>
 
@@ -204,7 +204,7 @@ function SidebarExpanded() {
 
   const newChatActive = pathname === '/';
   const agentLabActive = pathname === '/agents';
-  const operatorActive = pathname === '/operator';
+  const profileActive = pathname === '/settings/profile' || pathname.startsWith('/settings/profile/');
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -246,8 +246,8 @@ function SidebarExpanded() {
           <NavItemButton
             icon={UserRound}
             label="My Operator"
-            active={operatorActive}
-            onClick={() => router.push('/operator')}
+            active={profileActive}
+            onClick={() => router.push('/settings/profile')}
           />
         </div>
 

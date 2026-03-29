@@ -17,11 +17,11 @@ const themeInitScript = `
 
 export const metadata: Metadata = {
   title: {
-    default: "Octux AI — Decision Operating System",
-    template: "%s — Octux AI",
+    default: "Sukgo — The World's First AI Business Simulation Engine",
+    template: "%s — Sukgo",
   },
   description:
-    "Beyond chat. Beyond consulting. Octux turns uncertainty into structured decisions.",
+    "Simulate any business decision with 10 AI specialists debating in real time.",
   metadataBase: new URL("https://octux-ai.vercel.app"),
   icons: {
     icon: [
@@ -31,19 +31,19 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "Octux AI — Decision Operating System",
+    title: "Sukgo — The World's First AI Business Simulation Engine",
     description:
-      "10 specialist agents. Adversarial debate. Structured verdict. In 60 seconds.",
+      "Simulate any business decision with 10 AI specialists debating in real time.",
     url: "https://octux-ai.vercel.app",
-    siteName: "Octux AI",
+    siteName: "Sukgo",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Octux AI — Decision Operating System",
+    title: "Sukgo — The World's First AI Business Simulation Engine",
     description:
-      "10 specialist agents. Adversarial debate. Structured verdict. In 60 seconds.",
+      "Simulate any business decision with 10 AI specialists debating in real time.",
     images: ["/og-image.png"],
   },
 };

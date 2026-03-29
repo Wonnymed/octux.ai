@@ -1,7 +1,9 @@
 'use client';
 
 import { useSimulationStore } from '@/lib/store/simulation';
+import { useDashboardUiStore } from '@/lib/store/dashboard-ui';
 import SpecialistChatHost from '@/components/specialist-chat/SpecialistChatHost';
+import { CanvasEmptyState } from '@/components/dashboard/CanvasEmptyState';
 import { cn } from '@/lib/design/cn';
 
 /**
@@ -15,22 +17,22 @@ export default function SimulationCanvas() {
   const activeId = useSimulationStore((s) => s.specialistChatAgentId);
   const chatOpen = useSimulationStore((s) => s.specialistChatOpen);
   const threads = useSimulationStore((s) => s.specialistChatsByAgent);
+  const activeMode = useDashboardUiStore((s) => s.activeMode);
 
   const postVerdict = status === 'complete';
   const list = [...agents.values()].filter(
     (a) => a.status === 'complete' && a.agent_id !== 'decision_chair',
   );
+  const waitingForAgents = !['idle', 'complete', 'error'].includes(status);
 
   return (
     <>
-      <div className="flex h-full min-h-[120px] flex-col bg-[#07070b] p-3">
-        <p className="mb-2 text-[10px] uppercase tracking-wider text-white/25">Specialists</p>
+      <div className="flex h-full min-h-[120px] flex-col bg-[#111110] p-3">
         {list.length === 0 ? (
-          <p className="text-[11px] text-white/20">
-            {status === 'idle' ? 'Run a simulation to see your panel here.' : 'Agents will appear as they finish…'}
-          </p>
+          <CanvasEmptyState mode={activeMode} waiting={waitingForAgents} />
         ) : (
           <>
+            <p className="mb-2 text-[10px] uppercase tracking-wider text-white/25">Specialists</p>
             {postVerdict ? (
               <p className="mb-2 text-[11px] text-white/20">
                 Click a specialist to open 1:1 follow-up chat (same memory as the full simulation).
