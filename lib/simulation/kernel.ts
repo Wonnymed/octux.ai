@@ -36,6 +36,9 @@ export type SukgoKernel = {
   agentFilters: AgentFilter[];
 };
 
+/** Legacy export name — identical to {@link SukgoKernel}. */
+export type OctuxKernel = SukgoKernel;
+
 // ── Factory ────────────────────────────────────────────────
 
 const DEFAULT_CONFIG: SimulationConfig = {

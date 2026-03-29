@@ -16,6 +16,7 @@
  * Ref: PraisonAI (#7 — reflect_llm, min_reflect, max_reflect, Evaluator-Optimizer)
  */
 
+import { devLog } from '@/lib/dev-log';
 import { callClaude, parseJSON } from '../simulation/claude';
 
 // ═══════════════════════════════════════════
@@ -162,15 +163,15 @@ export async function runReflectionLoop(
     });
 
     if (accepted) {
-      console.log(`REFLECT ${agentId}: ${evaluation.score}/10 — ACCEPTED (iter ${iterations})`);
+      devLog(`REFLECT ${agentId}: ${evaluation.score}/10 — ACCEPTED (iter ${iterations})`);
       break;
     }
 
-    console.log(`REFLECT ${agentId}: ${evaluation.score}/10 — REVISING (iter ${iterations}/${config.maxReflect})`);
+    devLog(`REFLECT ${agentId}: ${evaluation.score}/10 — REVISING (iter ${iterations}/${config.maxReflect})`);
 
     // Hit max? Accept whatever we have
     if (iterations >= config.maxReflect) {
-      console.log(`REFLECT ${agentId}: Max iterations — accepting score ${evaluation.score}`);
+      devLog(`REFLECT ${agentId}: Max iterations — accepting score ${evaluation.score}`);
       break;
     }
 

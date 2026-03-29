@@ -4,8 +4,6 @@
 //   import { Sora } from 'next/font/google'
 //   const sora = Sora({ subsets: ['latin'], weight: ['400'] })
 
-import React from 'react';
-
 interface SukgoLogoProps {
   variant?: 'dark' | 'light';  // dark = white mark on dark bg, light = dark mark on light bg
   size?: 'sm' | 'md' | 'lg' | 'xl';

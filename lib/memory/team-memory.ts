@@ -10,6 +10,7 @@
  */
 
 import { supabase } from './supabase';
+import { devLog } from '@/lib/dev-log';
 import { callClaude, parseJSON } from '../simulation/claude';
 
 /**
@@ -129,7 +130,7 @@ JSON:
       }
     }
 
-    if (saved > 0) console.log(`TEAM MEMORY: ${saved} team insights extracted/reinforced`);
+    if (saved > 0) devLog(`TEAM MEMORY: ${saved} team insights extracted/reinforced`);
     return saved;
   } catch (err) {
     console.error('TEAM MEMORY: extractTeamInsights failed:', err);

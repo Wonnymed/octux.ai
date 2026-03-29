@@ -7,7 +7,7 @@ import ThemeInitializer from "@/components/theme/ThemeInitializer";
 const themeInitScript = `
 (function() {
   try {
-    var mode = localStorage.getItem('octux:theme') || 'system';
+    var mode = localStorage.getItem('sukgo:theme') || localStorage.getItem('octux:theme') || localStorage.getItem('signux-theme') || 'system';
     var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.toggle('dark', dark);
     document.documentElement.classList.toggle('light', !dark);
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   description:
     "Simulate any business decision with 10 AI specialists debating in real time.",
-  metadataBase: new URL("https://octux-ai.vercel.app"),
+  metadataBase: new URL("https://signux-ai.vercel.app"),
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     title: "Sukgo — The World's First AI Business Simulation Engine",
     description:
       "Simulate any business decision with 10 AI specialists debating in real time.",
-    url: "https://octux-ai.vercel.app",
+    url: "https://signux-ai.vercel.app",
     siteName: "Sukgo",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     type: "website",

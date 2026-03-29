@@ -15,6 +15,7 @@
  */
 
 import { supabase } from './supabase';
+import { devLog } from '@/lib/dev-log';
 import { callClaude } from '../simulation/claude';
 
 // ═══════════════════════════════════════════
@@ -208,7 +209,7 @@ JSON:`,
     if (error) {
       console.error('SESSION: Failed to save summary:', error);
     } else {
-      console.log(`SESSION: Summary saved for sim #${simOrder} in thread ${threadId}`);
+      devLog(`SESSION: Summary saved for sim #${simOrder} in thread ${threadId}`);
     }
 
     // Update thread timestamp

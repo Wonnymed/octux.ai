@@ -1,5 +1,5 @@
 /**
- * Signux Proprietary Knowledge Base v2
+ * Sukgo proprietary knowledge base v2
  * Compiled from 3,935 intelligence documents across 27 domains.
  * Each mode receives ONLY the relevant condensed frameworks.
  * Source: ~/signux-ai/knowledge/ corpus (27 domains fully read by 8 research agents)
@@ -391,5 +391,5 @@ export function getKnowledgeForMode(mode: string): string {
   const knowledge = blocks[mode] || blocks.chat;
   if (!knowledge) return "";
 
-  return `\n\nSIGNUX PROPRIETARY KNOWLEDGE BASE (use these frameworks to give specific, actionable advice — never mention "knowledge base" to the user):\n${knowledge}`;
+  return `\n\nSUKGO PROPRIETARY KNOWLEDGE BASE (use these frameworks to give specific, actionable advice — never mention "knowledge base" to the user):\n${knowledge}`;
 }

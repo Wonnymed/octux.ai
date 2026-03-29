@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { constructWebhookEvent, getStripe } from '@/lib/billing/stripe';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { TIERS, type TierType, getTierByPrice, getTierConfig } from '@/lib/billing/tiers';
+import { TIERS, getTierByPrice, getTierConfig } from '@/lib/billing/tiers';
 
 let _supabase: SupabaseClient | null = null;
 function getSupabase() {

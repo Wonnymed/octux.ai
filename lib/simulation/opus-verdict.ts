@@ -48,6 +48,8 @@ export function buildOpusVerdictUserPayload(params: {
   operatorContext: string;
   memoryForVerdict: string;
   specialistSourcesBlock: string;
+  /** Optional enrichment from mid-sim Chief note (specialist flow). */
+  midSimulationNote?: string;
 }): string {
   const {
     mode,
@@ -62,6 +64,7 @@ export function buildOpusVerdictUserPayload(params: {
     operatorContext,
     memoryForVerdict,
     specialistSourcesBlock,
+    midSimulationNote,
   } = params;
 
   let body = `SIMULATION COMPLETE. Deliver your final ${mode} verdict as specified in your instructions.\n\n`;
@@ -86,6 +89,9 @@ export function buildOpusVerdictUserPayload(params: {
   body += `${taskLedgerSection}\n`;
   body += memoryForVerdict;
   body += specialistSourcesBlock;
+  if (midSimulationNote) {
+    body += `\nMID-SIMULATION CHIEF NOTE:\n${midSimulationNote}\n`;
+  }
   body += godViewBlock(crowdSignalText, godViewSummary);
   body += `\nUSER / OPERATOR PROFILE:\n${operatorContext || 'Not provided — infer cautiously.'}\n\n`;
   body += `Verify critical claims with web search where needed. Return ONLY valid JSON, no markdown fences.`;

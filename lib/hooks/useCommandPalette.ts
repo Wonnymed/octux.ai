@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/hooks/useTheme';
 import {
-  type Command, ACTIONS, CATEGORIES,
+  type Command,
   searchCommands, conversationToCommand, agentToCommand,
 } from '@/lib/commands/registry';
 

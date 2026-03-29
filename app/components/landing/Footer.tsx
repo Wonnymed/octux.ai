@@ -36,7 +36,7 @@ export default function Footer() {
                 color: "var(--text-tertiary)",
               }}
             >
-              OCTUX AI
+              Sukgo
             </span>
           </div>
           <p

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "../../lib/usage";
-import { getTokenStatus, getGuestTokenStatus, PLAN_TOKENS, PLAN_FEATURES, ACTION_COSTS } from "../../lib/tokens";
+import { getTokenStatus, getGuestTokenStatus, ACTION_COSTS } from "../../lib/tokens";
 
 export async function GET(req: NextRequest) {
   const userId = await getUserFromRequest(req);

@@ -14,6 +14,7 @@
  */
 
 import { supabase } from './supabase';
+import { devLog } from '@/lib/dev-log';
 import { callClaude, parseJSON } from '../simulation/claude';
 
 // ═══════════════════════════════════════════
@@ -187,7 +188,7 @@ JSON:
 
           if (!error) {
             appliedCount++;
-            console.log(`PROCEDURAL: Created [${item.rule_type}] "${item.rule.substring(0, 60)}..." for ${agentId}`);
+            devLog(`PROCEDURAL: Created [${item.rule_type}] "${item.rule.substring(0, 60)}..." for ${agentId}`);
           }
         } else if (item.action === 'reinforce' && item.existing_rule_id) {
           const existing = (existingRules || []).find(r => r.id === item.existing_rule_id);
@@ -205,7 +206,7 @@ JSON:
             .eq('id', item.existing_rule_id);
 
           appliedCount++;
-          console.log(`PROCEDURAL: Reinforced "${existing.rule.substring(0, 50)}..." → confidence ${newConfidence} for ${agentId}`);
+          devLog(`PROCEDURAL: Reinforced "${existing.rule.substring(0, 50)}..." → confidence ${newConfidence} for ${agentId}`);
         } else if (item.action === 'weaken' && item.existing_rule_id) {
           const existing = (existingRules || []).find(r => r.id === item.existing_rule_id);
           if (!existing) continue;
@@ -217,13 +218,13 @@ JSON:
               .from('procedural_rules')
               .update({ is_active: false, confidence: newConfidence, updated_at: now })
               .eq('id', item.existing_rule_id);
-            console.log(`PROCEDURAL: Deactivated weak rule "${existing.rule.substring(0, 50)}..." for ${agentId}`);
+            devLog(`PROCEDURAL: Deactivated weak rule "${existing.rule.substring(0, 50)}..." for ${agentId}`);
           } else {
             await supabase
               .from('procedural_rules')
               .update({ confidence: newConfidence, updated_at: now })
               .eq('id', item.existing_rule_id);
-            console.log(`PROCEDURAL: Weakened "${existing.rule.substring(0, 50)}..." → confidence ${newConfidence} for ${agentId}`);
+            devLog(`PROCEDURAL: Weakened "${existing.rule.substring(0, 50)}..." → confidence ${newConfidence} for ${agentId}`);
           }
 
           appliedCount++;
@@ -234,7 +235,7 @@ JSON:
     }
 
     if (appliedCount > 0) {
-      console.log(`PROCEDURAL: ${appliedCount} rule(s) applied for ${agentId}`);
+      devLog(`PROCEDURAL: ${appliedCount} rule(s) applied for ${agentId}`);
     }
 
     return appliedCount;
@@ -262,7 +263,7 @@ export async function extractAllAgentRules(
   if (!count || count < minSims) return 0;
   if (count % 10 !== 0) return 0;
 
-  console.log(`PROCEDURAL: Extracting rules for all agents (${count} sims)`);
+  devLog(`PROCEDURAL: Extracting rules for all agents (${count} sims)`);
 
   const agentIds = [
     'base_rate_archivist', 'demand_signal_analyst', 'unit_economics_auditor',
@@ -277,7 +278,7 @@ export async function extractAllAgentRules(
     totalRules += rules;
   }
 
-  console.log(`PROCEDURAL: Total ${totalRules} rule(s) extracted/updated across all agents`);
+  devLog(`PROCEDURAL: Total ${totalRules} rule(s) extracted/updated across all agents`);
   return totalRules;
 }
 

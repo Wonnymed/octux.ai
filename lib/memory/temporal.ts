@@ -14,6 +14,7 @@
  */
 
 import { callClaude, parseJSON } from '../simulation/claude';
+import { devLog } from '@/lib/dev-log';
 import { supabase } from './supabase';
 
 // ═══════════════════════════════════════════
@@ -121,7 +122,7 @@ export async function invalidateFact(
       return false;
     }
 
-    console.log(`[temporal] Fact ${factId} invalidated${reason ? ` — ${reason}` : ''}`);
+    devLog(`[temporal] Fact ${factId} invalidated${reason ? ` — ${reason}` : ''}`);
     return true;
   } catch (err) {
     console.error('[temporal] invalidateFact exception:', err);
@@ -196,7 +197,7 @@ export async function temporalUpdateFact(
       .update({ superseded_by: newFact.id })
       .eq('id', oldFactId);
 
-    console.log(`[temporal] ${oldFactId} → superseded by → ${newFact.id}`);
+    devLog(`[temporal] ${oldFactId} → superseded by → ${newFact.id}`);
     return newFact.id;
   } catch (err) {
     console.error('[temporal] temporalUpdateFact exception:', err);
@@ -290,7 +291,7 @@ JSON array:`,
             .eq('id', loserId);
 
           resolvedCount++;
-          console.log(`[temporal] Resolved: ${loserId} invalidated, ${winnerId} kept — ${c.reason}`);
+          devLog(`[temporal] Resolved: ${loserId} invalidated, ${winnerId} kept — ${c.reason}`);
         }
       }
     } catch (err) {
@@ -299,7 +300,7 @@ JSON array:`,
   }
 
   if (resolvedCount > 0) {
-    console.log(`[temporal] Resolved ${resolvedCount} contradiction(s) for user ${userId}`);
+    devLog(`[temporal] Resolved ${resolvedCount} contradiction(s) for user ${userId}`);
   }
   return resolvedCount;
 }

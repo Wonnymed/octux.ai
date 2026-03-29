@@ -4,6 +4,7 @@
  * structured SOP, and personality that creates debate tension.
  */
 
+import { devLog } from '@/lib/dev-log';
 import { supabase } from '../memory/supabase';
 
 // ═══════════════════════════════════════════════════════════════
@@ -335,6 +336,6 @@ export async function seedAgentLibrary() {
     if (error) console.error(`Failed to seed agent ${agent.id}:`, error);
   }
 
-  console.log(`SEED: ${allAgents.length} agents across ${categories.length} categories`);
+  devLog(`SEED: ${allAgents.length} agents across ${categories.length} categories`);
   return { agents: allAgents.length, categories: categories.length };
 }

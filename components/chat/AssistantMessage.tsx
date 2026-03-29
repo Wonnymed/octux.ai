@@ -1,6 +1,5 @@
 'use client';
 
-import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import MarkdownRenderer from './MarkdownRenderer';
 import DisclaimerBanner from './DisclaimerBanner';

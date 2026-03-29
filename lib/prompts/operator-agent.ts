@@ -5,7 +5,11 @@ export function buildOperatorAgentPrompt(
   question: string,
   round: number,
   previousResponses: { name: string; text: string }[],
+  phaseInstruction?: string,
+  midSimulationBlock?: string,
 ): string {
+  const phaseExtra = phaseInstruction ? `\nPHASE FOCUS:\n${phaseInstruction}\n` : '';
+  const midExtra = midSimulationBlock ? `\nMID-SIMULATION NOTE:\n${midSimulationBlock}\n` : '';
   return `You are ${operatorPlan.name}. You are NOT a consultant or expert.
 You are the actual person making this decision.
 
@@ -25,7 +29,7 @@ bring it back to YOUR specific situation.
 
 QUESTION: "${question}"
 ROUND: ${round}
-
+${phaseExtra}${midExtra}
 ${
   previousResponses.length > 0
     ? `WHAT THE EXPERTS SAID:\n${previousResponses.map((r) => `[${r.name}]: ${r.text}`).join('\n\n')}`

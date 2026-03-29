@@ -96,6 +96,8 @@ interface UseSimulationStreamOptions {
   conversationId: string;
 }
 
+export type TriggerSimulationOptions = { panelTier?: 'swarm' | 'specialist' };
+
 // ─── OVERLOADS ───
 // Overload 1: legacy 2-arg signature used by SimulationBlock (will be replaced in later PFs)
 export function useSimulationStream(
@@ -103,8 +105,6 @@ export function useSimulationStream(
   question: string,
 ): { state: SimulationStreamState; respondToHITL: (response: { approved: boolean; corrections?: Record<string, string> }) => void };
 // Overload 2: current object-arg signature
-export type TriggerSimulationOptions = { panelTier?: 'swarm' | 'specialist' };
-
 export function useSimulationStream(
   options: UseSimulationStreamOptions,
 ): {

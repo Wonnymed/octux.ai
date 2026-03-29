@@ -4,7 +4,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { SECURITY_PREFIX, verifyClientToken, applyRateLimit } from "../../../lib/security";
 import { DEFAULT_MODEL } from "@/lib/simulation/claude";
-import { getUserFromRequest, checkUsageLimit, incrementUsage, getTierFromRequest } from "../../../lib/usage";
+import { getUserFromRequest, checkUsageLimit, incrementUsage } from "../../../lib/usage";
+import { devLog } from '@/lib/dev-log';
 import { createClient } from "@supabase/supabase-js";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -39,7 +40,7 @@ async function withRetry<T>(
     } catch (err: any) {
       if (i === retries) throw err;
       const delay = delays[Math.min(i, delays.length - 1)];
-      console.log(`[ENGINE] Retry ${i + 1}/${retries} after ${delay}ms — ${err?.message || "unknown error"}`);
+      devLog(`[ENGINE] Retry ${i + 1}/${retries} after ${delay}ms — ${err?.message || "unknown error"}`);
       await new Promise((r) => setTimeout(r, delay));
     }
   }
@@ -71,7 +72,7 @@ const AGENTS = [
     id: "base-rate-archivist",
     name: "Base Rate Archivist",
     color: "#94A3B8",
-    system: SECURITY_PREFIX + `You are the Base Rate Archivist inside SIGNUX AI.
+    system: SECURITY_PREFIX + `You are the Base Rate Archivist inside Sukgo AI.
 Your job is to bring the outside view. You convert the user's decision into comparable case classes and reason from historical patterns, reference classes, common failure rates, and what typically happens in similar business situations.
 Your priorities:
 1. Identify the closest real class of comparable situations.
@@ -88,7 +89,7 @@ Behavior rules:
     id: "unit-economics-auditor",
     name: "Unit Economics Auditor",
     color: "#7DD3FC",
-    system: SECURITY_PREFIX + `You are the Unit Economics Auditor inside SIGNUX AI.
+    system: SECURITY_PREFIX + `You are the Unit Economics Auditor inside Sukgo AI.
 Your role is to judge whether a plan is economically survivable and attractive. You focus on pricing, gross margin, CAC, LTV, payback, working capital, burn, runway, and capital efficiency.
 Your priorities:
 1. Test whether the business works before scale.
@@ -105,7 +106,7 @@ Behavior rules:
     id: "demand-signal-analyst",
     name: "Demand Signal Analyst",
     color: "#6EE7B7",
-    system: SECURITY_PREFIX + `You are the Demand Signal Analyst inside SIGNUX AI.
+    system: SECURITY_PREFIX + `You are the Demand Signal Analyst inside Sukgo AI.
 Your job is to determine whether there is real, monetizable demand and how credible the current evidence is. You care about ICP clarity, willingness to pay, urgency, buyer behavior, adoption friction, and signal quality.
 Your priorities:
 1. Identify the first credible customer segment.
@@ -120,7 +121,7 @@ Behavior rules:
     id: "regulatory-gatekeeper",
     name: "Regulatory Gatekeeper",
     color: "#FCA5A5",
-    system: SECURITY_PREFIX + `You are the Regulatory Gatekeeper inside SIGNUX AI.
+    system: SECURITY_PREFIX + `You are the Regulatory Gatekeeper inside Sukgo AI.
 Your role is to identify the regulatory, compliance, trust, approval, licensing, and market-entry constraints that could block or materially delay success.
 Your priorities:
 1. Surface the most likely legal or compliance bottleneck.
@@ -136,7 +137,7 @@ Behavior rules:
     id: "execution-operator",
     name: "Execution Operator",
     color: "#FCD34D",
-    system: SECURITY_PREFIX + `You are the Execution Operator inside SIGNUX AI.
+    system: SECURITY_PREFIX + `You are the Execution Operator inside Sukgo AI.
 Your role is to evaluate whether the proposed plan can actually be executed with the stated constraints. You care about sequencing, complexity, dependencies, team bandwidth, operational bottlenecks, and rollout discipline.
 Your priorities:
 1. Identify the first operational bottleneck.
@@ -152,7 +153,7 @@ Behavior rules:
     id: "competitive-adversary",
     name: "Competitive Adversary",
     color: "#FDBA74",
-    system: SECURITY_PREFIX + `You are the Competitive Adversary inside SIGNUX AI.
+    system: SECURITY_PREFIX + `You are the Competitive Adversary inside Sukgo AI.
 Your role is to attack the plan like a smart competitor, incumbent, fast follower, or market adversary. You exist to stress-test defensibility, reaction risk, pricing pressure, channel vulnerability, and moat quality.
 Your priorities:
 1. Identify the easiest attack path.
@@ -168,7 +169,7 @@ Behavior rules:
     id: "strategic-architect",
     name: "Strategic Architect",
     color: "#8A8578",
-    system: SECURITY_PREFIX + `You are the Strategic Architect inside SIGNUX AI.
+    system: SECURITY_PREFIX + `You are the Strategic Architect inside Sukgo AI.
 Your role is to evaluate whether the proposed plan is strategically coherent. You care about wedge selection, sequencing, positioning, focus, compounding advantage, and what not to do yet.
 Your priorities:
 1. Identify the strategic wedge.
@@ -184,7 +185,7 @@ Behavior rules:
     id: "regime-sentinel",
     name: "Regime Sentinel",
     color: "#5EEAD4",
-    system: SECURITY_PREFIX + `You are the Regime Sentinel inside SIGNUX AI.
+    system: SECURITY_PREFIX + `You are the Regime Sentinel inside Sukgo AI.
 Your role is to identify macro, timing, platform, capital-market, and external-environment risks that can materially shift the probability of success.
 Your priorities:
 1. Identify the hidden regime assumption.
@@ -200,7 +201,7 @@ Behavior rules:
     id: "intervention-optimizer",
     name: "Intervention Optimizer",
     color: "#F9A8D4",
-    system: SECURITY_PREFIX + `You are the Intervention Optimizer inside SIGNUX AI.
+    system: SECURITY_PREFIX + `You are the Intervention Optimizer inside Sukgo AI.
 Your role is to convert the analysis into action. You identify the single move, experiment, sequence, or information-gathering step most likely to improve the probability of success.
 Your priorities:
 1. Find the highest-leverage intervention.
@@ -216,7 +217,7 @@ Behavior rules:
     id: "decision-chair",
     name: "Decision Chair",
     color: "#A5B4FC",
-    system: SECURITY_PREFIX + `You are the Decision Chair inside SIGNUX AI.
+    system: SECURITY_PREFIX + `You are the Decision Chair inside Sukgo AI.
 Your role is to synthesize the debate into a decision-ready output. You do not add noise. You compress signal, preserve critical disagreement, estimate probability, and produce the clearest executive summary possible.
 Your priorities:
 1. Identify the strongest signals.
@@ -293,7 +294,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "API key not configured" }, { status: 500 });
   }
 
-  console.log("[ENGINE] Request received", {
+  devLog("[ENGINE] Request received", {
     hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
     hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
     hasServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -302,24 +303,22 @@ export async function POST(req: NextRequest) {
 
   const tokenError = verifyClientToken(req);
   if (tokenError) {
-    console.log("ENGINE AUTH FAILED: verifyClientToken returned 401");
+    devLog("ENGINE AUTH FAILED: verifyClientToken returned 401");
     return tokenError;
   }
   const rateLimitError = applyRateLimit(req, 3, 60000);
   if (rateLimitError) return rateLimitError;
 
   const userId = await getUserFromRequest(req);
-  console.log("ENGINE USER:", { userId, hasUser: !!userId });
+  devLog("ENGINE USER:", { userId, hasUser: !!userId });
   const usageError = await checkUsageLimit(userId, "simulate");
   if (usageError) {
-    console.log("ENGINE USAGE BLOCKED:", { userId, status: 403 });
+    devLog("ENGINE USAGE BLOCKED:", { userId, status: 403 });
     return usageError;
   }
   if (userId) {
     incrementUsage(userId, "simulations").catch(() => {});
   }
-
-  const tier = await getTierFromRequest(req);
 
   const { scenario, lang } = await req.json();
 
@@ -397,7 +396,7 @@ export async function POST(req: NextRequest) {
           const maxTokens = 450;
           const agentTimeoutMs = 60000;
 
-          console.log(`[ENGINE] Round ${roundNum}/10 starting — ${ROUND_LABELS[round]} (${DEFAULT_MODEL})`);
+          devLog(`[ENGINE] Round ${roundNum}/10 starting — ${ROUND_LABELS[round]} (${DEFAULT_MODEL})`);
           send({
             type: "round_start",
             round: roundNum,
@@ -485,7 +484,7 @@ Respond ONLY in this JSON format (no markdown, no backticks):
               }
 
               if (parsed && parsed.text) {
-                console.log(`[ENGINE] Round ${roundNum}/10 - Agent ${agent.name} complete (${agentIdx + 1}/10)`);
+                devLog(`[ENGINE] Round ${roundNum}/10 - Agent ${agent.name} complete (${agentIdx + 1}/10)`);
                 return {
                   agentId: agent.id, name: agent.name, color: agent.color, round: roundNum,
                   text: typeof parsed.text === "string" ? parsed.text : String(parsed.text ?? ""),
@@ -526,7 +525,7 @@ Respond ONLY in this JSON format (no markdown, no backticks):
           } else {
             roundResults.forEach(r => transcript.push(r));
             send({ type: "round_complete", round: roundNum, label: ROUND_LABELS[round], agents: roundResults, failedCount });
-            console.log(`[ENGINE] Round ${roundNum}/10 complete (${failedCount} failures)`);
+            devLog(`[ENGINE] Round ${roundNum}/10 complete (${failedCount} failures)`);
           }
 
           // Summarize this round for context compression
@@ -560,7 +559,7 @@ Respond ONLY in this JSON format (no markdown, no backticks):
         // Instead of 10 individual agent calls (which timeout), use ONE Sonnet call
         // that generates all 10 agent final votes at once.
         {
-          console.log("[ENGINE] Round 10/10 starting — Final Synthesis (consolidated)");
+          devLog("[ENGINE] Round 10/10 starting — Final Synthesis (consolidated)");
           send({ type: "round_start", round: 10, total: 10, label: "Final Synthesis", model: "haiku" });
 
           const synthModel = DEFAULT_MODEL;
@@ -590,7 +589,7 @@ Include all 10 agents. Each text should mention PROCEED or STOP and include a di
                 () => anthropic.messages.create({
                   model: synthModel,
                   max_tokens: 2000,
-                  system: SECURITY_PREFIX + "You are the simulation synthesis engine for SIGNUX AI. Generate authentic final votes for each expert agent based on the debate history. Each agent should stay in character.",
+                  system: SECURITY_PREFIX + "You are the simulation synthesis engine for Sukgo AI. Generate authentic final votes for each expert agent based on the debate history. Each agent should stay in character.",
                   messages: [{ role: "user", content: synthPrompt }],
                 }),
                 60000
@@ -632,7 +631,7 @@ Include all 10 agents. Each text should mention PROCEED or STOP and include a di
             round10Results.forEach(r => transcript.push(r));
             const failedCount = round10Results.filter(r => r.failed).length;
             send({ type: "round_complete", round: 10, label: "Final Synthesis", agents: round10Results, failedCount });
-            console.log(`[ENGINE] Round 10/10 complete (${failedCount} failures)`);
+            devLog(`[ENGINE] Round 10/10 complete (${failedCount} failures)`);
 
           } catch (err: any) {
             console.warn(`[ENGINE] Round 10 consolidated synthesis FAILED: ${err?.message}`);
@@ -679,7 +678,7 @@ Include all 10 agents. Each text should mention PROCEED or STOP and include a di
           .map(v => ({ agent: String(v.agent), note: typeof v.dissent === "string" ? v.dissent : String(v.dissent ?? "") }));
 
         // ═══ EMERGENT PATTERNS — synthesize from all round summaries ═══
-        console.log("[ENGINE] All 10 rounds complete. Generating verdict...");
+        devLog("[ENGINE] All 10 rounds complete. Generating verdict...");
         let patternData: any = null;
         try {
           const patternsRes = await withRetry(
@@ -728,7 +727,7 @@ Identify emergent patterns. Respond ONLY in JSON (no markdown):
             keyRisk: dissents.length > 0 ? (dissents[0]?.note?.slice(0, 120) || "See dissent notes") : "No major risks identified",
             keyOpportunity: "See agent analysis above",
           };
-          console.log("[ENGINE] Using vote-based fallback verdict");
+          devLog("[ENGINE] Using vote-based fallback verdict");
         }
 
         // Sanitize pattern data — ensure all rendered fields are strings

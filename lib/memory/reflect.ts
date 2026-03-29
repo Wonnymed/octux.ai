@@ -14,6 +14,7 @@
  */
 
 import { supabase } from './supabase';
+import { devLog } from '@/lib/dev-log';
 import { callClaude, parseJSON } from '../simulation/claude';
 
 // ═══════════════════════════════════════════
@@ -64,7 +65,7 @@ export async function reflectOnExperiences(
       return { opinions: 0, observations: 0, misses: 0 };
     }
 
-    console.log(`REFLECT: Triggering reflection for user ${userId} (${count} sims, every 5th)`);
+    devLog(`REFLECT: Triggering reflection for user ${userId} (${count} sims, every 5th)`);
   }
 
   // Load recent experiences for reflection
@@ -93,7 +94,7 @@ export async function reflectOnExperiences(
     memoryOfMisses(userId, experiences),
   ]);
 
-  console.log(`REFLECT COMPLETE: ${opinionsResult} opinions, ${observationsResult} observations, ${missesResult} misses`);
+  devLog(`REFLECT COMPLETE: ${opinionsResult} opinions, ${observationsResult} observations, ${missesResult} misses`);
 
   return {
     opinions: opinionsResult,
@@ -192,7 +193,7 @@ JSON array:
               });
             if (!error) {
               appliedCount++;
-              console.log(`REFLECT OPINION: Created "${action.belief}" (${action.new_confidence})`);
+              devLog(`REFLECT OPINION: Created "${action.belief}" (${action.new_confidence})`);
             }
             break;
           }
@@ -236,7 +237,7 @@ JSON array:
 
             if (!error) {
               appliedCount++;
-              console.log(`REFLECT OPINION: ${action.action} "${action.belief}" ${current.confidence} → ${newConfidence}`);
+              devLog(`REFLECT OPINION: ${action.action} "${action.belief}" ${current.confidence} → ${newConfidence}`);
             }
             break;
           }
@@ -271,7 +272,7 @@ JSON array:
 
             if (!error) {
               appliedCount++;
-              console.log(`REFLECT OPINION: Invalidated "${action.belief}" — ${action.reason}`);
+              devLog(`REFLECT OPINION: Invalidated "${action.belief}" — ${action.reason}`);
             }
             break;
           }
@@ -373,7 +374,7 @@ JSON array:
 
           if (!error) {
             appliedCount++;
-            console.log(`REFLECT PATTERN: Reinforced "${existing.pattern}" → strength ${newStrength}`);
+            devLog(`REFLECT PATTERN: Reinforced "${existing.pattern}" → strength ${newStrength}`);
           }
         } else if (p.action === 'create') {
           const simIds = ((p.derived_from_sim_indices as number[]) || [])
@@ -398,7 +399,7 @@ JSON array:
 
           if (!error) {
             appliedCount++;
-            console.log(`REFLECT PATTERN: Created "${p.pattern}" (strength: ${p.strength})`);
+            devLog(`REFLECT PATTERN: Created "${p.pattern}" (strength: ${p.strength})`);
           }
         }
       } catch (err) {
@@ -494,7 +495,7 @@ For each, extract the lesson. JSON array:
 
         if (!error) {
           savedCount++;
-          console.log(`REFLECT MISS: "${lesson.lesson}" (${lesson.domain})`);
+          devLog(`REFLECT MISS: "${lesson.lesson}" (${lesson.domain})`);
         }
       } catch (err) {
         console.error('REFLECT: memoryOfMisses save failed:', err);

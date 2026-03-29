@@ -2,7 +2,7 @@
 
 /** Phase 1.1 — phase list + progress track use Decision OS radius and accent depth. */
 import { useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   CheckCircle2, Loader2, Circle, ChevronDown,
   FileSearch, Users, Swords, GitMerge, Scale,
@@ -10,7 +10,7 @@ import {
 import { cn } from '@/lib/design/cn';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/shadcn/collapsible';
 import { useSimulationStore, type SimPhase } from '@/lib/store/simulation';
-import { SIMULATION_PHASES, ESTIMATED_TOTAL_SECONDS } from '@/lib/simulation/phases';
+import { SIMULATION_PHASES } from '@/lib/simulation/phases';
 
 // ═══ ICON MAP ═══
 

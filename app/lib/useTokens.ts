@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { ACTION_COSTS, getGuestTokens, consumeGuestTokens, PLAN_TOKENS, PLAN_FEATURES } from "./tokens";
+import { ACTION_COSTS, getGuestTokens, consumeGuestTokens, PLAN_FEATURES } from "./tokens";
 import type { TokenStatus } from "./tokens";
 
 const GUEST_DEFAULT: TokenStatus = {

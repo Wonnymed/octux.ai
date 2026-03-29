@@ -22,7 +22,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   return (
     <div
       data-sukgo-settings
-      className="flex min-h-0 w-full flex-1 flex-col bg-white transition-colors dark:bg-[#0a0a0f]"
+      className="flex min-h-full w-full flex-1 flex-col bg-white transition-colors dark:bg-[#0a0a0f]"
     >
       <div className="shrink-0 border-b border-gray-200 px-6 py-8 dark:border-white/[0.06] md:px-10">
         <h1 className="text-xl font-medium tracking-tight text-gray-900 dark:text-white">
@@ -46,7 +46,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
         </div>
       )}
 
-      <div className="flex min-h-0 flex-1 flex-col gap-6 px-4 py-6 md:flex-row md:gap-0 md:px-0 md:py-0">
+      <div className="flex min-h-0 min-h-[min(100%,480px)] flex-1 flex-col gap-6 px-4 py-6 md:flex-row md:gap-0 md:px-0 md:py-0">
         <nav
           className="relative z-10 flex shrink-0 gap-1 overflow-x-auto pb-1 md:hidden"
           aria-label="Settings sections"
@@ -119,9 +119,9 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
           })}
         </nav>
 
-        <main className="relative z-0 flex min-h-0 min-w-0 flex-1 flex-col bg-white p-6 dark:bg-[#0a0a0f] md:p-8">
+        <main className="relative z-0 flex min-h-[50vh] min-w-0 flex-1 flex-col bg-white p-6 dark:bg-[#0a0a0f] md:min-h-0 md:p-8">
           {/* Tab transitions: PageTransition in ChatLayout (pathname key) */}
-          <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+          <div className="flex w-full min-h-0 flex-1 flex-col">{children}</div>
         </main>
       </div>
     </div>

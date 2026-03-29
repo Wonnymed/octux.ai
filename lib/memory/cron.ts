@@ -13,6 +13,7 @@
  * Ref: OpenClaw (#26 — autonomous crons, background optimization)
  */
 
+import { devLog } from '@/lib/dev-log';
 import { supabase } from './supabase';
 
 export type CronResult = {
@@ -134,7 +135,7 @@ export async function runScheduledMaintenance(): Promise<CronResult> {
   } catch (err) { console.error('CRON: opinion prune failed:', err); }
 
   const durationMs = Date.now() - start;
-  console.log(`CRON COMPLETE (${durationMs}ms): facts=${factsPruned}, edges=${edgesDecayed}, buffers=${buffersCleared}, lessons=${lessonsPruned}, opinions=${weakOpinionsPruned}`);
+  devLog(`CRON COMPLETE (${durationMs}ms): facts=${factsPruned}, edges=${edgesDecayed}, buffers=${buffersCleared}, lessons=${lessonsPruned}, opinions=${weakOpinionsPruned}`);
 
   return { factsPruned, edgesDecayed, buffersCleared, lessonsPruned, weakOpinionsPruned, durationMs };
 }

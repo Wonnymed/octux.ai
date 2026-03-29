@@ -15,6 +15,7 @@
  */
 
 import { supabase } from './supabase';
+import { devLog } from '@/lib/dev-log';
 import { callClaude, parseJSON } from '../simulation/claude';
 
 // ═══════════════════════════════════════════
@@ -139,13 +140,13 @@ export async function optimizePrompt(
 ): Promise<boolean> {
   if (!supabase) return false;
 
-  console.log(`PROMPT-OPT: Starting optimization for ${agentId}`);
+  devLog(`PROMPT-OPT: Starting optimization for ${agentId}`);
 
   // ── 1. Load trajectory ──
   const trajectory = await loadAgentTrajectory(userId, agentId);
 
   if (trajectory.length < 10) {
-    console.log(`PROMPT-OPT: Not enough data for ${agentId} (${trajectory.length} sims, need 10)`);
+    devLog(`PROMPT-OPT: Not enough data for ${agentId} (${trajectory.length} sims, need 10)`);
     return false;
   }
 
@@ -165,14 +166,14 @@ export async function optimizePrompt(
   // ── 3. CRITIQUE ──
   const critique = await critiquePrompt(agentId, currentPrompt, trajectory);
   if (!critique) {
-    console.log(`PROMPT-OPT: No critique generated for ${agentId} — prompt may already be good`);
+    devLog(`PROMPT-OPT: No critique generated for ${agentId} — prompt may already be good`);
     return false;
   }
 
   // ── 4. PROPOSE ──
   const proposal = await proposeImprovedPrompt(agentId, currentPrompt, critique, trajectory);
   if (!proposal) {
-    console.log(`PROMPT-OPT: Failed to generate proposal for ${agentId}`);
+    devLog(`PROMPT-OPT: Failed to generate proposal for ${agentId}`);
     return false;
   }
 
@@ -185,13 +186,13 @@ export async function optimizePrompt(
     benchmarkSim.debate_context
   );
 
-  console.log(`PROMPT-OPT: ${agentId} benchmark — current avg: ${currentAvgScore.toFixed(1)}, new: ${benchmarkScore}`);
+  devLog(`PROMPT-OPT: ${agentId} benchmark — current avg: ${currentAvgScore.toFixed(1)}, new: ${benchmarkScore}`);
 
   // ── 6. PROMOTE if improvement >= 0.5 ──
   const improvement = benchmarkScore - currentAvgScore;
 
   if (improvement < 0.5) {
-    console.log(`PROMPT-OPT: ${agentId} — improvement ${improvement.toFixed(1)} < 0.5 threshold. Keeping current prompt.`);
+    devLog(`PROMPT-OPT: ${agentId} — improvement ${improvement.toFixed(1)} < 0.5 threshold. Keeping current prompt.`);
     return false;
   }
 
@@ -244,7 +245,7 @@ export async function optimizePrompt(
     return false;
   }
 
-  console.log(`PROMPT-OPT: ${agentId} v${nextVersion} PROMOTED (improvement: +${improvement.toFixed(1)}, benchmark: ${benchmarkScore})`);
+  devLog(`PROMPT-OPT: ${agentId} v${nextVersion} PROMOTED (improvement: +${improvement.toFixed(1)}, benchmark: ${benchmarkScore})`);
   return true;
 }
 
@@ -536,7 +537,7 @@ export async function rollbackPrompt(
       .eq('agent_id', agentId);
 
     if (version === 0) {
-      console.log(`PROMPT-OPT: ${agentId} rolled back to DEFAULT prompt`);
+      devLog(`PROMPT-OPT: ${agentId} rolled back to DEFAULT prompt`);
       return true;
     }
 
@@ -558,7 +559,7 @@ export async function rollbackPrompt(
       return false;
     }
 
-    console.log(`PROMPT-OPT: ${agentId} rolled back to v${version}`);
+    devLog(`PROMPT-OPT: ${agentId} rolled back to v${version}`);
     return true;
   } catch (err) {
     console.error(`PROMPT-OPT: Rollback exception:`, err);
@@ -578,7 +579,7 @@ export function buildSystemPromptFromOverride(
   override: { role: string; goal: string; backstory: string; sop: string; extra_constraints: string[] },
   agentName: string
 ): string {
-  let prompt = `You are the ${agentName} at Octux AI — a multi-agent adversarial decision system.
+  let prompt = `You are the ${agentName} at Sukgo AI — a multi-agent adversarial decision system.
 
 ROLE: ${override.role}
 GOAL: ${override.goal}

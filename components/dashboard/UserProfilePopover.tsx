@@ -238,7 +238,7 @@ export default function UserProfilePopover({ variant = 'full' }: { variant?: 'fu
             <button
               type="button"
               onClick={() => void handleLogout()}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13px] text-white/45 transition-colors hover:bg-red-500/10 hover:text-[#f87171]"
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13px] text-white/45 transition-colors hover:bg-[#c9a96e]/10 hover:text-[#c9a96e]/90"
             >
               <LogOut size={16} className="shrink-0 opacity-80" strokeWidth={1.75} />
               Log out

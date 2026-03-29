@@ -8,6 +8,8 @@ export interface ConversationSummary {
   has_simulation: boolean;
   latest_verdict: string | null;
   latest_verdict_probability: number | null;
+  /** Last simulation charge mode for this thread (e.g. compare, swarm). */
+  last_sim_mode?: string | null;
   is_pinned: boolean;
   message_count: number;
   simulation_count: number;

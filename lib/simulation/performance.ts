@@ -1,7 +1,6 @@
 // ── Agno #11 — Per-Agent Performance Tracking ──────────────
 // Scores each agent's contribution quality within a simulation
 
-import type { AgentReport } from '../agents/types';
 import type { SimulationState } from './state';
 import type { EnrichedCitation } from './citations';
 

@@ -1,4 +1,5 @@
-import { callClaude, parseJSON, MODELS } from '@/lib/simulation/claude';
+import { devLog } from '@/lib/dev-log';
+import { callClaude, parseJSON } from '@/lib/simulation/claude';
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -185,7 +186,7 @@ export async function generateAdvisorPersonas(question: string, userGuidance?: s
   }
 
   const response = await callClaude({
-    systemPrompt: `You are the Crowd Wisdom Architect for Octux AI. You generate hyper-realistic local advisor personas for business decision validation.
+    systemPrompt: `You are the Crowd Wisdom Architect for Sukgo AI. You generate hyper-realistic local advisor personas for business decision validation.
 
 CRITICAL RULES:
 1. CONTEXTUAL GENERATION: Analyze the question to extract geographic context, industry, decision type, and cultural context. ALL personas must be relevant to THESE specifics.
@@ -218,7 +219,7 @@ Return JSON array where each object has:
     if (types.size < 5) {
       console.warn('Crowd Wisdom: Low stakeholder diversity, only', types.size, 'types represented');
     }
-    console.log(`[crowd_wisdom] Generated ${personas.length}/${count} personas across ${types.size} stakeholder types`);
+    devLog(`[crowd_wisdom] Generated ${personas.length}/${count} personas across ${types.size} stakeholder types`);
     return personas;
   } catch (error) {
     console.error('Failed to parse advisor personas, attempting fallback:', error);
@@ -232,7 +233,7 @@ Return JSON array where each object has:
           maxTokens,
         });
         const fallbackPersonas = parseJSON<AdvisorPersona[]>(fallbackResponse);
-        console.log(`[crowd_wisdom] Fallback succeeded: ${fallbackPersonas.length} personas`);
+        devLog(`[crowd_wisdom] Fallback succeeded: ${fallbackPersonas.length} personas`);
         return fallbackPersonas;
       } catch (fallbackError) {
         console.error('Fallback persona generation also failed:', fallbackError);

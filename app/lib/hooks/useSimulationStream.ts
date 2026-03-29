@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import { devLog } from '@/lib/dev-log';
 import type {
   AgentReport,
   ConsensusState,
@@ -383,29 +384,29 @@ function processEvent(
       break;
 
     case "knowledge_graph_started":
-      console.log('Knowledge graph extraction started for sim:', (data as Record<string, unknown>).simulation_id);
+      devLog('Knowledge graph extraction started for sim:', (data as Record<string, unknown>).simulation_id);
       break;
 
     case "reflect_triggered":
-      console.log(`Reflect triggered at ${(data as Record<string, unknown>).sim_count} sims`);
+      devLog(`Reflect triggered at ${(data as Record<string, unknown>).sim_count} sims`);
       break;
 
     case "optimization_triggered":
-      console.log(`Memory optimization triggered at ${(data as Record<string, unknown>).sim_count} sims`);
+      devLog(`Memory optimization triggered at ${(data as Record<string, unknown>).sim_count} sims`);
       break;
 
     case "agent_reflected": {
       const rd = data as Record<string, unknown>;
-      console.log(`Agent ${rd.agent_id} reflected: ${rd.original_score} → ${rd.final_score} (${rd.iterations} iters)`);
+      devLog(`Agent ${rd.agent_id} reflected: ${rd.original_score} → ${rd.final_score} (${rd.iterations} iters)`);
       break;
     }
 
     case "domain_detected":
-      console.log('Domain:', (data as Record<string, unknown>).domain);
+      devLog('Domain:', (data as Record<string, unknown>).domain);
       break;
 
     case "behavioral_profile_loaded":
-      console.log('Behavioral profile:', data);
+      devLog('Behavioral profile:', data);
       break;
 
     case "hitl_checkpoint": {

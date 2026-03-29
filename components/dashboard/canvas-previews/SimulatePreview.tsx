@@ -2,7 +2,9 @@
 
 import { CANVAS } from '@/lib/canvas/palette';
 
-const DEMO_SPECIALISTS = [
+type DemoSpecialist = { readonly name: string; readonly isOperator?: boolean };
+
+const DEMO_SPECIALISTS: readonly DemoSpecialist[] = [
   { name: 'Market analyst' },
   { name: 'Finance expert' },
   { name: 'Operations' },
@@ -12,7 +14,7 @@ const DEMO_SPECIALISTS = [
   { name: 'Tech specialist' },
   { name: 'Industry veteran' },
   { name: 'You', isOperator: true },
-] as const;
+];
 
 const VB = 360;
 const CX = VB / 2;

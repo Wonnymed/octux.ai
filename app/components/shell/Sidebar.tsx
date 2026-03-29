@@ -127,7 +127,7 @@ export default function Sidebar({ activeEngine, onSelectEngine }: SidebarProps) 
               whiteSpace: "nowrap",
             }}
           >
-            OCTUX AI
+            Sukgo
           </motion.span>
         )}
       </div>

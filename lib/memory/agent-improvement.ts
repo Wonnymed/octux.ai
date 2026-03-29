@@ -11,6 +11,7 @@
  */
 
 import { supabase } from './supabase';
+import { devLog } from '@/lib/dev-log';
 import { callClaude, parseJSON } from '../simulation/claude';
 
 // ═══════════════════════════════════════════
@@ -144,7 +145,7 @@ Evaluate each agent. JSON array:
       }
     }
 
-    console.log(`EVAL: ${evaluations.length} agents evaluated. Scores: ${evaluations.map(e => `${e.agent_id}:${e.score}`).join(', ')}`);
+    devLog(`EVAL: ${evaluations.length} agents evaluated. Scores: ${evaluations.map(e => `${e.agent_id}:${e.score}`).join(', ')}`);
     return evaluations;
 
   } catch (err) {
@@ -193,7 +194,7 @@ export async function writeAgentLessons(
 
       if (!error) {
         savedCount++;
-        console.log(`EVAL LESSON: Reinforced "${duplicate.lesson.substring(0, 50)}..." (evidence: ${(duplicate.evidence_count || 1) + 1}) for ${agentId}`);
+        devLog(`EVAL LESSON: Reinforced "${duplicate.lesson.substring(0, 50)}..." (evidence: ${(duplicate.evidence_count || 1) + 1}) for ${agentId}`);
       }
     } else {
       const { error } = await supabase
@@ -212,7 +213,7 @@ export async function writeAgentLessons(
 
       if (!error) {
         savedCount++;
-        console.log(`EVAL LESSON: New "${lesson.substring(0, 50)}..." for ${agentId}`);
+        devLog(`EVAL LESSON: New "${lesson.substring(0, 50)}..." for ${agentId}`);
       }
     }
   }

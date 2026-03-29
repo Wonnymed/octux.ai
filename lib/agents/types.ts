@@ -1,5 +1,12 @@
+import type {
+  CompareVerdictData,
+  PremortemFailureAnalysis,
+  StressVerdictData,
+} from '@/lib/simulation/mode-verdict';
+
 export type AgentId =
   | 'decision_chair'
+  | 'chief_operator'
   | 'base_rate_archivist'
   | 'demand_signal_analyst'
   | 'unit_economics_auditor'
@@ -49,6 +56,16 @@ export type DecisionObject = {
   grade: string;
   grade_score: number;
   citations: Citation[];
+  /** User-facing headline (compare / stress / premortem / standard). */
+  one_liner?: string;
+  compare_data?: CompareVerdictData;
+  stress_data?: StressVerdictData;
+  failure_analysis?: PremortemFailureAnalysis;
+  /** Mode-specific extras (risk matrix, action plan, god view, sources). */
+  risk_matrix?: unknown;
+  action_plan?: unknown;
+  god_view?: unknown;
+  sources?: unknown;
 };
 
 export type Citation = {

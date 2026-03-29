@@ -1,13 +1,13 @@
-import { callClaude, callClaudeWithTools, formatSearchCitations, parseJSON, type SearchCitation, type ToolCallResult } from './claude';
+import { callClaude, callClaudeWithTools, formatSearchCitations, parseJSON, type SearchCitation } from './claude';
 import { callAgentWithSearch } from './agent-call';
 import { getModel, type ModelTier } from '@/lib/config/model-tiers';
 import type { SimulationChargeType } from '@/lib/billing/token-costs';
 import { AGENTS, getAgentById } from '../agents/prompts';
-import { getAgentsByIds, suggestAgentsForDomain, buildSelfAgent, libraryAgentToConfig, type LibraryAgent } from '../agents/library';
+import { getAgentsByIds, suggestAgentsForDomain, buildSelfAgent, libraryAgentToConfig } from '../agents/library';
 import { generateAdvisorPersonas } from '../agents/advisors';
 import { selectRelevantAdvisors, runFieldScan, formatFieldIntelligence, type FieldScan } from './field-intelligence';
-import { createKernel, type OctuxKernel } from './kernel';
-import { createAudit, addRound, finalizeAudit, type SimulationAudit, type AuditRound } from './audit';
+import { createKernel } from './kernel';
+import { createAudit, addRound, finalizeAudit, type SimulationAudit } from './audit';
 import { createInitialState, transitionPhase, addAgentReport, selectDebatePairs, recordHandoff, type SimulationState } from './state';
 import { buildCitations, type EnrichedCitation } from './citations';
 import { scoreAllAgents, type AgentPerformance } from './performance';
@@ -20,6 +20,7 @@ import { saveSimulation } from '../memory/persistence';
 import { loadMemoryForSimulation, formatMemoryContext, formatAgentMemory, type MemoryPayload } from '../memory/core-memory';
 import { saveToWorkingBuffer } from '../memory/session';
 import { runReflectionLoop, agentShouldReflect } from '../memory/agent-reflection';
+import { devLog } from '@/lib/dev-log';
 import {
   preSimHook,
   postAgentHook,
@@ -59,7 +60,7 @@ import {
 } from './mode-verdict';
 import { getOrCreateProfile, formatBehavioralContext, applyBehavioralModifiers, type BehavioralProfile } from '../memory/behavioral';
 import type { AdvisorPersona } from '../agents/advisors';
-import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject, Citation } from '../agents/types';
+import type { AgentId, AgentConfig, AgentReport, SimulationPlan, DecisionObject } from '../agents/types';
 import { designSimulation } from './design';
 import type { ChiefSimulationMode, ChiefTier, SimulationDesign } from './types';
 import { buildDynamicSpecialistPrompt } from '@/lib/prompts/dynamic-specialist';
@@ -552,7 +553,7 @@ async function callAgent(
     }
   }
 
-  console.log(`[${agent.id}] response: ${raw.length} chars${searchCount > 0 ? ` (${searchCount} searches, ${searchCitations.length} sources)` : ''}`);
+  devLog(`[${agent.id}] response: ${raw.length} chars${searchCount > 0 ? ` (${searchCount} searches, ${searchCitations.length} sources)` : ''}`);
   let parsed: Partial<AgentReport>;
   try {
     parsed = parseJSON<Partial<AgentReport>>(raw);
@@ -626,7 +627,7 @@ export async function* runSimulation(
   let godViewPipeline: Promise<{ votes: CrowdVote[]; summary: GodViewCrowdSummary } | null> | null = null;
 
   // ═══ MEMORY SYSTEM — Single hook replaces 7+ individual operations ═══
-  let preSim: PreSimResult = {
+  const defaultPreSim: PreSimResult = {
     memory: { coreMemory: { human: '', business: '', preferences: '', history: '' }, isReturningUser: false, relevantFacts: [], profile: null, previousSimCount: 0, opinions: [], observations: [], graphContext: '' },
     networkMemoryText: '', agentKnowledgeMap: new Map(), agentLessonsMap: new Map(), agentRulesMap: new Map(), promptOverrides: new Map(),
     activeThreadId: '', recalledMemoryText: '', threadContext: '', walFactsExtracted: 0,
@@ -636,15 +637,17 @@ export async function* runSimulation(
     operatorContextText: '',
     operatorCompleteness: 0,
   };
+  let preSim = defaultPreSim;
 
   if (options?.userId) {
     try {
-      preSim = await preSimHook(options.userId, question, simId, { threadId: options.threadId });
+      const hooked = await preSimHook(options.userId, question, simId, { threadId: options.threadId });
+      preSim = { ...defaultPreSim, ...hooked };
     } catch (err) {
       console.error('PRE-SIM HOOK failed (non-blocking):', err);
     }
   } else {
-    preSim.memory = await loadMemoryForSimulation(undefined, question);
+    preSim = { ...defaultPreSim, memory: await loadMemoryForSimulation(undefined, question) };
   }
 
   const memory = preSim.memory;
@@ -666,7 +669,7 @@ export async function* runSimulation(
   const applyPromptOverride = (agent: AgentConfig): AgentConfig => {
     const override = preSim.promptOverrides.get(agent.id);
     if (!override) return agent;
-    console.log(`Using optimized prompt for ${agent.id}`);
+    devLog(`Using optimized prompt for ${agent.id}`);
     return { ...agent, systemPrompt: buildSystemPromptFromOverride(override, agent.name) };
   };
 
@@ -706,7 +709,7 @@ export async function* runSimulation(
   try {
     domainClassification = await detectDomain(question);
     domainConstraintsText = formatDomainConstraints(domainClassification);
-    console.log(`DOMAIN: ${domainClassification.domain} (${(domainClassification.confidence * 100).toFixed(0)}%) — subdomain: ${domainClassification.subdomain}`);
+    devLog(`DOMAIN: ${domainClassification.domain} (${(domainClassification.confidence * 100).toFixed(0)}%) — subdomain: ${domainClassification.subdomain}`);
   } catch (err) {
     console.error('Domain detection failed (non-blocking):', err);
   }
@@ -735,9 +738,9 @@ export async function* runSimulation(
         behavioralContextText = formatBehavioralContext(behavioralProfile);
       }
       if (behavioralProfile && behavioralContextText) {
-        console.log(`BEHAVIORAL: Profile loaded — risk: ${(behavioralProfile.risk_tolerance * 100).toFixed(0)}%, confidence: ${(behavioralProfile.inference_confidence * 100).toFixed(0)}%`);
+        devLog(`BEHAVIORAL: Profile loaded — risk: ${(behavioralProfile.risk_tolerance * 100).toFixed(0)}%, confidence: ${(behavioralProfile.inference_confidence * 100).toFixed(0)}%`);
       } else if (behavioralProfile) {
-        console.log(
+        devLog(
           `BEHAVIORAL: Profile present — inference_confidence: ${(behavioralProfile.inference_confidence * 100).toFixed(0)}% (context suppressed until threshold met)`,
         );
       }
@@ -831,7 +834,7 @@ export async function* runSimulation(
   let plan: SimulationPlan;
   if (chiefPanelActive && chiefDesign?.kind === 'specialist') {
     plan = buildChiefPanelPlan(chiefDesign);
-    console.log(`[chief] plan: ${plan.tasks.length} tasks from Opus-designed panel`);
+    devLog(`[chief] plan: ${plan.tasks.length} tasks from Opus-designed panel`);
   } else {
     try {
       const planStart = Date.now();
@@ -849,7 +852,7 @@ export async function* runSimulation(
         latency_ms: Date.now() - planStart, success: true,
         timestamp: new Date().toISOString(),
       });
-      console.log(`[decision_chair] plan: ${planRaw.length} chars`);
+      devLog(`[decision_chair] plan: ${planRaw.length} chars`);
       plan = parseJSON<SimulationPlan>(planRaw);
       if (!plan.tasks || plan.tasks.length === 0) {
         throw new Error('Empty plan');
@@ -889,7 +892,7 @@ export async function* runSimulation(
       dynamicAgentMap.set(opCfg.id, opCfg);
     }
     chiefInjected = true;
-    console.log(
+    devLog(
       `[chief] panel: ${chiefDesign.specialists.length} specialists + ${chiefDesign.operator ? 'operator' : 'no operator'}`,
     );
   } else if (options?.agentIds && options.agentIds.length > 0) {
@@ -900,7 +903,7 @@ export async function* runSimulation(
           dynamicAgentMap.set(la.id, libraryAgentToConfig(la));
         }
         usedDynamicAgents = true;
-        console.log(`AGENTS(P41): loaded ${dbAgents.length} user-selected agents from DB: ${dbAgents.map(a => a.id).join(', ')}`);
+        devLog(`AGENTS(P41): loaded ${dbAgents.length} user-selected agents from DB: ${dbAgents.map(a => a.id).join(', ')}`);
       }
     } catch (err) {
       console.error('AGENTS(P41): failed to load user-selected agents from DB, using fallback:', err);
@@ -914,10 +917,10 @@ export async function* runSimulation(
           dynamicAgentMap.set(la.id, libraryAgentToConfig(la));
         }
         usedDynamicAgents = true;
-        console.log(`AGENTS(P41): auto-suggested ${suggested.length} agents for domain "${domainClassification.domain}": ${suggested.map(a => a.id).join(', ')}`);
+        devLog(`AGENTS(P41): auto-suggested ${suggested.length} agents for domain "${domainClassification.domain}": ${suggested.map(a => a.id).join(', ')}`);
       }
     } catch {
-      console.log('AGENTS(P41): DB auto-suggest unavailable, using hardcoded agents');
+      devLog('AGENTS(P41): DB auto-suggest unavailable, using hardcoded agents');
     }
   }
 
@@ -970,7 +973,7 @@ Respond with valid JSON only:
   "recommendation": "one sentence, specific action"
 }`,
       });
-      console.log('AGENTS(P41): joker agent added to simulation');
+      devLog('AGENTS(P41): joker agent added to simulation');
     } catch (err) {
       console.error('AGENTS(P41): failed to add joker agent:', err);
     }
@@ -979,7 +982,7 @@ Respond with valid JSON only:
       const behavioral = await getOrCreateProfile(options.userId);
       const selfAgent = await buildSelfAgent(options.userId, memory.coreMemory, behavioral);
       dynamicAgentMap.set(selfAgent.id, libraryAgentToConfig(selfAgent));
-      console.log(`AGENTS(P41): self-agent "${selfAgent.id}" added to simulation`);
+      devLog(`AGENTS(P41): self-agent "${selfAgent.id}" added to simulation`);
     } catch (err) {
       console.error('AGENTS(P41): failed to build self-agent:', err);
     }
@@ -1034,7 +1037,7 @@ Respond with valid JSON only:
       });
     await Promise.all(ragPromises);
     if (ragContextMap.size > 0) {
-      console.log(`RAG(P43): loaded knowledge for ${ragContextMap.size} agents`);
+      devLog(`RAG(P43): loaded knowledge for ${ragContextMap.size} agents`);
     }
   } catch (err) {
     console.error('RAG(P43): knowledge pre-load failed (non-blocking):', err);
@@ -1148,7 +1151,7 @@ Respond with valid JSON only:
 
   if (options?.enableCrowdWisdom) {
     const advisorCount = options?.advisorCount || 20;
-    console.log(`[field_intel] generating ${advisorCount} personas during planning...`);
+    devLog(`[field_intel] generating ${advisorCount} personas during planning...`);
     try {
       fieldPersonas = await generateAdvisorPersonas(
         question,
@@ -1156,7 +1159,7 @@ Respond with valid JSON only:
         advisorCount,
       );
       yield { event: 'crowd_personas', data: fieldPersonas };
-      console.log(`[field_intel] ${fieldPersonas.length} field advisors ready`);
+      devLog(`[field_intel] ${fieldPersonas.length} field advisors ready`);
     } catch (err) {
       console.error('[field_intel] persona generation failed (non-fatal):', err);
     }
@@ -1189,7 +1192,7 @@ Respond with valid JSON only:
       batch1Advisors.forEach(a => queriedAdvisors.add(a.id));
 
       yield { event: 'field_scan', data: scan1 };
-      console.log(`[field_intel] Scan 1: ${scan1.insights.length} insights from ${scan1.advisors_queried} advisors in ${scan1.scan_duration_ms}ms`);
+      devLog(`[field_intel] Scan 1: ${scan1.insights.length} insights from ${scan1.advisors_queried} advisors in ${scan1.scan_duration_ms}ms`);
       yield { event: 'round_complete', data: { round: 2 } };
     }
   } else {
@@ -1317,7 +1320,7 @@ Respond with valid JSON only:
       batch2Advisors.forEach(a => queriedAdvisors.add(a.id));
 
       yield { event: 'field_scan', data: scan2 };
-      console.log(`[field_intel] Scan 2: ${scan2.insights.length} insights from ${scan2.advisors_queried} advisors in ${scan2.scan_duration_ms}ms`);
+      devLog(`[field_intel] Scan 2: ${scan2.insights.length} insights from ${scan2.advisors_queried} advisors in ${scan2.scan_duration_ms}ms`);
       yield { event: 'round_complete', data: { round: 4 } };
     }
   }
@@ -1359,9 +1362,9 @@ Respond with valid JSON only:
         };
 
         if (userResponse.action === 'correct') {
-          console.log(`HITL: User correction received: "${(userResponse.correction || '').substring(0, 100)}"`);
+          devLog(`HITL: User correction received: "${(userResponse.correction || '').substring(0, 100)}"`);
         } else {
-          console.log(`HITL: User ${userResponse.action} — continuing`);
+          devLog(`HITL: User ${userResponse.action} — continuing`);
         }
       } catch (err) {
         console.error('HITL: Checkpoint failed, continuing without:', err);
@@ -1653,12 +1656,12 @@ Respond with valid JSON only:
     progressLedger = assessProgress(state, progressLedger, phaseReports);
     taskLedger = await updateTaskLedger(question, taskLedger, phaseReports, state);
     yield { event: 'ledger_update', data: { task_ledger: taskLedger, progress_ledger: progressLedger } };
-    console.log(`[ledger] After rounds 2-5: progressing=${progressLedger.is_progressing}, stall=${progressLedger.stall_counter}, new_args=${progressLedger.new_arguments_this_round}`);
+    devLog(`[ledger] After rounds 2-5: progressing=${progressLedger.is_progressing}, stall=${progressLedger.stall_counter}, new_args=${progressLedger.new_arguments_this_round}`);
 
     if (progressLedger.stall_counter >= 2) {
       chairDirectives = await replanDebate(question, taskLedger, progressLedger, state);
       yield { event: 'stall_replan', data: { stall_counter: progressLedger.stall_counter, directives: chairDirectives } };
-      console.log(`[ledger] STALL DETECTED after rounds 2-5, directives:`, chairDirectives);
+      devLog(`[ledger] STALL DETECTED after rounds 2-5, directives:`, chairDirectives);
     }
   }
 
@@ -1667,7 +1670,7 @@ Respond with valid JSON only:
     try {
       const delegationResponses = await processDelegations(allReports, state, question);
       if (delegationResponses.length > 0) {
-        console.log('[delegation] After specialist thorough passes:', delegationResponses.map(d =>
+        devLog('[delegation] After specialist thorough passes:', delegationResponses.map(d =>
           `${d.request.requesting_agent} → ${d.request.target_agent}: ${d.request.question.substring(0, 50)}`
         ).join(', '));
         for (const delegation of delegationResponses) {
@@ -1799,12 +1802,12 @@ Respond with valid JSON only:
     progressLedger = assessProgress(state, progressLedger, recentQuickReports);
     taskLedger = await updateTaskLedger(question, taskLedger, recentQuickReports, state);
     yield { event: 'ledger_update', data: { task_ledger: taskLedger, progress_ledger: progressLedger } };
-    console.log(`[ledger] After round 6: progressing=${progressLedger.is_progressing}, stall=${progressLedger.stall_counter}, new_args=${progressLedger.new_arguments_this_round}`);
+    devLog(`[ledger] After round 6: progressing=${progressLedger.is_progressing}, stall=${progressLedger.stall_counter}, new_args=${progressLedger.new_arguments_this_round}`);
 
     if (progressLedger.stall_counter >= 2) {
       chairDirectives = await replanDebate(question, taskLedger, progressLedger, state);
       yield { event: 'stall_replan', data: { stall_counter: progressLedger.stall_counter, directives: chairDirectives } };
-      console.log(`[ledger] STALL DETECTED after round 6, directives:`, chairDirectives);
+      devLog(`[ledger] STALL DETECTED after round 6, directives:`, chairDirectives);
     }
   }
 
@@ -1814,7 +1817,7 @@ Respond with valid JSON only:
       const recentQuick = allReports.slice(allReports.length - quickAgentTasks.length);
       const delegationResponses = await processDelegations(recentQuick, state, question);
       if (delegationResponses.length > 0) {
-        console.log('[delegation] After round 6:', delegationResponses.map(d =>
+        devLog('[delegation] After round 6:', delegationResponses.map(d =>
           `${d.request.requesting_agent} → ${d.request.target_agent}: ${d.request.question.substring(0, 50)}`
         ).join(', '));
         for (const delegation of delegationResponses) {
@@ -1832,7 +1835,7 @@ Respond with valid JSON only:
   if (uniqueAgentsAfterR6 < activeAgentCount) {
     console.error(`[engine] WARNING: Only ${uniqueAgentsAfterR6}/${activeAgentCount} agents participated in rounds 2-6`);
   } else {
-    console.log(`[engine] All ${activeAgentCount} agents reported after round 6`);
+    devLog(`[engine] All ${activeAgentCount} agents reported after round 6`);
   }
 
   const reportSummaryForChair = allReports
@@ -1859,7 +1862,7 @@ Respond with valid JSON only:
       fieldScans.push(conflictScan);
       conflictAdvisors.forEach(a => queriedAdvisors.add(a.id));
       yield { event: 'field_scan', data: conflictScan };
-      console.log(`[field_intel] Conflict scan: ${conflictScan.insights.length} insights on "${conflictFocus}" in ${conflictScan.scan_duration_ms}ms`);
+      devLog(`[field_intel] Conflict scan: ${conflictScan.insights.length} insights on "${conflictFocus}" in ${conflictScan.scan_duration_ms}ms`);
     }
   }
 
@@ -2018,12 +2021,12 @@ Respond with valid JSON only:
     progressLedger = assessProgress(state, progressLedger, recentAdversarialReports);
     taskLedger = await updateTaskLedger(question, taskLedger, recentAdversarialReports, state);
     yield { event: 'ledger_update', data: { task_ledger: taskLedger, progress_ledger: progressLedger } };
-    console.log(`[ledger] After rounds 7-8: progressing=${progressLedger.is_progressing}, stall=${progressLedger.stall_counter}, new_args=${progressLedger.new_arguments_this_round}`);
+    devLog(`[ledger] After rounds 7-8: progressing=${progressLedger.is_progressing}, stall=${progressLedger.stall_counter}, new_args=${progressLedger.new_arguments_this_round}`);
 
     if (progressLedger.stall_counter >= 2) {
       chairDirectives = await replanDebate(question, taskLedger, progressLedger, state);
       yield { event: 'stall_replan', data: { stall_counter: progressLedger.stall_counter, directives: chairDirectives } };
-      console.log(`[ledger] STALL DETECTED after rounds 7-8, directives:`, chairDirectives);
+      devLog(`[ledger] STALL DETECTED after rounds 7-8, directives:`, chairDirectives);
     }
   }
 
@@ -2151,14 +2154,14 @@ Respond with valid JSON only:
   saveToWorkingBuffer(simId, options?.userId || 'anon', 9, 'convergence', `Convergence: ${finalReports.length} final positions`, null, getCurrentPositions(state));
   yield* drainCrowdSse();
 
-  console.log(`[convergence] ${finalReports.length}/${activeAgentCount} convergence reports, using ${consensusReports.length} for consensus`);
+  devLog(`[convergence] ${finalReports.length}/${activeAgentCount} convergence reports, using ${consensusReports.length} for consensus`);
 
   // MagenticOne #9: Final ledger update after convergence (round 9)
   {
     progressLedger = assessProgress(state, progressLedger, consensusReports);
     taskLedger = await updateTaskLedger(question, taskLedger, consensusReports, state);
     yield { event: 'ledger_update', data: { task_ledger: taskLedger, progress_ledger: progressLedger } };
-    console.log(`[ledger] After round 9: verified_facts=${taskLedger.verified_facts.length}, assumptions=${taskLedger.assumptions.length}, insights=${taskLedger.derived_insights.length}`);
+    devLog(`[ledger] After round 9: verified_facts=${taskLedger.verified_facts.length}, assumptions=${taskLedger.assumptions.length}, insights=${taskLedger.derived_insights.length}`);
   }
 
   // Verify all active agents have final reports
@@ -2180,7 +2183,7 @@ Respond with valid JSON only:
       const signal = synthesizeCrowdSignal(packed.votes, packed.summary);
       crowdSignalText = formatCrowdSignal(signal);
       yield { event: 'crowd_round_complete', data: signal };
-      console.log(
+      devLog(
         `[god_view] ${packed.votes.length} voices · +${packed.summary.positive} / -${packed.summary.negative} / ~${packed.summary.neutral}`,
       );
     }
@@ -2199,7 +2202,7 @@ Respond with valid JSON only:
   const avgAgentConfidence = totalVerdictAgents > 0
     ? consensusReports.reduce((sum, r) => sum + r.confidence, 0) / totalVerdictAgents
     : 5;
-  console.log(`[consensus] ${agentConsensusPercent}% ${agentConsensusPosition}, avg confidence ${avgAgentConfidence.toFixed(1)}`);
+  devLog(`[consensus] ${agentConsensusPercent}% ${agentConsensusPosition}, avg confidence ${avgAgentConfidence.toFixed(1)}`);
 
   // ━━ ROUND 10 — VERDICT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -2314,7 +2317,7 @@ DEBATE PROGRESS:
         success: true,
         timestamp: new Date().toISOString(),
       });
-      console.log(`[decision_chair] opus premium verdict: ${verdictRaw.length} chars`);
+      devLog(`[decision_chair] opus premium verdict: ${verdictRaw.length} chars`);
 
       let parsedOpus: Record<string, unknown>;
       try {
@@ -2369,7 +2372,7 @@ DEBATE PROGRESS:
         latency_ms: Date.now() - verdictStart, success: true,
         timestamp: new Date().toISOString(),
       });
-      console.log(`[decision_chair] verdict: ${verdictRaw.length} chars`);
+      devLog(`[decision_chair] verdict: ${verdictRaw.length} chars`);
       const parsedVerdict = parseJSON<Record<string, unknown>>(verdictRaw);
       verdict = coerceVerdictCore(parsedVerdict) as DecisionObject;
       Object.assign(verdict, mergeModeVerdictFields(parsedVerdict, options?.simMode));
@@ -2408,7 +2411,7 @@ DEBATE PROGRESS:
     for (const filter of kernel.outputFilters) {
       const check = filter.run(verdict);
       if (check.patched) {
-        console.log(`[filter:${filter.name}] patched verdict: ${check.reason}`);
+        devLog(`[filter:${filter.name}] patched verdict: ${check.reason}`);
         verdict = check.patched;
       }
     }
@@ -2418,7 +2421,7 @@ DEBATE PROGRESS:
   if (!isOpusPremiumVerdict) try {
     const critique = await critiqueVerdict(question, verdict, state);
     yield { event: 'verdict_critique', data: critique };
-    console.log(`[self-refine] critique: actionability=${critique.actionability_score}, should_refine=${critique.should_refine}`);
+    devLog(`[self-refine] critique: actionability=${critique.actionability_score}, should_refine=${critique.should_refine}`);
 
     if (critique.should_refine) {
       const consensusData = agentConsensusPercent >= 70
@@ -2439,7 +2442,7 @@ DEBATE PROGRESS:
       if (modeSnap.risk_matrix) (verdict as Record<string, unknown>).risk_matrix = modeSnap.risk_matrix;
       if (modeSnap.action_plan) (verdict as Record<string, unknown>).action_plan = modeSnap.action_plan;
       verdict.one_liner = verdict.one_liner || modeSnap.one_liner;
-      console.log(`[self-refine] verdict REFINED: actionability ${critique.actionability_score} → improved`);
+      devLog(`[self-refine] verdict REFINED: actionability ${critique.actionability_score} → improved`);
     }
   } catch (err) {
     console.error('[self-refine] critique/refine failed (non-fatal):', err);
@@ -2480,8 +2483,8 @@ DEBATE PROGRESS:
     ]);
     yield { event: 'counter_factual', data: counterFactual };
     yield { event: 'blind_spots', data: blindSpots };
-    console.log(`[verdict-insights] Counter-factual: biggest lever = "${counterFactual.single_biggest_lever}"`);
-    console.log(`[verdict-insights] Blind spots: ${blindSpots.blind_spots.length} found, risk: ${blindSpots.overall_blind_spot_risk}`);
+    devLog(`[verdict-insights] Counter-factual: biggest lever = "${counterFactual.single_biggest_lever}"`);
+    devLog(`[verdict-insights] Blind spots: ${blindSpots.blind_spots.length} found, risk: ${blindSpots.overall_blind_spot_risk}`);
   } catch (err) {
     console.error('[verdict-insights] Counter-factual/blind-spots failed (non-fatal):', err);
   }
@@ -2515,7 +2518,7 @@ DEBATE PROGRESS:
   if (!isOpusPremiumVerdict && behavioralProfile && behavioralProfile.inference_confidence >= 0.2) {
     verdict = applyBehavioralModifiers(behavioralProfile, verdict);
     if ((verdict as any).calibration_adjusted) {
-      console.log(`BEHAVIORAL: Verdict probability adjusted — ${(verdict as any).calibration_note}`);
+      devLog(`BEHAVIORAL: Verdict probability adjusted — ${(verdict as any).calibration_note}`);
     }
   }
 
@@ -2540,7 +2543,7 @@ DEBATE PROGRESS:
   // Agno #11: Score all agent performances
   const agentScores = scoreAllAgents(state, enrichedCitations);
   yield { event: 'agent_scores', data: agentScores };
-  console.log('[perf] Agent scores:', agentScores.map((s) => `${s.agent_name}: ${s.overall_score}/100`).join(', '));
+  devLog('[perf] Agent scores:', agentScores.map((s) => `${s.agent_name}: ${s.overall_score}/100`).join(', '));
 
   // Follow-up suggestions
   let followUps: string[] = ['What are the key risks I should investigate further?', 'What would change this decision from delay to proceed?', 'What is the minimum viable test I can run this week?', 'Who should I talk to before making this decision?'];
@@ -2551,7 +2554,7 @@ DEBATE PROGRESS:
       maxTokens: 512,
       tier: 'orchestrator',
     });
-    console.log(`[decision_chair] followups: ${followupRaw.length} chars`);
+    devLog(`[decision_chair] followups: ${followupRaw.length} chars`);
     followUps = parseJSON<string[]>(followupRaw);
     yield { event: 'followup_suggestions', data: followUps };
   } catch (error) {
@@ -2564,7 +2567,7 @@ DEBATE PROGRESS:
   // If there are unqueried advisors → run them as a quick validation pass
   const unqueriedAdvisors = fieldPersonas.filter(a => !queriedAdvisors.has(a.id));
   if (unqueriedAdvisors.length > 0 && options?.enableCrowdWisdom) {
-    console.log(`[field_intel] ${unqueriedAdvisors.length} unqueried advisors remaining — running post-verdict validation`);
+    devLog(`[field_intel] ${unqueriedAdvisors.length} unqueried advisors remaining — running post-verdict validation`);
     try {
       const verdictSummary = `${verdict.recommendation} (${verdict.probability}%). Main risk: ${verdict.main_risk}`;
       const validationScan = await runFieldScan(
@@ -2576,17 +2579,17 @@ DEBATE PROGRESS:
       fieldScans.push(validationScan);
       unqueriedAdvisors.slice(0, 20).forEach(a => queriedAdvisors.add(a.id));
       yield { event: 'field_scan', data: validationScan };
-      console.log(`[field_intel] Post-verdict validation: ${validationScan.insights.length} insights in ${validationScan.scan_duration_ms}ms`);
+      devLog(`[field_intel] Post-verdict validation: ${validationScan.insights.length} insights in ${validationScan.scan_duration_ms}ms`);
     } catch (err) {
       console.error('[field_intel] Post-verdict validation failed (non-fatal):', err);
     }
   } else if (fieldPersonas.length > 0) {
-    console.log(`[field_intel] All ${queriedAdvisors.size} advisors already participated in the debate — skipping post-verdict`);
+    devLog(`[field_intel] All ${queriedAdvisors.size} advisors already participated in the debate — skipping post-verdict`);
   }
 
   // ━━ FINALIZE AUDIT (Palantir #4) ━━━━━━━━━━━━━━━━━━━━━━━━━
   finalizeAudit(audit);
-  console.log(`[audit] ${audit.rounds.length} calls, ${audit.total_input_tokens}+${audit.total_output_tokens} tokens, $${audit.total_cost_usd.toFixed(4)}, ${audit.total_duration_ms}ms`);
+  devLog(`[audit] ${audit.rounds.length} calls, ${audit.total_input_tokens}+${audit.total_output_tokens} tokens, $${audit.total_cost_usd.toFixed(4)}, ${audit.total_duration_ms}ms`);
   yield { event: 'audit_complete', data: audit };
 
   // ━━ DeepEval #12: Algorithmic Simulation Evaluation ━━━━━━━
@@ -2600,7 +2603,7 @@ DEBATE PROGRESS:
     // Re-yield updated verdict so frontend gets the final grade
     yield { event: 'verdict_artifact', data: verdict };
   }
-  console.log(`[eval] ${evaluation.grade} ${evaluation.overall_score.toFixed(0)}/100`);
+  devLog(`[eval] ${evaluation.grade} ${evaluation.overall_score.toFixed(0)}/100`);
 
   // ━━ STATE SUMMARY (LangGraph #2) ━━━━━━━━━━━━━━━━━━━━━━━━━
   transitionPhase(state, 'complete');
@@ -2633,7 +2636,7 @@ DEBATE PROGRESS:
   const webCitations = formatSearchCitations(allSearchCitations);
   if (webCitations.length > 0) {
     (verdict as any).web_citations = webCitations;
-    console.log(`[search] ${webCitations.length} unique web sources from ${allSearchCitations.length} total citations`);
+    devLog(`[search] ${webCitations.length} unique web sources from ${allSearchCitations.length} total citations`);
   }
 
   await saveSimulation({
@@ -2658,7 +2661,7 @@ DEBATE PROGRESS:
     disclaimer: (verdict as any).disclaimer || null,
     isPublic: true,
   }).then(id => {
-    if (id) console.log(`[persistence] Simulation saved: ${id}`);
+    if (id) devLog(`[persistence] Simulation saved: ${id}`);
     else console.warn('[persistence] Simulation save returned null');
   }).catch(err => console.error('[persistence] Save error:', err));
 

@@ -5,7 +5,7 @@
  * Tolerates up to floor(n/3) Byzantine (malicious) nodes.
  */
 
-import type { Vote, Proposal, Node } from './types';
+import type { Proposal, Node } from './types';
 
 /**
  * Calculate BFT quorum threshold.

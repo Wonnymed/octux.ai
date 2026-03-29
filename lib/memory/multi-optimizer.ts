@@ -16,6 +16,7 @@
  */
 
 import { supabase } from './supabase';
+import { devLog } from '@/lib/dev-log';
 import { optimizePrompt, rollbackPrompt } from './prompt-optimizer';
 
 // All specialist agent IDs (exclude decision_chair)
@@ -103,7 +104,7 @@ export async function optimizeAllAgents(
 
     if (!count || count < 20 || count % 20 !== 0) return [];
 
-    console.log(`MULTI-OPT: Starting coordinated optimization (${count} sims)`);
+    devLog(`MULTI-OPT: Starting coordinated optimization (${count} sims)`);
   }
 
   const startTime = Date.now();
@@ -123,7 +124,7 @@ export async function optimizeAllAgents(
     .map(a => `${a.agentId}: avg ${a.avgScore.toFixed(1)}/10 (${a.simCount} sims)`)
     .join('\n');
 
-  console.log(`MULTI-OPT: Team avg: ${teamAvg.toFixed(1)}. Cross-agent:\n${crossAgentSummary}`);
+  devLog(`MULTI-OPT: Team avg: ${teamAvg.toFixed(1)}. Cross-agent:\n${crossAgentSummary}`);
 
   // 3. Optimize each agent (weakest first, with cross-agent context)
   const results: AgentOptResult[] = [];
@@ -153,7 +154,7 @@ export async function optimizeAllAgents(
 
     // Skip agents performing well above team average (don't fix what's not broken)
     if (agentScore.avgScore > teamAvg + 1.0 && agentScore.avgScore >= 7.5) {
-      console.log(`MULTI-OPT: ${agentId} — score ${agentScore.avgScore.toFixed(1)} above team avg+1. Skipping.`);
+      devLog(`MULTI-OPT: ${agentId} — score ${agentScore.avgScore.toFixed(1)} above team avg+1. Skipping.`);
       results.push({
         agentId, action: 'skipped', previousVersion: agentScore.currentVersion,
         newVersion: null, previousAvgScore: agentScore.avgScore,
@@ -228,7 +229,7 @@ export async function optimizeAllAgents(
     duration_ms: Date.now() - startTime,
   });
 
-  console.log(`MULTI-OPT COMPLETE (${Date.now() - startTime}ms): ${promoted.length} promoted, ${skipped.length} skipped, ${results.filter(r => r.action === 'failed').length} failed. Avg improvement: +${totalImprovement.toFixed(1)}`);
+  devLog(`MULTI-OPT COMPLETE (${Date.now() - startTime}ms): ${promoted.length} promoted, ${skipped.length} skipped, ${results.filter(r => r.action === 'failed').length} failed. Avg improvement: +${totalImprovement.toFixed(1)}`);
 
   return results;
 }
@@ -284,7 +285,7 @@ export async function monitorAndRollback(userId: string): Promise<string[]> {
     const regressionThreshold = previousVersion.avg_eval_score * 0.9;
 
     if (active.avg_eval_score < regressionThreshold) {
-      console.log(
+      devLog(
         `ROLLBACK: ${active.agent_id} v${active.version} regressed — ` +
         `current: ${active.avg_eval_score.toFixed(1)}, previous: ${previousVersion.avg_eval_score.toFixed(1)}, ` +
         `threshold: ${regressionThreshold.toFixed(1)}. Rolling back to v${previousVersion.version}.`
@@ -298,7 +299,7 @@ export async function monitorAndRollback(userId: string): Promise<string[]> {
   }
 
   if (rolledBack.length > 0) {
-    console.log(`ROLLBACK: ${rolledBack.length} agent(s) rolled back: ${rolledBack.join(', ')}`);
+    devLog(`ROLLBACK: ${rolledBack.length} agent(s) rolled back: ${rolledBack.join(', ')}`);
   }
 
   return rolledBack;

@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
         html: `
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 500px; margin: 0 auto; padding: 32px 0;">
   <div style="font-size: 20px; font-weight: 700; letter-spacing: 3px; margin-bottom: 24px; color: #D4AF37;">
-    SIGNUX <span style="font-weight: 300; opacity: 0.4;">AI</span>
+    SUKGO <span style="font-weight: 300; opacity: 0.4;">AI</span>
   </div>
   <p style="font-size: 16px; color: #333; margin-bottom: 8px;">
     ${daysAgo} days ago, you decided:

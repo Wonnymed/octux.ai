@@ -1,3 +1,4 @@
+import { devLog } from '@/lib/dev-log';
 import { NextRequest, NextResponse } from "next/server";
 
 // Webhook verification (GET) — WhatsApp verifies the endpoint
@@ -28,11 +29,11 @@ export async function POST(req: NextRequest) {
     const from = message.from;
     const text = message.text.body;
 
-    console.log(`WhatsApp message from ${from}: ${text}`);
+    devLog(`WhatsApp message from ${from}: ${text}`);
 
     // TODO: Call Sukgo chat API internally
     // TODO: Send response back via WhatsApp API
-    // const response = await processSignuxChat(text, from);
+    // const response = await processSukgoChat(text, from);
     // await sendWhatsAppMessage(from, response);
 
     return NextResponse.json({ status: "ok" });
@@ -42,7 +43,8 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function sendWhatsAppMessage(to: string, message: string) {
+/** public API — call when wiring WhatsApp outbound replies */
+export async function sendWhatsAppMessage(to: string, message: string) {
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 

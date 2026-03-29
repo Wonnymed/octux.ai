@@ -4,6 +4,7 @@
 
 import { callClaude, parseJSON } from '../simulation/claude';
 import { supabase } from './supabase';
+import { devLog } from '@/lib/dev-log';
 import { addFact, invalidateFact, temporalUpdateFact, resolveContradictions } from './temporal';
 
 // ── Types ──────────────────────────────────────────────────
@@ -50,7 +51,7 @@ export async function extractFacts(
     .join('\n');
 
   const response = await callClaude({
-    systemPrompt: `You are a fact extraction system for Octux AI. After each simulation, you extract BUSINESS FACTS about the user that would be useful in future simulations.
+    systemPrompt: `You are a fact extraction system for Sukgo AI. After each simulation, you extract BUSINESS FACTS about the user that would be useful in future simulations.
 
 WHAT TO EXTRACT:
 - Business details: industry, location, target market, business model
@@ -162,7 +163,7 @@ export async function applyFactActions(
   // After all actions, resolve contradictions (fire-and-forget)
   if (appliedCount > 0) {
     resolveContradictions(userId, simulationId)
-      .then(n => { if (n > 0) console.log(`[temporal] ${n} contradiction(s) auto-resolved`); })
+      .then(n => { if (n > 0) devLog(`[temporal] ${n} contradiction(s) auto-resolved`); })
       .catch(err => console.error('[temporal] resolve error (non-blocking):', err));
   }
 
@@ -223,7 +224,7 @@ export async function parseQuestionForFacts(
     : 'No existing facts.';
 
   const response = await callClaude({
-    systemPrompt: `You are a fact pre-processor for Octux AI. Before a simulation runs, you scan the user's question for EXPLICIT facts about them or their situation.
+    systemPrompt: `You are a fact pre-processor for Sukgo AI. Before a simulation runs, you scan the user's question for EXPLICIT facts about them or their situation.
 
 EXTRACT ONLY facts that are DIRECTLY STATED in the question:
 - Budget amounts: "$50K budget" → ADD financial fact
@@ -280,9 +281,9 @@ export async function extractAndSaveFacts(
     const actions = await extractFacts(userId, simulationId, question, verdict, agentReports);
     if (actions.length > 0) {
       const applied = await applyFactActions(userId, simulationId, actions);
-      console.log(`[facts] Extracted ${actions.length} facts, applied ${applied} for user ${userId}`);
+      devLog(`[facts] Extracted ${actions.length} facts, applied ${applied} for user ${userId}`);
     } else {
-      console.log(`[facts] No facts extracted for simulation ${simulationId}`);
+      devLog(`[facts] No facts extracted for simulation ${simulationId}`);
     }
   } catch (err) {
     console.error('[facts] Extraction failed (non-blocking):', err);

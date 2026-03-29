@@ -4,6 +4,7 @@ import { getUserIdFromRequest } from "@/lib/auth/supabase-server";
 import { hitlStore } from "@/lib/simulation/hitl-store";
 import type { HITLResponse } from "@/lib/simulation/hitl";
 import { addMessage, updateConversationAfterSim } from "@/lib/conversation/manager";
+import { devLog } from '@/lib/dev-log';
 import {
   ensureUserSubscription,
   checkSimulationStart,
@@ -121,7 +122,7 @@ export async function POST(req: NextRequest) {
     panelTier?: "swarm" | "specialist";
   };
 
-  console.log(
+  devLog(
     `[simulate/stream] engine=${engine}, simMode=${simMode}, cost=${tokenCost}, engineTier=${engineTier}, crowd=${enableCrowdWisdom}, advisors=${advisorCount}, question="${question.slice(0, 80)}"`,
   );
 

@@ -3,6 +3,7 @@
 // Network 4: Cross-simulation patterns
 
 import { callClaude, parseJSON } from '../simulation/claude';
+import { devLog } from '@/lib/dev-log';
 import { supabase } from './supabase';
 
 // ── Types ──────────────────────────────────────────────────
@@ -97,7 +98,7 @@ Extract opinions and observations. JSON:
 
   try {
     const result = parseJSON<{ opinions: OpinionAction[]; observations: ObservationAction[] }>(response);
-    console.log(`[opinions] Extracted ${result.opinions?.length || 0} opinions, ${result.observations?.length || 0} observations`);
+    devLog(`[opinions] Extracted ${result.opinions?.length || 0} opinions, ${result.observations?.length || 0} observations`);
     return result;
   } catch (err) {
     console.error('[opinions] JSON parse failed. Raw response:', response.substring(0, 500), 'Error:', err);

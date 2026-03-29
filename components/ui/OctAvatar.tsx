@@ -1,4 +1,3 @@
-import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/design/cn';
 import { getAgentColor, type CategoryType } from '@/lib/design/tokens';
 import { type ReactNode } from 'react';

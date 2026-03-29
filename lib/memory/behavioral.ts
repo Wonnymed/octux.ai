@@ -15,6 +15,7 @@
  *   6. confidence_calibration — auto-adjusted from Brier scores
  */
 
+import { devLog } from '@/lib/dev-log';
 import { supabase } from './supabase';
 
 // ═══════════════════════════════════════════
@@ -211,7 +212,7 @@ export async function inferBehavioralProfile(userId: string): Promise<Behavioral
   }, { onConflict: 'user_id' });
 
   const updated = { ...current, ...newParams, inference_confidence: inferenceConfidence };
-  console.log(`BEHAVIORAL: Inferred profile for user ${userId} (confidence: ${(inferenceConfidence * 100).toFixed(0)}%) — risk: ${(updated.risk_tolerance * 100).toFixed(0)}, speed: ${(updated.speed_preference * 100).toFixed(0)}, evidence: ${(updated.evidence_threshold * 100).toFixed(0)}, optimism: ${(updated.optimism_bias * 100).toFixed(0)}, detail: ${(updated.detail_preference * 100).toFixed(0)}, calibration: ${(updated.confidence_calibration * 100).toFixed(0)}`);
+  devLog(`BEHAVIORAL: Inferred profile for user ${userId} (confidence: ${(inferenceConfidence * 100).toFixed(0)}%) — risk: ${(updated.risk_tolerance * 100).toFixed(0)}, speed: ${(updated.speed_preference * 100).toFixed(0)}, evidence: ${(updated.evidence_threshold * 100).toFixed(0)}, optimism: ${(updated.optimism_bias * 100).toFixed(0)}, detail: ${(updated.detail_preference * 100).toFixed(0)}, calibration: ${(updated.confidence_calibration * 100).toFixed(0)}`);
 
   return updated;
 }

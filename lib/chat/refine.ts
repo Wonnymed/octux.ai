@@ -97,7 +97,6 @@ USER'S MODIFICATION: "${req.modification}"
 
 Analyze the impact of this change on the verdict. JSON:`,
       maxTokens: 2048,
-      model,
     });
 
     const parsed = JSON.parse(response.replace(/```json|```/g, '').trim());

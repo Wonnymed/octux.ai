@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { devLog } from '@/lib/dev-log';
 import {
   getModel,
   MODEL_TIERS,
@@ -29,7 +30,7 @@ export async function callClaude(options: CallClaudeOptions): Promise<string> {
     options.model ??
     (options.tier ? getModel(options.tier) : getModel('specialist'));
 
-  console.log(
+  devLog(
     `[MODEL] ${options.tier ?? (options.model ? 'explicit' : 'default')} → ${model}`,
   );
 
@@ -168,7 +169,7 @@ export async function callClaudeWithTools(
     const model =
       options.model ??
       (options.tier ? getModel(options.tier) : getModel('specialist'));
-    console.log(
+    devLog(
       `[MODEL] ${options.tier ?? (options.model ? 'explicit' : 'default')} (tools) → ${model}`,
     );
     const timeoutMs = 45000; // longer timeout for search
@@ -223,7 +224,7 @@ export async function callClaudeWithTools(
     const fullText = textParts.join('\n\n');
 
     if (searchCount > 0) {
-      console.log(`SEARCH: ${options.agentId} made ${searchCount} search(es), found ${citations.length} sources`);
+      devLog(`SEARCH: ${options.agentId} made ${searchCount} search(es), found ${citations.length} sources`);
     }
 
     return { text: fullText, searchCitations: citations, searchCount };

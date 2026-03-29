@@ -5,6 +5,7 @@
 import { callClaude, parseJSON } from '../simulation/claude';
 import { getUserFacts } from './facts';
 import { getUserSimulations } from './persistence';
+import { devLog } from '@/lib/dev-log';
 import { supabase } from './supabase';
 
 // ── Types ──────────────────────────────────────────────────
@@ -44,7 +45,7 @@ export async function generateDecisionProfile(userId: string): Promise<DecisionP
     .join('\n');
 
   const response = await callClaude({
-    systemPrompt: `You are the Profile Generator for Octux AI. You create a concise Decision Profile from a user's accumulated facts and simulation history.
+    systemPrompt: `You are the Profile Generator for Sukgo AI. You create a concise Decision Profile from a user's accumulated facts and simulation history.
 
 The profile should read like a briefing document — imagine you're briefing 10 specialist consultants before they analyze this person's next question.
 
@@ -104,7 +105,7 @@ JSON:
         });
 
       if (error) console.error('[profile] Failed to save:', error);
-      else console.log(`[profile] Updated for user ${userId}`);
+      else devLog(`[profile] Updated for user ${userId}`);
     }
 
     return profile;
@@ -151,7 +152,7 @@ export async function maybeRegenerateProfile(userId: string): Promise<void> {
     const lastProfileSimCount = existingProfile?.simulation_count || 0;
 
     if (simCount - lastProfileSimCount >= 3) {
-      console.log(`[profile] Regenerating for user ${userId} (${simCount} sims, last at ${lastProfileSimCount})`);
+      devLog(`[profile] Regenerating for user ${userId} (${simCount} sims, last at ${lastProfileSimCount})`);
       await generateDecisionProfile(userId);
     }
   } catch (err) {

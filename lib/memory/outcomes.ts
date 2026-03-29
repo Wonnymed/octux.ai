@@ -5,6 +5,7 @@
  * Refs: Graphiti (#27), Hindsight (#28), Braintrust (#30)
  */
 
+import { devLog } from '@/lib/dev-log';
 import { supabase } from './supabase';
 
 export type OutcomeReport = {
@@ -78,7 +79,7 @@ export async function recordOutcome(
   // Update overall Brier score
   await calculateBrierScore(userId);
 
-  console.log(`OUTCOME: Recorded ${report.outcome} for sim ${exp.simulation_id} (Brier: ${brier.toFixed(3)})`);
+  devLog(`OUTCOME: Recorded ${report.outcome} for sim ${exp.simulation_id} (Brier: ${brier.toFixed(3)})`);
 
   return { brier, recalibrated };
 }
@@ -167,7 +168,7 @@ async function recalibrateFromOutcome(
     }).eq('id', opinion.id);
   }
 
-  console.log(`OUTCOME RECALIBRATE: ${wasCorrect ? 'Confirmed' : 'Contradicted'} — ${Math.min(opinions.length, 10)} opinions adjusted by ${delta > 0 ? '+' : ''}${delta}`);
+  devLog(`OUTCOME RECALIBRATE: ${wasCorrect ? 'Confirmed' : 'Contradicted'} — ${Math.min(opinions.length, 10)} opinions adjusted by ${delta > 0 ? '+' : ''}${delta}`);
 }
 
 /**

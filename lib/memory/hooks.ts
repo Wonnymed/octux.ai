@@ -14,7 +14,7 @@
 
 import { parseQuestionForFacts, applyFactActions, extractAndSaveFacts } from './facts';
 import { resolveContradictions } from './temporal';
-import { loadMemoryForSimulation, formatMemoryContext, formatAgentMemory, type MemoryPayload } from './core-memory';
+import { loadMemoryForSimulation, type MemoryPayload } from './core-memory';
 import { getTopKMemories } from './recall';
 import { getOrCreateThread, accumulateThreadContext, saveSessionSummary, clearWorkingBuffer } from './session';
 import { loadAllAgentLessons, evaluateAgentPerformance, persistRoundLearnings, type RoundLearning } from './agent-improvement';
@@ -23,14 +23,16 @@ import { saveExperience, getUserExperiences, formatExperiencesForContext } from 
 import { extractOpinionsAndObservations, applyOpinionActions, saveObservations, getUserOpinions, formatOpinionsForContext, getUserObservations, formatObservationsForContext } from './opinions';
 import { cognify } from './knowledge-graph';
 import { maybeRegenerateProfile } from './profile';
-import { reflectOnExperiences } from './reflect';
+import { reflectOnExperiences, shouldReflect } from './reflect';
 import { runMemoryOptimization } from './optimize';
 import { extractAllAgentRules, loadAllAgentRules } from './procedural';
 import { getAllActivePrompts, recordEvalScore } from './prompt-optimizer';
 import { optimizeAllAgents, monitorAndRollback } from './multi-optimizer';
 import { extractTeamInsights, injectTeamContext } from './team-memory';
-import { inferBehavioralProfile } from './behavioral';
+import { inferBehavioralProfile, type BehavioralProfile } from './behavioral';
 import { supabase } from './supabase';
+import { devLog } from '@/lib/dev-log';
+import type { OperatorProfile } from '@/lib/operator/types';
 
 // Re-export for engine convenience
 export { formatRoundDiscoveries, type RoundLearning } from './agent-improvement';
@@ -52,6 +54,12 @@ export type PreSimResult = {
   recalledMemoryText: string;
   threadContext: string;
   walFactsExtracted: number;
+  /** Filled when loaded in pre-sim path (optional until wired). */
+  behavioralProfile?: BehavioralProfile | null;
+  behavioralContextText?: string;
+  operatorProfile?: OperatorProfile | null;
+  operatorContextText?: string;
+  operatorCompleteness?: number;
 };
 
 // ═══════════════════════════════════════════
@@ -103,7 +111,7 @@ export async function preSimHook(
   try {
     memory = await loadMemoryForSimulation(userId, question);
     if (memory.isReturningUser) {
-      console.log(`HOOK PRE: Memory loaded — ${memory.relevantFacts.length} facts, profile: ${memory.profile ? 'yes' : 'no'}, sims: ${memory.previousSimCount}`);
+      devLog(`HOOK PRE: Memory loaded — ${memory.relevantFacts.length} facts, profile: ${memory.profile ? 'yes' : 'no'}, sims: ${memory.previousSimCount}`);
     }
   } catch (err) {
     console.error('HOOK PRE: Core memory load failed:', err);
@@ -168,28 +176,28 @@ export async function preSimHook(
   if (knowledgeResult.status === 'fulfilled') {
     agentKnowledgeMap = knowledgeResult.value;
     if (agentKnowledgeMap.size > 0) {
-      console.log(`HOOK PRE: Agent knowledge for ${agentKnowledgeMap.size} agents`);
+      devLog(`HOOK PRE: Agent knowledge for ${agentKnowledgeMap.size} agents`);
     }
   }
 
   if (lessonsResult.status === 'fulfilled') {
     agentLessonsMap = lessonsResult.value;
     if (agentLessonsMap.size > 0) {
-      console.log(`HOOK PRE: Agent lessons for ${agentLessonsMap.size} agents`);
+      devLog(`HOOK PRE: Agent lessons for ${agentLessonsMap.size} agents`);
     }
   }
 
   if (rulesResult.status === 'fulfilled') {
     agentRulesMap = rulesResult.value;
     if (agentRulesMap.size > 0) {
-      console.log(`HOOK PRE: Procedural rules for ${agentRulesMap.size} agents`);
+      devLog(`HOOK PRE: Procedural rules for ${agentRulesMap.size} agents`);
     }
   }
 
   if (promptResult.status === 'fulfilled') {
     promptOverrides = promptResult.value;
     if (promptOverrides.size > 0) {
-      console.log(`HOOK PRE: Prompt overrides for ${promptOverrides.size} agents`);
+      devLog(`HOOK PRE: Prompt overrides for ${promptOverrides.size} agents`);
     }
   }
 
@@ -197,7 +205,7 @@ export async function preSimHook(
     networkMemoryText = networkMemoryText
       ? networkMemoryText + '\n' + teamResult.value
       : teamResult.value;
-    console.log('HOOK PRE: Team insights loaded');
+    devLog('HOOK PRE: Team insights loaded');
   }
 
   if (recallResult.status === 'fulfilled' && recallResult.value) {
@@ -218,16 +226,16 @@ export async function preSimHook(
   if (walResult.status === 'fulfilled') {
     walFactsExtracted = walResult.value;
     if (walFactsExtracted > 0) {
-      console.log(`HOOK PRE: WAL extracted ${walFactsExtracted} facts`);
+      devLog(`HOOK PRE: WAL extracted ${walFactsExtracted} facts`);
     }
   }
 
   // 8. Pre-sim contradiction resolution (fire-and-forget)
   resolveContradictions(userId)
-    .then(n => { if (n > 0) console.log(`HOOK PRE: ${n} contradictions resolved`); })
+    .then(n => { if (n > 0) devLog(`HOOK PRE: ${n} contradictions resolved`); })
     .catch(() => {});
 
-  console.log(`HOOK PRE: Complete — memory: ${memory.isReturningUser ? 'returning' : 'new'}, knowledge: ${agentKnowledgeMap.size}, lessons: ${agentLessonsMap.size}`);
+  devLog(`HOOK PRE: Complete — memory: ${memory.isReturningUser ? 'returning' : 'new'}, knowledge: ${agentKnowledgeMap.size}, lessons: ${agentLessonsMap.size}`);
 
   return {
     memory,
@@ -258,7 +266,14 @@ export function postAgentHook(
   agentId: string,
   agentName: string,
   report: any,
+  _meta?: {
+    userId?: string;
+    simulationId?: string;
+    question?: string;
+    debateRound?: number;
+  },
 ): RoundLearning {
+  void _meta;
   return persistRoundLearnings(agentId, agentName, report);
 }
 
@@ -288,7 +303,7 @@ export async function postSimHook(
   verdict: unknown,
   agentReports: Map<string, any>,
   activeThreadId: string
-): Promise<void> {
+): Promise<{ reflectSimCount: number }> {
   const reportsObj = Object.fromEntries(agentReports.entries());
 
   // ── CRITICAL (awaited — serverless may shut down after generator ends) ──
@@ -328,11 +343,11 @@ export async function postSimHook(
     );
     if (opinions.length > 0) {
       const applied = await applyOpinionActions(userId, simId, opinions);
-      console.log(`HOOK POST: ${applied} opinion(s) applied`);
+      devLog(`HOOK POST: ${applied} opinion(s) applied`);
     }
     if (observations.length > 0) {
       const saved = await saveObservations(userId, simId, observations);
-      console.log(`HOOK POST: ${saved} observation(s) saved`);
+      devLog(`HOOK POST: ${saved} observation(s) saved`);
     }
   } catch (err) {
     console.error('HOOK POST: Opinion/observation extraction failed:', err);
@@ -348,7 +363,7 @@ export async function postSimHook(
       .map(([id, r]) => `${r.agent_name || id} (${r.position}, ${r.confidence}/10): ${r.key_argument}`)
       .join('\n');
     const result = await cognify(userId, simId, question, verdictSummary, agentSummaries);
-    console.log(`HOOK POST: Cognify — ${result.entity_count} entities, ${result.relation_count} relations`);
+    devLog(`HOOK POST: Cognify — ${result.entity_count} entities, ${result.relation_count} relations`);
   } catch (err) {
     console.error('HOOK POST: Cognify failed:', err);
   }
@@ -376,7 +391,7 @@ export async function postSimHook(
   // 8. Team insights — every 5 sims (Agno team memory)
   extractTeamInsights(userId, simId)
     .then(n => {
-      if (n > 0) console.log(`HOOK POST: Team memory — ${n} insight(s) extracted/reinforced`);
+      if (n > 0) devLog(`HOOK POST: Team memory — ${n} insight(s) extracted/reinforced`);
     })
     .catch(err => console.error('HOOK POST: Team memory failed:', err));
 
@@ -384,7 +399,7 @@ export async function postSimHook(
   reflectOnExperiences(userId)
     .then(r => {
       if (r.opinions > 0 || r.observations > 0 || r.misses > 0) {
-        console.log(`HOOK POST: Reflect — ${r.opinions} opinions, ${r.observations} observations, ${r.misses} misses`);
+        devLog(`HOOK POST: Reflect — ${r.opinions} opinions, ${r.observations} observations, ${r.misses} misses`);
       }
     })
     .catch(err => console.error('HOOK POST: Reflect failed:', err));
@@ -393,7 +408,7 @@ export async function postSimHook(
   runMemoryOptimization(userId)
     .then(r => {
       if (r.consolidated > 0 || r.pruned > 0) {
-        console.log(`HOOK POST: Optimize — consolidated=${r.consolidated}, pruned=${r.pruned}, strengthened=${r.strengthened}, derived=${r.derived}`);
+        devLog(`HOOK POST: Optimize — consolidated=${r.consolidated}, pruned=${r.pruned}, strengthened=${r.strengthened}, derived=${r.derived}`);
       }
     })
     .catch(err => console.error('HOOK POST: Optimize failed:', err));
@@ -401,7 +416,7 @@ export async function postSimHook(
   // 10. Procedural rule extraction — every 10 sims (LangMem)
   extractAllAgentRules(userId)
     .then(n => {
-      if (n > 0) console.log(`HOOK POST: Procedural — ${n} rule(s) extracted/updated`);
+      if (n > 0) devLog(`HOOK POST: Procedural — ${n} rule(s) extracted/updated`);
     })
     .catch(err => console.error('HOOK POST: Procedural rules failed:', err));
 
@@ -411,7 +426,7 @@ export async function postSimHook(
     .then(results => {
       const promoted = results.filter(r => r.action === 'promoted');
       if (promoted.length > 0) {
-        console.log(`HOOK POST: Multi-opt — ${promoted.length} agents promoted: ${promoted.map(r => r.agentId).join(', ')}`);
+        devLog(`HOOK POST: Multi-opt — ${promoted.length} agents promoted: ${promoted.map(r => r.agentId).join(', ')}`);
       }
     })
     .catch(err => console.error('HOOK POST: Multi-opt failed:', err));
@@ -421,7 +436,7 @@ export async function postSimHook(
   monitorAndRollback(userId)
     .then(rolledBack => {
       if (rolledBack.length > 0) {
-        console.log(`HOOK POST: Rollback — ${rolledBack.join(', ')} reverted to previous version`);
+        devLog(`HOOK POST: Rollback — ${rolledBack.join(', ')} reverted to previous version`);
       }
     })
     .catch(err => console.error('HOOK POST: Monitor/rollback failed:', err));
@@ -432,12 +447,20 @@ export async function postSimHook(
       .then(({ count: simCount }) => {
         if (simCount && simCount % 10 === 0 && simCount >= 5) {
           inferBehavioralProfile(userId)
-            .then(() => console.log(`HOOK POST: Behavioral profile re-inferred after ${simCount} sims`))
+            .then(() => devLog(`HOOK POST: Behavioral profile re-inferred after ${simCount} sims`))
             .catch(err => console.error('HOOK POST: Behavioral inference failed:', err));
         }
       })
       .catch(() => {});
   }
+
+  let reflectSimCount = 0;
+  try {
+    reflectSimCount = await shouldReflect(userId);
+  } catch {
+    reflectSimCount = 0;
+  }
+  return { reflectSimCount };
 }
 
 // ═══════════════════════════════════════════

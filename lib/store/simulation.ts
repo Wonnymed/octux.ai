@@ -546,20 +546,33 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
               break;
             }
 
-            case 'plan_complete':
+            case 'plan_complete': {
+              const payload = data.data as { plan?: unknown; tasks?: unknown };
+              const raw = payload.plan ?? payload.tasks;
+              const details: NonNullable<SimPhase['details']> = Array.isArray(raw)
+                ? raw.map((item) => {
+                    const o = item as Record<string, unknown>;
+                    return {
+                      task: String(o.task ?? o.description ?? ''),
+                      status: 'pending' as const,
+                      assigned_agent:
+                        o.assigned_agent != null
+                          ? String(o.assigned_agent)
+                          : o.assigned != null
+                            ? String(o.assigned)
+                            : undefined,
+                    };
+                  })
+                : [];
               set((s) => ({
                 phases: s.phases.map((p) =>
                   p.name === 'Research Plan'
-                    ? {
-                        ...p,
-                        status: 'complete' as const,
-                        details: (data.data as { plan?: unknown; tasks?: unknown })?.plan ||
-                          (data.data as { tasks?: unknown })?.tasks,
-                      }
+                    ? { ...p, status: 'complete' as const, details }
                     : p,
                 ),
               }));
               break;
+            }
 
             case 'agent_token':
               appendAgentToken(

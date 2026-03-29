@@ -1,6 +1,5 @@
 import { callClaude } from './claude';
-import type { AdvisorPersona, AdvisorReport } from '../agents/advisors';
-import type { SimulationState } from './state';
+import type { AdvisorPersona } from '../agents/advisors';
 
 // A field scan is a QUICK batch of Haiku advisors focused on a specific angle
 export type FieldScan = {

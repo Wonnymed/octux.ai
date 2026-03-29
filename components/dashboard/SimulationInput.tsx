@@ -1,7 +1,10 @@
 'use client';
 
 import { useMemo, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { useAppStore } from '@/lib/store/app';
 import { cn } from '@/lib/design/cn';
 import { getTokenCost } from '@/lib/billing/token-costs';
 import {
@@ -81,6 +84,28 @@ function formatTokenCostPhrase(n: number): string {
   return n === 1 ? '1 token' : `${n} tokens`;
 }
 
+const HOME_MODE_CARDS: {
+  mode: DashboardMode;
+  icon: string;
+  title: string;
+  desc: string;
+}[] = [
+  { mode: 'simulate', icon: '⚡', title: 'Simulate', desc: 'Run the full analysis' },
+  { mode: 'compare', icon: '⇄', title: 'Compare', desc: 'A vs B — which wins?' },
+  { mode: 'stress', icon: '⚠', title: 'Stress test', desc: 'Find the breaking point' },
+  { mode: 'premortem', icon: '◆', title: 'Pre-mortem', desc: 'The failure autopsy' },
+];
+
+function formatRecency(iso: string): string {
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  } catch {
+    return '';
+  }
+}
+
 const inputSurfaceClass =
   'w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-[14px] text-white/90 outline-none transition-colors placeholder:text-white/25 focus:border-white/20';
 
@@ -95,6 +120,8 @@ export default function SimulationInput({
 }) {
   const activeMode = useDashboardUiStore((s) => s.activeMode);
   const modeNavFocus = useDashboardUiStore((s) => s.modeNavFocus);
+  const setModeNavFocus = useDashboardUiStore((s) => s.setModeNavFocus);
+  const setActiveMode = useDashboardUiStore((s) => s.setActiveMode);
   const activeTier = useDashboardUiStore((s) => s.activeTier);
   const previewTier = useDashboardUiStore((s) => s.previewTier);
   const setActiveTier = useDashboardUiStore((s) => s.setActiveTier);
@@ -107,6 +134,9 @@ export default function SimulationInput({
 
   const tokensRemaining = useBillingStore((s) => s.tokensRemaining);
   const canAffordMode = useBillingStore((s) => s.canAffordMode);
+  const { user } = useAuth();
+  const router = useRouter();
+  const conversations = useAppStore((s) => s.conversations);
 
   const [specialistBlockedHint, setSpecialistBlockedHint] = useState(false);
   const freeUser = billingTier === 'free';
@@ -174,6 +204,19 @@ export default function SimulationInput({
       ? '500 people react to A, 500 react to B — which gets more love?'
       : '5 experts argue for A, 5 argue for B — structured debate';
 
+  const userName = useMemo(() => {
+    const meta = user?.user_metadata as Record<string, unknown> | undefined;
+    const fn = typeof meta?.full_name === 'string' ? meta.full_name : '';
+    const dn = typeof meta?.display_name === 'string' ? meta.display_name : '';
+    return (dn || fn || user?.email?.split('@')[0] || '').trim();
+  }, [user]);
+
+  const recentSimulations = useMemo(() => {
+    return [...conversations]
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      .slice(0, 3);
+  }, [conversations]);
+
   return (
     <div
       className={cn(
@@ -183,14 +226,75 @@ export default function SimulationInput({
       )}
     >
       {modeNavFocus === 'home' ? (
-        <div className="mode-input-area mx-auto max-w-[520px] space-y-3 py-6 text-center">
-          <p className="text-[15px] font-medium text-white/50">Dashboard</p>
-          <p className="text-[13px] leading-relaxed text-white/35">
-            Choose <span className="text-white/45">Simulate</span>,{' '}
-            <span className="text-white/45">Compare</span>,{' '}
-            <span className="text-white/45">Stress test</span>, or{' '}
-            <span className="text-white/45">Pre-mortem</span> in the sidebar to begin.
-          </p>
+        <div className="mode-input-area mx-auto max-w-2xl space-y-6 px-2 py-6 sm:px-4">
+          <div>
+            <h1 className="text-[20px] font-medium text-[#f5f5f0]">
+              Welcome back{userName ? `, ${userName}` : ''}
+            </h1>
+            <p className="mt-1 text-[13px] text-[#8a8a82]">
+              What decision are you thinking about today?
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {HOME_MODE_CARDS.map((m) => (
+              <button
+                key={m.mode}
+                type="button"
+                onClick={() => {
+                  setModeNavFocus('mode');
+                  setActiveMode(m.mode);
+                }}
+                className="flex items-start gap-3 rounded-xl border border-[#3a3a36] bg-[#1a1a18] p-4 text-left transition-all hover:border-[#c9a96e]/20 hover:bg-[#c9a96e]/[0.02]"
+              >
+                <span className="mt-0.5 text-[18px] text-[#c9a96e]/40" aria-hidden>
+                  {m.icon}
+                </span>
+                <div>
+                  <div className="text-[14px] font-medium text-[#f5f5f0]">{m.title}</div>
+                  <div className="mt-0.5 text-[12px] text-[#8a8a82]">{m.desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {recentSimulations.length > 0 ? (
+            <div>
+              <h2 className="mb-3 text-[13px] text-[#8a8a82]">Recent decisions</h2>
+              <ul className="space-y-0">
+                {recentSimulations.map((sim) => (
+                  <li
+                    key={sim.id}
+                    className="border-b border-[#252522] last:border-0"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/c/${sim.id}`)}
+                      className="flex w-full items-center justify-between gap-3 py-2.5 text-left transition-colors hover:bg-white/[0.02]"
+                    >
+                      <div className="min-w-0">
+                        <div className="truncate text-[13px] text-[#c0c0b8]">{sim.title}</div>
+                        <div className="text-[11px] text-[#5a5a55]">
+                          {sim.has_simulation ? 'Simulation' : 'Chat'}
+                          {formatRecency(sim.updated_at) ? ` · ${formatRecency(sim.updated_at)}` : ''}
+                        </div>
+                      </div>
+                      {sim.latest_verdict ? (
+                        <span className="shrink-0 text-[12px] text-[#c9a96e]">{sim.latest_verdict}</span>
+                      ) : null}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          <div className="flex items-center gap-2 text-[12px] text-[#8a8a82]">
+            <span className="text-[#c9a96e]" aria-hidden>
+              ◇
+            </span>
+            <span>{tokensRemaining} tokens remaining</span>
+          </div>
         </div>
       ) : null}
 

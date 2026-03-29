@@ -15,6 +15,7 @@
 
 import { supabase } from './supabase';
 import { callClaude, parseJSON } from '../simulation/claude';
+import { devLog } from '@/lib/dev-log';
 import { invalidateFact } from './temporal';
 
 // ═══════════════════════════════════════════
@@ -43,7 +44,7 @@ export async function runMemoryOptimization(
       return { consolidated: 0, pruned: 0, strengthened: 0, derived: 0 };
     }
 
-    console.log(`OPTIMIZE: Triggering memory optimization for user ${userId} (${count} sims)`);
+    devLog(`OPTIMIZE: Triggering memory optimization for user ${userId} (${count} sims)`);
   }
 
   const startTime = Date.now();
@@ -71,7 +72,7 @@ export async function runMemoryOptimization(
     duration_ms: durationMs,
   }); // non-blocking log
 
-  console.log(`OPTIMIZE COMPLETE (${durationMs}ms): consolidated=${consolidated}, pruned=${pruned}, strengthened=${strengthened}, derived=${derived}, lessons_pruned=${lessonsPruned}`);
+  devLog(`OPTIMIZE COMPLETE (${durationMs}ms): consolidated=${consolidated}, pruned=${pruned}, strengthened=${strengthened}, derived=${derived}, lessons_pruned=${lessonsPruned}`);
 
   return { consolidated, pruned, strengthened, derived };
 }
@@ -177,7 +178,7 @@ Find duplicate groups. JSON:
           consolidated++;
         }
 
-        console.log(`OPTIMIZE CONSOLIDATE: Merged ${toMerge.length} duplicates into "${keeper.content.substring(0, 50)}..." (evidence: ${totalEvidence})`);
+        devLog(`OPTIMIZE CONSOLIDATE: Merged ${toMerge.length} duplicates into "${keeper.content.substring(0, 50)}..." (evidence: ${totalEvidence})`);
       }
     } catch (err) {
       console.error(`OPTIMIZE consolidate error (${category}):`, err);
@@ -214,7 +215,7 @@ async function pruneStaleMemories(userId: string): Promise<number> {
         await invalidateFact(f.id, 'Pruned: low confidence + old + low evidence');
         pruned++;
       }
-      console.log(`OPTIMIZE PRUNE: ${staleFacts.length} stale facts invalidated`);
+      devLog(`OPTIMIZE PRUNE: ${staleFacts.length} stale facts invalidated`);
     }
   } catch (err) {
     console.error('OPTIMIZE prune facts error:', err);
@@ -241,7 +242,7 @@ async function pruneStaleMemories(userId: string): Promise<number> {
         .in('id', ids);
 
       pruned += ids.length;
-      console.log(`OPTIMIZE PRUNE: ${ids.length} weak opinions invalidated (confidence < 0.2)`);
+      devLog(`OPTIMIZE PRUNE: ${ids.length} weak opinions invalidated (confidence < 0.2)`);
     }
   } catch (err) {
     console.error('OPTIMIZE prune opinions error:', err);
@@ -269,7 +270,7 @@ async function pruneStaleMemories(userId: string): Promise<number> {
         .in('id', ids);
 
       pruned += ids.length;
-      console.log(`OPTIMIZE PRUNE: ${ids.length} weak observations invalidated`);
+      devLog(`OPTIMIZE PRUNE: ${ids.length} weak observations invalidated`);
     }
   } catch (err) {
     console.error('OPTIMIZE prune observations error:', err);
@@ -334,7 +335,7 @@ async function strengthenFrequentEdges(userId: string): Promise<number> {
   }
 
   if (updated > 0) {
-    console.log(`OPTIMIZE STRENGTHEN: ${updated} graph edges reweighted`);
+    devLog(`OPTIMIZE STRENGTHEN: ${updated} graph edges reweighted`);
   }
 
   return updated;
@@ -432,7 +433,7 @@ async function deriveNewFacts(userId: string): Promise<number> {
   }
 
   if (derived > 0) {
-    console.log(`OPTIMIZE DERIVE: ${derived} new relations inferred from graph`);
+    devLog(`OPTIMIZE DERIVE: ${derived} new relations inferred from graph`);
   }
 
   return derived;
@@ -464,7 +465,7 @@ async function pruneStaleAgentLessons(userId: string): Promise<number> {
       .update({ is_active: false, updated_at: new Date().toISOString() })
       .in('id', ids);
 
-    console.log(`OPTIMIZE PRUNE: ${ids.length} stale agent lessons deactivated`);
+    devLog(`OPTIMIZE PRUNE: ${ids.length} stale agent lessons deactivated`);
     return ids.length;
   } catch (err) {
     console.error('OPTIMIZE prune lessons error:', err);

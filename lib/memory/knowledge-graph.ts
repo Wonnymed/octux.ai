@@ -8,6 +8,7 @@
  */
 
 import { callClaude, parseJSON } from '../simulation/claude';
+import { devLog } from '@/lib/dev-log';
 import { supabase } from './supabase';
 
 // ═══════════════════════════════════════════
@@ -32,6 +33,9 @@ export const OCTUX_ENTITY_TYPES = [
 
 export type OctuxEntityType = typeof OCTUX_ENTITY_TYPES[number];
 
+/** Alias for product rename — same ontology as {@link OctuxEntityType}. */
+export type SukgoEntityType = OctuxEntityType;
+
 export const OCTUX_RELATION_TYPES = [
   'targets_market',    // company → market
   'competes_with',     // company → company
@@ -51,6 +55,9 @@ export const OCTUX_RELATION_TYPES = [
 ] as const;
 
 export type OctuxRelationType = typeof OCTUX_RELATION_TYPES[number];
+
+/** Alias for product rename — same ontology as {@link OctuxRelationType}. */
+export type SukgoRelationType = OctuxRelationType;
 
 // ═══════════════════════════════════════════
 // TYPES
@@ -95,7 +102,7 @@ export async function cognify(
   const relationTypes = OCTUX_RELATION_TYPES.join(', ');
 
   const response = await callClaude({
-    systemPrompt: `You are a knowledge graph extractor for Octux AI. Given a business decision simulation, extract ENTITIES (people, companies, markets, locations, regulations, metrics, risks, etc.) and RELATIONSHIPS between them.
+    systemPrompt: `You are a knowledge graph extractor for Sukgo AI. Given a business decision simulation, extract ENTITIES (people, companies, markets, locations, regulations, metrics, risks, etc.) and RELATIONSHIPS between them.
 
 ONTOLOGY — use ONLY these types:
 
@@ -168,9 +175,9 @@ Extract entities and relationships. Return JSON:
 
     // Store in Supabase
     const storedEntities = await upsertEntities(userId, simulationId, validEntities);
-    const storedRelations = await upsertRelations(userId, simulationId, validRelations, storedEntities);
+    await upsertRelations(userId, simulationId, validRelations, storedEntities);
 
-    console.log(`[cognify] Extracted ${validEntities.length} entities, ${validRelations.length} relations from sim ${simulationId}`);
+    devLog(`[cognify] Extracted ${validEntities.length} entities, ${validRelations.length} relations from sim ${simulationId}`);
 
     return {
       entities: validEntities,

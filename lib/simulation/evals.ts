@@ -2,7 +2,7 @@
 // Scores simulation quality across multiple dimensions using
 // data from the state machine, audit trail, and agent reports.
 
-import type { AgentReport, DecisionObject } from '../agents/types';
+import type { AgentReport } from '../agents/types';
 import type { SimulationState } from './state';
 import type { SimulationAudit } from './audit';
 
@@ -247,7 +247,7 @@ function scoreDebateDepth(
 
   // Position changes: did any agent actually change position during debate?
   let positionChanges = 0;
-  for (const [agentId, reports] of state.agent_reports.entries()) {
+  for (const [, reports] of state.agent_reports.entries()) {
     if (reports.length < 2) continue;
     const positions = reports.map((r) => r.position);
     for (let i = 1; i < positions.length; i++) {

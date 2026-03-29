@@ -17,6 +17,7 @@
  */
 
 import { callClaude, parseJSON } from './claude';
+import { devLog } from '@/lib/dev-log';
 import { AGENTS } from '../agents/prompts';
 
 export type AgentSelection = {
@@ -99,7 +100,7 @@ Select ${minAgents}-${maxAgents} agents. JSON:`,
 
     const tokensPerAgent = calculateAgentBudget(selected.length).maxTokens;
 
-    console.log(`AGENT SELECT: ${selected.length} agents selected for "${question.substring(0, 50)}..." — ${selected.map((s: any) => s.agentId).join(', ')}`);
+    devLog(`AGENT SELECT: ${selected.length} agents selected for "${question.substring(0, 50)}..." — ${selected.map((s: any) => s.agentId).join(', ')}`);
 
     return {
       selected: selected.map((s: any) => ({

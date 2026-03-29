@@ -58,9 +58,6 @@ const SHELL_RAIL_TOOLTIP =
   'border border-white/[0.08] bg-[#1a1a1f] px-2.5 py-1.5 text-[12px] text-white/80 shadow-lg';
 /** Sidebar header — compact gap to first nav item (Okara-style, ≤12px below header) */
 const SIDEBAR_HEADER_PAD = 'px-3 sm:px-4 py-3';
-/** Brand mark — matches wordmark scale (Okara-like prominence) */
-const BRAND_LOGO_BOX = 'h-11 w-11';
-const BRAND_WORDMARK = 'text-[16px]';
 /** Claude-style nav: compact icons */
 const NAV_ICON = 18;
 /** Match conversation title styling in the history list */

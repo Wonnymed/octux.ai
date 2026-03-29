@@ -1,5 +1,5 @@
 /**
- * Sukgo Decision Chat — Memory-aware conversational AI.
+ * Sukgo decision chat — memory-aware conversational AI.
  * User memory is optional context: injected with strict “use only when relevant” rules.
  */
 
@@ -273,7 +273,7 @@ The user asked to ignore stored personal context or to answer without using prio
     ? `Optional user-specific background may appear below in "## User context". It is **supplementary**, not a script to read aloud.`
     : `No long-form user memory block is attached for this turn — answer from the question and recent chat turns only.`;
 
-  return `You are Sukgo AI — a Decision Operating System.
+  return `You are Sukgo AI — a decision operating system.
 Chat is fast and efficient; full multi-agent simulation is available separately when the user runs a simulation.
 
 You help people think through decisions clearly. ${memoryPreamble}

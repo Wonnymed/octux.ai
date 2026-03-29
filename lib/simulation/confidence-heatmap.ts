@@ -10,6 +10,7 @@
  * where the user can SEE which parts of the analysis are solid vs shaky.
  */
 
+import { devLog } from '@/lib/dev-log';
 import { callClaude, parseJSON } from './claude';
 
 // ═══════════════════════════════════════════
@@ -126,7 +127,7 @@ JSON array of claims:
       claims,
     };
 
-    console.log(`HEATMAP: ${claims.length} claims — ${green.length} green, ${yellow.length} yellow, ${red.length} red (overall: ${(avgConfidence * 100).toFixed(0)}%)`);
+    devLog(`HEATMAP: ${claims.length} claims — ${green.length} green, ${yellow.length} yellow, ${red.length} red (overall: ${(avgConfidence * 100).toFixed(0)}%)`);
 
     return heatmap;
   } catch (err) {

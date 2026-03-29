@@ -1,6 +1,5 @@
 'use client';
 
-import { cn } from '@/lib/design/cn';
 import { OctBadge, OctButton } from '@/components/sukgo';
 import { CircularProgress } from '@/components/ui';
 import { CitatedText } from '@/components/citations';

@@ -5,6 +5,11 @@
  * Each event type has a specific data shape.
  */
 
+import type { GodViewCrowdSummary } from './crowd';
+
+/** Payload for `crowd_summary` / god-view slice stored in simulation UI state. */
+export type GodViewVerdictSlice = GodViewCrowdSummary;
+
 export type SSEEvent =
   | PhaseStartEvent
   | PlanCompleteEvent
