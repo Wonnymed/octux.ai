@@ -17,7 +17,7 @@ const SIMULATE_CHIPS = [
   'Open a café in Seoul',
   'Launch SaaS in Brazil',
   'Import electronics wholesale',
-  'Franchise vs own brand',
+  'Start a tutoring academy in Bundang',
 ] as const;
 
 const COMPARE_CHIPS: { a: string; b: string }[] = [
@@ -94,6 +94,7 @@ export default function SimulationInput({
   billingTier: TierType;
 }) {
   const activeMode = useDashboardUiStore((s) => s.activeMode);
+  const modeNavFocus = useDashboardUiStore((s) => s.modeNavFocus);
   const activeTier = useDashboardUiStore((s) => s.activeTier);
   const previewTier = useDashboardUiStore((s) => s.previewTier);
   const setActiveTier = useDashboardUiStore((s) => s.setActiveTier);
@@ -177,13 +178,26 @@ export default function SimulationInput({
     <div
       className={cn(
         'shrink-0 px-4 pb-4 pt-6 sm:px-5',
-        activeMode === 'stress' && 'pt-5',
-        activeMode === 'premortem' && 'pt-7',
+        modeNavFocus !== 'home' && activeMode === 'stress' && 'pt-5',
+        modeNavFocus !== 'home' && activeMode === 'premortem' && 'pt-7',
       )}
     >
+      {modeNavFocus === 'home' ? (
+        <div className="mode-input-area mx-auto max-w-[520px] space-y-3 py-6 text-center">
+          <p className="text-[15px] font-medium text-white/50">Dashboard</p>
+          <p className="text-[13px] leading-relaxed text-white/35">
+            Choose <span className="text-white/45">Simulate</span>,{' '}
+            <span className="text-white/45">Compare</span>,{' '}
+            <span className="text-white/45">Stress test</span>, or{' '}
+            <span className="text-white/45">Pre-mortem</span> in the sidebar to begin.
+          </p>
+        </div>
+      ) : null}
+
       <div
         className={cn(
           'mode-input-area mx-auto max-w-[720px] space-y-4 transition-opacity duration-200 ease-out',
+          modeNavFocus === 'home' && 'hidden',
         )}
       >
         <div>
@@ -412,7 +426,11 @@ export default function SimulationInput({
             <span className="text-[11px] text-white/40">Not enough tokens for this run.</span>
           ) : null}
           {freeBlocksSpecialist ? (
-            <span className="text-[11px] text-[#c9a96e]/90">Upgrade to Pro to run with Specialist.</span>
+            <span className="text-[11px] text-[#c9a96e]/90">
+              {activeMode === 'stress' || activeMode === 'premortem'
+                ? 'Upgrade to Pro to unlock this mode.'
+                : 'Upgrade to Pro to run with Specialist.'}
+            </span>
           ) : null}
         </div>
 

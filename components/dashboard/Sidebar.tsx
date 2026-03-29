@@ -43,7 +43,9 @@ export default function DashboardSidebar({
   const isFreeTier = normalizeTierType(tier) === 'free';
 
   const activeMode = useDashboardUiStore((s) => s.activeMode);
+  const modeNavFocus = useDashboardUiStore((s) => s.modeNavFocus);
   const setActiveMode = useDashboardUiStore((s) => s.setActiveMode);
+  const setModeNavFocus = useDashboardUiStore((s) => s.setModeNavFocus);
   const setActiveTier = useDashboardUiStore((s) => s.setActiveTier);
   const setPreviewTier = useDashboardUiStore((s) => s.setPreviewTier);
 
@@ -60,7 +62,15 @@ export default function DashboardSidebar({
   }, [tier, setActiveTier, setPreviewTier]);
 
   const selectMode = (mode: DashboardMode) => {
+    setModeNavFocus('mode');
     setActiveMode(mode);
+    if (pathname !== '/') {
+      router.push('/');
+    }
+  };
+
+  const goHome = () => {
+    setModeNavFocus('home');
     if (pathname !== '/') {
       router.push('/');
     }
@@ -73,7 +83,7 @@ export default function DashboardSidebar({
   } as const;
 
   if (layout === 'collapsed') {
-    const homeActive = pathname === '/';
+    const homeActive = pathname === '/' && modeNavFocus === 'home';
 
     return (
       <TooltipProvider delayDuration={200}>
@@ -98,7 +108,7 @@ export default function DashboardSidebar({
           </Tooltip>
 
           <div className="flex flex-col items-center gap-1">
-            <RailIcon tone="dark" icon={Home} label="Home" active={homeActive} href="/" />
+            <RailIcon tone="dark" icon={Home} label="Home" active={homeActive} onClick={goHome} />
             <RailIcon
               tone="dark"
               icon={UserCircle}
@@ -175,18 +185,19 @@ export default function DashboardSidebar({
       </div>
 
       <div className="space-y-2 px-3 pt-3">
-        <Link
-          href="/"
+        <button
+          type="button"
+          onClick={goHome}
           className={cn(
             'flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[13px] font-medium transition-all',
-            pathname === '/'
+            pathname === '/' && modeNavFocus === 'home'
               ? 'border-[#c9a96e]/40 bg-[rgba(201,169,110,0.08)] text-[#f5f5f0]'
               : 'border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white/70',
           )}
         >
           <Home size={16} strokeWidth={1.5} />
           Home
-        </Link>
+        </button>
         <Link
           href="/settings/profile"
           className={cn(
@@ -202,7 +213,14 @@ export default function DashboardSidebar({
       </div>
 
       <div className="mt-4 min-h-0 flex flex-1 flex-col">
-        <SidebarModes activeMode={activeMode} onSelect={setActiveMode} />
+        <SidebarModes
+          activeMode={activeMode}
+          modeNavFocus={modeNavFocus}
+          onSelect={(m) => {
+            setModeNavFocus('mode');
+            setActiveMode(m);
+          }}
+        />
         <div className="mt-4 min-h-0 flex flex-1 flex-col">
           <SidebarHistory variant="full" />
         </div>

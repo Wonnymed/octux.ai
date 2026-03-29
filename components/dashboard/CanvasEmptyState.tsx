@@ -1,39 +1,25 @@
 'use client';
 
+import type { ComponentType } from 'react';
 import type { DashboardMode } from '@/lib/store/dashboard-ui';
+import { SimulatePreview } from '@/components/dashboard/canvas-previews/SimulatePreview';
+import { ComparePreview } from '@/components/dashboard/canvas-previews/ComparePreview';
+import { StressPreview } from '@/components/dashboard/canvas-previews/StressPreview';
+import { PremortemPreview } from '@/components/dashboard/canvas-previews/PremortemPreview';
 
-export type CanvasEmptyVisualMode = 'simulate' | 'compare' | 'stress_test' | 'premortem';
+type PreviewMode = 'simulate' | 'compare' | 'stress_test' | 'premortem';
 
-const MODE_HINTS: Record<
-  CanvasEmptyVisualMode,
-  { icon: string; title: string; desc: string }
-> = {
-  simulate: {
-    icon: '◇',
-    title: 'Simulation canvas',
-    desc: 'Your specialist panel and debate will appear here',
-  },
-  compare: {
-    icon: '⇄',
-    title: 'Comparison arena',
-    desc: 'Two teams will debate your options here',
-  },
-  stress_test: {
-    icon: '⚠',
-    title: 'Vulnerability map',
-    desc: 'Nine specialists will stress-test your plan from every angle',
-  },
-  premortem: {
-    icon: '◆',
-    title: 'Failure timeline',
-    desc: 'The story of how your plan could fail will unfold here',
-  },
-};
-
-function mapDashboardMode(mode: DashboardMode): CanvasEmptyVisualMode {
+function mapDashboardMode(mode: DashboardMode): PreviewMode {
   if (mode === 'stress') return 'stress_test';
   return mode;
 }
+
+const PREVIEW_MAP: Record<PreviewMode, ComponentType> = {
+  simulate: SimulatePreview,
+  compare: ComparePreview,
+  stress_test: StressPreview,
+  premortem: PremortemPreview,
+};
 
 interface CanvasEmptyStateProps {
   mode: DashboardMode;
@@ -43,32 +29,28 @@ interface CanvasEmptyStateProps {
 
 export function CanvasEmptyState({ mode, waiting }: CanvasEmptyStateProps) {
   const visual = mapDashboardMode(mode);
-  const hint = MODE_HINTS[visual];
-  const desc = waiting
-    ? 'Agents will appear as they finish…'
-    : hint.desc;
+  const Preview = PREVIEW_MAP[visual] ?? SimulatePreview;
 
   return (
-    <div className="flex min-h-[280px] flex-1 flex-col items-center justify-center select-none">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#c9a96e]/15 bg-[#c9a96e]/[0.03]">
-        <span className="text-[24px] text-[#c9a96e]/30" aria-hidden>
-          {hint.icon}
-        </span>
+    <div className="relative flex min-h-[280px] flex-1 flex-col select-none">
+      <div
+        className={`relative flex min-h-[260px] flex-1 flex-col ${waiting ? 'opacity-40' : ''}`}
+      >
+        <Preview />
       </div>
 
-      <p className="text-[14px] font-medium text-[#8a8a82]">{hint.title}</p>
-      <p className="mt-1 max-w-[280px] text-center text-[12px] leading-relaxed text-[#5a5a55]">
-        {desc}
-      </p>
+      {waiting ? (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4">
+          <p className="rounded-lg border border-white/[0.06] bg-[#111110]/90 px-3 py-2 text-center text-[12px] text-[#8a8a82] shadow-sm backdrop-blur-sm">
+            Agents will appear as they finish…
+          </p>
+        </div>
+      ) : null}
 
-      <div className="mt-6 flex gap-1.5" aria-hidden>
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="h-1 w-1 animate-empty-pulse rounded-full bg-[#c9a96e]/20"
-            style={{ animationDelay: `${i * 0.3}s` }}
-          />
-        ))}
+      <div className="pointer-events-none absolute bottom-3 left-1/2 z-[3] w-[90%] max-w-md -translate-x-1/2 text-center">
+        <p className="text-[11px] text-[#5a5a55]">
+          {waiting ? 'Live simulation in progress' : 'Enter a question above to begin'}
+        </p>
       </div>
     </div>
   );

@@ -18,6 +18,8 @@ export default function SimulationCanvas() {
   const chatOpen = useSimulationStore((s) => s.specialistChatOpen);
   const threads = useSimulationStore((s) => s.specialistChatsByAgent);
   const activeMode = useDashboardUiStore((s) => s.activeMode);
+  const modeNavFocus = useDashboardUiStore((s) => s.modeNavFocus);
+  const canvasPreviewMode = modeNavFocus === 'home' ? 'simulate' : activeMode;
 
   const postVerdict = status === 'complete';
   const list = [...agents.values()].filter(
@@ -29,7 +31,7 @@ export default function SimulationCanvas() {
     <>
       <div className="flex h-full min-h-[120px] flex-col bg-[#111110] p-3">
         {list.length === 0 ? (
-          <CanvasEmptyState mode={activeMode} waiting={waitingForAgents} />
+          <CanvasEmptyState mode={canvasPreviewMode} waiting={waitingForAgents} />
         ) : (
           <>
             <p className="mb-2 text-[10px] uppercase tracking-wider text-white/25">Specialists</p>

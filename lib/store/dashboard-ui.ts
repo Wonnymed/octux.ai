@@ -2,6 +2,8 @@ import { create } from 'zustand';
 
 export type DashboardMode = 'simulate' | 'compare' | 'stress' | 'premortem';
 export type DashboardTier = 'swarm' | 'specialist';
+/** `home` = sidebar Home selected (no mode rail highlight). `mode` = a simulation mode is selected. */
+export type DashboardModeNavFocus = 'home' | 'mode';
 
 /** Maps dashboard mode + tier to API simulation charge types. */
 export function dashboardModeToChargeType(
@@ -16,6 +18,8 @@ export function dashboardModeToChargeType(
 
 export interface SimulationDashboardState {
   activeMode: DashboardMode;
+  /** Sidebar: Home vs mode icons — all modes share `/`, so this is separate from pathname. */
+  modeNavFocus: DashboardModeNavFocus;
   activeTier: DashboardTier;
   /** Idle canvas + tier toggle UI: which simulate visualization to show (free users can preview specialist). */
   previewTier: DashboardTier;
@@ -29,6 +33,7 @@ export interface SimulationDashboardState {
   crowdVoices: unknown[];
 
   setActiveMode: (mode: DashboardMode) => void;
+  setModeNavFocus: (focus: DashboardModeNavFocus) => void;
   setActiveTier: (tier: DashboardTier) => void;
   setPreviewTier: (previewTier: DashboardTier) => void;
   setInputA: (v: string) => void;
@@ -41,6 +46,7 @@ export interface SimulationDashboardState {
 const initial: Omit<
   SimulationDashboardState,
   | 'setActiveMode'
+  | 'setModeNavFocus'
   | 'setActiveTier'
   | 'setPreviewTier'
   | 'setInputA'
@@ -50,6 +56,7 @@ const initial: Omit<
   | 'resetSession'
 > = {
   activeMode: 'simulate',
+  modeNavFocus: 'mode',
   activeTier: 'specialist',
   previewTier: 'specialist',
   inputA: '',
@@ -68,9 +75,10 @@ export const useDashboardUiStore = create<SimulationDashboardState>((set) => ({
   setActiveMode: (activeMode) =>
     set((s) =>
       activeMode === 'stress' || activeMode === 'premortem'
-        ? { activeMode, activeTier: 'specialist', previewTier: 'specialist' }
-        : { activeMode, previewTier: s.previewTier },
+        ? { activeMode, modeNavFocus: 'mode', activeTier: 'specialist', previewTier: 'specialist' }
+        : { activeMode, modeNavFocus: 'mode', previewTier: s.previewTier },
     ),
+  setModeNavFocus: (modeNavFocus) => set({ modeNavFocus }),
   setActiveTier: (activeTier) => set({ activeTier }),
   setPreviewTier: (previewTier) => set({ previewTier }),
   setInputA: (inputA) => set({ inputA }),

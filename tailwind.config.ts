@@ -248,6 +248,7 @@ const config: Config = {
         float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-6px)' } },
         'neural-flow': { '0%': { strokeDashoffset: '100' }, '100%': { strokeDashoffset: '0' } },
         emptyPulse: { '0%, 100%': { opacity: '0.15' }, '50%': { opacity: '0.5' } },
+        nodeFloat: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-3px)' } },
       },
       animation: {
         breathe: 'breathe 4s ease-in-out infinite',
@@ -263,6 +264,7 @@ const config: Config = {
         float: 'float 3s ease-in-out infinite',
         'neural-flow': 'neural-flow 1.5s linear infinite',
         'empty-pulse': 'emptyPulse 2s ease-in-out infinite',
+        'node-float': 'nodeFloat 3s ease-in-out infinite',
       },
       width: { 'sidebar-collapsed': 'var(--sidebar-width-collapsed)', 'sidebar-expanded': 'var(--sidebar-width-expanded)', 'chat-max': 'var(--chat-max-width)' },
       maxWidth: {

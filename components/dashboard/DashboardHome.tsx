@@ -15,12 +15,14 @@ export default function DashboardHome({
 }) {
   const tier = useBillingStore((s) => s.tier);
   const activeMode = useDashboardUiStore((s) => s.activeMode);
+  const modeNavFocus = useDashboardUiStore((s) => s.modeNavFocus);
+  const inputKey = modeNavFocus === 'home' ? 'home' : activeMode;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
-          key={activeMode}
+          key={inputKey}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/design/cn';
 import { TRANSITIONS } from '@/lib/design/transitions';
-import { useDashboardUiStore, type DashboardMode } from '@/lib/store/dashboard-ui';
+import { useDashboardUiStore, type DashboardMode, type DashboardModeNavFocus } from '@/lib/store/dashboard-ui';
 import { useSimulationStore } from '@/lib/store/simulation';
 
 const MODE_GOLD = '#c9a96e';
@@ -26,16 +26,18 @@ export const DASHBOARD_SIDEBAR_MODES: {
 
 export default function SidebarModes({
   activeMode,
+  modeNavFocus,
   onSelect,
 }: {
   activeMode: DashboardMode;
+  modeNavFocus: DashboardModeNavFocus;
   onSelect: (mode: DashboardMode) => void;
 }) {
   const router = useRouter();
   const pathname = usePathname();
 
   function handleModeClick(mode: DashboardMode) {
-    if (mode === activeMode && pathname === '/') {
+    if (mode === activeMode && pathname === '/' && modeNavFocus === 'mode') {
       useDashboardUiStore.getState().resetSession();
       useSimulationStore.getState().reset();
     }
@@ -52,7 +54,7 @@ export default function SidebarModes({
       </p>
       <ul className="flex flex-col gap-0.5">
         {DASHBOARD_SIDEBAR_MODES.map((m) => {
-          const active = activeMode === m.id;
+          const active = modeNavFocus === 'mode' && activeMode === m.id;
           const Icon = m.Icon;
           return (
             <li key={m.id}>
